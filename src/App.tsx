@@ -419,10 +419,22 @@ function AppContent() {
 
             {/* Campus Life Routes */}
             <Route path="/campus-life" element={<DynamicPage />} />
-            <Route path="/campus-life/hostels" element={<DynamicPage />} />
+            <Route path="/campus-life/overview" element={<DynamicPage />} />
             <Route path="/campus-life/library" element={<DynamicPage />} />
+            <Route path="/campus-life/smart-classrooms" element={<DynamicPage />} />
+            <Route path="/campus-life/laboratories" element={<DynamicPage />} />
+            <Route path="/campus-life/hostels" element={<DynamicPage />} />
             <Route path="/campus-life/sports" element={<DynamicPage />} />
+            <Route path="/campus-life/cafeteria" element={<DynamicPage />} />
+            <Route path="/campus-life/transportation" element={<DynamicPage />} />
+            <Route path="/campus-life/wifi" element={<DynamicPage />} />
+            <Route path="/campus-life/health-centre" element={<DynamicPage />} />
             <Route path="/campus-life/clubs" element={<DynamicPage />} />
+            <Route path="/campus-life/events" element={<Events />} />
+            <Route path="/campus-life/innovation-hub" element={<DynamicPage />} />
+            <Route path="/campus-life/safety" element={<DynamicPage />} />
+            <Route path="/campus-life/nss-ncc" element={<DynamicPage />} />
+            <Route path="/campus-life/grievance-cell" element={<DynamicPage />} />
             <Route path="/campus-life/*" element={<DynamicPage />} />
 
             {/* Placements Routes */}
@@ -431,13 +443,16 @@ function AppContent() {
             <Route path="/placements/recruiters" element={<DynamicPage />} />
             <Route path="/placements/training" element={<DynamicPage />} />
 
-            {/* News Routes */}
+            {/* News & Events Routes */}
             <Route path="/news" element={<News />} />
             <Route path="/news/:slug" element={<NewsDetails />} />
             <Route path="/news/latest" element={<DynamicPage />} />
             <Route path="/news/events" element={<Events />} />
             <Route path="/news/events/:slug" element={<EventDetails />} />
             <Route path="/news/events/all" element={<AllEvents />} />
+            <Route path="/events" element={<Events />} />
+            <Route path="/events/:slug" element={<EventDetails />} />
+            <Route path="/events/all" element={<AllEvents />} />
             <Route path="/announcements/:slug" element={<AnnouncementDetails />} />
 
             {/* Contact Route */}
