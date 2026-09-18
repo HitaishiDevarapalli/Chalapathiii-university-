@@ -455,30 +455,69 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
                               </span>
                               
                               <div className="grid grid-cols-2 gap-x-12 gap-y-6 max-h-[360px] overflow-y-auto pr-4">
-                                {Object.entries(ACADEMIC_PROGRAMS_STRUCTURE[activeSchool] || {}).map(([dept, courses]) => (
-                                  <div key={dept} className="space-y-2">
-                                    <h5 className="text-[12px] font-bold text-[#072A6C] tracking-wide">{dept}</h5>
-                                    <div className="flex flex-col gap-1.5">
-                                      {courses.map((course) => {
-                                        const slug = course.to.split("/").pop();
-                                        const matched = programs?.find(p => p.slug === slug);
-                                        const displayLabel = matched ? matched.title : course.label;
-                                        return (
-                                          <Link
-                                            key={course.label}
-                                            to={course.to}
-                                            className="text-[12px] font-medium text-gray-500 hover:text-[#D4AF37] transition-colors leading-snug flex items-center gap-1.5 py-0.5 group"
-                                            onClick={() => setAcademicsOpen(false)}
-                                          >
-                                            <span className="w-1 h-1 rounded-full bg-gray-400 group-hover:bg-[#D4AF37] transition-colors shrink-0" />
-                                            {displayLabel}
-                                          </Link>
-                                        );
-                                      })}
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
+                                {Object.entries(ACADEMIC_PROGRAMS_STRUCTURE[activeSchool] || {}).map(([dept, courses]) => {
+                                  const isPg = (label: string) => {
+                                    const l = label.toLowerCase();
+                                    return l.startsWith("m.tech") || l.startsWith("mca") || l.startsWith("ph.d") || l.startsWith("mba") || l.startsWith("m.pharm") || l.includes("postgraduate") || l.includes("doctoral");
+                                  };
+                                  const ugCourses = courses.filter(c => !isPg(c.label));
+                                  const pgCourses = courses.filter(c => isPg(c.label));
+
+                                  return (
+                                    <div key={dept} className="space-y-2">
+                                      <h5 className="text-[12px] font-bold text-[#072A6C] tracking-wide">{dept}</h5>
+                                      
+                                      {ugCourses.length > 0 && (
+                                        <div className="space-y-1">
+                                          <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider block">Undergraduate</span>
+                                          <div className="flex flex-col gap-1.5 pl-0.5">
+                                            {ugCourses.map((course) => {
+                                              const slug = course.to.split("/").pop();
+                                              const matched = programs?.find(p => p.slug === slug);
+                                              const displayLabel = matched ? matched.title : course.label;
+                                              return (
+                                                <Link
+                                                  key={course.label}
+                                                  to={course.to}
+                                                  className="text-[12px] font-medium text-gray-500 hover:text-[#D4AF37] transition-colors leading-snug flex items-center gap-1.5 py-0.5 group"
+                                                  onClick={() => setAcademicsOpen(false)}
+                                                >
+                                                  <span className="w-1 h-1 rounded-full bg-gray-400 group-hover:bg-[#D4AF37] transition-colors shrink-0" />
+                                                  {displayLabel}
+                                                </Link>
+                                              );
+                                            })}
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      {pgCourses.length > 0 && (
+                                        <div className="space-y-1 mt-2">
+                                          <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider block">Postgraduate</span>
+                                          <div className="flex flex-col gap-1.5 pl-0.5">
+                                            {pgCourses.map((course) => {
+                                              const slug = course.to.split("/").pop();
+                                              const matched = programs?.find(p => p.slug === slug);
+                                              const displayLabel = matched ? matched.title : course.label;
+                                              return (
+                                                <Link
+                                                  key={course.label}
+                                                  to={course.to}
+                                                  className="text-[12px] font-medium text-gray-500 hover:text-[#D4AF37] transition-colors leading-snug flex items-center gap-1.5 py-0.5 group"
+                                                  onClick={() => setAcademicsOpen(false)}
+                                                >
+                                                  <span className="w-1 h-1 rounded-full bg-gray-400 group-hover:bg-[#D4AF37] transition-colors shrink-0" />
+                                                  {displayLabel}
+                                                </Link>
+                                              );
+                                            })}
+                                          </div>
+                                        </div>
+                                      )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
                             </div>
                           </>
                         ) : (
@@ -853,10 +892,10 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
                                             </div>
                                           </div>
                                         ))}
+                                        </div>
                                       </div>
-                                    </div>
-                                  ))}
-                                </div>
+                                    ))}
+                                  </div>
                               )}
                             </div>
                           );

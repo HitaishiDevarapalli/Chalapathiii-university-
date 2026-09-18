@@ -9,6 +9,7 @@ import { ACADEMIC_PROGRAMS_STRUCTURE } from "../components/layout/Header";
 import { useData } from "../context/DataContext";
 import GlobalCertifications from "../components/sections/GlobalCertifications";
 import { AdmissionsPortalView } from "../components/admissions/AdmissionsPortalView";
+import ProgramDetailPage from "../components/academics/ProgramDetailPage";
 
 
 const getProgramTimeline = (title: string) => {
@@ -370,182 +371,17 @@ const getPageContent = (path: string, programs: any[]) => {
 
   // Academics Pages
   if (cleanPath.startsWith("/academics")) {
-    const matchedProgram = programs.find(p => cleanPath.endsWith(p.slug));
-    if (matchedProgram) {
-      const getFlowchartData = () => {
-        const timeline = getProgramTimeline(matchedProgram.title);
-        const y1 = localStorage.getItem(`flowchart_${matchedProgram.slug}_y1`);
-        const y2 = localStorage.getItem(`flowchart_${matchedProgram.slug}_y2`);
-        const y3 = localStorage.getItem(`flowchart_${matchedProgram.slug}_y3`);
-        const y4 = localStorage.getItem(`flowchart_${matchedProgram.slug}_y4`);
-        if (y1) timeline[0].courses = y1.split(",").map(c => c.trim()).filter(Boolean);
-        if (y2) timeline[1].courses = y2.split(",").map(c => c.trim()).filter(Boolean);
-        if (y3 && timeline[2]) timeline[2].courses = y3.split(",").map(c => c.trim()).filter(Boolean);
-        if (y4 && timeline[3]) timeline[3].courses = y4.split(",").map(c => c.trim()).filter(Boolean);
-        
-        // Adjust length based on program duration
-        if (matchedProgram.duration?.includes("2 Years")) {
-          return timeline.slice(0, 2);
-        } else if (matchedProgram.duration?.includes("3-5 Years") || matchedProgram.duration?.includes("3 Years")) {
-          return timeline.slice(0, 3);
-        }
-        return timeline;
-      };
-
-      const flowchartData = getFlowchartData();
-
+    const slug = cleanPath.replace("/academics/", "").replace(/\/$/, "");
+    const reservedRoutes = ["schools", "departments", "calendar", "flexibilities", "programmes", "grading", "degrees", "electives", "rules", "teaching", "certifications", "bos", "computer-science", "artificial-intelligence", "data-science"];
+    
+    // Check if this is a program detail route
+    if (slug && !reservedRoutes.includes(slug)) {
+      const matchedProgram = programs.find(p => p.slug === slug || cleanPath.endsWith(p.slug));
       return {
-        title: matchedProgram.title,
+        title: matchedProgram ? matchedProgram.title : `About ${slug.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}`,
         category: "Academics",
-        desc: matchedProgram.desc,
-        body: (
-          <div className="space-y-6 text-gray-600 text-sm leading-relaxed">
-            <div className="bg-[#072A6C] border-l-4 border-[#D4AF37] shadow-lg p-5 rounded-r-[16px] grid grid-cols-1 md:grid-cols-3 gap-5 text-xs font-bold text-white mb-8">
-              <div>
-                <span className="block text-[#D4AF37] font-black tracking-widest uppercase text-[10px] mb-1">Duration</span>
-                <span className="text-[13px]">{matchedProgram.duration}</span>
-              </div>
-              <div>
-                <span className="block text-[#D4AF37] font-black tracking-widest uppercase text-[10px] mb-1">Department</span>
-                <span className="text-[13px]">{matchedProgram.department}</span>
-              </div>
-              <div>
-                <span className="block text-[#D4AF37] font-black tracking-widest uppercase text-[10px] mb-1">Degree Type</span>
-                <span className="text-[13px]">{matchedProgram.degreeType}</span>
-              </div>
-            </div>
-
-            <div className="bg-gray-50/50 p-6 rounded-2xl border border-gray-100">
-              <h3 className="text-lg font-black text-[#072A6C] mb-3 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#D4AF37]"></span>
-                Course Overview
-              </h3>
-              <p className="font-medium text-gray-600 text-[13px] leading-relaxed">{matchedProgram.overview}</p>
-            </div>
-
-            <div className="pt-2">
-              <h3 className="text-lg font-black text-[#072A6C] mb-4 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#D4AF37]"></span>
-                Core Focus Modules
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {matchedProgram.curriculum.map((item: string, idx: number) => {
-                  return (
-                    <div key={idx} className="bg-gradient-to-br from-[#072A6C] to-[#124299] shadow-blue-900/20 rounded-xl p-4 text-center text-[13px] font-bold text-white shadow-md hover:-translate-y-1 hover:shadow-xl transition-all cursor-pointer border border-white/10 relative overflow-hidden group">
-                      <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors"></div>
-                      <span className="relative z-10 drop-shadow-sm">{item}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="pt-2">
-              <h3 className="text-lg font-black text-[#072A6C] mb-4 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#D4AF37]"></span>
-                Career Prospects
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {matchedProgram.careers.map((career: { title: string; desc: string }, idx: number) => (
-                  <div key={idx} className="bg-[#D4AF37]/10 border-l-4 border-[#D4AF37] p-5 rounded-r-xl shadow-sm hover:-translate-y-1 hover:shadow-md transition-all">
-                    <h4 className="font-black text-[#072A6C] text-[14px] mb-1">{career.title}</h4>
-                    <p className="text-[12px] text-gray-700 leading-relaxed font-medium">{career.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {localStorage.getItem(`syllabus_${matchedProgram.slug}`) && (
-              <div className="bg-emerald-50 border border-emerald-200/50 p-4 rounded-xl flex justify-between items-center mt-6">
-                <div>
-                  <span className="text-xs font-bold text-emerald-800 block">📚 Syllabus & Curriculum Details Available</span>
-                  <span className="text-[10px] text-emerald-600/80 font-light">{localStorage.getItem(`syllabus_${matchedProgram.slug}`)}</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => alert(`Downloading curriculum syllabus PDF: ${localStorage.getItem(`syllabus_${matchedProgram.slug}`)}`)}
-                  className="h-8 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] uppercase tracking-wider rounded-lg shadow-sm transition-colors cursor-pointer"
-                >
-                  Download Syllabus
-                </button>
-              </div>
-            )}
-
-            {/* Dynamic Visual Timeline Section */}
-            <div className="pt-8 border-t border-gray-100">
-              <h3 className="text-lg font-extrabold text-[#072A6C] mb-1">Course Structure & Year-Wise Timeline</h3>
-              <p className="text-xs text-gray-500 mb-6 font-light">Explore your multi-year learning trajectory, core specializations, and mandatory internship milestones.</p>
-              
-              {/* Colored Degree Bar */}
-              <div className="bg-gradient-to-r from-[#D71920] to-[#072A6C] text-white text-[10px] uppercase font-bold tracking-widest px-4 py-2.5 rounded-full mb-6 text-center select-none shadow-sm">
-                4-Year Integrated Program structure: {matchedProgram.degreeType} Honors Degree
-              </div>
-
-              {/* Dynamic Columns Year-wise Grid */}
-              <div className={`grid grid-cols-1 ${
-                flowchartData.length === 2 ? 'md:grid-cols-2' : 
-                flowchartData.length === 3 ? 'md:grid-cols-3' : 
-                'md:grid-cols-4'
-              } gap-4 mt-4`}>
-                {flowchartData.map((step, idx) => (
-                  <div key={idx} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden group">
-                    {/* Top red bar hover effect */}
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gray-100 group-hover:bg-[#D4AF37] transition-colors" />
-                    
-                    <div>
-                      <div className="flex justify-between items-center mb-3">
-                        <span className="text-sm font-extrabold text-[#072A6C]">{step.year}</span>
-                        <span className="text-[9px] text-[#D4AF37] font-extrabold uppercase bg-[#D4AF37]/5 px-2 py-0.5 rounded-full">{step.focus}</span>
-                      </div>
-                      
-                      {/* Badges */}
-                      <div className="flex flex-wrap gap-1.5 mb-4">
-                        {step.badges.map((b, i) => (
-                          <span key={i} className="text-[9.5px] font-semibold text-gray-500 bg-gray-50 px-2 py-0.5 rounded-md border border-gray-100">
-                            {b}
-                          </span>
-                        ))}
-                      </div>
-
-                      {/* Course list */}
-                      <div className="space-y-1.5 mb-4">
-                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">Academics</span>
-                        {step.courses.map((course, i) => (
-                          <div key={i} className="text-[11.5px] font-medium text-gray-700 leading-snug">
-                            • {course}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="pt-4 border-t border-gray-100/60 mt-4">
-                      <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block mb-1.5">Immersion</span>
-                      {step.immersions.map((imm, i) => (
-                        <div key={i} className="text-[11px] text-gray-500 font-light leading-normal italic">
-                          - {imm}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Exit Options Alert */}
-              <div className="bg-[#072A6C]/5 border border-[#072A6C]/10 rounded-xl p-4 mt-6">
-                <span className="text-xs font-bold text-[#072A6C] block mb-1">🎓 Flexible Learning Pathways & Exit Points</span>
-                <p className="text-[11px] text-gray-500 leading-normal font-light">
-                  Aligning with National Education Policy (NEP) guidelines, scholars can choose to exit at varied points:
-                  <br />• Exit after 3 Years: Eligible to graduate with a standard Degree in the respective major category.
-                  <br />• Completion of 4 Years: Graduate with an Integrated Honours Degree with minor specialization certifications.
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-[8px] text-[11px] text-blue-900 font-light mt-6">
-              This curriculum is aligned with the outcome-based education (OBE) model. Regular updates are carried out via the Board of Studies (BOS) incorporating direct inputs from industry veterans.
-            </div>
-          </div>
-        )
+        desc: matchedProgram ? matchedProgram.desc : "Academic program information, curriculum, faculty, laboratories, and career prospects.",
+        body: <ProgramDetailPage slug={matchedProgram ? matchedProgram.slug : slug} defaultData={matchedProgram} />
       };
     }
 
@@ -591,28 +427,66 @@ const getPageContent = (path: string, programs: any[]) => {
                     {school}
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {Object.entries(depts).map(([dept, courses]) => (
-                      <div key={dept} className="space-y-2">
-                        <h4 className="text-xs font-black text-[#D4AF37] tracking-wider uppercase">{dept}</h4>
-                        <div className="flex flex-col gap-1.5 pl-2">
-                          {courses.map((course) => {
-                            const slug = course.to.split("/").pop();
-                            const matched = programs.find(p => p.slug === slug);
-                            const displayLabel = matched ? matched.title : course.label;
-                            return (
-                              <Link
-                                key={course.label}
-                                to={course.to}
-                                className="text-xs font-medium text-gray-600 hover:text-[#D4AF37] transition-colors leading-relaxed flex items-center gap-1.5 group"
-                              >
-                                <span className="w-1.5 h-1.5 rounded-full bg-gray-300 group-hover:bg-[#D4AF37] transition-colors" />
-                                {displayLabel}
-                              </Link>
-                            );
-                          })}
+                    {Object.entries(depts).map(([dept, courses]) => {
+                      const isPg = (label: string) => {
+                        const l = label.toLowerCase();
+                        return l.startsWith("m.tech") || l.startsWith("mca") || l.startsWith("ph.d") || l.startsWith("mba") || l.startsWith("m.pharm") || l.includes("postgraduate") || l.includes("doctoral");
+                      };
+                      const ugCourses = courses.filter(c => !isPg(c.label));
+                      const pgCourses = courses.filter(c => isPg(c.label));
+
+                      return (
+                        <div key={dept} className="space-y-3 bg-gray-50/50 p-4 rounded-xl border border-gray-100/80">
+                          <h4 className="text-xs font-black text-[#072A6C] tracking-wider uppercase">{dept}</h4>
+                          
+                          {ugCourses.length > 0 && (
+                            <div className="space-y-1">
+                              <span className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider block">Undergraduate</span>
+                              <div className="flex flex-col gap-1.5 pl-1.5">
+                                {ugCourses.map((course) => {
+                                  const slug = course.to.split("/").pop();
+                                  const matched = programs.find(p => p.slug === slug);
+                                  const displayLabel = matched ? matched.title : course.label;
+                                  return (
+                                    <Link
+                                      key={course.label}
+                                      to={course.to}
+                                      className="text-xs font-medium text-gray-600 hover:text-[#D4AF37] transition-colors leading-relaxed flex items-center gap-1.5 group"
+                                    >
+                                      <span className="w-1.5 h-1.5 rounded-full bg-gray-300 group-hover:bg-[#D4AF37] transition-colors" />
+                                      {displayLabel}
+                                    </Link>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
+                          {pgCourses.length > 0 && (
+                            <div className="space-y-1 mt-2">
+                              <span className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider block">Postgraduate</span>
+                              <div className="flex flex-col gap-1.5 pl-1.5">
+                                {pgCourses.map((course) => {
+                                  const slug = course.to.split("/").pop();
+                                  const matched = programs.find(p => p.slug === slug);
+                                  const displayLabel = matched ? matched.title : course.label;
+                                  return (
+                                    <Link
+                                      key={course.label}
+                                      to={course.to}
+                                      className="text-xs font-medium text-gray-600 hover:text-[#D4AF37] transition-colors leading-relaxed flex items-center gap-1.5 group"
+                                    >
+                                      <span className="w-1.5 h-1.5 rounded-full bg-gray-400 group-hover:bg-[#D4AF37] transition-colors" />
+                                      {displayLabel}
+                                    </Link>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               ))}

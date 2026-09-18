@@ -4,12 +4,19 @@ import { certifications } from "../data/certifications";
 import { 
   Lock, LayoutDashboard, Megaphone, BookOpen, Calendar, FileText, 
   Settings, LogOut, Plus, Trash2, Edit3, CheckCircle, UploadCloud, Info, Users, Briefcase, Globe, Newspaper, Download,
-  User, Eye, EyeOff, ArrowRight, ShieldCheck, Shield, BarChart3, Menu, ChevronDown, ChevronRight,
+  User, Eye, EyeOff, ArrowRight, ShieldCheck, Shield, BarChart3, Menu, ChevronDown, ChevronRight, ChevronUp,
   Bell, TrendingUp, UserPlus, CheckSquare, FileSpreadsheet, Building, CreditCard, MessageSquare,
-  Library, BarChart2, CheckCircle2, Clock, Search, Filter, Image, Sparkles, Layers, RefreshCw, GraduationCap
+  Library, BarChart2, CheckCircle2, Clock, Search, Filter, Image, Sparkles, Layers, RefreshCw, GraduationCap,
+  ArrowUp, ArrowDown, RotateCcw, Sliders, ExternalLink, Compass
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Award } from "lucide-react";
+import { 
+  DEFAULT_PROGRAM_SECTIONS, 
+  SectionMeta, 
+  FullProgramData, 
+  getProgramFullData 
+} from "../data/programDetailsData";
 
 export default function AdminPortal() {
   const {
@@ -167,13 +174,14 @@ export default function AdminPortal() {
   });
 
   // Form states - Academics
-  const [selectedProgSlug, setSelectedProgSlug] = useState(programs[0]?.slug || "");
+  const [selectedProgSlug, setSelectedProgSlug] = useState(programs[0]?.slug || "btech-cse");
   const currentProg = programs.find(p => p.slug === selectedProgSlug) || programs[0];
+  const [academicsSubTab, setAcademicsSubTab] = useState<"sections" | "basic" | "content">("sections");
   
   const [progTitle, setProgTitle] = useState(currentProg?.title || "");
   const [progDesc, setProgDesc] = useState(currentProg?.desc || "");
   const [progOverview, setProgOverview] = useState(currentProg?.overview || "");
-  const [progCurriculum, setProgCurriculum] = useState(currentProg?.curriculum.join(", ") || "");
+  const [progCurriculum, setProgCurriculum] = useState(currentProg?.curriculum?.join(", ") || "");
   const [curriculumFile, setCurriculumFile] = useState<File | null>(null);
   const [curriculumFileName, setCurriculumFileName] = useState(localStorage.getItem(`syllabus_${selectedProgSlug}`) || "None uploaded");
   const [flowchartY1, setFlowchartY1] = useState("");
@@ -181,18 +189,62 @@ export default function AdminPortal() {
   const [flowchartY3, setFlowchartY3] = useState("");
   const [flowchartY4, setFlowchartY4] = useState("");
 
+  // 19-Section Ordering and Visibility State
+  const [progSectionsList, setProgSectionsList] = useState<SectionMeta[]>(() => {
+    const slug = programs[0]?.slug || "btech-cse";
+    const saved = localStorage.getItem(`program_sections_order_${slug}`);
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return DEFAULT_PROGRAM_SECTIONS;
+  });
+
+  // 19-Section Full Content State
+  const [customFullProgram, setCustomFullProgram] = useState<FullProgramData>(() => {
+    const slug = programs[0]?.slug || "btech-cse";
+    const saved = localStorage.getItem(`custom_program_data_${slug}`);
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return getProgramFullData(slug, programs[0]?.title, programs[0]?.department);
+  });
+
   // Sync academics form when program selection changes
   React.useEffect(() => {
     if (currentProg) {
       setProgTitle(currentProg.title);
       setProgDesc(currentProg.desc);
       setProgOverview(currentProg.overview);
-      setProgCurriculum(currentProg.curriculum.join(", "));
+      setProgCurriculum(currentProg.curriculum?.join(", ") || "");
       setCurriculumFileName(localStorage.getItem(`syllabus_${currentProg.slug}`) || "None uploaded");
       setFlowchartY1(localStorage.getItem(`flowchart_${currentProg.slug}_y1`) || "");
       setFlowchartY2(localStorage.getItem(`flowchart_${currentProg.slug}_y2`) || "");
       setFlowchartY3(localStorage.getItem(`flowchart_${currentProg.slug}_y3`) || "");
       setFlowchartY4(localStorage.getItem(`flowchart_${currentProg.slug}_y4`) || "");
+
+      // Sync 19 sections order
+      const savedSecs = localStorage.getItem(`program_sections_order_${currentProg.slug}`);
+      if (savedSecs) {
+        try {
+          setProgSectionsList(JSON.parse(savedSecs));
+        } catch (e) {
+          setProgSectionsList(DEFAULT_PROGRAM_SECTIONS);
+        }
+      } else {
+        setProgSectionsList(DEFAULT_PROGRAM_SECTIONS);
+      }
+
+      // Sync 19 sections full content
+      const savedFull = localStorage.getItem(`custom_program_data_${currentProg.slug}`);
+      if (savedFull) {
+        try {
+          setCustomFullProgram(JSON.parse(savedFull));
+        } catch (e) {
+          setCustomFullProgram(getProgramFullData(currentProg.slug, currentProg.title, currentProg.department));
+        }
+      } else {
+        setCustomFullProgram(getProgramFullData(currentProg.slug, currentProg.title, currentProg.department));
+      }
     }
   }, [selectedProgSlug, currentProg]);
 
@@ -413,6 +465,45 @@ export default function AdminPortal() {
     localStorage.setItem(`flowchart_${selectedProgSlug}_y3`, flowchartY3);
     localStorage.setItem(`flowchart_${selectedProgSlug}_y4`, flowchartY4);
     
+    showNotification();
+  };
+
+  // 19-Section CMS: Reorder Section
+  const handleMoveProgramSection = (index: number, direction: "up" | "down") => {
+    const targetIdx = direction === "up" ? index - 1 : index + 1;
+    if (targetIdx < 0 || targetIdx >= progSectionsList.length) return;
+    const updated = [...progSectionsList];
+    const temp = updated[index];
+    updated[index] = updated[targetIdx];
+    updated[targetIdx] = temp;
+    
+    const reordered = updated.map((s, idx) => ({ ...s, order: idx + 1 }));
+    setProgSectionsList(reordered);
+    localStorage.setItem(`program_sections_order_${selectedProgSlug}`, JSON.stringify(reordered));
+    showNotification();
+  };
+
+  // 19-Section CMS: Toggle Section Visibility
+  const handleToggleProgramSection = (secId: string) => {
+    const updated = progSectionsList.map(s => s.id === secId ? { ...s, enabled: !s.enabled } : s);
+    setProgSectionsList(updated);
+    localStorage.setItem(`program_sections_order_${selectedProgSlug}`, JSON.stringify(updated));
+    showNotification();
+  };
+
+  // 19-Section CMS: Reset Section Order to default 19 sections
+  const handleResetProgramSections = () => {
+    if (window.confirm("Reset all 19 sections to default university order?")) {
+      setProgSectionsList(DEFAULT_PROGRAM_SECTIONS);
+      localStorage.removeItem(`program_sections_order_${selectedProgSlug}`);
+      showNotification();
+    }
+  };
+
+  // 19-Section CMS: Save Full Program Custom Content
+  const handleSaveCustomProgramData = (e: React.FormEvent) => {
+    e.preventDefault();
+    localStorage.setItem(`custom_program_data_${selectedProgSlug}`, JSON.stringify(customFullProgram));
     showNotification();
   };
 
@@ -1550,139 +1641,465 @@ export default function AdminPortal() {
             </form>
           )}
 
-          {/* 🌟 Tab 4: Academics & Programs */}
+          {/* 🌟 Tab 4: Academics & Programs (With 19-Section CMS) */}
           {activeTab === "academics" && (
-            <form onSubmit={handleSaveProgram} className="space-y-6">
-              <div className="space-y-1 bg-gray-50 border border-gray-100 p-4 rounded-2xl mb-6">
-                <label className="text-[10px] font-black uppercase text-gray-500 block mb-1">Select Program to Modify</label>
-                <select
-                  value={selectedProgSlug}
-                  onChange={(e) => setSelectedProgSlug(e.target.value)}
-                  className="w-full h-11 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
-                >
-                  {programs.map(p => (
-                    <option key={p.slug} value={p.slug}>{p.title}</option>
-                  ))}
-                </select>
-              </div>
+            <div className="space-y-6 text-left">
+              {/* Top Bar: Selector & Live Preview */}
+              <div className="bg-white border border-gray-150 p-5 rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-black uppercase text-[#072A6C] tracking-wider block">
+                    Academic Program Selector
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <select
+                      value={selectedProgSlug}
+                      onChange={(e) => setSelectedProgSlug(e.target.value)}
+                      className="h-11 px-4 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:border-[#072A6C] text-xs font-bold text-gray-800 cursor-pointer min-w-[280px]"
+                    >
+                      {programs.map(p => (
+                        <option key={p.slug} value={p.slug}>
+                          {p.title} ({p.slug})
+                        </option>
+                      ))}
+                    </select>
+                    <span className="text-[11px] font-semibold text-gray-400">
+                      {currentProg?.department || "Academic Department"}
+                    </span>
+                  </div>
+                </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase text-gray-500">Program Title</label>
-                  <input
-                    type="text"
-                    required
-                    value={progTitle}
-                    onChange={(e) => setProgTitle(e.target.value)}
-                    className="w-full h-11 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase text-gray-500">Short Tagline</label>
-                  <input
-                    type="text"
-                    required
-                    value={progDesc}
-                    onChange={(e) => setProgDesc(e.target.value)}
-                    className="w-full h-11 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold uppercase text-gray-500">Overview / Introduction</label>
-                <textarea
-                  rows={3}
-                  required
-                  value={progOverview}
-                  onChange={(e) => setProgOverview(e.target.value)}
-                  className="w-full p-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-light leading-relaxed"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold uppercase text-gray-500">Curriculum Subjects (comma separated list)</label>
-                <textarea
-                  rows={2}
-                  required
-                  value={progCurriculum}
-                  onChange={(e) => setProgCurriculum(e.target.value)}
-                  className="w-full p-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase text-gray-500">Flowchart Year 1 Courses (comma separated)</label>
-                  <input
-                    type="text"
-                    value={flowchartY1}
-                    onChange={(e) => setFlowchartY1(e.target.value)}
-                    placeholder="e.g. Python Programming, Computational Mathematics"
-                    className="w-full h-10 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase text-gray-500">Flowchart Year 2 Courses (comma separated)</label>
-                  <input
-                    type="text"
-                    value={flowchartY2}
-                    onChange={(e) => setFlowchartY2(e.target.value)}
-                    placeholder="e.g. Data Structures, Database Systems"
-                    className="w-full h-10 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase text-gray-500">Flowchart Year 3 Courses (comma separated)</label>
-                  <input
-                    type="text"
-                    value={flowchartY3}
-                    onChange={(e) => setFlowchartY3(e.target.value)}
-                    placeholder="e.g. Operating Systems, Computer Networks"
-                    className="w-full h-10 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase text-gray-500">Flowchart Year 4 Courses (comma separated)</label>
-                  <input
-                    type="text"
-                    value={flowchartY4}
-                    onChange={(e) => setFlowchartY4(e.target.value)}
-                    placeholder="e.g. Capstone Project, Cloud Infrastructure"
-                    className="w-full h-10 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
-                  />
+                <div className="flex items-center gap-2">
+                  <a
+                    href={`/academics/${selectedProgSlug}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="h-10 px-4 bg-[#072A6C]/10 hover:bg-[#072A6C] text-[#072A6C] hover:text-white font-bold text-xs uppercase tracking-wider rounded-xl inline-flex items-center gap-2 transition-colors cursor-pointer"
+                  >
+                    <ExternalLink size={14} />
+                    Preview Live Page
+                  </a>
                 </div>
               </div>
 
-              {/* Syllabus / Curriculum File Uploader */}
-              <div className="space-y-2 p-5 border border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center bg-gray-50/50">
-                <UploadCloud className="text-[#072A6C]/40 mb-1" size={32} />
-                <span className="text-[11px] font-bold uppercase text-gray-600">Upload Program Syllabus / Curriculum PDF</span>
-                <span className="text-[10px] text-gray-400 font-light">Current: {curriculumFileName}</span>
-                <input
-                  type="file"
-                  accept="application/pdf"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                  id="syllabus-file-input"
-                />
-                <label
-                  htmlFor="syllabus-file-input"
-                  className="h-9 px-6 border border-gray-200 bg-white hover:bg-gray-50 rounded-xl font-bold text-[10px] uppercase tracking-wider inline-flex items-center justify-center cursor-pointer shadow-sm transition-colors"
-                >
-                  Choose File
-                </label>
-              </div>
-
-              <div className="pt-4 border-t border-gray-100">
+              {/* Sub-Navigation Tabs */}
+              <div className="flex items-center gap-2 border-b border-gray-200 pb-3">
                 <button
-                  type="submit"
-                  className="h-11 px-8 bg-[#072A6C] hover:bg-[#051c4a] text-white font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer"
+                  type="button"
+                  onClick={() => setAcademicsSubTab("sections")}
+                  className={`h-9 px-5 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2 ${
+                    academicsSubTab === "sections"
+                      ? "bg-[#072A6C] text-white shadow-sm"
+                      : "bg-gray-100 hover:bg-gray-200 text-gray-600"
+                  }`}
                 >
-                  Save Program Details
+                  <Layers size={14} />
+                  19 Sections Manager (Reorder & Visibility)
+                  <span className="ml-1 px-1.5 py-0.5 rounded-full text-[9px] bg-white/20 text-white font-mono">
+                    {progSectionsList.filter(s => s.enabled).length}/{progSectionsList.length}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setAcademicsSubTab("content")}
+                  className={`h-9 px-5 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2 ${
+                    academicsSubTab === "content"
+                      ? "bg-[#072A6C] text-white shadow-sm"
+                      : "bg-gray-100 hover:bg-gray-200 text-gray-600"
+                  }`}
+                >
+                  <Edit3 size={14} />
+                  19-Section Content Editor
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setAcademicsSubTab("basic")}
+                  className={`h-9 px-5 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2 ${
+                    academicsSubTab === "basic"
+                      ? "bg-[#072A6C] text-white shadow-sm"
+                      : "bg-gray-100 hover:bg-gray-200 text-gray-600"
+                  }`}
+                >
+                  <FileText size={14} />
+                  Basic Info & Flowchart
                 </button>
               </div>
-            </form>
+
+              {/* SUB-VIEW 1: 19 Sections Order & Visibility Manager */}
+              {academicsSubTab === "sections" && (
+                <div className="space-y-4">
+                  <div className="bg-amber-50/70 border border-amber-200/80 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div>
+                      <h4 className="text-xs font-black text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
+                        <Sparkles size={14} className="text-amber-600" />
+                        Dynamic 19-Section Page Layout Engine
+                      </h4>
+                      <p className="text-[11px] text-amber-800/90 font-medium mt-0.5">
+                        Reorder sections with the Up/Down controls or toggle visibility to customize this specific program page.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleResetProgramSections}
+                      className="h-8 px-3.5 bg-white hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-xl text-[10px] font-black uppercase tracking-wider inline-flex items-center gap-1.5 shadow-sm cursor-pointer transition-colors"
+                    >
+                      <RotateCcw size={12} />
+                      Reset to Default 19 Sections
+                    </button>
+                  </div>
+
+                  <div className="bg-white border border-gray-150 rounded-2xl shadow-sm divide-y divide-gray-100 overflow-hidden">
+                    {progSectionsList.map((section, idx) => (
+                      <div
+                        key={section.id}
+                        className={`p-3.5 flex items-center justify-between gap-4 transition-colors ${
+                          section.enabled ? "hover:bg-slate-50/70" : "bg-gray-50/70 opacity-60"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3.5 min-w-0">
+                          <span className="w-7 h-7 rounded-lg bg-[#072A6C]/10 text-[#072A6C] font-mono text-xs font-black flex items-center justify-center shrink-0">
+                            {idx + 1}
+                          </span>
+                          <div className="min-w-0">
+                            <span className="text-xs font-bold text-gray-800 block truncate">
+                              {section.title}
+                            </span>
+                            <span className="text-[10px] text-gray-400 font-mono">
+                              ID: #{section.id}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          {/* Visibility badge */}
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                              section.enabled
+                                ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                : "bg-rose-50 text-rose-700 border border-rose-200"
+                            }`}
+                          >
+                            {section.enabled ? "Visible" : "Hidden"}
+                          </span>
+
+                          {/* Toggle Visibility Button */}
+                          <button
+                            type="button"
+                            onClick={() => handleToggleProgramSection(section.id)}
+                            title={section.enabled ? "Hide Section" : "Show Section"}
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center border text-xs cursor-pointer transition-colors ${
+                              section.enabled
+                                ? "bg-white hover:bg-rose-50 border-gray-200 text-gray-600 hover:text-rose-600 hover:border-rose-200"
+                                : "bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700"
+                            }`}
+                          >
+                            {section.enabled ? <Eye size={14} /> : <EyeOff size={14} />}
+                          </button>
+
+                          {/* Move Up */}
+                          <button
+                            type="button"
+                            disabled={idx === 0}
+                            onClick={() => handleMoveProgramSection(idx, "up")}
+                            title="Move Section Up"
+                            className="w-8 h-8 rounded-lg flex items-center justify-center border border-gray-200 bg-white hover:bg-[#072A6C] hover:text-white disabled:opacity-30 disabled:hover:bg-white disabled:hover:text-gray-400 text-gray-600 text-xs cursor-pointer transition-colors"
+                          >
+                            <ArrowUp size={14} />
+                          </button>
+
+                          {/* Move Down */}
+                          <button
+                            type="button"
+                            disabled={idx === progSectionsList.length - 1}
+                            onClick={() => handleMoveProgramSection(idx, "down")}
+                            title="Move Section Down"
+                            className="w-8 h-8 rounded-lg flex items-center justify-center border border-gray-200 bg-white hover:bg-[#072A6C] hover:text-white disabled:opacity-30 disabled:hover:bg-white disabled:hover:text-gray-400 text-gray-600 text-xs cursor-pointer transition-colors"
+                          >
+                            <ArrowDown size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* SUB-VIEW 2: 19-Section Content Editor */}
+              {academicsSubTab === "content" && (
+                <form onSubmit={handleSaveCustomProgramData} className="space-y-6">
+                  {/* HOD Message Editor */}
+                  <div className="bg-white p-5 rounded-2xl border border-gray-150 shadow-sm space-y-4">
+                    <h3 className="text-xs font-black uppercase text-[#072A6C] tracking-wider border-b border-gray-100 pb-2 flex items-center gap-2">
+                      <Users size={16} />
+                      Section 2: HOD / Department Head Message
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-gray-500">HOD Name</label>
+                        <input
+                          type="text"
+                          value={customFullProgram?.hodMessage?.hodName || ""}
+                          onChange={(e) => setCustomFullProgram({
+                            ...customFullProgram,
+                            hodMessage: { ...customFullProgram.hodMessage, hodName: e.target.value }
+                          })}
+                          className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-gray-500">Designation</label>
+                        <input
+                          type="text"
+                          value={customFullProgram?.hodMessage?.designation || ""}
+                          onChange={(e) => setCustomFullProgram({
+                            ...customFullProgram,
+                            hodMessage: { ...customFullProgram.hodMessage, designation: e.target.value }
+                          })}
+                          className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-gray-500">Qualification</label>
+                        <input
+                          type="text"
+                          value={customFullProgram?.hodMessage?.qualification || ""}
+                          onChange={(e) => setCustomFullProgram({
+                            ...customFullProgram,
+                            hodMessage: { ...customFullProgram.hodMessage, qualification: e.target.value }
+                          })}
+                          className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase text-gray-500">HOD Message Text</label>
+                      <textarea
+                        rows={3}
+                        value={customFullProgram?.hodMessage?.message || ""}
+                        onChange={(e) => setCustomFullProgram({
+                          ...customFullProgram,
+                          hodMessage: { ...customFullProgram.hodMessage, message: e.target.value }
+                        })}
+                        className="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Vision & Mission Editor */}
+                  <div className="bg-white p-5 rounded-2xl border border-gray-150 shadow-sm space-y-4">
+                    <h3 className="text-xs font-black uppercase text-[#072A6C] tracking-wider border-b border-gray-100 pb-2 flex items-center gap-2">
+                      <Compass size={16} />
+                      Section 3: Vision & Mission Statements
+                    </h3>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase text-gray-500">Department Vision Statement</label>
+                      <textarea
+                        rows={2}
+                        value={customFullProgram?.visionMission?.vision || ""}
+                        onChange={(e) => setCustomFullProgram({
+                          ...customFullProgram,
+                          visionMission: { ...customFullProgram.visionMission, vision: e.target.value }
+                        })}
+                        className="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase text-gray-500">Mission Statements (1 statement per line)</label>
+                      <textarea
+                        rows={3}
+                        value={customFullProgram?.visionMission?.mission?.join("\n") || ""}
+                        onChange={(e) => setCustomFullProgram({
+                          ...customFullProgram,
+                          visionMission: {
+                            ...customFullProgram.visionMission,
+                            mission: e.target.value.split("\n").filter(Boolean)
+                          }
+                        })}
+                        className="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Placements & Key Highlights */}
+                  <div className="bg-white p-5 rounded-2xl border border-gray-150 shadow-sm space-y-4">
+                    <h3 className="text-xs font-black uppercase text-[#072A6C] tracking-wider border-b border-gray-100 pb-2 flex items-center gap-2">
+                      <Briefcase size={16} />
+                      Section 6: Placements & Statistics
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-gray-500">Placement Rate</label>
+                        <input
+                          type="text"
+                          value={customFullProgram?.placements?.placementRate || "95%"}
+                          onChange={(e) => setCustomFullProgram({
+                            ...customFullProgram,
+                            placements: { ...customFullProgram.placements, placementRate: e.target.value }
+                          })}
+                          className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-gray-500">Highest Package</label>
+                        <input
+                          type="text"
+                          value={customFullProgram?.placements?.highestPackage || "₹24 LPA"}
+                          onChange={(e) => setCustomFullProgram({
+                            ...customFullProgram,
+                            placements: { ...customFullProgram.placements, highestPackage: e.target.value }
+                          })}
+                          className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-gray-500">Average Package</label>
+                        <input
+                          type="text"
+                          value={customFullProgram?.placements?.averagePackage || "₹6.5 LPA"}
+                          onChange={(e) => setCustomFullProgram({
+                            ...customFullProgram,
+                            placements: { ...customFullProgram.placements, averagePackage: e.target.value }
+                          })}
+                          className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-2">
+                    <button
+                      type="submit"
+                      className="h-11 px-8 bg-[#072A6C] hover:bg-[#051c4a] text-white font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer shadow-md transition-colors"
+                    >
+                      Save 19-Section Content
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* SUB-VIEW 3: Basic Info & Flowchart */}
+              {academicsSubTab === "basic" && (
+                <form onSubmit={handleSaveProgram} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase text-gray-500">Program Title</label>
+                      <input
+                        type="text"
+                        required
+                        value={progTitle}
+                        onChange={(e) => setProgTitle(e.target.value)}
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase text-gray-500">Short Tagline</label>
+                      <input
+                        type="text"
+                        required
+                        value={progDesc}
+                        onChange={(e) => setProgDesc(e.target.value)}
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase text-gray-500">Overview / Introduction</label>
+                    <textarea
+                      rows={3}
+                      required
+                      value={progOverview}
+                      onChange={(e) => setProgOverview(e.target.value)}
+                      className="w-full p-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-light leading-relaxed"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase text-gray-500">Curriculum Subjects (comma separated list)</label>
+                    <textarea
+                      rows={2}
+                      required
+                      value={progCurriculum}
+                      onChange={(e) => setProgCurriculum(e.target.value)}
+                      className="w-full p-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase text-gray-500">Flowchart Year 1 Courses (comma separated)</label>
+                      <input
+                        type="text"
+                        value={flowchartY1}
+                        onChange={(e) => setFlowchartY1(e.target.value)}
+                        placeholder="e.g. Python Programming, Computational Mathematics"
+                        className="w-full h-10 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase text-gray-500">Flowchart Year 2 Courses (comma separated)</label>
+                      <input
+                        type="text"
+                        value={flowchartY2}
+                        onChange={(e) => setFlowchartY2(e.target.value)}
+                        placeholder="e.g. Data Structures, Database Systems"
+                        className="w-full h-10 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase text-gray-500">Flowchart Year 3 Courses (comma separated)</label>
+                      <input
+                        type="text"
+                        value={flowchartY3}
+                        onChange={(e) => setFlowchartY3(e.target.value)}
+                        placeholder="e.g. Operating Systems, Computer Networks"
+                        className="w-full h-10 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase text-gray-500">Flowchart Year 4 Courses (comma separated)</label>
+                      <input
+                        type="text"
+                        value={flowchartY4}
+                        onChange={(e) => setFlowchartY4(e.target.value)}
+                        placeholder="e.g. Capstone Project, Cloud Infrastructure"
+                        className="w-full h-10 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Syllabus / Curriculum File Uploader */}
+                  <div className="space-y-2 p-5 border border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center bg-gray-50/50">
+                    <UploadCloud className="text-[#072A6C]/40 mb-1" size={32} />
+                    <span className="text-[11px] font-bold uppercase text-gray-600">Upload Program Syllabus / Curriculum PDF</span>
+                    <span className="text-[10px] text-gray-400 font-light">Current: {curriculumFileName}</span>
+                    <input
+                      type="file"
+                      accept="application/pdf"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      id="syllabus-file-input"
+                    />
+                    <label
+                      htmlFor="syllabus-file-input"
+                      className="h-9 px-6 border border-gray-200 bg-white hover:bg-gray-50 rounded-xl font-bold text-[10px] uppercase tracking-wider inline-flex items-center justify-center cursor-pointer shadow-sm transition-colors"
+                    >
+                      Choose File
+                    </label>
+                  </div>
+
+                  <div className="pt-4 border-t border-gray-100">
+                    <button
+                      type="submit"
+                      className="h-11 px-8 bg-[#072A6C] hover:bg-[#051c4a] text-white font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer"
+                    >
+                      Save Program Details
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
           )}
 
           {/* 🌟 Tab 5: Academic Calendar */}
