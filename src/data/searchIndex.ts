@@ -121,6 +121,34 @@ export const searchIndex: SearchItem[] = [
     icon: "SearchCode"
   },
   {
+    title: "Applied Mathematics & Computational Sciences",
+    category: "Programs",
+    to: "/academics/applied-sciences",
+    keywords: ["applied mathematics", "mathematics", "computational sciences", "math", "basic science", "humanities"],
+    icon: "Calculator"
+  },
+  {
+    title: "Engineering Physics & Material Sciences",
+    category: "Programs",
+    to: "/academics/engineering-physics",
+    keywords: ["engineering physics", "physics", "material sciences", "semiconductor", "basic science"],
+    icon: "Atom"
+  },
+  {
+    title: "Engineering Chemistry & Environmental Science",
+    category: "Programs",
+    to: "/academics/engineering-chemistry",
+    keywords: ["engineering chemistry", "chemistry", "environmental science", "basic science"],
+    icon: "FlaskConical"
+  },
+  {
+    title: "English & Professional Communication",
+    category: "Programs",
+    to: "/academics/humanities-communication",
+    keywords: ["english", "humanities", "communication", "professional communication", "soft skills"],
+    icon: "BookOpen"
+  },
+  {
     title: "MBA (Master of Business Administration)",
     category: "Programs",
     to: "/academics/mba",

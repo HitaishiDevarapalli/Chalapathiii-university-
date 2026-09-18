@@ -500,7 +500,7 @@ export default function Genesis() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               { title: "School of Computing Sciences", color: "from-[#1E3A8A] to-[#3B82F6]", icon: Code, tags: ["Computer Science & Engineering", "Artificial Intelligence", "Data Science", "Cyber Security"] },
-              { title: "School of Engineering", color: "from-[#0F172A] to-[#334155]", icon: Cpu, tags: ["Electronics and Communication Engineering", "Civil Engineering"] },
+              { title: "School of Engineering", color: "from-[#0F172A] to-[#334155]", icon: Cpu, tags: ["Electronics and Communication Engineering", "Civil Engineering", "Basic Science & Humanities"] },
               { title: "School of Business & Management", color: "from-[#B45309] to-[#F59E0B]", icon: Briefcase, tags: ["Business and Management"] }
             ].map((school, i) => (
               <motion.div

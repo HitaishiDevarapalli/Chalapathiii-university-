@@ -63,6 +63,10 @@ const ALL_PROGRAMS = [
   "B.Tech - Civil Engineering",
   "M.Tech - Structural Engineering",
   "Ph.D - Structural Engineering",
+  "Applied Mathematics & Computational Sciences",
+  "Engineering Physics & Material Sciences",
+  "Engineering Chemistry & Environmental Science",
+  "English & Professional Communication",
   "MBA"
 ];
 
@@ -122,6 +126,15 @@ const ENQUIRY_SCHOOLS_DATA = [
           { level: "UG", name: "B.Tech - Civil Engineering" },
           { level: "PG", name: "M.Tech - Structural Engineering" },
           { level: "Ph.D", name: "Ph.D - Structural Engineering" }
+        ]
+      },
+      {
+        name: "Basic Science & Humanities",
+        courses: [
+          { level: "UG", name: "Applied Mathematics & Computational Sciences" },
+          { level: "UG", name: "Engineering Physics & Material Sciences" },
+          { level: "UG", name: "Engineering Chemistry & Environmental Science" },
+          { level: "UG", name: "English & Professional Communication" }
         ]
       }
     ]

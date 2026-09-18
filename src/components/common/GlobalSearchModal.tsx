@@ -121,6 +121,42 @@ export const SEARCH_INDEX: SearchItem[] = [
     icon: Building
   },
   {
+    id: "applied-sciences",
+    title: "Applied Mathematics & Computational Sciences",
+    category: "Programs",
+    route: "/academics/applied-sciences",
+    keywords: ["applied math", "mathematics", "computational sciences", "maths", "engineering math"],
+    description: "Mathematical Modeling & Computational Algorithms",
+    icon: Lightbulb
+  },
+  {
+    id: "engineering-physics",
+    title: "Engineering Physics & Material Sciences",
+    category: "Programs",
+    route: "/academics/engineering-physics",
+    keywords: ["physics", "engineering physics", "materials", "semiconductors", "optics"],
+    description: "Quantum Mechanics, Optics & Semiconductor Material Sciences",
+    icon: Microscope
+  },
+  {
+    id: "engineering-chemistry",
+    title: "Engineering Chemistry & Environmental Science",
+    category: "Programs",
+    route: "/academics/engineering-chemistry",
+    keywords: ["chemistry", "engineering chemistry", "environmental science", "polymers", "batteries"],
+    description: "Electrochemistry, Battery Science & Environmental Sustainability",
+    icon: TestTube
+  },
+  {
+    id: "humanities-communication",
+    title: "English & Professional Communication",
+    category: "Programs",
+    route: "/academics/humanities-communication",
+    keywords: ["english", "humanities", "communication", "soft skills", "corporate presentation"],
+    description: "Professional Writing, Communication & Corporate Leadership Skills",
+    icon: BookOpen
+  },
+  {
     id: "mba",
     title: "Master of Business Administration (MBA)",
     category: "Programs",

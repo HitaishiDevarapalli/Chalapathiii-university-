@@ -1253,6 +1253,12 @@ function AcademicCalendar() {
           { label: "B.Tech. Civil Engineering", key: "btech-civil" },
           { label: "M.Tech. Structural Engineering", key: "mtech-structural" },
           { label: "Ph.D. Structural Engineering", key: "phd-structural" }
+        ],
+        "Basic Science & Humanities": [
+          { label: "Applied Mathematics & Computational Sciences", key: "applied-sciences" },
+          { label: "Engineering Physics & Material Sciences", key: "engineering-physics" },
+          { label: "Engineering Chemistry & Environmental Science", key: "engineering-chemistry" },
+          { label: "English & Professional Communication", key: "humanities-communication" }
         ]
       },
       "School of Business & Management": {
@@ -1271,6 +1277,12 @@ function AcademicCalendar() {
       "School of Engineering": {
         "Electronics and Communication Engineering": [
           { label: "B.Tech. Electronics and Communication Engineering", key: "btech-ece" }
+        ],
+        "Civil Engineering": [
+          { label: "B.Tech. Civil Engineering", key: "btech-civil" }
+        ],
+        "Basic Science & Humanities": [
+          { label: "Applied Mathematics & Physics Foundation", key: "applied-sciences" }
         ]
       },
       "School of Business & Management": {

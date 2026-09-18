@@ -626,5 +626,67 @@ export const PROGRAMS_DATA: ProgramDetail[] = [
       { title: "Management Consultant", desc: "Advise businesses on strategic growth and operations." },
       { title: "Corporate Manager", desc: "Lead cross-functional teams in multinational corporations." }
     ]
+  },
+
+  // Basic Science & Humanities
+  {
+    slug: "applied-sciences",
+    title: "Applied Mathematics & Computational Sciences",
+    desc: "Mathematical modeling, computational numerical methods, and quantitative data analysis.",
+    duration: "Foundation / Integrated",
+    department: "Basic Science & Humanities",
+    degreeType: "Undergraduate / Foundation",
+    overview: "Provides deep rigor in advanced calculus, differential equations, linear algebra, numerical analysis, and computational statistics essential for high-performance engineering applications.",
+    curriculum: ["Linear Algebra & Calculus", "Differential Equations & Transforms", "Numerical Analysis & MATLAB", "Probability & Statistics", "Discrete Mathematical Structures", "Computational Modeling"],
+    careers: [
+      { title: "Quantitative Analyst", desc: "Build mathematical models for algorithms and statistical forecasting." },
+      { title: "Computational Scientist", desc: "Develop numerical algorithms for simulations and engineering analysis." },
+      { title: "Data Analyst / Researcher", desc: "Perform statistical testing and quantitative problem-solving." }
+    ]
+  },
+  {
+    slug: "engineering-physics",
+    title: "Engineering Physics & Material Sciences",
+    desc: "Quantum mechanics, semiconductor physics, optics, laser systems, and smart materials.",
+    duration: "Foundation / Integrated",
+    department: "Basic Science & Humanities",
+    degreeType: "Undergraduate / Foundation",
+    overview: "Bridges fundamental physics and cutting-edge engineering technologies, exploring quantum mechanics, crystallography, optical fibers, nanophotonics, and modern semiconductor physics.",
+    curriculum: ["Quantum Physics & Mechanics", "Semiconductor Device Physics", "Optics & Laser Technology", "Crystallography & Material Science", "Electromagnetic Theory", "Nanotechnology Fundamentals"],
+    careers: [
+      { title: "Material Science Engineer", desc: "Innovate and test next-generation materials for industrial applications." },
+      { title: "Optics & Photonics Specialist", desc: "Design laser and fiber-optic communication devices." },
+      { title: "Semiconductor Lab Analyst", desc: "Characterize silicon and compound semiconductor wafers." }
+    ]
+  },
+  {
+    slug: "engineering-chemistry",
+    title: "Engineering Chemistry & Environmental Science",
+    desc: "Polymer chemistry, electrochemistry, energy storage, corrosion science, and sustainability.",
+    duration: "Foundation / Integrated",
+    department: "Basic Science & Humanities",
+    degreeType: "Undergraduate / Foundation",
+    overview: "Explores atomic structures, battery electrochemistry, green chemistry, polymer synthesis, corrosion mitigation, and environmental sustainability practices for modern industry.",
+    curriculum: ["Electrochemistry & Battery Technologies", "Polymer & Composite Materials", "Corrosion Science & Prevention", "Spectroscopic Techniques", "Green Chemistry & Sustainable Systems", "Water Treatment & Analysis"],
+    careers: [
+      { title: "Energy Storage Specialist", desc: "Research battery chemistries and energy storage materials." },
+      { title: "Environmental Engineer", desc: "Design water purification and emissions management systems." },
+      { title: "Chemical Quality Analyst", desc: "Ensure safety, standard compliance, and chemical purity." }
+    ]
+  },
+  {
+    slug: "humanities-communication",
+    title: "English & Professional Communication",
+    desc: "Technical writing, leadership communication, corporate dynamics, and global professional skills.",
+    duration: "Foundation / Integrated",
+    department: "Basic Science & Humanities",
+    degreeType: "Undergraduate / Foundation",
+    overview: "Equips engineering students with elite communication, business writing, presentation dynamics, cross-cultural competence, and workplace ethical reasoning.",
+    curriculum: ["Technical Writing & Report Drafting", "Professional Oral Communication", "Business Presentation Dynamics", "Cross-Cultural Communication", "Workplace Ethics & Leadership", "Critical Thinking & Debate"],
+    careers: [
+      { title: "Technical Writer / Editor", desc: "Create enterprise documentation, whitepapers, and API specs." },
+      { title: "Corporate Communications Specialist", desc: "Drive brand messaging and internal stakeholder communications." },
+      { title: "Public Relations Analyst", desc: "Manage institutional relations and corporate storytelling." }
+    ]
   }
 ];

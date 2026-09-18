@@ -683,6 +683,10 @@ export default function Home() {
                   else if (t.includes('management') || t.includes('mba')) imgSrc = imgMBA;
                   else if (t.includes('m.tech') && t.includes('computer science')) imgSrc = imgArtificialIntelligence;
                   else if (t.includes('master of computer') || t.includes('mca')) imgSrc = imgMCA;
+                  else if (t.includes('math') || t.includes('computational')) imgSrc = imgDataScience;
+                  else if (t.includes('physics') || t.includes('material')) imgSrc = imgElectronicsCommunication;
+                  else if (t.includes('chemistry') || t.includes('environmental')) imgSrc = imgStructuralEngineering;
+                  else if (t.includes('english') || t.includes('humanities') || t.includes('communication')) imgSrc = imgMCA;
                   else if (t.includes('cse') || t.includes('computer science') || t.includes('software')) imgSrc = imgComputerScience;
                   
                   return (
