@@ -130,12 +130,7 @@ const ENQUIRY_SCHOOLS_DATA = [
       },
       {
         name: "Basic Science & Humanities",
-        courses: [
-          { level: "UG", name: "Applied Mathematics & Computational Sciences" },
-          { level: "UG", name: "Engineering Physics & Material Sciences" },
-          { level: "UG", name: "Engineering Chemistry & Environmental Science" },
-          { level: "UG", name: "English & Professional Communication" }
-        ]
+        courses: []
       }
     ]
   },
