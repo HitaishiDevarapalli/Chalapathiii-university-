@@ -9,7 +9,7 @@ import {
   ChevronRight, ChevronLeft, Sparkles, Trophy, Cpu, Network, ShieldCheck, Microscope,
   Library, Lightbulb, Compass, Share2, HelpCircle, FileCheck, Landmark, Check,
   Grid, List, Search, SlidersHorizontal, Eye, Zap, Radio, Globe, Terminal,
-  TrendingUp, Star, Award as MedalIcon
+  TrendingUp, Star, Award as MedalIcon, Clock, Flame, CheckCircle, ArrowUpRight
 } from "lucide-react";
 import {
   FullProgramData,
@@ -223,7 +223,7 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans selection:bg-[#D4AF37] selection:text-[#072A6C] relative overflow-x-hidden">
       
       {/* ═══════════════════════════════════════════════════════════════════
-          FUTURISTIC BACKGROUND MESH & CYBER AMBIENCE
+          FUTURISTIC BACKGROUND MESH & LUXURY AMBIENCE
       ═══════════════════════════════════════════════════════════════════ */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         {/* Subtle Cyber Grid */}
@@ -242,19 +242,20 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
       </div>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          1. FUTURISTIC HOLOGRAPHIC HERO & TELEMETRY COCKPIT
+          1. ATTENTION-GRABBING EXECUTIVE 3D HOLOGRAPHIC HERO COCKPIT
       ═══════════════════════════════════════════════════════════════════ */}
-      <section className="relative z-10 bg-gradient-to-br from-[#051C4A] via-[#072A6C] to-[#0A368A] text-white pt-8 pb-14 px-4 sm:px-6 lg:px-8 border-b border-white/10 shadow-2xl overflow-hidden">
+      <section className="relative z-10 bg-gradient-to-br from-[#031538] via-[#072A6C] to-[#0A3A94] text-white pt-8 pb-16 px-4 sm:px-6 lg:px-8 border-b border-white/10 shadow-2xl overflow-hidden">
         
-        {/* Hologram Circuit Pattern Overlay */}
-        <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#00F0FF_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-[#D4AF37]/20 via-cyan-400/10 to-transparent rounded-full blur-3xl pointer-events-none" />
+        {/* Animated Aurora Glow Beams */}
+        <div className="absolute -top-32 -left-32 w-[550px] h-[550px] bg-gradient-to-br from-[#D4AF37]/25 via-cyan-500/15 to-transparent rounded-full blur-[130px] animate-pulse pointer-events-none" />
+        <div className="absolute top-1/4 -right-32 w-[600px] h-[600px] bg-gradient-to-bl from-cyan-400/20 via-[#00F0FF]/10 to-transparent rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute inset-0 opacity-[0.12] bg-[radial-gradient(#00F0FF_1px,transparent_1px)] [background-size:28px_28px] pointer-events-none" />
 
-        <div className="max-w-7xl mx-auto space-y-6">
+        <div className="max-w-7xl mx-auto space-y-6 relative z-10">
           
-          {/* Top Breadcrumb & Live System Status */}
+          {/* Top Breadcrumb & Live Hologram Radar Status */}
           <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
-            <nav className="flex items-center gap-1.5 text-white/70 font-medium overflow-x-auto scrollbar-none py-1">
+            <nav className="flex items-center gap-1.5 text-white/75 font-medium overflow-x-auto scrollbar-none py-1">
               <Link to="/" className="hover:text-white transition-colors">Home</Link>
               <ChevronRight size={13} className="text-white/40 shrink-0" />
               <Link to="/academics" className="hover:text-white transition-colors">Academics</Link>
@@ -264,10 +265,18 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
               <span className="text-[#D4AF37] font-bold truncate">{programData.shortName}</span>
             </nav>
 
-            <div className="inline-flex items-center gap-2 bg-emerald-500/15 border border-emerald-400/40 text-emerald-300 px-3 py-1 rounded-full text-[11px] font-mono font-semibold backdrop-blur-md">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              <span>SYSTEM STATUS: ADMISSIONS 2026-27 ACTIVE</span>
-            </div>
+            {/* Glowing Live Radar Pill */}
+            <motion.div 
+              whileHover={{ scale: 1.03 }}
+              className="inline-flex items-center gap-2.5 bg-gradient-to-r from-emerald-500/20 via-emerald-500/10 to-transparent border border-emerald-400/40 text-emerald-300 px-3.5 py-1.5 rounded-full text-[11px] font-mono font-semibold backdrop-blur-xl shadow-[0_0_15px_rgba(16,185,129,0.2)]"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+              </span>
+              <span className="tracking-wide">ADMISSIONS 2026-27 ACTIVE</span>
+              <span className="text-emerald-400 font-black">● FAST TRACK OPEN</span>
+            </motion.div>
           </div>
 
           {/* Main Hero Header */}
@@ -275,21 +284,27 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
             
             <div className="lg:col-span-8 space-y-5 text-left">
               
-              {/* Program Badges */}
-              <div className="flex flex-wrap items-center gap-2.5">
-                <span className="bg-[#D4AF37] text-[#072A6C] text-xs font-black uppercase px-3 py-1 rounded-lg tracking-wider shadow-sm flex items-center gap-1.5">
-                  <GraduationCap size={14} /> {programData.level} Degree
-                </span>
-                <span className="bg-white/15 backdrop-blur-md border border-white/25 text-white text-xs font-bold px-3 py-1 rounded-lg">
+              {/* Program Badges & Accreditations Pill Ribbon */}
+              <div className="flex flex-wrap items-center gap-2">
+                <motion.span 
+                  whileHover={{ scale: 1.05 }}
+                  className="bg-gradient-to-r from-[#D4AF37] via-[#E6C86E] to-[#D4AF37] text-[#072A6C] text-xs font-black uppercase px-3.5 py-1.5 rounded-xl tracking-wider shadow-md flex items-center gap-1.5 cursor-default"
+                >
+                  <GraduationCap size={15} /> {programData.level} Degree
+                </motion.span>
+                <span className="bg-white/15 backdrop-blur-xl border border-white/25 text-white text-xs font-bold px-3.5 py-1.5 rounded-xl shadow-xs">
                   🏛️ {programData.school}
                 </span>
-                <span className="bg-cyan-400/15 backdrop-blur-md border border-cyan-400/30 text-cyan-200 text-xs font-mono px-3 py-1 rounded-lg">
+                <span className="bg-cyan-400/15 backdrop-blur-xl border border-cyan-400/35 text-cyan-200 text-xs font-mono font-bold px-3.5 py-1.5 rounded-xl shadow-xs">
                   ⚡ CODE: {slug.toUpperCase()}
+                </span>
+                <span className="hidden sm:inline-flex items-center gap-1 bg-amber-400/15 border border-amber-400/30 text-amber-200 text-xs font-bold px-3 py-1.5 rounded-xl">
+                  ⭐ NBA & NAAC A+ Tier
                 </span>
               </div>
 
-              {/* Title with Gradient Polish */}
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.12]">
+              {/* Title with Shimmering Gradient Polish */}
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-[1.14] text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-amber-200/95 drop-shadow-sm">
                 {programData.title}
               </h1>
 
@@ -298,72 +313,102 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
                 {programData.about.summary}
               </p>
 
-              {/* 4 3D Glassmorphic HUD Telemetry Pods */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+              {/* 4 Attention-Grabbing 3D Holographic Stat Cards with Glow & Badges */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 pt-3">
+                
+                {/* Duration Card */}
                 <motion.div 
-                  whileHover={{ y: -4, scale: 1.02 }}
-                  className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl border border-white/20 p-3.5 rounded-2xl shadow-lg relative overflow-hidden group"
+                  whileHover={{ y: -5, scale: 1.02 }}
+                  className="bg-gradient-to-b from-white/15 via-white/10 to-white/5 backdrop-blur-2xl border border-white/20 hover:border-[#D4AF37]/80 p-4 rounded-2xl shadow-xl hover:shadow-[0_10px_30px_rgba(212,175,55,0.25)] transition-all relative overflow-hidden group cursor-default"
                 >
-                  <div className="absolute top-0 right-0 w-12 h-12 bg-cyan-400/10 rounded-full blur-lg group-hover:bg-cyan-400/25 transition-all" />
-                  <span className="text-[10px] text-[#D4AF37] font-black uppercase tracking-wider block">Duration</span>
-                  <span className="text-xs sm:text-sm font-black text-white mt-1 block">{programData.duration}</span>
+                  <div className="absolute -top-4 -right-4 w-14 h-14 bg-cyan-400/15 rounded-full blur-xl group-hover:bg-cyan-400/30 transition-all" />
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] text-[#D4AF37] font-mono font-black uppercase tracking-wider block">Duration</span>
+                    <Clock size={13} className="text-[#D4AF37]/70" />
+                  </div>
+                  <span className="text-xs sm:text-sm font-black text-white block truncate">{programData.duration}</span>
+                  <span className="text-[9px] font-bold text-cyan-300/80 uppercase tracking-widest mt-1 block">Full-Time Mode</span>
                 </motion.div>
 
+                {/* Annual Intake Card */}
                 <motion.div 
-                  whileHover={{ y: -4, scale: 1.02 }}
-                  className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl border border-white/20 p-3.5 rounded-2xl shadow-lg relative overflow-hidden group"
+                  whileHover={{ y: -5, scale: 1.02 }}
+                  className="bg-gradient-to-b from-white/15 via-white/10 to-white/5 backdrop-blur-2xl border border-white/20 hover:border-[#D4AF37]/80 p-4 rounded-2xl shadow-xl hover:shadow-[0_10px_30px_rgba(212,175,55,0.25)] transition-all relative overflow-hidden group cursor-default"
                 >
-                  <div className="absolute top-0 right-0 w-12 h-12 bg-[#D4AF37]/10 rounded-full blur-lg group-hover:bg-[#D4AF37]/25 transition-all" />
-                  <span className="text-[10px] text-[#D4AF37] font-black uppercase tracking-wider block">Annual Intake</span>
-                  <span className="text-xs sm:text-sm font-black text-white mt-1 block">{programData.intake}</span>
+                  <div className="absolute -top-4 -right-4 w-14 h-14 bg-[#D4AF37]/15 rounded-full blur-xl group-hover:bg-[#D4AF37]/35 transition-all" />
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] text-[#D4AF37] font-mono font-black uppercase tracking-wider block">Intake</span>
+                    <Users size={13} className="text-[#D4AF37]/70" />
+                  </div>
+                  <span className="text-xs sm:text-sm font-black text-white block truncate">{programData.intake}</span>
+                  <span className="text-[9px] font-bold text-amber-300/80 uppercase tracking-widest mt-1 block">Merit + Entrance</span>
                 </motion.div>
 
+                {/* Highest CTC Card */}
                 <motion.div 
-                  whileHover={{ y: -4, scale: 1.02 }}
-                  className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl border border-white/20 p-3.5 rounded-2xl shadow-lg relative overflow-hidden group"
+                  whileHover={{ y: -5, scale: 1.02 }}
+                  className="bg-gradient-to-b from-white/15 via-white/10 to-white/5 backdrop-blur-2xl border border-white/20 hover:border-emerald-400/80 p-4 rounded-2xl shadow-xl hover:shadow-[0_10px_30px_rgba(52,211,153,0.3)] transition-all relative overflow-hidden group cursor-default"
                 >
-                  <div className="absolute top-0 right-0 w-12 h-12 bg-emerald-400/10 rounded-full blur-lg group-hover:bg-emerald-400/25 transition-all" />
-                  <span className="text-[10px] text-emerald-300 font-black uppercase tracking-wider block">Highest CTC</span>
-                  <span className="text-xs sm:text-sm font-black text-white mt-1 block">{programData.placements.highestPackage}</span>
+                  <div className="absolute -top-4 -right-4 w-14 h-14 bg-emerald-400/20 rounded-full blur-xl group-hover:bg-emerald-400/40 transition-all" />
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] text-emerald-300 font-mono font-black uppercase tracking-wider block">Highest CTC</span>
+                    <Flame size={13} className="text-emerald-400 animate-pulse" />
+                  </div>
+                  <span className="text-sm sm:text-base font-black text-emerald-300 block truncate">{programData.placements.highestPackage}</span>
+                  <span className="text-[9px] font-bold text-emerald-400/90 uppercase tracking-widest mt-1 block">Top Placement</span>
                 </motion.div>
 
+                {/* Placement Rate Card */}
                 <motion.div 
-                  whileHover={{ y: -4, scale: 1.02 }}
-                  className="bg-gradient-to-b from-white/15 to-white/5 backdrop-blur-xl border border-white/20 p-3.5 rounded-2xl shadow-lg relative overflow-hidden group"
+                  whileHover={{ y: -5, scale: 1.02 }}
+                  className="bg-gradient-to-b from-white/15 via-white/10 to-white/5 backdrop-blur-2xl border border-white/20 hover:border-cyan-400/80 p-4 rounded-2xl shadow-xl hover:shadow-[0_10px_30px_rgba(6,182,212,0.3)] transition-all relative overflow-hidden group cursor-default"
                 >
-                  <div className="absolute top-0 right-0 w-12 h-12 bg-cyan-400/10 rounded-full blur-lg group-hover:bg-cyan-400/25 transition-all" />
-                  <span className="text-[10px] text-cyan-300 font-black uppercase tracking-wider block">Placement Rate</span>
-                  <span className="text-xs sm:text-sm font-black text-white mt-1 block">{programData.placements.placementRate}</span>
+                  <div className="absolute -top-4 -right-4 w-14 h-14 bg-cyan-400/20 rounded-full blur-xl group-hover:bg-cyan-400/40 transition-all" />
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] text-cyan-300 font-mono font-black uppercase tracking-wider block">Placement</span>
+                    <TrendingUp size={13} className="text-cyan-400" />
+                  </div>
+                  <span className="text-sm sm:text-base font-black text-cyan-300 block truncate">{programData.placements.placementRate}</span>
+                  <span className="text-[9px] font-bold text-cyan-400/90 uppercase tracking-widest mt-1 block">Assurance Matrix</span>
                 </motion.div>
+
               </div>
 
             </div>
 
-            {/* Right Hologram Action Pod */}
+            {/* Right VIP Hologram Enrolment Pass */}
             <div className="lg:col-span-4">
               <motion.div 
-                whileHover={{ y: -4, rotateY: 2 }}
+                whileHover={{ y: -5, rotateY: 2 }}
                 transition={{ type: "spring", stiffness: 300 }}
-                className="bg-gradient-to-b from-white/20 via-white/10 to-white/5 backdrop-blur-2xl border border-white/30 p-7 rounded-3xl shadow-2xl space-y-4 text-left relative overflow-hidden"
+                className="bg-gradient-to-b from-white/20 via-white/12 to-white/5 backdrop-blur-2xl border-2 border-white/30 hover:border-[#D4AF37]/60 p-7 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] space-y-4 text-left relative overflow-hidden group"
               >
-                <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#D4AF37]/25 rounded-full blur-3xl pointer-events-none" />
+                {/* Dynamic Shimmer Light Sweep on Hover */}
+                <div className="absolute -top-16 -right-16 w-48 h-48 bg-gradient-to-bl from-[#D4AF37]/35 via-cyan-400/20 to-transparent rounded-full blur-3xl pointer-events-none group-hover:scale-125 transition-transform duration-500" />
                 
-                <div className="space-y-1 relative z-10">
-                  <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[#D4AF37]">
-                    <Zap size={13} className="text-[#D4AF37]" /> ADMISSIONS 2026-27
+                <div className="space-y-1.5 relative z-10">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono font-black uppercase tracking-widest text-[#D4AF37] flex items-center gap-1.5">
+                      <Zap size={13} className="text-[#D4AF37] animate-bounce" /> ENROLMENT PORTAL
+                    </span>
+                    <span className="text-[9px] font-mono font-bold bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-0.5 rounded-full border border-[#D4AF37]/30">
+                      SESSION 2026-27
+                    </span>
                   </div>
-                  <h3 className="text-lg font-black text-white leading-snug">Enroll in {programData.shortName}</h3>
+                  <h3 className="text-xl font-black text-white leading-snug">Enroll in {programData.shortName}</h3>
                   <p className="text-xs text-white/80 font-light leading-relaxed">
-                    Direct merit seats, research fellowship pathways & lateral entry applications open.
+                    Direct merit seats, state counselling & scholarship pathways active for eligible applicants.
                   </p>
                 </div>
 
-                <div className="space-y-2.5 pt-2 relative z-10">
+                <div className="space-y-3 pt-2 relative z-10">
                   <Link
                     to="/admissions/apply"
-                    className="w-full h-11 bg-gradient-to-r from-[#D4AF37] to-[#E5C158] hover:from-[#C9A84C] hover:to-[#D4AF37] text-[#072A6C] text-xs font-black uppercase tracking-wider rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg active:scale-98 cursor-pointer"
+                    className="w-full h-12 bg-gradient-to-r from-[#D4AF37] via-[#F3DA89] to-[#D4AF37] hover:from-[#E6C86E] hover:to-[#D4AF37] text-[#072A6C] text-xs font-black uppercase tracking-wider rounded-2xl flex items-center justify-center gap-2 transition-all shadow-xl hover:shadow-[0_0_25px_rgba(212,175,55,0.45)] active:scale-98 cursor-pointer relative overflow-hidden group/btn"
                   >
-                    🚀 Launch Application <ArrowRight size={14} />
+                    <span className="relative z-10 flex items-center gap-2 font-black text-sm">
+                      🚀 Launch Application <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
+                    </span>
                   </Link>
                   
                   <a
@@ -380,7 +425,7 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
                   </a>
                 </div>
 
-                <div className="pt-3 border-t border-white/15 flex items-center justify-between text-[11px] text-white/75 relative z-10 font-mono">
+                <div className="pt-3 border-t border-white/15 flex items-center justify-between text-[11px] text-white/80 relative z-10 font-mono">
                   <span>ELIGIBILITY: {programData.eligibility}</span>
                 </div>
               </motion.div>
