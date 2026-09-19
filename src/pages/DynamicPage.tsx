@@ -2870,7 +2870,7 @@ const getAvatarUrl = (initials: string): string => {
     return initials;
   }
   const avatarMap: Record<string, string> = {
-    "YVA": "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=400&fit=crop&crop=face",
+    "YVA": "/chairman_v4.png",
     "YSK": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop&crop=face",
     "KPR": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
     "TS": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
@@ -3519,7 +3519,7 @@ function LeadershipView() {
               {/* 3D Glass Frame bezel */}
               <div className="relative w-[320px] h-[320px] md:w-[400px] md:h-[400px] rounded-full p-2.5 bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl overflow-hidden transition-transform duration-500 hover:rotate-2 hover:scale-[1.02]">
                 <img 
-                  src="/chairman_v4.png" 
+                  src={leadership.chairmanImage || "/chairman_v4.png"} 
                   alt="Chairman" 
                   className="w-full h-full object-cover rounded-full filter saturate-110"
                   style={{ mixBlendMode: "normal", objectPosition: "50% 0%" }}
@@ -3578,29 +3578,6 @@ function LeadershipView() {
         </div>
         <BoardDirectory />
       </section>
-
-      {/* SECTION 3 – CORE VALUES (4 Glass Cards) */}
-      <section className="py-16 bg-gray-50/50 border-y border-gray-100 rounded-[40px] px-5">
-        <div className="max-w-[1440px] mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl md:text-3xl font-black text-[#072A6C] tracking-tight uppercase">OUR GOVERNING PHILOSOPHIES</h2>
-            <div className="h-1 w-16 bg-[#D4AF37] mx-auto mt-3 rounded-full" />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {leadership.philosophies.map((v, i) => (
-              <div key={i} className="bg-white border border-gray-100 rounded-[24px] p-6 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 relative group overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-[#D71920] to-[#D4AF37] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
-                <h3 className="font-extrabold text-[#072A6C] text-base mb-2 group-hover:text-[#D4AF37] transition-colors">{v.title}</h3>
-                <p className="text-xs text-black font-semibold leading-relaxed">{v.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-
-
     </div>
   );
 }

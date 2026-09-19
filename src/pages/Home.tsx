@@ -8,7 +8,7 @@ import {
   Compass, FileText, Award, Phone, MapPin, Mail, Sparkles, Building2, HelpCircle, Search, Globe,
   UserPlus, ShieldCheck, UploadCloud, CreditCard, Settings, Briefcase, Code, FlaskConical, Wrench, Atom, X, Calendar, Clock, Coffee, Bus,
   Brain, Database, Monitor, Cpu, Shield, CircuitBoard, Network, HardHat,
-  Share2, ChevronLeft, ChevronRight
+  Share2, ChevronLeft, ChevronRight, ExternalLink
 } from "lucide-react";
 import SEO from "../components/SEO";
 
@@ -113,18 +113,43 @@ function AnimatedCounter({ value, duration = 2500 }: { value: string; duration?:
 }
 
 export default function Home() {
-  const { programs, successStories, placementsContent, news, events, heroSlides } = useData();
+  const { 
+    programs, 
+    successStories, 
+    placementsContent, 
+    news, 
+    events, 
+    heroSlides,
+    academicStructure,
+    campusVideos: contextCampusVideos,
+    campusTour,
+    campusGallery,
+    campusBanners,
+    homepageSections
+  } = useData();
   const navigate = useNavigate();
   const [directionsFrom, setDirectionsFrom] = useState("");
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [progress, setProgress] = useState(0);
-  // Active tab state
-  const schools = Object.keys(ACADEMIC_PROGRAMS_STRUCTURE);
-  const [activeSchoolTab, setActiveSchoolTab] = useState<string>(schools[0]);
+
+  // Active tab state for Schools & Programs
+  const structure = academicStructure && Object.keys(academicStructure).length > 0
+    ? academicStructure
+    : ACADEMIC_PROGRAMS_STRUCTURE;
+
+  const schools = Object.keys(structure);
+  const [activeSchoolTab, setActiveSchoolTab] = useState<string>(schools[0] || "School of Engineering");
   const [activeDepartmentTab, setActiveDepartmentTab] = useState<string | null>(null);
 
-  const validDepartments = ACADEMIC_PROGRAMS_STRUCTURE[activeSchoolTab] ? Object.keys(ACADEMIC_PROGRAMS_STRUCTURE[activeSchoolTab]) : [];
+  // Sync activeSchoolTab if structure updates
+  useEffect(() => {
+    if (schools.length > 0 && (!activeSchoolTab || !structure[activeSchoolTab])) {
+      setActiveSchoolTab(schools[0]);
+    }
+  }, [structure, schools, activeSchoolTab]);
+
+  const validDepartments = structure[activeSchoolTab] ? Object.keys(structure[activeSchoolTab]) : [];
   const currentDepartment = (activeDepartmentTab && validDepartments.includes(activeDepartmentTab))
     ? activeDepartmentTab
     : validDepartments[0];
@@ -214,18 +239,13 @@ export default function Home() {
   const campusVideoRef = useRef<HTMLVideoElement>(null);
 
   // Load campus videos list
-  const getCampusVideos = () => {
-    try {
-      const saved = localStorage.getItem("chalapathi_campus_videos");
-      if (saved) return JSON.parse(saved);
-    } catch (e) {}
-    return [
-      { url: "/chalapathi_logo_intro.mp4", title: "Campus Overview" },
-      { url: "https://assets.mixkit.co/videos/preview/mixkit-drones-eye-view-of-a-modern-university-campus-41555-large.mp4", title: "Smart Classrooms & Labs" },
-      { url: "https://assets.mixkit.co/videos/preview/mixkit-group-of-students-walking-on-college-campus-41553-large.mp4", title: "Student Life & Clubs" }
-    ];
-  };
-  const campusVideos = getCampusVideos();
+  const campusVideos = (contextCampusVideos && contextCampusVideos.length > 0)
+    ? contextCampusVideos
+    : [
+        { url: "/chalapathi_logo_intro.mp4", title: "Campus Overview" },
+        { url: "https://assets.mixkit.co/videos/preview/mixkit-drones-eye-view-of-a-modern-university-campus-41555-large.mp4", title: "Smart Classrooms & Labs" },
+        { url: "https://assets.mixkit.co/videos/preview/mixkit-group-of-students-walking-on-college-campus-41553-large.mp4", title: "Student Life & Clubs" }
+      ];
 
   // Autoplay sliding campus tour videos every 8 seconds
   useEffect(() => {
@@ -629,9 +649,9 @@ export default function Home() {
             })()}
 
             {/* Sub Tabs (Departments) */}
-            {activeSchoolTab && ACADEMIC_PROGRAMS_STRUCTURE[activeSchoolTab] && (
+            {activeSchoolTab && structure[activeSchoolTab] && (
               <div className="flex flex-wrap justify-center gap-6 md:gap-10 w-full max-w-5xl mb-6">
-                {Object.keys(ACADEMIC_PROGRAMS_STRUCTURE[activeSchoolTab]).map((dept) => (
+                {Object.keys(structure[activeSchoolTab]).map((dept) => (
                   <button
                     key={dept}
                     onClick={() => setActiveDepartmentTab(dept)}
@@ -656,17 +676,30 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
           >
-            {activeSchoolTab && currentDepartment && ACADEMIC_PROGRAMS_STRUCTURE[activeSchoolTab][currentDepartment]
-              ?.map((courseLink, idx) => {
+            {activeSchoolTab && currentDepartment && structure[activeSchoolTab]?.[currentDepartment]
+              ?.map((courseLink: any, idx: number) => {
                 
-                // Find full program data using the slug
-                const programSlug = courseLink.to.split('/').pop();
+                // Find full program data using the slug if any
+                const programSlug = courseLink.to ? courseLink.to.split('/').pop() : "";
                 const program = programs.find(p => p.slug === programSlug);
 
-                if (!program) return null;
+                const cardTitle = courseLink.label || program?.title || "Academic Program";
+                const cardDesc = courseLink.description || program?.overview || program?.desc || "Comprehensive curriculum with world-class faculty and hands-on laboratory experience.";
+                const cardLink = courseLink.to || (program?.slug ? `/academics/${program.slug}` : "/academics");
+                const cardImage = courseLink.image;
                 
                 // Helper to assign a dynamic image based on title
                 const getIllustrationForProgram = (title: string, size = 64) => {
+                  if (cardImage) {
+                    return (
+                      <img 
+                        src={cardImage} 
+                        alt={cardTitle} 
+                        style={{ width: size, height: size, objectFit: "contain" }}
+                        className="rounded-lg"
+                      />
+                    );
+                  }
                   const t = title.toLowerCase();
                   let imgSrc = imgComputerScience;
                   
@@ -703,7 +736,7 @@ export default function Home() {
                   <motion.div
                     key={idx}
                     className={`group relative bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden h-[340px] shrink-0 ${
-                      ACADEMIC_PROGRAMS_STRUCTURE[activeSchoolTab][currentDepartment]?.length === 4
+                      structure[activeSchoolTab][currentDepartment]?.length === 4
                         ? "w-full md:w-[calc(50%-16px)] lg:w-[calc(25%-24px)]"
                         : "w-full md:w-[calc(50%-16px)] lg:w-[calc(33.333%-22px)]"
                     }`}
@@ -714,27 +747,27 @@ export default function Home() {
                     {/* Default State (Centered) */}
                     <div className="absolute inset-0 flex flex-col justify-center items-center p-5 transition-all duration-300 group-hover:-translate-y-8 group-hover:opacity-0 text-center">
                       <div className="flex items-center justify-center mb-4 transition-transform duration-500 group-hover:scale-[1.06]">
-                        {getIllustrationForProgram(program.title, 110)}
+                        {getIllustrationForProgram(cardTitle, 110)}
                       </div>
                       <h3 className="font-[800] text-[#072A6C] text-[16px] leading-tight max-w-[250px]">
-                        {program.title}
+                        {cardTitle}
                       </h3>
                     </div>
                     
                     {/* Hover State (Sliding up) */}
                     <div className="absolute inset-0 flex flex-col justify-start items-center p-5 opacity-0 translate-y-8 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 bg-white text-center">
                       <div className="flex items-center justify-center mb-3 transition-transform duration-500 group-hover:scale-[1.06]">
-                        {getIllustrationForProgram(program.title, 80)}
+                        {getIllustrationForProgram(cardTitle, 80)}
                       </div>
                       <h3 className="font-[800] text-[#072A6C] text-[15px] mb-2 leading-tight max-w-[250px]">
-                        {program.title}
+                        {cardTitle}
                       </h3>
                       <p className="text-[12px] text-gray-500 line-clamp-3 leading-relaxed mb-4">
-                        {program.overview || program.desc}
+                        {cardDesc}
                       </p>
                       
                       <Link 
-                        to={`/academics/${program.slug}`}
+                        to={cardLink}
                         className="mt-auto bg-[#072A6C] text-white px-6 py-2 rounded-full text-[13px] font-[700] flex items-center gap-2 hover:bg-[#D4AF37] transition-colors shadow-md"
                       >
                         Read More <ArrowRight size={14} />
@@ -1104,7 +1137,7 @@ export default function Home() {
                 <video
                   ref={campusVideoRef}
                   src={campusVideos[activeCampusVideoIdx]?.url}
-                  poster="/Chalapathimain.png"
+                  poster={campusTour?.poster || "/Chalapathimain.png"}
                   className="w-full h-full object-cover"
                   autoPlay
                   muted={isCampusTourMuted}
@@ -1118,7 +1151,7 @@ export default function Home() {
                 {/* Watch Campus Tour top-left badge */}
                 <div className="absolute top-4 left-4 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full flex items-center gap-1.5 border border-white/10 z-10">
                   <Play size={10} fill="currentColor" className="text-[#D4AF37]" />
-                  <span className="text-[9px] font-black uppercase tracking-wider">Watch Campus Tour</span>
+                  <span className="text-[9px] font-black uppercase tracking-wider">{campusTour?.badge || "Watch Campus Tour"}</span>
                 </div>
 
                 {/* Mute/Unmute top-right control */}
@@ -1147,7 +1180,7 @@ export default function Home() {
               <div className="p-6 md:p-8 flex-1 flex flex-col justify-between text-left relative z-10">
                 <span className="text-4xl font-serif text-white/10 absolute top-4 left-4 select-none pointer-events-none">“</span>
                 <p className="text-xs md:text-sm font-light leading-relaxed max-w-md relative pl-2">
-                  "Life at Chalapathi is about learning, growing and celebrating every moment together."
+                  "{campusTour?.quote || "Life at Chalapathi is about learning, growing and celebrating every moment together."}"
                 </p>
 
                 {/* Slider controls & slide counter */}
@@ -1190,22 +1223,16 @@ export default function Home() {
 
             {/* Horizontal infinite gallery grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 select-none">
-              {((): any[] => {
-                try {
-                  const saved = localStorage.getItem("chalapathi_campus_gallery");
-                  if (saved) return JSON.parse(saved);
-                } catch (e) {}
-                return [
-                  { title: "Annual Fest", image: "/gallery_annual_fest.png" },
-                  { title: "Sports Meet", image: "/gallery_sports_meet.png" },
-                  { title: "Tech Events", image: "/gallery_tech_events.png" },
-                  { title: "NSS Activities", image: "/gallery_nss_activities.png" },
-                  { title: "Cultural Events", image: "/gallery_cultural_events.png" },
-                  { title: "Workshops", image: "/gallery_workshops.png" },
-                  { title: "Student Clubs", image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=600&auto=format&fit=crop" },
-                  { title: "Innovation Expo", image: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=600&auto=format&fit=crop" }
-                ];
-              })().map((item, idx) => (
+              {(campusGallery && campusGallery.length > 0 ? campusGallery : [
+                { title: "Annual Fest", image: "/gallery_annual_fest.png" },
+                { title: "Sports Meet", image: "/gallery_sports_meet.png" },
+                { title: "Tech Events", image: "/gallery_tech_events.png" },
+                { title: "NSS Activities", image: "/gallery_nss_activities.png" },
+                { title: "Cultural Events", image: "/gallery_cultural_events.png" },
+                { title: "Workshops", image: "/gallery_workshops.png" },
+                { title: "Student Clubs", image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=600&auto=format&fit=crop" },
+                { title: "Innovation Expo", image: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=600&auto=format&fit=crop" }
+              ]).map((item, idx) => (
                 <div 
                   key={idx}
                   className="bg-white border border-gray-150 rounded-xl overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 hover:-translate-y-1 group cursor-pointer"
@@ -1237,7 +1264,7 @@ export default function Home() {
             
             {/* LEFT CARD: Blue Gradient */}
             <div 
-              onClick={() => navigate("/campus-life")}
+              onClick={() => navigate(campusBanners?.community?.url || "/campus-life")}
               className="bg-gradient-to-br from-[#072A6C] to-indigo-950 text-white rounded-[24px] p-8 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 text-left relative overflow-hidden group cursor-pointer"
             >
               <div className="absolute right-0 top-0 w-24 h-24 bg-white/5 rounded-full blur-xl pointer-events-none" />
@@ -1245,22 +1272,29 @@ export default function Home() {
                 <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
                   <Users size={16} className="text-[#D4AF37]" />
                 </div>
-                <h4 className="text-sm font-black uppercase tracking-wider">Be a Part of Our Community</h4>
+                <h4 className="text-sm font-black uppercase tracking-wider">{campusBanners?.community?.title || "Be a Part of Our Community"}</h4>
                 <p className="text-[10px] text-white/80 font-light leading-relaxed">
-                  Experience life beyond academics and build a brighter future.
+                  {campusBanners?.community?.desc || "Experience life beyond academics and build a brighter future."}
                 </p>
               </div>
               <button
                 type="button"
                 className="h-10 px-5 bg-white hover:bg-[#D4AF37] text-[#072A6C] hover:text-white text-[9.5px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer outline-none border-none shrink-0"
               >
-                Explore Campus Life →
+                {campusBanners?.community?.buttonText || "Explore Campus Life →"}
               </button>
             </div>
 
             {/* RIGHT CARD: Red Gradient */}
             <div 
-              onClick={() => setIsEventsDrawerOpen(true)}
+              onClick={() => {
+                const link = campusBanners?.events?.url;
+                if (link && link !== "#events-drawer") {
+                  navigate(link);
+                } else {
+                  setIsEventsDrawerOpen(true);
+                }
+              }}
               className="bg-gradient-to-br from-[#D71920] to-red-950 text-white rounded-[24px] p-8 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 text-left relative overflow-hidden group cursor-pointer"
             >
               <div className="absolute right-0 top-0 w-24 h-24 bg-white/5 rounded-full blur-xl pointer-events-none" />
@@ -1268,16 +1302,16 @@ export default function Home() {
                 <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
                   <Calendar size={16} className="text-[#D4AF37]" />
                 </div>
-                <h4 className="text-sm font-black uppercase tracking-wider">Upcoming Campus Events</h4>
+                <h4 className="text-sm font-black uppercase tracking-wider">{campusBanners?.events?.title || "Upcoming Campus Events"}</h4>
                 <p className="text-[10px] text-white/80 font-light leading-relaxed">
-                  There's always something exciting happening.
+                  {campusBanners?.events?.desc || "There's always something exciting happening."}
                 </p>
               </div>
               <button
                 type="button"
                 className="h-10 px-5 bg-white hover:bg-[#072A6C] text-[#D4AF37] hover:text-white text-[9.5px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer outline-none border-none shrink-0"
               >
-                View All Events →
+                {campusBanners?.events?.buttonText || "View All Events →"}
               </button>
             </div>
 
@@ -1787,15 +1821,15 @@ export default function Home() {
             </div>
           )}
 
-          {/* BOTTOM STATISTICS */}
+          {/* BOTTOM STATISTICS (Dynamic from CMS) */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-16 pt-10 border-t border-gray-100/60">
             {/* Stat Card 1 */}
             <div className="bg-white border border-gray-100 rounded-[20px] p-6 shadow-sm flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-md group">
               <div className="w-10 h-10 rounded-full bg-blue-50 text-[#072A6C] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                 <Users size={18} />
               </div>
-              <AnimatedCounter value="92%" />
-              <span className="text-[10.5px] text-gray-500 font-medium block mt-1.5">Students Placed</span>
+              <AnimatedCounter value={placementsContent.stats?.[0]?.value || placementsContent.placementPercent || "92%"} />
+              <span className="text-[10.5px] text-gray-500 font-medium block mt-1.5">{placementsContent.stats?.[0]?.label || "Students Placed"}</span>
             </div>
 
             {/* Stat Card 2 */}
@@ -1803,8 +1837,8 @@ export default function Home() {
               <div className="w-10 h-10 rounded-full bg-amber-50 text-[#D4AF37] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                 <Trophy size={18} />
               </div>
-              <AnimatedCounter value="30 LPA" />
-              <span className="text-[10.5px] text-gray-500 font-medium block mt-1.5">Highest Package</span>
+              <AnimatedCounter value={placementsContent.stats?.[1]?.value || placementsContent.highestPackage || "30 LPA"} />
+              <span className="text-[10.5px] text-gray-500 font-medium block mt-1.5">{placementsContent.stats?.[1]?.label || "Highest Package"}</span>
             </div>
 
             {/* Stat Card 3 */}
@@ -1812,8 +1846,8 @@ export default function Home() {
               <div className="w-10 h-10 rounded-full bg-yellow-50 text-[#EAB308] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                 <Handshake size={18} />
               </div>
-              <AnimatedCounter value="116+" />
-              <span className="text-[10.5px] text-gray-500 font-medium block mt-1.5">Corporate Partners</span>
+              <AnimatedCounter value={placementsContent.stats?.[2]?.value || placementsContent.corporatePartnersCount || "116+"} />
+              <span className="text-[10.5px] text-gray-500 font-medium block mt-1.5">{placementsContent.stats?.[2]?.label || "Corporate Partners"}</span>
             </div>
 
             {/* Stat Card 4 */}
@@ -1821,105 +1855,152 @@ export default function Home() {
               <div className="w-10 h-10 rounded-full bg-green-50 text-[#10B981] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                 <GraduationCap size={18} />
               </div>
-              <AnimatedCounter value="100%" />
-              <span className="text-[10.5px] text-gray-500 font-medium block mt-1.5">Placement Assistance</span>
+              <AnimatedCounter value={placementsContent.stats?.[3]?.value || placementsContent.placementAssistance || "100%"} />
+              <span className="text-[10.5px] text-gray-500 font-medium block mt-1.5">{placementsContent.stats?.[3]?.label || "Placement Assistance"}</span>
             </div>
           </div>
         </div>
       </section>
 
       {/* ═══ ADMISSIONS OPEN 2026 STRIP ═══ */}
-      <section className="bg-gray-50 py-12 border-t border-gray-100">
-        <div className="max-w-[1440px] mx-auto px-5 grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-          {/* Left Red Card */}
-          <div className="lg:col-span-8 bg-[#072A6C] text-white rounded-[16px] p-8 flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden relative">
-            <div className="space-y-4 relative z-10 w-full md:max-w-[55%]">
-              <h2 className="text-[26px] font-[800] tracking-wide font-[var(--font-poppins)] text-[#D4AF37]">
-                ADMISSIONS OPEN 2026
-              </h2>
-              <p className="text-[12px] text-blue-100 leading-relaxed font-[300] font-[var(--font-poppins)]">
-                Join a community of innovators and leaders. Shape your future with Chalapathi University.
-              </p>
-              <div className="flex flex-wrap items-center gap-3 pt-2 font-[var(--font-poppins)]">
-                <Link
-                  to="/admissions/apply"
-                  className="h-10 px-5 bg-white text-[#072A6C] hover:bg-blue-50 text-[11px] font-[700] rounded-[8px] inline-flex items-center gap-1.5 shadow active:scale-95 transition-transform"
+      {(() => {
+        const admissionsSection = (homepageSections || []).find((s) => s.id === "virtualTour" || s.id === "admissionsStrip");
+        if (admissionsSection && admissionsSection.enabled === false) return null;
+        const admissionsData = admissionsSection?.extraData || {};
+        const bannerTitle = admissionsData.bannerTitle || admissionsSection?.title || "ADMISSIONS OPEN 2026";
+        const bannerSubtitle = admissionsData.bannerSubtitle || admissionsSection?.subtitle || "Join a community of innovators and leaders. Shape your future with Chalapathi University.";
+        const bannerImage = admissionsData.bannerImage || "/students_admission.png";
+        const btn1Text = admissionsData.btn1Text || "Apply Now";
+        const btn1Url = admissionsData.btn1Url || "/admissions/apply";
+        const btn2Text = admissionsData.btn2Text || "Download Brochure";
+        const btn2Url = admissionsData.btn2Url || "/admissions";
+        const btn3Text = admissionsData.btn3Text || "Talk to Counselor";
+        const btn3Url = admissionsData.btn3Url || "/contact";
+        const visitHeading = admissionsData.visitHeading || "VISIT US";
+        const visitAddress = admissionsData.address || "A.R. Nagar, Mothadaka, Guntur, Andhra Pradesh - 522034";
+        const visitPhone = admissionsData.phone || "8886630355 | 8886630356 9905505566";
+        const visitEmail = admissionsData.email || "admissions@city.ac.in";
+        const visitWebsite = admissionsData.website || "www.city.ac.in";
+        const mapEmbedUrl = admissionsData.mapEmbedUrl || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3826.974950454796!2d80.28581691486445!3d16.375218788685984!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a4a79679802cfad%3A0xe67e2a901bbd33fe!2sChalapathi%20Institute%20of%20Technology!5e0!3m2!1sen!2sin!5m2!1sen!2sin";
+        const mapLinkUrl = admissionsData.mapLinkUrl || "https://www.google.com/maps/place/Chalapathi+Institute+of+Technology/@16.3752188,80.2858169,17z/data=!3m1!4b1!4m6!3m5!1s0x3a4a79679802cfad:0xe67e2a901bbd33fe!8m2!3d16.3752188!4d80.2858169!16s%2Fg%2F122r446z";
+
+        return (
+          <section className="bg-gray-50 py-12 border-t border-gray-100">
+            <div className="max-w-[1440px] mx-auto px-5 grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+              {/* Left Blue Card */}
+              <div className="lg:col-span-8 bg-[#072A6C] text-white rounded-[16px] p-8 flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden relative">
+                <div className="space-y-4 relative z-10 w-full md:max-w-[55%]">
+                  <h2 className="text-[26px] font-[800] tracking-wide font-[var(--font-poppins)] text-[#D4AF37]">
+                    {bannerTitle}
+                  </h2>
+                  <p className="text-[12px] text-blue-100 leading-relaxed font-[300] font-[var(--font-poppins)]">
+                    {bannerSubtitle}
+                  </p>
+                  <div className="flex flex-wrap items-center gap-3 pt-2 font-[var(--font-poppins)]">
+                    {btn1Text && (
+                      <Link
+                        to={btn1Url}
+                        className="h-10 px-5 bg-white text-[#072A6C] hover:bg-blue-50 text-[11px] font-[700] rounded-[8px] inline-flex items-center gap-1.5 shadow active:scale-95 transition-transform"
+                      >
+                        {btn1Text} <ArrowRight size={13} />
+                      </Link>
+                    )}
+                    {btn2Text && (
+                      <Link
+                        to={btn2Url}
+                        className="h-10 px-5 border border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-white text-[11px] font-[700] rounded-[8px] inline-flex items-center gap-1.5 active:scale-95 transition-all duration-200"
+                      >
+                        {btn2Text}
+                      </Link>
+                    )}
+                    {btn3Text && (
+                      <Link
+                        to={btn3Url}
+                        className="h-10 px-5 border border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-white text-[11px] font-[700] rounded-[8px] inline-flex items-center gap-1.5 active:scale-95 transition-all duration-200"
+                      >
+                        {btn3Text}
+                      </Link>
+                    )}
+                  </div>
+                </div>
+
+                {/* Students Image absolute positioned on the right edge */}
+                <motion.div
+                  className="absolute right-0 top-0 bottom-0 h-full w-full md:w-[42%] overflow-hidden z-0"
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5 }}
                 >
-                  Apply Now <ArrowRight size={13} />
-                </Link>
-                <Link
-                  to="/admissions"
-                  className="h-10 px-5 border border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-white text-[11px] font-[700] rounded-[8px] inline-flex items-center gap-1.5 active:scale-95 transition-all duration-200"
-                >
-                  Download Brochure
-                </Link>
-                <Link
-                  to="/contact"
-                  className="h-10 px-5 border border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-white text-[11px] font-[700] rounded-[8px] inline-flex items-center gap-1.5 active:scale-95 transition-all duration-200"
-                >
-                  Talk to Counselor
-                </Link>
+                  <img src={bannerImage} alt="Students" className="w-full h-full object-cover object-left-top" onError={(e) => { (e.target as HTMLImageElement).src = "/students_admission.png"; }} />
+                </motion.div>
+              </div>
+
+              {/* Right White Card */}
+              <div className="lg:col-span-4 bg-white border border-gray-200/60 rounded-[16px] p-6 flex items-center justify-between gap-4 shadow-sm font-[var(--font-poppins)]">
+                <div className="space-y-4 flex-1">
+                  <h3 className="text-[13px] font-[800] uppercase tracking-wider text-[#072A6C]">{visitHeading}</h3>
+                  <div className="space-y-2.5 text-[11px] text-gray-600 font-[400]">
+                    {visitAddress && (
+                      <div className="flex items-start gap-1.5">
+                        <MapPin size={12} className="shrink-0 mt-0.5 text-gray-400" />
+                        <span>{visitAddress}</span>
+                      </div>
+                    )}
+                    {visitPhone && (
+                      <div className="flex items-start gap-1.5">
+                        <Phone size={12} className="shrink-0 mt-0.5 text-gray-400" />
+                        <span>{visitPhone}</span>
+                      </div>
+                    )}
+                    {visitEmail && (
+                      <div className="flex items-start gap-1.5">
+                        <Mail size={12} className="shrink-0 mt-0.5 text-gray-400" />
+                        <span>{visitEmail}</span>
+                      </div>
+                    )}
+                    {visitWebsite && (
+                      <div className="flex items-start gap-1.5">
+                        <Globe size={12} className="shrink-0 mt-0.5 text-gray-400" />
+                        <span>{visitWebsite}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Map Frame */}
+                {mapLinkUrl && (
+                  <a 
+                    href={mapLinkUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-[130px] h-[130px] rounded-[12px] overflow-hidden bg-gray-100 shrink-0 border border-gray-200 relative block group"
+                    title="Open Chalapathi University in Google Maps"
+                  >
+                    <div className="absolute inset-0 bg-transparent z-10 cursor-pointer" />
+                    {mapEmbedUrl && (
+                      <iframe
+                        src={mapEmbedUrl}
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0 }}
+                        allowFullScreen={false}
+                        loading="lazy"
+                        className="pointer-events-none"
+                      />
+                    )}
+                    <div className="absolute inset-0 bg-black/5 group-hover:bg-black/20 transition-all flex items-center justify-center">
+                      <span className="bg-white/90 group-hover:bg-white text-[10px] font-bold px-2 py-1 rounded shadow text-[#072A6C] flex items-center gap-1">
+                        Maps <ExternalLink size={10} />
+                      </span>
+                    </div>
+                  </a>
+                )}
               </div>
             </div>
-
-            {/* Students Image absolute positioned on the right edge */}
-            <motion.div
-              className="absolute right-0 top-0 bottom-0 h-full w-full md:w-[42%] overflow-hidden z-0"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-            >
-              <img src="/students_admission.png" alt="Students" className="w-full h-full object-cover object-left-top" />
-            </motion.div>
-          </div>
-
-          {/* Right White Card */}
-          <div className="lg:col-span-4 bg-white border border-gray-200/60 rounded-[16px] p-6 flex items-center justify-between gap-4 shadow-sm font-[var(--font-poppins)]">
-            <div className="space-y-4 flex-1">
-              <h3 className="text-[13px] font-[800] uppercase tracking-wider text-[#072A6C]">VISIT US</h3>
-              <div className="space-y-2.5 text-[11px] text-gray-600 font-[400]">
-                <div className="flex items-start gap-1.5">
-                  <MapPin size={12} className="shrink-0 mt-0.5 text-gray-400" />
-                  <span>A.R. Nagar, Mothadaka, Guntur, Andhra Pradesh - 522034</span>
-                </div>
-                <div className="flex items-start gap-1.5">
-                  <Phone size={12} className="shrink-0 mt-0.5 text-gray-400" />
-                  <span>8886630355 | 8886630356 9905505566</span>
-                </div>
-                <div className="flex items-start gap-1.5">
-                  <Mail size={12} className="shrink-0 mt-0.5 text-gray-400" />
-                  <span>admissions@city.ac.in</span>
-                </div>
-                <div className="flex items-start gap-1.5">
-                  <Globe size={12} className="shrink-0 mt-0.5 text-gray-400" />
-                  <span>www.city.ac.in</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Map Frame */}
-            <a 
-              href="https://www.google.com/maps/place/Chalapathi+Institute+of+Technology/@16.3752188,80.2858169,17z/data=!3m1!4b1!4m6!3m5!1s0x3a4a79679802cfad:0xe67e2a901bbd33fe!8m2!3d16.3752188!4d80.2858169!16s%2Fg%2F122r446z"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-[130px] h-[130px] rounded-[12px] overflow-hidden bg-gray-100 shrink-0 border border-gray-200 relative block group"
-              title="Open Chalapathi University in Google Maps"
-            >
-              <div className="absolute inset-0 bg-transparent z-10 cursor-pointer" />
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3826.974950454796!2d80.28581691486445!3d16.375218788685984!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a4a79679802cfad%3A0xe67e2a901bbd33fe!2sChalapathi%20Institute%20of%20Technology!5e0!3m2!1sen!2sin!4v1657523129846!5m2!1sen!2sin"
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen={false}
-                loading="lazy"
-                className="pointer-events-none"
-              ></iframe>
-            </a>
-          </div>
-        </div>
-      </section>
+          </section>
+        );
+      })()}
 
       {/* ═══ Glassmorphism Modal ═══ */}
       <AnimatePresence>

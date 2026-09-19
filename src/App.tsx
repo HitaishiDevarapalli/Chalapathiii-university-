@@ -152,9 +152,9 @@ const ENQUIRY_SCHOOLS_DATA = [
 function AppContent() {
   const location = useLocation();
   const isAdminPage = location.pathname.startsWith("/admin");
-  const { announcements, showAnnouncementsDrawer, setShowAnnouncementsDrawer } = useData();
+  const { announcements, showAnnouncementsDrawer, setShowAnnouncementsDrawer, siteSettings, addEnquiry } = useData();
 
-  const [showSplash, setShowSplash] = useState(true); // Changed to always show on reload
+  const [showSplash, setShowSplash] = useState(siteSettings?.enableSplash !== false);
 
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const fallbackTimerRef = React.useRef<NodeJS.Timeout | null>(null);
@@ -219,15 +219,17 @@ function AppContent() {
     setActiveAccordion(activeAccordion === id ? null : id);
   };
 
-  // Automatic popup trigger on every page load/reload
+  // Automatic popup trigger on every page load/reload (Public Pages Only)
   useEffect(() => {
-    if (!showSplash) {
+    if (!isAdminPage && !showSplash) {
       const timer = setTimeout(() => {
         setShowEnquiryModal(true);
       }, 500);
       return () => clearTimeout(timer);
+    } else if (isAdminPage) {
+      setShowEnquiryModal(false);
     }
-  }, [showSplash]);
+  }, [showSplash, isAdminPage]);
 
   useEffect(() => {
     if (showEnquiryModal) {
@@ -269,22 +271,15 @@ function AppContent() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setFormSubmitted(true);
-    
-    // Save submission to localStorage so it can be tracked in the admin dashboard
-    const saved = localStorage.getItem("chalapathi_enquiries");
-    const list = saved ? JSON.parse(saved) : [];
-    list.push({
-      id: "ENQ-" + Date.now(),
-      ...formData,
-      date: new Date().toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" })
-    });
-    localStorage.setItem("chalapathi_enquiries", JSON.stringify(list));
+    if (addEnquiry) {
+      addEnquiry(formData);
+    }
   };
 
   return (
     <>
       <AnimatePresence mode="wait">
-        {showSplash && (
+        {!isAdminPage && showSplash && (
           <motion.div
             key="splash"
             className="fixed inset-0 z-[999999] bg-black flex items-center justify-center select-none"
@@ -300,7 +295,7 @@ function AppContent() {
                   videoRef.current = el;
                 }
               }}
-              src="/chalapathi_logo_intro.mp4"
+              src={siteSettings?.splashVideoUrl || "/chalapathi_logo_intro.mp4"}
               autoPlay
               muted
               playsInline
@@ -592,8 +587,8 @@ function AppContent() {
               {/* Logo */}
               <div className="flex items-center justify-center mb-6 mt-2">
                 <img 
-                  src="/logo.png?v=3" 
-                  alt="Chalapathi University" 
+                  src={siteSettings?.logoUrl || "/logo.png?v=3"} 
+                  alt={siteSettings?.universityName || "Chalapathi University"} 
                   loading="eager"
                   // @ts-ignore
                   fetchpriority="high"

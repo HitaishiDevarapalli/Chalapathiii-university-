@@ -1,16 +1,67 @@
-import React, { useState } from "react";
-import { useData, Announcement, ProgramDetail, NewsArticle, EventItem, AboutUsContent, MonthCalendarData, PlacementsContent, PlacedStudent, Recruiter, SuccessStory } from "../context/DataContext";
-import { certifications } from "../data/certifications";
+import React, { useState, useMemo } from "react";
+import { Link } from "react-router-dom";
 import { 
   Lock, LayoutDashboard, Megaphone, BookOpen, Calendar, FileText, 
   Settings, LogOut, Plus, Trash2, Edit3, CheckCircle, UploadCloud, Info, Users, Briefcase, Globe, Newspaper, Download,
   User, Eye, EyeOff, ArrowRight, ShieldCheck, Shield, BarChart3, Menu, ChevronDown, ChevronRight, ChevronUp,
   Bell, TrendingUp, UserPlus, CheckSquare, FileSpreadsheet, Building, CreditCard, MessageSquare,
-  Library, BarChart2, CheckCircle2, Clock, Search, Filter, Image, Sparkles, Layers, RefreshCw, GraduationCap,
-  ArrowUp, ArrowDown, RotateCcw, Sliders, ExternalLink, Compass
+  Library, BarChart2, CheckCircle2, Clock, Search, Filter, Image as ImageIcon, Sparkles, Layers, RefreshCw, GraduationCap,
+  ArrowUp, ArrowDown, RotateCcw, Sliders, ExternalLink, Compass, MapPin, Phone, Mail, Award, X, Copy, Check, Save,
+  Palette, Type, Trophy, Handshake
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Award } from "lucide-react";
+import { 
+  useData, 
+  Announcement, 
+  ProgramDetail, 
+  NewsArticle, 
+  EventItem, 
+  AboutUsContent, 
+  MonthCalendarData, 
+  PlacementsContent, 
+  PlacedStudent, 
+  Recruiter, 
+  SuccessStory,
+  FacultyMember,
+  DirectoryData,
+  HomepageSectionConfig,
+  EnquiryLead,
+  SiteSettings,
+  ThemeColors,
+  NavMenuItem,
+  FooterContent,
+  CourseLinkItem,
+  AcademicStructure,
+  CampusVideoItem,
+  CampusTourConfig,
+  CampusGalleryItem,
+  CampusBannersConfig,
+  getFallbackCourseImage,
+  DEFAULT_ACADEMIC_STRUCTURE,
+  DEFAULT_CAMPUS_VIDEOS,
+  DEFAULT_CAMPUS_TOUR,
+  DEFAULT_CAMPUS_GALLERY,
+  DEFAULT_CAMPUS_BANNERS,
+  INITIAL_HERO_SLIDES,
+  INITIAL_NEWS,
+  INITIAL_EVENTS,
+  INITIAL_ANNOUNCEMENTS,
+  INITIAL_PLACEMENTS_CONTENT,
+  INITIAL_SUCCESS_STORIES,
+  INITIAL_ABOUT_CONTENT,
+  INITIAL_CALENDAR_DATA,
+  INITIAL_FACULTY_DATA,
+  INITIAL_BOARD_DATA,
+  INITIAL_STAFF_DATA,
+  INITIAL_ENQUIRIES,
+  DEFAULT_SITE_SETTINGS,
+  DEFAULT_THEME_COLORS,
+  DEFAULT_HOMEPAGE_SECTIONS,
+  DEFAULT_NAV_MENU,
+  DEFAULT_FOOTER_CONTENT,
+  PROGRAMS_DATA
+} from "../context/DataContext";
+import { ImageField, ColorField, SectionHeader, VideoField } from "../components/admin/AdminComponents";
 import { 
   DEFAULT_PROGRAM_SECTIONS, 
   SectionMeta, 
@@ -20,338 +71,90 @@ import {
 
 export default function AdminPortal() {
   const {
+    siteSettings,
+    updateSiteSettings,
+    themeColors,
+    updateThemeColors,
+    homepageSections,
+    updateHomepageSections,
+    navigationMenu,
+    updateNavigationMenu,
+    footerContent,
+    updateFooterContent,
+    enquiries,
+    updateEnquiries,
     announcements,
-    programs,
-    news,
-    events,
-    aboutContent,
-    calendarData,
-    facultyData,
-    boardData,
-    staffData,
     updateAnnouncements,
+    programs,
     updatePrograms,
+    academicStructure,
+    updateAcademicStructure,
+    news,
     updateNews,
+    events,
     updateEvents,
+    campusVideos,
+    updateCampusVideos,
+    campusTour,
+    updateCampusTour,
+    campusGallery,
+    updateCampusGallery,
+    campusBanners,
+    updateCampusBanners,
+    aboutContent,
     updateAboutContent,
+    calendarData,
     updateCalendarData,
+    facultyData,
     updateFacultyData,
+    boardData,
     updateBoardData,
+    staffData,
     updateStaffData,
-    updatePlacementsContent,
     placementsContent,
+    updatePlacementsContent,
     successStories,
     updateSuccessStories,
     heroSlides,
-    updateHeroSlides
+    updateHeroSlides,
+    resetToDefaults,
+    lastSavedTime
   } = useData();
 
-  // Load actual enquiries count from localStorage
-  const enquiriesCount = React.useMemo(() => {
-    const saved = localStorage.getItem("chalapathi_enquiries");
-    if (!saved) {
-      const initial = [
-        { id: "ENQ-1", name: "Rahul Verma", mobile: "9876543210", email: "rahul@gmail.com", city: "Guntur", state: "Andhra Pradesh", qualification: "Class 12 / Intermediate", yearOfPassing: "2025", program: "B.Tech - Computer Science and Engineering", date: "20 May 2025" },
-        { id: "ENQ-2", name: "Priya Sen", mobile: "8765432109", email: "priya@gmail.com", city: "Vijayawada", state: "Andhra Pradesh", qualification: "Class 12 / Intermediate", yearOfPassing: "2025", program: "B.Tech - CSE (Data Science)", date: "19 May 2025" },
-        { id: "ENQ-3", name: "Kiran Dev", mobile: "7654321098", email: "kiran@gmail.com", city: "Hyderabad", state: "Telangana", qualification: "Class 12 / Intermediate", yearOfPassing: "2025", program: "B.Tech - CSE (Artificial Intelligence)", date: "18 May 2025" }
-      ];
-      localStorage.setItem("chalapathi_enquiries", JSON.stringify(initial));
-      return initial.length;
-    }
-    try {
-      return JSON.parse(saved).length;
-    } catch (e) {
-      return 0;
-    }
-  }, []);
-
   // Authentication states
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return sessionStorage.getItem("chalapathi_admin_auth") === "true";
+  });
   const [username, setUsername] = useState("");
   const [passcode, setPasscode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [authError, setAuthError] = useState("");
 
   // Tab navigation & layout states
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    "dashboard" | "homepage-sections" | "announcements" | "about" | "academics" | 
-    "calendar" | "news-events" | "directories" | "placements" | "campus-life" | 
-    "users" | "admissions" | "examinations" | "finance" | "communication" | "library" | "reports" | "settings" | "events" | "hero"
+    "dashboard" | "homepage" | "about" | "academics" | "admissions" | 
+    "campus-life" | "news-events" | "placements" | "directories" | 
+    "gallery" | "contact" | "footer" | "settings"
   >("dashboard");
-  const [newsEventsSection, setNewsEventsSection] = useState<"news" | "events" | "video">("news");
-  
-  // Homepage Section Enable/Disable Toggles
-  const [sectionToggles, setSectionToggles] = useState(() => {
-    const saved = localStorage.getItem("chalapathi_section_toggles");
-    return saved ? JSON.parse(saved) : {
-      heroVideo: true,
-      announcements: true,
-      programs: true,
-      chairmanMessage: true,
-      campusLife: true,
-      newsEvents: true,
-      placements: true,
-      certifications: true,
-      virtualTour: true
-    };
-  });
 
-  const handleToggleSection = (key: string) => {
-    const updated = { ...sectionToggles, [key]: !sectionToggles[key as keyof typeof sectionToggles] };
-    setSectionToggles(updated);
-    localStorage.setItem("chalapathi_section_toggles", JSON.stringify(updated));
-    showNotification();
-  };
-  
-  // Video States
-  const [campusVideoUrl, setCampusVideoUrl] = useState(() => localStorage.getItem("chalapathi_campus_video") || "/chalapathi_logo_intro.mp4");
-  const [campusVideoText, setCampusVideoText] = useState(() => localStorage.getItem("chalapathi_campus_video_text") || "Explore Chalapathi Campus");
-  const [campusVideoSubtext, setCampusVideoSubtext] = useState(() => localStorage.getItem("chalapathi_campus_video_subtext") || "Experience innovation, research, smart classrooms and vibrant student life.");
-
-  // Notification helpers
+  // Notification / Save feedback
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveMessage, setSaveMessage] = useState("Saved successfully!");
 
-  // Form states - Announcements
-  const [newAnnTitle, setNewAnnTitle] = useState("");
-  const [newAnnDesc, setNewAnnDesc] = useState("");
-  const [newAnnDate, setNewAnnDate] = useState("");
-  const [newAnnIcon, setNewAnnIcon] = useState("GraduationCap");
+  const notifySave = (msg = "Changes saved and published live!") => {
+    setSaveMessage(msg);
+    setSaveSuccess(true);
+    setTimeout(() => setSaveSuccess(false), 3000);
+  };
 
-  // Form states - About Us
-  const [aboutHistoryIntro, setAboutHistoryIntro] = useState(aboutContent.history.introText);
-  const [aboutHistoryQuote, setAboutHistoryQuote] = useState(aboutContent.history.quoteText);
-  const [aboutVisionText, setAboutVisionText] = useState(aboutContent.vision.visionText);
-  const [aboutChairmanName, setAboutChairmanName] = useState(aboutContent.leadership.chairmanName);
-  const [aboutChairmanTitle, setAboutChairmanTitle] = useState(aboutContent.leadership.designation);
-  const [aboutChairmanQuote, setAboutChairmanQuote] = useState(aboutContent.leadership.messageQuote);
-
-  // Homepage Chairman states
-  const [hChairmanHeading, setHChairmanHeading] = useState(() => localStorage.getItem("chalapathi_chairman_heading") || "A Vision. A Commitment. A Legacy.");
-  const [hChairmanSubtitle, setHChairmanSubtitle] = useState(() => localStorage.getItem("chalapathi_chairman_subtitle") || "Guiding generations through excellence, innovation, integrity, and student success.");
-  const [hChairmanName, setHChairmanName] = useState(() => localStorage.getItem("chalapathi_chairman_name") || "Dr. Y. V Anjaneyulu");
-  const [hChairmanDesignation, setHChairmanDesignation] = useState(() => localStorage.getItem("chalapathi_chairman_designation") || "Chairman");
-  const [hChairmanGroup, setHChairmanGroup] = useState(() => localStorage.getItem("chalapathi_chairman_group") || "Chalapathi Group of Institutions");
-  const [hChairmanMessage, setHChairmanMessage] = useState(() => localStorage.getItem("chalapathi_chairman_message") || `At Chalapathi University, we believe education is the most powerful transformer of lives and the key to building a better society. Our mission is to empower young minds with knowledge, values, and innovation to help them lead with purpose and create a lasting impact on the world.\n\nWe are committed to providing a nurturing environment, world-class infrastructure, and industry-oriented education to shape future leaders and responsible citizens.`);
-  const [hChairmanVideoUrl, setHChairmanVideoUrl] = useState(() => localStorage.getItem("chalapathi_chairman_video") || "/chalapathi_logo_intro.mp4");
-  const [hChairmanImage, setHChairmanImage] = useState(() => localStorage.getItem("chalapathi_chairman_image") || "/chairman_v4.png");
-  const [hChairmanBtnText, setHChairmanBtnText] = useState(() => localStorage.getItem("chalapathi_chairman_btn") || "Watch Chairman's Message");
-
-  // Homepage Campus Life states
-  const [campusLabel, setCampusLabel] = useState(() => localStorage.getItem("chalapathi_campus_label") || "CAMPUS LIFE");
-  const [campusSubtitle, setCampusSubtitle] = useState(() => localStorage.getItem("chalapathi_campus_subtitle") || "A vibrant campus where students learn, innovate, explore, compete, and create unforgettable memories.");
-  const [campusCardsRaw, setCampusCardsRaw] = useState(() => {
-    return localStorage.getItem("chalapathi_campus_cards") || JSON.stringify([
-      { title: "Vibrant Community", desc: "A diverse and inclusive campus with students from across India and the world.", icon: "Users" },
-      { title: "Clubs & Activities", desc: "50+ student clubs to explore passions and build leadership skills.", icon: "GraduationCap" },
-      { title: "Sports & Fitness", desc: "World-class sports facilities to keep you active, healthy and motivated.", icon: "Trophy" },
-      { title: "Arts & Culture", desc: "Celebrate creativity with events, fests, and cultural extravaganzas.", icon: "Sparkles" },
-      { title: "Smart Learning Spaces", desc: "Modern classrooms, advanced labs, and digital resources for future-ready learning.", icon: "Building2" },
-      { title: "Hostel Life", desc: "Safe, comfortable and modern hostels that feel like a second home.", icon: "Landmark" },
-      { title: "Food & Cafeteria", desc: "Hygienic, affordable and variety-rich meals for every taste.", icon: "Coffee" },
-      { title: "Transport Facility", desc: "Convenient and reliable transportation across city routes.", icon: "Bus" }
-    ], null, 2);
-  });
-  const [campusVideosRaw, setCampusVideosRaw] = useState(() => {
-    return localStorage.getItem("chalapathi_campus_videos") || JSON.stringify([
-      { url: "/chalapathi_logo_intro.mp4", title: "Campus Overview" },
-      { url: "https://assets.mixkit.co/videos/preview/mixkit-drones-eye-view-of-a-modern-university-campus-41555-large.mp4", title: "Smart Classrooms & Labs" },
-      { url: "https://assets.mixkit.co/videos/preview/mixkit-group-of-students-walking-on-college-campus-41553-large.mp4", title: "Student Life & Clubs" }
-    ], null, 2);
-  });
-  const [campusGalleryRaw, setCampusGalleryRaw] = useState(() => {
-    return localStorage.getItem("chalapathi_campus_gallery") || JSON.stringify([
-      { title: "Annual Fest", image: "/media__1783770842966.png" },
-      { title: "Sports Meet", image: "/media__1783771619196.png" },
-      { title: "Tech Events", image: "/media__1783772591375.png" },
-      { title: "NSS Activities", image: "/media__1783774201695.png" },
-      { title: "Cultural Events", image: "/media__1783775062821.png" },
-      { title: "Workshops", image: "/media__1783776081975.png" },
-      { title: "Student Clubs", image: "/media__1783776395046.png" },
-      { title: "Innovation Expo", image: "/media__1783777762350.png" }
-    ], null, 2);
-  });
-
-  // Form states - Academics
-  const [selectedProgSlug, setSelectedProgSlug] = useState(programs[0]?.slug || "btech-cse");
-  const currentProg = programs.find(p => p.slug === selectedProgSlug) || programs[0];
-  const [academicsSubTab, setAcademicsSubTab] = useState<"sections" | "basic" | "content">("sections");
-  
-  const [progTitle, setProgTitle] = useState(currentProg?.title || "");
-  const [progDesc, setProgDesc] = useState(currentProg?.desc || "");
-  const [progOverview, setProgOverview] = useState(currentProg?.overview || "");
-  const [progCurriculum, setProgCurriculum] = useState(currentProg?.curriculum?.join(", ") || "");
-  const [curriculumFile, setCurriculumFile] = useState<File | null>(null);
-  const [curriculumFileName, setCurriculumFileName] = useState(localStorage.getItem(`syllabus_${selectedProgSlug}`) || "None uploaded");
-  const [flowchartY1, setFlowchartY1] = useState("");
-  const [flowchartY2, setFlowchartY2] = useState("");
-  const [flowchartY3, setFlowchartY3] = useState("");
-  const [flowchartY4, setFlowchartY4] = useState("");
-
-  // 19-Section Ordering and Visibility State
-  const [progSectionsList, setProgSectionsList] = useState<SectionMeta[]>(() => {
-    const slug = programs[0]?.slug || "btech-cse";
-    const saved = localStorage.getItem(`program_sections_order_${slug}`);
-    if (saved) {
-      try { return JSON.parse(saved); } catch (e) {}
-    }
-    return DEFAULT_PROGRAM_SECTIONS;
-  });
-
-  // 19-Section Full Content State
-  const [customFullProgram, setCustomFullProgram] = useState<FullProgramData>(() => {
-    const slug = programs[0]?.slug || "btech-cse";
-    const saved = localStorage.getItem(`custom_program_data_${slug}`);
-    if (saved) {
-      try { return JSON.parse(saved); } catch (e) {}
-    }
-    return getProgramFullData(slug, programs[0]?.title, programs[0]?.department);
-  });
-
-  // Sync academics form when program selection changes
-  React.useEffect(() => {
-    if (currentProg) {
-      setProgTitle(currentProg.title);
-      setProgDesc(currentProg.desc);
-      setProgOverview(currentProg.overview);
-      setProgCurriculum(currentProg.curriculum?.join(", ") || "");
-      setCurriculumFileName(localStorage.getItem(`syllabus_${currentProg.slug}`) || "None uploaded");
-      setFlowchartY1(localStorage.getItem(`flowchart_${currentProg.slug}_y1`) || "");
-      setFlowchartY2(localStorage.getItem(`flowchart_${currentProg.slug}_y2`) || "");
-      setFlowchartY3(localStorage.getItem(`flowchart_${currentProg.slug}_y3`) || "");
-      setFlowchartY4(localStorage.getItem(`flowchart_${currentProg.slug}_y4`) || "");
-
-      // Sync 19 sections order
-      const savedSecs = localStorage.getItem(`program_sections_order_${currentProg.slug}`);
-      if (savedSecs) {
-        try {
-          setProgSectionsList(JSON.parse(savedSecs));
-        } catch (e) {
-          setProgSectionsList(DEFAULT_PROGRAM_SECTIONS);
-        }
-      } else {
-        setProgSectionsList(DEFAULT_PROGRAM_SECTIONS);
-      }
-
-      // Sync 19 sections full content
-      const savedFull = localStorage.getItem(`custom_program_data_${currentProg.slug}`);
-      if (savedFull) {
-        try {
-          setCustomFullProgram(JSON.parse(savedFull));
-        } catch (e) {
-          setCustomFullProgram(getProgramFullData(currentProg.slug, currentProg.title, currentProg.department));
-        }
-      } else {
-        setCustomFullProgram(getProgramFullData(currentProg.slug, currentProg.title, currentProg.department));
-      }
-    }
-  }, [selectedProgSlug, currentProg]);
-
-  // Form states - Calendar
-  const [calMonthIdx, setCalMonthIdx] = useState(0);
-  const [calDay, setCalDay] = useState(1);
-  const [calEventText, setCalEventText] = useState("");
-  const [csvFileName, setCsvFileName] = useState("");
-  const [parsedEvents, setParsedEvents] = useState<{ month: string; day: number; eventText: string }[]>([]);
-
-  // Form states - News & Events
-  const [newNewsTitle, setNewNewsTitle] = useState("");
-  const [newNewsCategory, setNewNewsCategory] = useState("Innovation");
-  const [newNewsExcerpt, setNewNewsExcerpt] = useState("");
-  const [newNewsBody, setNewNewsBody] = useState("");
-  const [newNewsLoc, setNewNewsLoc] = useState("");
-  const [newNewsTime, setNewNewsTime] = useState("");
-  const [newNewsSourceUrl, setNewNewsSourceUrl] = useState("");
-  const [newNewsDate, setNewNewsDate] = useState("");
-  const [newNewsImage, setNewNewsImage] = useState("");
-  const [newNewsFeatured, setNewNewsFeatured] = useState(false);
-  
-  const [newEventTitle, setNewEventTitle] = useState("");
-  const [newEventCategory, setNewEventCategory] = useState("Workshop");
-  const [newEventDate, setNewEventDate] = useState("");
-  const [newEventTime, setNewEventTime] = useState("09:30 AM");
-  const [newEventLoc, setNewEventLoc] = useState("");
-  const [newEventBody, setNewEventBody] = useState("");
-
-  // Form states - Hero Slides
-  const [newSlideImage, setNewSlideImage] = useState("");
-  const [newSlideTitle, setNewSlideTitle] = useState("");
-  const [newSlideSubtitle, setNewSlideSubtitle] = useState("");
-  // Form states - Directories
-  const [selectedDir, setSelectedDir] = useState<"faculty" | "board" | "staff">("faculty");
-  const [selectedDirDept, setSelectedDirDept] = useState("Computer Science & Engineering");
-  const [editMemberIdx, setEditMemberIdx] = useState<number | "hod" | "new" | null>(null);
-  
-  const [memberForm, setMemberForm] = useState({
-    name: "",
-    title: "",
-    edu: "",
-    interests: "",
-    phone: "",
-    email: "",
-    avatar: "",
-    age: "",
-    experience: "",
-    idNo: "",
-    department: ""
-  });
-
-  // Reset department selection on directory type switch
-  React.useEffect(() => {
-    if (selectedDir === "faculty") {
-      setSelectedDirDept("Computer Science & Engineering");
-    } else if (selectedDir === "board") {
-      setSelectedDirDept("Governing Council");
-    } else if (selectedDir === "staff") {
-      setSelectedDirDept("Registrar Office");
-    }
-    setEditMemberIdx(null);
-  }, [selectedDir]);
-
-  // Placements page edit states
-  const [placementsForm, setPlacementsForm] = useState({ ...placementsContent });
-  const [editStudentIdx, setEditStudentIdx] = useState<number | "new" | null>(null);
-  const [studentForm, setStudentForm] = useState<PlacedStudent>({ name: "", branch: "", company: "", ctc: "", img: "" });
-  const [editRecruiterIdx, setEditRecruiterIdx] = useState<number | "new" | null>(null);
-  const [recruiterForm, setRecruiterForm] = useState<Recruiter>({ name: "", logo: "" });
-  const [placementsSection, setPlacementsSection] = useState<"content" | "students" | "recruiters" | "stories">("content");
-  const [editStoryIdx, setEditStoryIdx] = useState<number | "new" | null>(null);
-  const [storyForm, setStoryForm] = useState<SuccessStory>({
-    id: Date.now(),
-    studentName: "",
-    studentImage: "",
-    department: "",
-    batch: "",
-    companyName: "",
-    companyLogo: "",
-    packageOffered: "",
-    description: "",
-    skills: [],
-    internshipExp: "",
-    achievement: "",
-    milestones: {
-      learningTitle: "",
-      learningDesc: "",
-      internshipTitle: "",
-      internshipDesc: "",
-      placementTitle: "",
-      placementDesc: "",
-      careerTitle: "",
-      careerDesc: ""
-    }
-  });
-
-  // Sync placements form when context changes
-  React.useEffect(() => {
-    setPlacementsForm({ ...placementsContent });
-  }, [placementsContent]);
-
-  // Handle Authentication
+  // Login handler
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (passcode === "admin123" || passcode === "admin" || (username.trim().toLowerCase() === "admin" && passcode)) {
       setIsAuthenticated(true);
+      sessionStorage.setItem("chalapathi_admin_auth", "true");
       setAuthError("");
     } else if (!passcode) {
       setAuthError("Please enter password to sign in.");
@@ -360,497 +163,525 @@ export default function AdminPortal() {
     }
   };
 
-  const showNotification = () => {
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    sessionStorage.removeItem("chalapathi_admin_auth");
   };
 
-  // Add Announcement
-  const handleAddAnnouncement = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newAnnTitle || !newAnnDesc) return;
-    const newAnn: Announcement = {
-      title: newAnnTitle,
-      desc: newAnnDesc,
-      date: newAnnDate || new Date().toLocaleDateString("en-IN", { day: '2-digit', month: 'short', year: 'numeric' }),
-      iconName: newAnnIcon
-    };
-    updateAnnouncements([newAnn, ...announcements]);
-    setNewAnnTitle("");
-    setNewAnnDesc("");
-    setNewAnnDate("");
-    showNotification();
-  };
+  // ----------------------------------------------------
+  // 1. HOMEPAGE TAB FORMS
+  // ----------------------------------------------------
+  const [sectionsList, setSectionsList] = useState<HomepageSectionConfig[]>(homepageSections);
+  const [activeHomeSubTab, setActiveHomeSubTab] = useState<
+    "ordering" | "hero" | "ticker" | "stats" | "whyChoose" | "programs" | "newsEvents" | "campusLife" | "chairman" | 
+    "placements" | "virtualTour" | "styling"
+  >("ordering");
 
-  // Delete Announcement
-  const handleDeleteAnnouncement = (index: number) => {
-    const updated = announcements.filter((_, i) => i !== index);
-    updateAnnouncements(updated);
-    showNotification();
-  };
+  React.useEffect(() => {
+    setSectionsList(homepageSections);
+  }, [homepageSections]);
 
-  // Save Campus Life Settings
-  const handleSaveCampusLife = (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      JSON.parse(campusCardsRaw);
-      JSON.parse(campusVideosRaw);
-      JSON.parse(campusGalleryRaw);
-      
-      localStorage.setItem("chalapathi_campus_label", campusLabel);
-      localStorage.setItem("chalapathi_campus_subtitle", campusSubtitle);
-      localStorage.setItem("chalapathi_campus_cards", campusCardsRaw);
-      localStorage.setItem("chalapathi_campus_videos", campusVideosRaw);
-      localStorage.setItem("chalapathi_campus_gallery", campusGalleryRaw);
-      showNotification();
-    } catch (err) {
-      alert("Invalid JSON structure. Please verify details!");
-    }
-  };
-
-  // Save About Us Changes
-  const handleSaveAbout = (e: React.FormEvent) => {
-    e.preventDefault();
-    const updated: AboutUsContent = {
-      ...aboutContent,
-      history: {
-        ...aboutContent.history,
-        introText: aboutHistoryIntro,
-        quoteText: aboutHistoryQuote
-      },
-      vision: {
-        ...aboutContent.vision,
-        visionText: aboutVisionText
-      },
-      leadership: {
-        ...aboutContent.leadership,
-        chairmanName: aboutChairmanName,
-        designation: aboutChairmanTitle,
-        messageQuote: aboutChairmanQuote
-      }
-    };
-    updateAboutContent(updated);
-    localStorage.setItem("chalapathi_chairman_heading", hChairmanHeading);
-    localStorage.setItem("chalapathi_chairman_subtitle", hChairmanSubtitle);
-    localStorage.setItem("chalapathi_chairman_name", hChairmanName);
-    localStorage.setItem("chalapathi_chairman_designation", hChairmanDesignation);
-    localStorage.setItem("chalapathi_chairman_group", hChairmanGroup);
-    localStorage.setItem("chalapathi_chairman_message", hChairmanMessage);
-    localStorage.setItem("chalapathi_chairman_video", hChairmanVideoUrl);
-    localStorage.setItem("chalapathi_chairman_image", hChairmanImage);
-    localStorage.setItem("chalapathi_chairman_btn", hChairmanBtnText);
-    showNotification();
-  };
-
-  // Save Program Changes
-  const handleSaveProgram = (e: React.FormEvent) => {
-    e.preventDefault();
-    const updated = programs.map(p => {
-      if (p.slug === selectedProgSlug) {
-        return {
-          ...p,
-          title: progTitle,
-          desc: progDesc,
-          overview: progOverview,
-          curriculum: progCurriculum.split(",").map(item => item.trim()).filter(Boolean)
-        };
-      }
-      return p;
-    });
-    updatePrograms(updated);
-    
-    // Save year-wise flowchart
-    localStorage.setItem(`flowchart_${selectedProgSlug}_y1`, flowchartY1);
-    localStorage.setItem(`flowchart_${selectedProgSlug}_y2`, flowchartY2);
-    localStorage.setItem(`flowchart_${selectedProgSlug}_y3`, flowchartY3);
-    localStorage.setItem(`flowchart_${selectedProgSlug}_y4`, flowchartY4);
-    
-    showNotification();
-  };
-
-  // 19-Section CMS: Reorder Section
-  const handleMoveProgramSection = (index: number, direction: "up" | "down") => {
-    const targetIdx = direction === "up" ? index - 1 : index + 1;
-    if (targetIdx < 0 || targetIdx >= progSectionsList.length) return;
-    const updated = [...progSectionsList];
+  const moveSection = (index: number, direction: "up" | "down") => {
+    const updated = [...sectionsList];
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= updated.length) return;
     const temp = updated[index];
-    updated[index] = updated[targetIdx];
-    updated[targetIdx] = temp;
-    
-    const reordered = updated.map((s, idx) => ({ ...s, order: idx + 1 }));
-    setProgSectionsList(reordered);
-    localStorage.setItem(`program_sections_order_${selectedProgSlug}`, JSON.stringify(reordered));
-    showNotification();
+    updated[index] = updated[targetIndex];
+    updated[targetIndex] = temp;
+    // Reassign order numbers
+    updated.forEach((s, idx) => (s.order = idx + 1));
+    setSectionsList(updated);
   };
 
-  // 19-Section CMS: Toggle Section Visibility
-  const handleToggleProgramSection = (secId: string) => {
-    const updated = progSectionsList.map(s => s.id === secId ? { ...s, enabled: !s.enabled } : s);
-    setProgSectionsList(updated);
-    localStorage.setItem(`program_sections_order_${selectedProgSlug}`, JSON.stringify(updated));
-    showNotification();
+  const toggleSectionEnable = (id: string) => {
+    const updated = sectionsList.map((s) => (s.id === id ? { ...s, enabled: !s.enabled } : s));
+    setSectionsList(updated);
   };
 
-  // 19-Section CMS: Reset Section Order to default 19 sections
-  const handleResetProgramSections = () => {
-    if (window.confirm("Reset all 19 sections to default university order?")) {
-      setProgSectionsList(DEFAULT_PROGRAM_SECTIONS);
-      localStorage.removeItem(`program_sections_order_${selectedProgSlug}`);
-      showNotification();
-    }
+  const saveHomepageSections = () => {
+    updateHomepageSections(sectionsList);
+    notifySave("Homepage section order & visibility saved!");
   };
 
-  // 19-Section CMS: Save Full Program Custom Content
-  const handleSaveCustomProgramData = (e: React.FormEvent) => {
-    e.preventDefault();
-    localStorage.setItem(`custom_program_data_${selectedProgSlug}`, JSON.stringify(customFullProgram));
-    showNotification();
-  };
+  // ----------------------------------------------------
+  // 2. HERO SLIDES FORM
+  // ----------------------------------------------------
+  const [slides, setSlides] = useState(heroSlides);
+  React.useEffect(() => setSlides(heroSlides), [heroSlides]);
 
-  // Mock Curriculum PDF Uploader
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setCurriculumFile(file);
-      setCurriculumFileName(file.name);
-      localStorage.setItem(`syllabus_${selectedProgSlug}`, file.name);
-      alert(`Syllabus Curriculum file "${file.name}" uploaded successfully!`);
-    }
-  };
-
-  // Save Calendar Changes
-  const handleSaveCalendar = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!calEventText) return;
-    const updated = calendarData.map((m, idx) => {
-      if (idx === calMonthIdx) {
-        return {
-          ...m,
-          events: {
-            ...m.events,
-            [calDay]: calEventText
-          }
-        };
-      }
-      return m;
-    });
-    updateCalendarData(updated);
-    setCalEventText("");
-    showNotification();
-  };
-
-  // Delete Calendar Event
-  const handleDeleteCalendarEvent = (monthIdx: number, day: number) => {
-    const updated = calendarData.map((m, idx) => {
-      if (idx === monthIdx) {
-        const nextEvents = { ...m.events };
-        delete nextEvents[day];
-        return {
-          ...m,
-          events: nextEvents
-        };
-      }
-      return m;
-    });
-    updateCalendarData(updated);
-    showNotification();
-  };
-
-  // CSV Row Parsing Helper
-  const parseCSVRow = (text: string) => {
-    const result = [];
-    let inQuotes = false;
-    let currentField = '';
-    for (let i = 0; i < text.length; i++) {
-      const char = text[i];
-      if (char === '"') {
-        inQuotes = !inQuotes;
-      } else if (char === ',' && !inQuotes) {
-        result.push(currentField);
-        currentField = '';
-      } else {
-        currentField += char;
-      }
-    }
-    result.push(currentField);
-    return result;
-  };
-
-  // Parse CSV file content
-  const handleCSVUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setCsvFileName(file.name);
-    
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      const text = evt.target?.result as string;
-      const lines = text.split(/\r?\n/);
-      if (lines.length === 0) return;
-      
-      const cleanLines = lines.map(line => line.trim()).filter(line => line.length > 0);
-      if (cleanLines.length < 2) return;
-      
-      // Parse headers
-      const headers = cleanLines[0].split(',').map(h => h.trim().replace(/^["']|["']$/g, '').toLowerCase());
-      
-      let monthIdx = headers.findIndex(h => h.includes('month'));
-      let dayIdx = headers.findIndex(h => h.includes('day') || h.includes('date'));
-      let eventIdx = headers.findIndex(h => h.includes('event') || h.includes('milestone') || h.includes('desc') || h.includes('title'));
-      
-      if (monthIdx === -1) monthIdx = 0;
-      if (dayIdx === -1) dayIdx = 1;
-      if (eventIdx === -1) eventIdx = 2;
-      
-      const results: { month: string; day: number; eventText: string }[] = [];
-      
-      for (let i = 1; i < cleanLines.length; i++) {
-        const row = parseCSVRow(cleanLines[i]);
-        if (row.length <= Math.max(monthIdx, dayIdx, eventIdx)) continue;
-        
-        const month = row[monthIdx]?.trim().replace(/^["']|["']$/g, '');
-        const dayVal = parseInt(row[dayIdx]?.trim().replace(/^["']|["']$/g, '') || '');
-        const eventText = row[eventIdx]?.trim().replace(/^["']|["']$/g, '');
-        
-        if (month && !isNaN(dayVal) && dayVal >= 1 && dayVal <= 31 && eventText) {
-          results.push({
-            month,
-            day: dayVal,
-            eventText
-          });
-        }
-      }
-      setParsedEvents(results);
-    };
-    reader.readAsText(file);
-  };
-
-  // Import parsed events to calendarData
-  const handleImportCalendarCSV = (overwrite: boolean) => {
-    if (parsedEvents.length === 0) return;
-    
-    let updated = [...calendarData];
-    if (overwrite) {
-      // Clear all existing events first
-      updated = updated.map(m => ({ ...m, events: {} }));
-    }
-    
-    parsedEvents.forEach(evt => {
-      // Find matching month
-      const monthIdx = updated.findIndex(m => m.name.toLowerCase() === evt.month.toLowerCase());
-      if (monthIdx !== -1) {
-        updated[monthIdx] = {
-          ...updated[monthIdx],
-          events: {
-            ...updated[monthIdx].events,
-            [evt.day]: evt.eventText
-          }
-        };
-      }
-    });
-    
-    updateCalendarData(updated);
-    setParsedEvents([]);
-    setCsvFileName("");
-    showNotification();
-  };
-
-  // Add News Article
-  const handleAddNews = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newNewsTitle || !newNewsBody) return;
-    const nextId = news.length > 0 ? Math.max(...news.map(n => n.id)) + 1 : 1;
-    const slug = newNewsTitle
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "");
-      
-    const newArt: NewsArticle = {
-      id: nextId,
-      title: newNewsTitle,
-      date: newNewsDate || new Date().toLocaleDateString("en-IN", { day: '2-digit', month: 'short', year: 'numeric' }),
-      time: newNewsTime || "11:00 AM",
-      location: newNewsLoc || "Main Campus Complex",
-      category: newNewsCategory,
-      excerpt: newNewsExcerpt || newNewsBody.substring(0, 120) + "...",
-      bodyText: newNewsBody,
-      image: newNewsImage || "/prog_computer.png",
-      slug: slug,
-      sourceUrl: newNewsSourceUrl || undefined,
-      featured: newNewsFeatured
-    };
-    updateNews([newArt, ...news]);
-    setNewNewsTitle("");
-    setNewNewsExcerpt("");
-    setNewNewsBody("");
-    setNewNewsLoc("");
-    setNewNewsTime("");
-    setNewNewsSourceUrl("");
-    setNewNewsDate("");
-    setNewNewsImage("");
-    setNewNewsFeatured(false);
-    showNotification();
-  };
-
-  // Delete News Article
-  const handleDeleteNews = (id: number) => {
-    const updated = news.filter(n => n.id !== id);
-    updateNews(updated);
-    showNotification();
-  };
-
-  // Add Event Item
-  const handleAddEvent = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newEventTitle || !newEventBody) return;
-    const nextId = events.length > 0 ? Math.max(...events.map(ev => ev.id)) + 1 : 1;
-    const slug = newEventTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-    const newEv: EventItem = {
-      id: nextId,
-      slug,
-      title: newEventTitle,
-      date: newEventDate || new Date().toLocaleDateString("en-IN", { day: '2-digit', month: 'short', year: 'numeric' }),
-      time: newEventTime,
-      location: newEventLoc || "MBA Seminar Gardens",
-      category: newEventCategory,
-      image: "/prog_engineering.png",
-      bodyText: newEventBody
-    };
-    updateEvents([newEv, ...events]);
-    setNewEventTitle("");
-    setNewEventDate("");
-    setNewEventLoc("");
-    setNewEventBody("");
-    showNotification();
-  };
-
-  // Delete Event Item
-  const handleDeleteEvent = (id: number) => {
-    const updated = events.filter(ev => ev.id !== id);
-    updateEvents(updated);
-    showNotification();
-  };
-
-  // Add Hero Slide
-  const handleAddHeroSlide = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newSlideImage) return;
-    const nextId = heroSlides.length > 0 ? Math.max(...heroSlides.map(s => s.id)) + 1 : 1;
+  const handleAddHeroSlide = () => {
     const newSlide = {
-      id: nextId,
-      image: newSlideImage,
-      title: newSlideTitle || undefined,
-      subtitle: newSlideSubtitle || undefined
+      id: Date.now(),
+      image: "/Chalapathimain.png",
+      title: "",
+      subtitle: ""
     };
-    updateHeroSlides([...heroSlides, newSlide]);
-    setNewSlideImage("");
-    setNewSlideTitle("");
-    setNewSlideSubtitle("");
-    showNotification();
-  };
-
-  // Delete Hero Slide
-  const handleDeleteHeroSlide = (id: number) => {
-    const updated = heroSlides.filter(s => s.id !== id);
+    const updated = [...slides, newSlide];
+    setSlides(updated);
     updateHeroSlides(updated);
-    showNotification();
+    notifySave("New hero banner slide added!");
   };
 
-  // Save Directory Member (HOD or Other)
-  const handleSaveMember = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Choose which target we are editing
-    let currentData = { ...facultyData };
-    let updater = updateFacultyData;
-    if (selectedDir === "board") {
-      currentData = { ...boardData };
-      updater = updateBoardData;
-    } else if (selectedDir === "staff") {
-      currentData = { ...staffData };
-      updater = updateStaffData;
+  const handleRemoveHeroSlide = (id: number) => {
+    if (slides.length <= 1) {
+      alert("You must keep at least one hero slide.");
+      return;
     }
-
-    const deptGroup = { ...(currentData[selectedDirDept] || { hod: {} as any, others: [] }) };
-    deptGroup.others = [...(deptGroup.others || [])];
-
-    if (editMemberIdx === "hod") {
-      deptGroup.hod = { ...memberForm, department: selectedDirDept };
-    } else if (typeof editMemberIdx === "number") {
-      deptGroup.others[editMemberIdx] = { ...memberForm, department: selectedDirDept };
-    } else if (editMemberIdx === "new") {
-      deptGroup.others.push({ ...memberForm, department: selectedDirDept });
-    }
-
-    currentData[selectedDirDept] = deptGroup;
-    updater(currentData);
-    setEditMemberIdx(null);
-    showNotification();
+    const updated = slides.filter((s) => s.id !== id);
+    setSlides(updated);
+    updateHeroSlides(updated);
+    notifySave("Hero slide removed!");
   };
 
-  // Delete Directory Member (from others list)
-  const handleDeleteMember = (idx: number) => {
-    let currentData = { ...facultyData };
-    let updater = updateFacultyData;
-    if (selectedDir === "board") {
-      currentData = { ...boardData };
-      updater = updateBoardData;
-    } else if (selectedDir === "staff") {
-      currentData = { ...staffData };
-      updater = updateStaffData;
-    }
+  const handleUpdateHeroSlide = (index: number, key: string, val: string) => {
+    const updated = [...slides];
+    updated[index] = { ...updated[index], [key]: val };
+    setSlides(updated);
+  };
 
-    const deptGroup = { ...currentData[selectedDirDept] };
-    if (deptGroup) {
-      deptGroup.others = (deptGroup.others || []).filter((_, i) => i !== idx);
-      currentData[selectedDirDept] = deptGroup;
-      updater(currentData);
-      showNotification();
+  const saveHeroSlides = () => {
+    updateHeroSlides(slides);
+    notifySave("Hero slides published!");
+  };
+
+  // ----------------------------------------------------
+  // 3. CHAIRMAN FORM
+  // ----------------------------------------------------
+  const chairmanSection = sectionsList.find((s) => s.id === "chairman");
+  const [chairmanData, setChairmanData] = useState(() => chairmanSection?.extraData || {
+    name: "Dr. Y. V Anjaneyulu",
+    designation: "Chairman",
+    group: "Chalapathi Group of Institutions",
+    message: "At Chalapathi University, we believe education is the most powerful transformer of lives and the key to building a better society.",
+    videoUrl: "/chalapathi_logo_intro.mp4",
+    image: "/chairman_v4.png",
+    buttonText: "Watch Chairman's Message"
+  });
+
+  const saveChairman = () => {
+    const updatedSections = sectionsList.map((s) => {
+      if (s.id === "chairman") {
+        return { ...s, extraData: chairmanData };
+      }
+      return s;
+    });
+    setSectionsList(updatedSections);
+    updateHomepageSections(updatedSections);
+    notifySave("Chairman's message published!");
+  };
+
+  // ----------------------------------------------------
+  // 4. ACADEMIC SCHOOLS & CATEGORIES CMS STATE
+  // ----------------------------------------------------
+  const [academicData, setAcademicData] = useState<AcademicStructure>(academicStructure);
+  const [activeAdminSchool, setActiveAdminSchool] = useState<string>(() => Object.keys(academicStructure)[0] || "School of Computing Sciences");
+  const [activeAdminDept, setActiveAdminDept] = useState<string>(() => {
+    const depts = academicStructure[Object.keys(academicStructure)[0]];
+    return depts ? Object.keys(depts)[0] || "" : "";
+  });
+
+  React.useEffect(() => {
+    setAcademicData(academicStructure);
+    if (!academicStructure[activeAdminSchool]) {
+      const firstSchool = Object.keys(academicStructure)[0];
+      if (firstSchool) {
+        setActiveAdminSchool(firstSchool);
+        const firstDept = Object.keys(academicStructure[firstSchool] || {})[0];
+        setActiveAdminDept(firstDept || "");
+      }
+    }
+  }, [academicStructure]);
+
+  const saveAcademicData = () => {
+    updateAcademicStructure(academicData);
+    notifySave("Schools, Categories & Course Programs published live!");
+  };
+
+  // ----------------------------------------------------
+  // 5. CAMPUS LIFE & TOUR MEDIA STATE
+  // ----------------------------------------------------
+  const [campusTourData, setCampusTourData] = useState<CampusTourConfig>(campusTour);
+  const [campusVideosList, setCampusVideosList] = useState<CampusVideoItem[]>(campusVideos);
+  const [campusGalleryList, setCampusGalleryList] = useState<CampusGalleryItem[]>(campusGallery);
+  const [campusBannersData, setCampusBannersData] = useState<CampusBannersConfig>(campusBanners);
+  const [campusCardsList, setCampusCardsList] = useState<any[]>(() => {
+    try {
+      const saved = localStorage.getItem("chalapathi_campus_cards");
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return [
+      { title: "Vibrant Community", desc: "A diverse and inclusive campus with students from across India and the world.", icon: "Users" },
+      { title: "Clubs & Activities", desc: "50+ student clubs to explore passions and build leadership skills.", icon: "GraduationCap" },
+      { title: "Sports & Fitness", desc: "World-class sports facilities to keep you active, healthy and motivated.", icon: "Trophy" },
+      { title: "Arts & Culture", desc: "Celebrate creativity with events, fests, and cultural extravaganzas.", icon: "Sparkles" },
+      { title: "Smart Learning Spaces", desc: "Modern classrooms, advanced labs, and digital resources for future-ready learning.", icon: "Building2" },
+      { title: "Hostel Life", desc: "Safe, comfortable and modern hostels that feel like a second home.", icon: "Landmark" },
+      { title: "Food & Cafeteria", desc: "Hygienic, affordable and variety-rich meals for every taste.", icon: "Coffee" },
+      { title: "Transport Facility", desc: "Convenient and reliable transportation across city routes.", icon: "Bus" }
+    ];
+  });
+
+  React.useEffect(() => setCampusTourData(campusTour), [campusTour]);
+  React.useEffect(() => setCampusVideosList(campusVideos), [campusVideos]);
+  React.useEffect(() => setCampusGalleryList(campusGallery), [campusGallery]);
+  React.useEffect(() => setCampusBannersData(campusBanners), [campusBanners]);
+
+  const saveFullCampusCMS = () => {
+    updateCampusTour(campusTourData);
+    updateCampusVideos(campusVideosList);
+    updateCampusGallery(campusGalleryList);
+    updateCampusBanners(campusBannersData);
+    localStorage.setItem("chalapathi_campus_cards", JSON.stringify(campusCardsList));
+    notifySave("Campus life cards, videos, gallery & banners published live!");
+  };
+
+  // ----------------------------------------------------
+  // 6. SUCCESS STORIES STATE
+  // ----------------------------------------------------
+  const [storiesList, setStoriesList] = useState<SuccessStory[]>(successStories);
+  const [activeStoryIdx, setActiveStoryIdx] = useState(0);
+  const [newSkillText, setNewSkillText] = useState("");
+  React.useEffect(() => setStoriesList(successStories), [successStories]);
+
+  const saveSuccessStoriesData = () => {
+    updateSuccessStories(storiesList);
+    notifySave("Placement success stories and student journeys published live!");
+  };
+
+  // ----------------------------------------------------
+  // 7. STATS & WHY CHOOSE US
+  // ----------------------------------------------------
+  const statsSection = sectionsList.find((s) => s.id === "stats");
+  const [statsData, setStatsData] = useState<any[]>(() => statsSection?.extraData || []);
+
+  const saveStats = () => {
+    const updatedSections = sectionsList.map((s) => (s.id === "stats" ? { ...s, extraData: statsData } : s));
+    setSectionsList(updatedSections);
+    updateHomepageSections(updatedSections);
+    notifySave("Statistics bar updated!");
+  };
+
+  const whyChooseSection = sectionsList.find((s) => s.id === "whyChooseUs");
+  const [whyChooseData, setWhyChooseData] = useState<any[]>(() => whyChooseSection?.extraData || []);
+
+  const saveWhyChoose = () => {
+    const updatedSections = sectionsList.map((s) => (s.id === "whyChooseUs" ? { ...s, extraData: whyChooseData } : s));
+    setSectionsList(updatedSections);
+    updateHomepageSections(updatedSections);
+    notifySave("Why Choose Us section saved!");
+  };
+
+  // Programs Section
+  const programsSection = sectionsList.find((s) => s.id === "programs");
+  const [programsSectionData, setProgramsSectionData] = useState(() => ({
+    title: programsSection?.title || "Explore Our Schools & Programs",
+    subtitle: programsSection?.subtitle || "Choose from industry-aligned degrees across cutting-edge disciplines",
+    description: programsSection?.description || "Chalapathi University offers diverse undergraduate, postgraduate, and doctoral degree pathways designed with practical learning and industry immersion.",
+    buttonText: programsSection?.buttonText || "View All Programs",
+    buttonUrl: programsSection?.buttonUrl || "/admissions"
+  }));
+
+  const saveProgramsSection = () => {
+    const updatedSections = sectionsList.map((s) => (s.id === "programs" ? { ...s, ...programsSectionData } : s));
+    setSectionsList(updatedSections);
+    updateHomepageSections(updatedSections);
+    updateAcademicStructure(academicData);
+    notifySave("Schools & Programs section and curriculum saved live!");
+  };
+
+  // News & Events Section
+  const newsEventsSection = sectionsList.find((s) => s.id === "newsEvents");
+  const [newsEventsData, setNewsEventsData] = useState(() => ({
+    title: newsEventsSection?.title || "News & Events Highlights",
+    subtitle: newsEventsSection?.subtitle || "Stay updated with campus happenings, national awards, research publications, and upcoming workshops.",
+    buttonText: newsEventsSection?.buttonText || "View All News & Events",
+    buttonUrl: newsEventsSection?.buttonUrl || "/news-events"
+  }));
+
+  const saveNewsEventsSection = () => {
+    const updatedSections = sectionsList.map((s) => (s.id === "newsEvents" ? { ...s, ...newsEventsData } : s));
+    setSectionsList(updatedSections);
+    updateHomepageSections(updatedSections);
+    updateNews(newsList);
+    updateEvents(eventsList);
+    notifySave("News & Events highlights, latest articles and upcoming calendar saved live!");
+  };
+
+  // Placements Section
+  const placementsSection = sectionsList.find((s) => s.id === "placements");
+  const [placementsSectionData, setPlacementsSectionData] = useState(() => ({
+    title: placementsSection?.title || "A Step Towards Success!",
+    subtitle: placementsSection?.subtitle || "Building Careers. Creating Leaders.",
+    highestPackage: placementsContent.highestPackage || "₹44 LPA",
+    averagePackage: placementsContent.averagePackage || "₹6.5 LPA",
+    placementPercent: placementsContent.placementPercent || "95%",
+    buttonText: placementsSection?.buttonText || "Explore Placements",
+    buttonUrl: placementsSection?.buttonUrl || "/placements"
+  }));
+
+  const savePlacementsSection = () => {
+    const updatedSections = sectionsList.map((s) => (s.id === "placements" ? { ...s, ...placementsSectionData } : s));
+    setSectionsList(updatedSections);
+    updateHomepageSections(updatedSections);
+    updatePlacementsContent(placementsForm);
+    updateSuccessStories(storiesList);
+    notifySave("Placements metrics, corporate partners, and success stories saved live!");
+  };
+
+  // 10. Admissions & Visit Us Section
+  const tourSection = sectionsList.find((s) => s.id === "virtualTour");
+  const [tourData, setTourData] = useState(() => ({
+    bannerTitle: tourSection?.extraData?.bannerTitle || tourSection?.title || "ADMISSIONS OPEN 2026",
+    bannerSubtitle: tourSection?.extraData?.bannerSubtitle || tourSection?.subtitle || "Join a community of innovators and leaders. Shape your future with Chalapathi University.",
+    bannerImage: tourSection?.extraData?.bannerImage || "/students_admission.png",
+    btn1Text: tourSection?.extraData?.btn1Text || "Apply Now",
+    btn1Url: tourSection?.extraData?.btn1Url || "/admissions/apply",
+    btn2Text: tourSection?.extraData?.btn2Text || "Download Brochure",
+    btn2Url: tourSection?.extraData?.btn2Url || "/admissions",
+    btn3Text: tourSection?.extraData?.btn3Text || "Talk to Counselor",
+    btn3Url: tourSection?.extraData?.btn3Url || "/contact",
+    visitHeading: tourSection?.extraData?.visitHeading || "VISIT US",
+    address: tourSection?.extraData?.address || "A.R. Nagar, Mothadaka, Guntur, Andhra Pradesh - 522034",
+    phone: tourSection?.extraData?.phone || "8886630355 | 8886630356 9905505566",
+    email: tourSection?.extraData?.email || "admissions@city.ac.in",
+    website: tourSection?.extraData?.website || "www.city.ac.in",
+    mapEmbedUrl: tourSection?.extraData?.mapEmbedUrl || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3826.974950454796!2d80.28581691486445!3d16.375218788685984!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a4a79679802cfad%3A0xe67e2a901bbd33fe!2sChalapathi%20Institute%20of%20Technology!5e0!3m2!1sen!2sin!5m2!1sen!2sin",
+    mapLinkUrl: tourSection?.extraData?.mapLinkUrl || "https://www.google.com/maps/place/Chalapathi+Institute+of+Technology/@16.3752188,80.2858169,17z/data=!3m1!4b1!4m6!3m5!1s0x3a4a79679802cfad:0xe67e2a901bbd33fe!8m2!3d16.3752188!4d80.2858169!16s%2Fg%2F122r446z"
+  }));
+
+  const saveVirtualTourSection = () => {
+    const updatedSections = sectionsList.map((s) => (s.id === "virtualTour" ? { 
+      ...s, 
+      name: "Admissions Banner & Visit Us",
+      title: tourData.bannerTitle, 
+      subtitle: tourData.bannerSubtitle, 
+      extraData: tourData 
+    } : s));
+    setSectionsList(updatedSections);
+    updateHomepageSections(updatedSections);
+    notifySave("Admissions & Visit Us section saved live!");
+  };
+
+  // ----------------------------------------------------
+  // 6. ABOUT US FORM
+  // ----------------------------------------------------
+  const [aboutForm, setAboutForm] = useState<AboutUsContent>(aboutContent);
+  const [activeAboutSubTab, setActiveAboutSubTab] = useState<"genesis" | "vision" | "leadership" | "advantage">("genesis");
+  React.useEffect(() => setAboutForm(aboutContent), [aboutContent]);
+
+  const saveAbout = () => {
+    updateAboutContent(aboutForm);
+    notifySave("About Us content published!");
+  };
+
+  // ----------------------------------------------------
+  // 7. ACADEMICS & PROGRAM BUILDER
+  // ----------------------------------------------------
+  const [programsList, setProgramsList] = useState<ProgramDetail[]>(programs);
+  const [selectedProgSlug, setSelectedProgSlug] = useState<string>(programs[0]?.slug || "btech-cse");
+  const currentProg = programsList.find((p) => p.slug === selectedProgSlug) || programsList[0];
+  const [progSearch, setProgSearch] = useState("");
+
+  React.useEffect(() => setProgramsList(programs), [programs]);
+
+  const [progSectionsOrder, setProgSectionsOrder] = useState<SectionMeta[]>(() => {
+    const saved = localStorage.getItem(`program_sections_order_${selectedProgSlug}`);
+    return saved ? JSON.parse(saved) : DEFAULT_PROGRAM_SECTIONS;
+  });
+
+  const [customFullProgram, setCustomFullProgram] = useState<FullProgramData>(() => {
+    const saved = localStorage.getItem(`custom_program_data_${selectedProgSlug}`);
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return getProgramFullData(selectedProgSlug, currentProg?.title, currentProg?.department);
+  });
+
+  React.useEffect(() => {
+    const savedSecs = localStorage.getItem(`program_sections_order_${selectedProgSlug}`);
+    setProgSectionsOrder(savedSecs ? JSON.parse(savedSecs) : DEFAULT_PROGRAM_SECTIONS);
+
+    const savedFull = localStorage.getItem(`custom_program_data_${selectedProgSlug}`);
+    setCustomFullProgram(
+      savedFull
+        ? JSON.parse(savedFull)
+        : getProgramFullData(selectedProgSlug, currentProg?.title, currentProg?.department)
+    );
+  }, [selectedProgSlug, currentProg]);
+
+  const saveProgramDetails = () => {
+    localStorage.setItem(`program_sections_order_${selectedProgSlug}`, JSON.stringify(progSectionsOrder));
+    localStorage.setItem(`custom_program_data_${selectedProgSlug}`, JSON.stringify(customFullProgram));
+    updatePrograms(programsList);
+    notifySave(`Program details for ${currentProg?.title} saved!`);
+  };
+
+  // ----------------------------------------------------
+  // 8. ADMISSION ENQUIRIES / LEADS
+  // ----------------------------------------------------
+  const [leadsList, setLeadsList] = useState<EnquiryLead[]>(enquiries);
+  const [leadSearch, setLeadSearch] = useState("");
+  const [leadStatusFilter, setLeadStatusFilter] = useState("All");
+
+  React.useEffect(() => setLeadsList(enquiries), [enquiries]);
+
+  const filteredLeads = useMemo(() => {
+    return leadsList.filter((lead) => {
+      const matchesSearch =
+        lead.name.toLowerCase().includes(leadSearch.toLowerCase()) ||
+        lead.mobile.includes(leadSearch) ||
+        lead.email.toLowerCase().includes(leadSearch.toLowerCase()) ||
+        lead.city.toLowerCase().includes(leadSearch.toLowerCase()) ||
+        lead.program.toLowerCase().includes(leadSearch.toLowerCase());
+      const matchesStatus = leadStatusFilter === "All" || lead.status === leadStatusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [leadsList, leadSearch, leadStatusFilter]);
+
+  const updateLeadStatus = (id: string, status: EnquiryLead["status"]) => {
+    const updated = leadsList.map((l) => (l.id === id ? { ...l, status } : l));
+    setLeadsList(updated);
+    updateEnquiries(updated);
+    notifySave("Lead status updated!");
+  };
+
+  const deleteLead = (id: string) => {
+    if (window.confirm("Are you sure you want to delete this enquiry lead?")) {
+      const updated = leadsList.filter((l) => l.id !== id);
+      setLeadsList(updated);
+      updateEnquiries(updated);
+      notifySave("Lead deleted.");
     }
   };
 
-  // Start editing a member
-  const startEditMember = (idx: number | "hod" | "new", member?: any) => {
-    setEditMemberIdx(idx);
-    if (idx === "new") {
-      setMemberForm({
-        name: "",
-        title: "",
-        edu: "",
-        interests: "",
-        phone: "",
-        email: "",
-        avatar: "",
-        age: "",
-        experience: "",
-        idNo: "",
-        department: selectedDirDept
-      });
-    } else if (member) {
-      setMemberForm({
-        name: member.name || "",
-        title: member.title || "",
-        edu: member.edu || "",
-        interests: member.interests || "",
-        phone: member.phone || "",
-        email: member.email || "",
-        avatar: member.avatar || "",
-        age: member.age || "",
-        experience: member.experience || "",
-        idNo: member.idNo || "",
-        department: member.department || selectedDirDept
-      });
+  const exportLeadsToCSV = () => {
+    if (leadsList.length === 0) {
+      alert("No enquiry leads to export.");
+      return;
     }
+    const headers = ["ID", "Name", "Mobile", "Email", "City", "State", "Qualification", "Year", "Program", "Date", "Status"];
+    const rows = leadsList.map((l) => [
+      l.id,
+      `"${l.name}"`,
+      `"${l.mobile}"`,
+      `"${l.email}"`,
+      `"${l.city}"`,
+      `"${l.state}"`,
+      `"${l.qualification}"`,
+      `"${l.yearOfPassing}"`,
+      `"${l.program}"`,
+      `"${l.date}"`,
+      `"${l.status || "New"}"`
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `chalapathi_admissions_leads_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
-  // Login view matching exact reference screenshot
+  // ----------------------------------------------------
+  // 9. NEWS & EVENTS & ANNOUNCEMENTS
+  // ----------------------------------------------------
+  const [newsList, setNewsList] = useState<NewsArticle[]>(news);
+  const [eventsList, setEventsList] = useState<EventItem[]>(events);
+  const [announcementsList, setAnnouncementsList] = useState<Announcement[]>(announcements);
+  const [editingNews, setEditingNews] = useState<NewsArticle | null>(null);
+  const [editingEvent, setEditingEvent] = useState<EventItem | null>(null);
+  const [editingAnn, setEditingAnn] = useState<Announcement | null>(null);
+
+  React.useEffect(() => setNewsList(news), [news]);
+  React.useEffect(() => setEventsList(events), [events]);
+  React.useEffect(() => setAnnouncementsList(announcements), [announcements]);
+
+  const saveNewsList = () => {
+    updateNews(newsList);
+    notifySave("News articles published!");
+  };
+
+  const saveEventsList = () => {
+    updateEvents(eventsList);
+    notifySave("Events list published!");
+  };
+
+  const saveAnnouncementsList = () => {
+    updateAnnouncements(announcementsList);
+    notifySave("Announcements updated!");
+  };
+
+  // ----------------------------------------------------
+  // 10. PLACEMENTS & RECRUITERS
+  // ----------------------------------------------------
+  const [placementsForm, setPlacementsForm] = useState<PlacementsContent>(placementsContent);
+
+  React.useEffect(() => setPlacementsForm(placementsContent), [placementsContent]);
+
+  const savePlacements = () => {
+    updatePlacementsContent(placementsForm);
+    updateSuccessStories(storiesList);
+    notifySave("Placements, corporate partners & success stories published!");
+  };
+
+  // ----------------------------------------------------
+  // 11. DIRECTORIES (Faculty & Board)
+  // ----------------------------------------------------
+  const [facultyForm, setFacultyForm] = useState(facultyData);
+  const [boardForm, setBoardForm] = useState(boardData);
+  const [staffForm, setStaffForm] = useState(staffData);
+  const [selectedDept, setSelectedDept] = useState(Object.keys(facultyData)[0] || "Computer Science & Engineering");
+
+  React.useEffect(() => setFacultyForm(facultyData), [facultyData]);
+  React.useEffect(() => setBoardForm(boardData), [boardData]);
+  React.useEffect(() => setStaffForm(staffData), [staffData]);
+
+  const saveDirectories = () => {
+    updateFacultyData(facultyForm);
+    updateBoardData(boardForm);
+    updateStaffData(staffForm);
+    notifySave("Directories updated live!");
+  };
+
+  // ----------------------------------------------------
+  // 12. FOOTER & SETTINGS & COLORS
+  // ----------------------------------------------------
+  const [footerForm, setFooterForm] = useState<FooterContent>(footerContent);
+  const [settingsForm, setSettingsForm] = useState<SiteSettings>(siteSettings);
+  const [colorsForm, setColorsForm] = useState<ThemeColors>(themeColors);
+  const [navForm, setNavForm] = useState<NavMenuItem[]>(navigationMenu);
+
+  React.useEffect(() => setFooterForm(footerContent), [footerContent]);
+  React.useEffect(() => setSettingsForm(siteSettings), [siteSettings]);
+  React.useEffect(() => setColorsForm(themeColors), [themeColors]);
+  React.useEffect(() => setNavForm(navigationMenu), [navigationMenu]);
+
+  const saveFooter = () => {
+    updateFooterContent(footerForm);
+    notifySave("Footer content published!");
+  };
+
+  const saveSettings = () => {
+    updateSiteSettings(settingsForm);
+    updateThemeColors(colorsForm);
+    updateNavigationMenu(navForm);
+    notifySave("Website settings & branding updated live!");
+  };
+
+  const saveStyling = () => {
+    updateThemeColors(colorsForm);
+    notifySave("Homepage styling & theme colors updated live!");
+  };
+
+  // ====================================================
+  // LOGIN SCREEN
+  // ====================================================
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen w-full flex flex-col lg:flex-row bg-[#F8F9FD] font-[var(--font-poppins)] overflow-x-hidden selection:bg-[#071A3A] selection:text-white">
         
-        {/* ======================================================== */}
-        {/* LEFT PANEL: Dark Navy Slanted Hero Branding             */}
-        {/* ======================================================== */}
+        {/* LEFT PANEL: Dark Navy Slanted Hero Branding */}
         <div className="w-full lg:w-[50%] xl:w-[52%] relative min-h-[480px] lg:min-h-screen bg-[#071A3A] text-white flex flex-col justify-between p-8 sm:p-12 lg:p-16 overflow-hidden">
           
           {/* Background image overlay */}
@@ -873,32 +704,34 @@ export default function AdminPortal() {
 
           {/* Top Logo */}
           <div className="relative z-10 flex items-center gap-3">
-            <img 
-              src="/logo.svg" 
-              alt="Chalapathi University" 
-              className="h-12 sm:h-14 w-auto object-contain brightness-0 invert drop-shadow-md" 
-            />
+            <div className="bg-white px-4 py-2 rounded-xl shadow-md border border-white/20 inline-flex items-center">
+              <img 
+                src={siteSettings?.logoUrl || "/logo.png?v=3"} 
+                alt={siteSettings?.universityName || "Chalapathi University"} 
+                className="h-10 sm:h-12 w-auto object-contain" 
+              />
+            </div>
           </div>
 
           {/* Center Banner Content */}
-          <div className="relative z-10 my-auto pt-10 pb-6 max-w-lg">
+          <div className="relative z-10 my-auto pt-10 pb-6 max-w-lg text-left">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-[1.12]">
               <span className="font-serif font-normal block text-2xl sm:text-3xl text-gray-200 mb-1">Welcome to</span>
               Chalapathi University
               <span className="block text-[#D4AF37] mt-1.5 drop-shadow-sm font-black">Admin Portal</span>
             </h1>
             <p className="mt-5 text-sm sm:text-base text-blue-100/80 font-normal leading-relaxed max-w-md">
-              Empowering excellence in education through technology and innovation.
+              Empowering excellence in education through technology, real-time CMS controls, and innovation.
             </p>
           </div>
 
           {/* Bottom Feature Badges */}
-          <div className="relative z-10 grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t border-white/10 mt-6">
+          <div className="relative z-10 grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t border-white/10 mt-6 text-left">
             <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl p-3 backdrop-blur-sm">
               <div className="w-9 h-9 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37] shrink-0">
                 <Shield size={18} />
               </div>
-              <div className="text-left">
+              <div>
                 <div className="text-[11px] font-extrabold text-white leading-tight">Secure Access</div>
                 <div className="text-[9px] text-gray-400 font-medium">Encrypted System</div>
               </div>
@@ -908,7 +741,7 @@ export default function AdminPortal() {
               <div className="w-9 h-9 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37] shrink-0">
                 <Users size={18} />
               </div>
-              <div className="text-left">
+              <div>
                 <div className="text-[11px] font-extrabold text-white leading-tight">Role Based</div>
                 <div className="text-[9px] text-gray-400 font-medium">Custom Control</div>
               </div>
@@ -918,7 +751,7 @@ export default function AdminPortal() {
               <div className="w-9 h-9 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37] shrink-0">
                 <BarChart3 size={18} />
               </div>
-              <div className="text-left">
+              <div>
                 <div className="text-[11px] font-extrabold text-white leading-tight">Real-time</div>
                 <div className="text-[9px] text-gray-400 font-medium">Live Analytics</div>
               </div>
@@ -927,16 +760,14 @@ export default function AdminPortal() {
 
         </div>
 
-        {/* ======================================================== */}
-        {/* RIGHT PANEL: Floating Login Card                         */}
-        {/* ======================================================== */}
+        {/* RIGHT PANEL: Floating Login Card */}
         <div className="w-full lg:w-[50%] xl:w-[48%] min-h-screen flex flex-col justify-between p-6 sm:p-10 lg:p-12 z-10 relative bg-[#F8F9FD]">
           
           {/* Top Right Branding */}
           <div className="flex justify-end items-center">
             <div className="flex items-center gap-2.5">
               <img 
-                src="/logo.svg" 
+                src="/logo.png?v=3" 
                 alt="Chalapathi University" 
                 className="h-10 sm:h-12 w-auto object-contain" 
               />
@@ -949,7 +780,7 @@ export default function AdminPortal() {
             {/* Circular Crest Badge */}
             <div className="w-20 h-20 rounded-full bg-white border border-gray-200/90 shadow-md flex items-center justify-center mx-auto mb-5 p-3">
               <img 
-                src="/logo.svg" 
+                src="/logo.png?v=3" 
                 alt="Chalapathi Crest" 
                 className="w-full h-full object-contain" 
               />
@@ -960,12 +791,17 @@ export default function AdminPortal() {
               Admin Login
             </h2>
             <p className="text-xs sm:text-sm text-gray-500 text-center mt-1.5 mb-8 font-medium">
-              Sign in to access the admin portal
+              Sign in to access the central university CMS
             </p>
 
             {/* Login Form */}
             <form onSubmit={handleLogin} className="space-y-4">
-              
+              {authError && (
+                <div className="bg-red-50 text-red-600 p-3 rounded-xl text-xs font-semibold border border-red-200">
+                  {authError}
+                </div>
+              )}
+
               {/* Username / Email */}
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold text-gray-700 uppercase tracking-wider block">
@@ -987,837 +823,612 @@ export default function AdminPortal() {
               {/* Password */}
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold text-gray-700 uppercase tracking-wider block">
-                  Password
+                  Password / Passcode
                 </label>
                 <div className="relative">
                   <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input
                     type={showPassword ? "text" : "password"}
                     required
-                    placeholder="Enter your password"
+                    placeholder="Enter password (default: admin123)"
                     value={passcode}
                     onChange={(e) => setPasscode(e.target.value)}
-                    className="w-full h-12 pl-11 pr-11 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 text-sm font-medium focus:bg-white focus:outline-none focus:border-[#071A3A] focus:ring-2 focus:ring-[#071A3A]/10 transition-all placeholder:text-gray-400"
+                    className="w-full h-12 pl-11 pr-12 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 text-sm font-medium focus:bg-white focus:outline-none focus:border-[#071A3A] focus:ring-2 focus:ring-[#071A3A]/10 transition-all placeholder:text-gray-400"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors outline-none cursor-pointer"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
               </div>
 
-              {/* Remember Me & Forgot Password */}
-              <div className="flex items-center justify-between text-xs pt-1 pb-2">
-                <label className="flex items-center gap-2 text-gray-600 font-medium cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 rounded border-gray-300 text-[#071A3A] focus:ring-[#071A3A] cursor-pointer"
-                  />
-                  <span>Remember me</span>
-                </label>
-                <button
-                  type="button"
-                  onClick={() => alert("Please contact system administrator to reset password.")}
-                  className="text-blue-600 hover:text-[#071A3A] font-semibold transition-colors cursor-pointer outline-none"
-                >
-                  Forgot Password?
-                </button>
-              </div>
-
-              {/* Error notification */}
-              {authError && (
-                <p className="text-xs font-bold text-rose-600 text-center bg-rose-50 border border-rose-200 py-2.5 px-3 rounded-xl">
-                  {authError}
-                </p>
-              )}
-
-              {/* Submit Button */}
+              {/* Sign In Button */}
               <button
                 type="submit"
-                className="w-full h-12 bg-[#041638] hover:bg-[#07255c] text-white font-bold text-sm rounded-xl shadow-lg shadow-[#041638]/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
+                className="w-full h-12 bg-[#071A3A] hover:bg-[#05142E] text-white font-bold text-sm rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer mt-2"
               >
-                <span>Sign In</span>
-                <ArrowRight size={16} />
+                Sign In to CMS <ArrowRight size={16} />
               </button>
 
-              {/* Divider */}
-              <div className="relative flex items-center justify-center my-5">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-200/80" />
-                </div>
-                <span className="relative bg-white px-3 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
-                  or
-                </span>
+              <div className="pt-2 text-center">
+                <Link to="/" className="text-xs font-semibold text-gray-500 hover:text-[#071A3A] transition-colors">
+                  ← Back to Home Page
+                </Link>
               </div>
-
-              {/* SSO Button */}
-              <button
-                type="button"
-                onClick={() => {
-                  setIsAuthenticated(true);
-                  setAuthError("");
-                }}
-                className="w-full h-11 bg-white hover:bg-slate-50 border border-gray-200 text-[#071A3A] font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm active:scale-[0.99]"
-              >
-                <ShieldCheck size={16} className="text-[#071A3A]" />
-                <span>Login with SSO</span>
-              </button>
-
             </form>
           </div>
 
-          {/* Footer Copyright */}
-          <div className="text-center text-[11px] text-gray-400 font-medium mt-6">
+          <div className="text-center text-xs text-gray-400 font-medium">
             © 2026 Chalapathi University. All rights reserved.
           </div>
-
         </div>
-
       </div>
     );
   }
 
+  // ====================================================
+  // MAIN ADMIN CMS DASHBOARD
+  // ====================================================
+  const navItems = [
+    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, badge: `${enquiries.length}` },
+    { id: "homepage", label: "Homepage CMS", icon: Sparkles },
+    { id: "about", label: "About Us", icon: Building },
+    { id: "academics", label: "Academics", icon: GraduationCap },
+    { id: "admissions", label: "Admissions & Leads", icon: UserPlus, badge: `${enquiries.filter(e => e.status === "New").length || ""}` },
+    { id: "campus-life", label: "Campus & Facilities", icon: Library },
+    { id: "news-events", label: "News & Events", icon: Newspaper },
+    { id: "placements", label: "Placements & Careers", icon: Briefcase },
+    { id: "directories", label: "Directories (Faculty)", icon: Users },
+    { id: "gallery", label: "Gallery & Media", icon: ImageIcon },
+    { id: "contact", label: "Contact Us", icon: Phone },
+    { id: "footer", label: "Footer CMS", icon: Layers },
+    { id: "settings", label: "Website Settings", icon: Settings },
+  ];
+
   return (
-    <div className="min-h-screen bg-[#F4F6FA] text-left font-[var(--font-poppins)] flex flex-col selection:bg-[#071A3A] selection:text-white">
-      
-      {/* ======================================================== */}
-      {/* TOP HEADER NAVIGATION BAR (Exact match to reference)     */}
-      {/* ======================================================== */}
-      <header className="h-16 bg-white border-b border-gray-200/80 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-40 shadow-xs">
-        {/* Left Branding & Menu Toggle */}
-        <div className="flex items-center gap-3 sm:gap-4">
-          <img 
-            src="/logo.svg" 
-            alt="Chalapathi University" 
-            className="h-9 sm:h-10 w-auto object-contain cursor-pointer" 
-            onClick={() => setActiveTab("dashboard")}
-          />
-          <button 
+    <div className="min-h-screen bg-[#F1F5F9] font-[var(--font-poppins)] text-slate-800 flex flex-col antialiased">
+      {/* Save Notification Toast */}
+      <AnimatePresence>
+        {saveSuccess && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-4 right-4 z-[99999] bg-emerald-600 text-white px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2 text-xs font-bold"
+          >
+            <CheckCircle2 size={16} />
+            {saveMessage}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Top Navigation Bar */}
+      <header className="h-16 bg-[#072A6C] text-white flex items-center justify-between px-4 sm:px-6 sticky top-0 z-40 shadow-md">
+        <div className="flex items-center gap-3">
+          <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 text-gray-500 hover:text-gray-900 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer outline-none"
+            className="hidden md:flex p-1.5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
             title="Toggle Sidebar"
           >
-            <Menu size={18} />
+            <Menu size={20} />
           </button>
-        </div>
-        {/* Right User Profile */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* User Profile Avatar */}
-          <div className="flex items-center gap-2.5 pl-1.5">
-            <img 
-              src="/chairman_portrait.png" 
-              alt="Admin Profile" 
-              className="w-9 h-9 rounded-full object-cover border-2 border-[#071A3A]/20 shadow-xs" 
-            />
-            <div className="hidden md:flex flex-col text-left">
-              <span className="text-xs font-extrabold text-gray-900 leading-tight">Dr. Admin Kumar</span>
-              <span className="text-[10px] text-gray-500 font-medium">Super Administrator</span>
+          <button
+            onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+            className="flex md:hidden p-1.5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+          >
+            <Menu size={20} />
+          </button>
+
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 bg-white rounded-lg p-1 flex items-center justify-center">
+              <img src="/logo.png?v=3" alt="Chalapathi" className="h-6 w-auto object-contain" />
+            </div>
+            <div>
+              <h1 className="text-sm font-black uppercase tracking-wider leading-none">Chalapathi CMS</h1>
+              <span className="text-[10px] text-blue-200 font-medium leading-none">Admin Control Center</span>
             </div>
           </div>
         </div>
+
+        <div className="flex items-center gap-3">
+          {lastSavedTime && (
+            <span className="hidden lg:inline-flex items-center gap-1.5 text-[10px] bg-white/10 px-2.5 py-1 rounded-full text-blue-100 font-medium">
+              <Clock size={11} /> Last saved: {lastSavedTime}
+            </span>
+          )}
+
+          <Link
+            to="/"
+            target="_blank"
+            className="h-8 px-3 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 transition-colors"
+          >
+            <ExternalLink size={13} />
+            <span className="hidden sm:inline">View Website</span>
+          </Link>
+
+          <button
+            onClick={handleLogout}
+            className="h-8 px-3 bg-red-600/80 hover:bg-red-600 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <LogOut size={13} />
+            <span className="hidden sm:inline">Logout</span>
+          </button>
+        </div>
       </header>
 
-      {/* Main Body with Sidebar + Workplace Content */}
+      {/* Body Layout (Sidebar + Main Content) */}
       <div className="flex-1 flex overflow-hidden">
-        
-        {/* LEFT SIDEBAR PANEL */}
-        {sidebarOpen && (
-          <aside className="w-64 bg-white border-r border-gray-200/80 shrink-0 flex flex-col justify-between select-none z-30 transition-all duration-300">
-            <div>
-              <div className="px-5 pt-5 pb-2">
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-gray-400">
-                  ADMIN PORTAL
-                </span>
-              </div>
-
-              <nav className="p-3 space-y-1">
-                {[
-                  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-                  { id: "academics", label: "Academic Programs", icon: BookOpen },
-                  { id: "announcements", label: "Announcements", icon: Megaphone },
-                  { id: "directories", label: "Management", icon: Users },
-                  { id: "news-events", label: "News", icon: Newspaper },
-                  { id: "events", label: "Events", icon: Calendar },
-                  { id: "hero", label: "Hero Slides", icon: Image },
-                  { id: "calendar", label: "Academic Calendar", icon: FileSpreadsheet }
-                ].map(item => {
-                  const Icon = item.icon;
-                  const isActive = activeTab === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => setActiveTab(item.id as any)}
-                      className={`w-full h-10 px-3.5 rounded-xl flex items-center justify-between text-xs font-bold transition-all text-left outline-none cursor-pointer ${
-                        isActive
-                          ? "bg-blue-50 text-blue-700 font-extrabold shadow-2xs"
-                          : "text-gray-600 hover:bg-slate-50 hover:text-gray-900"
+        {/* Sidebar */}
+        <aside
+          className={`bg-[#051c4a] text-white flex flex-col shrink-0 transition-all duration-300 ${
+            sidebarOpen ? "w-64" : "w-18"
+          } hidden md:flex border-r border-blue-950/40 select-none`}
+        >
+          <div className="flex-1 overflow-y-auto p-3 space-y-1">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id as any)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all text-left cursor-pointer ${
+                    isActive
+                      ? "bg-[#D4AF37] text-slate-900 shadow-md"
+                      : "text-blue-100 hover:bg-white/10 hover:text-white"
+                  }`}
+                  title={item.label}
+                >
+                  <Icon size={18} className="shrink-0" />
+                  {sidebarOpen && <span className="flex-1 truncate">{item.label}</span>}
+                  {sidebarOpen && item.badge && (
+                    <span
+                      className={`text-[9px] px-1.5 py-0.5 rounded-full font-extrabold ${
+                        isActive ? "bg-slate-900 text-white" : "bg-blue-600 text-white"
                       }`}
                     >
-                      <div className="flex items-center gap-3">
-                        <Icon size={16} className={isActive ? "text-blue-600" : "text-gray-400"} />
-                        <span>{item.label}</span>
-                      </div>
-                      {isActive && <ChevronRight size={14} className="text-blue-600" />}
-                    </button>
-                  );
-                })}
-              </nav>
-            </div>
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
 
-            {/* Bottom Profile Footer inside Sidebar */}
-            <div className="p-4 border-t border-gray-100 bg-slate-50/50">
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <img 
-                    src="/chairman_portrait.png" 
-                    alt="Admin Avatar" 
-                    className="w-10 h-10 rounded-full object-cover border border-gray-200" 
-                  />
-                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full" />
-                </div>
-                <div className="flex flex-col text-left">
-                  <span className="text-xs font-extrabold text-gray-900 leading-tight">Dr. Admin Kumar</span>
-                  <span className="text-[10px] text-gray-500">Super Administrator</span>
-                  <span className="text-[9px] text-emerald-600 font-bold mt-0.5">● Online</span>
-                </div>
+          <div className="p-3 border-t border-white/10">
+            <button
+              onClick={resetToDefaults}
+              className="w-full h-8 px-2 bg-white/5 hover:bg-red-500/20 text-red-200 hover:text-red-100 text-[10px] font-bold rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <RotateCcw size={12} />
+              {sidebarOpen && "Restore Defaults"}
+            </button>
+          </div>
+        </aside>
+
+        {/* Mobile Drawer Sidebar */}
+        {mobileSidebarOpen && (
+          <div
+            className="fixed inset-0 z-50 bg-black/60 flex md:hidden"
+            onClick={() => setMobileSidebarOpen(false)}
+          >
+            <div
+              className="w-64 bg-[#051c4a] text-white h-full p-4 flex flex-col space-y-1 overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between pb-3 mb-2 border-b border-white/10">
+                <h3 className="font-bold text-xs uppercase tracking-wider text-blue-200">CMS Menu</h3>
+                <button onClick={() => setMobileSidebarOpen(false)} className="text-white">
+                  <X size={18} />
+                </button>
               </div>
-              <button
-                onClick={() => setIsAuthenticated(false)}
-                className="mt-3 w-full h-8 bg-white hover:bg-rose-50 border border-gray-200 text-rose-600 font-bold text-[11px] rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
-              >
-                <LogOut size={13} />
-                <span>Sign Out</span>
-              </button>
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setActiveTab(item.id as any);
+                      setMobileSidebarOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all text-left cursor-pointer ${
+                      isActive ? "bg-[#D4AF37] text-slate-900 shadow-md" : "text-blue-100 hover:bg-white/10"
+                    }`}
+                  >
+                    <Icon size={18} />
+                    <span className="flex-1 truncate">{item.label}</span>
+                  </button>
+                );
+              })}
             </div>
-          </aside>
+          </div>
         )}
 
-        {/* Main Administrative Workplace Area */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 max-w-[1550px] mx-auto text-left">
-          {saveSuccess && (
-            <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-3 text-emerald-800 text-xs font-bold animate-fade-in shadow-xs">
-              <CheckCircle size={18} className="text-emerald-600" />
-              <span>Settings and website data updated successfully across all pages!</span>
-            </div>
-          )}
-
-          {/* Dynamic Panel rendering */}
-          <div className="bg-white border border-gray-200/80 rounded-3xl p-6 shadow-xs">
-            {/* Homepage Sections Manager Tab */}
-            {activeTab === "homepage-sections" && (
-            <div className="space-y-6 animate-fade-in text-left">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h2 className="text-xl font-extrabold text-gray-900">Homepage Control & Photo Manager</h2>
-                  <p className="text-xs text-gray-500 mt-0.5">Enable/disable homepage sections and change main hero photos, videos, and titles.</p>
-                </div>
-              </div>
-
-              {/* Section Enable/Disable Toggles Grid */}
-              <div className="bg-white p-6 rounded-2xl border border-gray-150 shadow-2xs space-y-4">
-                <h3 className="text-sm font-extrabold text-gray-900 border-b border-gray-100 pb-3">Enable / Disable Main Page Sections</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {[
-                    { key: "heroVideo", label: "Hero Intro Video Banner" },
-                    { key: "announcements", label: "Announcements Drawer & Ticker" },
-                    { key: "programs", label: "Academic Programs Cards" },
-                    { key: "chairmanMessage", label: "Chairman's Vision & Message" },
-                    { key: "campusLife", label: "Campus Life & Video Tour" },
-                    { key: "newsEvents", label: "Latest News & Events Section" },
-                    { key: "placements", label: "Placements & Recruiters" },
-                    { key: "certifications", label: "Global Certifications" },
-                    { key: "virtualTour", label: "360 Virtual Tour Banner" }
-                  ].map((item) => {
-                    const isEnabled = sectionToggles[item.key as keyof typeof sectionToggles] !== false;
-                    return (
-                      <div key={item.key} className="flex items-center justify-between p-3.5 bg-gray-50 border border-gray-100 rounded-xl">
-                        <span className="text-xs font-bold text-gray-800">{item.label}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleToggleSection(item.key)}
-                          className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer outline-none ${isEnabled ? "bg-emerald-500" : "bg-gray-300"}`}
-                        >
-                          <span className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform ${isEnabled ? "translate-x-6" : ""}`} />
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Photo & Main Banner Content Editor */}
-              <div className="bg-white p-6 rounded-2xl border border-gray-150 shadow-2xs space-y-6">
-                <h3 className="text-sm font-extrabold text-gray-900 border-b border-gray-100 pb-3">Main Campus Photos & Video Settings</h3>
-                
-                <form onSubmit={handleSaveAbout} className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-gray-700">Campus Intro Video File/URL</label>
-                      <input 
-                        type="text" 
-                        value={campusVideoUrl} 
-                        onChange={(e) => setCampusVideoUrl(e.target.value)} 
-                        className="w-full h-10 px-3 border border-gray-200 rounded-xl text-xs font-medium" 
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-gray-700">Chairman Portrait Photo URL</label>
-                      <input 
-                        type="text" 
-                        value={hChairmanImage} 
-                        onChange={(e) => setHChairmanImage(e.target.value)} 
-                        className="w-full h-10 px-3 border border-gray-200 rounded-xl text-xs font-medium" 
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-700">Chairman Message Heading</label>
-                    <input 
-                      type="text" 
-                      value={hChairmanHeading} 
-                      onChange={(e) => setHChairmanHeading(e.target.value)} 
-                      className="w-full h-10 px-3 border border-gray-200 rounded-xl text-xs font-medium" 
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-700">Chairman Full Message Text</label>
-                    <textarea 
-                      rows={4} 
-                      value={hChairmanMessage} 
-                      onChange={(e) => setHChairmanMessage(e.target.value)} 
-                      className="w-full p-3 border border-gray-200 rounded-xl text-xs font-medium" 
-                    />
-                  </div>
-
-                  <button 
-                    type="submit" 
-                    className="h-10 px-6 bg-[#071A3A] hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow transition-colors cursor-pointer"
-                  >
-                    Save Photo & Banner Changes
-                  </button>
-                </form>
-              </div>
-            </div>
-          )}
-
+        {/* Main Workspace */}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+          {/* ════════════════════════════════════════════════════ */}
+          {/* TAB 1: DASHBOARD OVERVIEW                            */}
+          {/* ════════════════════════════════════════════════════ */}
           {activeTab === "dashboard" && (
-              <div className="space-y-8 animate-fade-in">
-                
-                {/* 1. Greeting & Date Bar */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-6 animate-fade-in">
+              <SectionHeader
+                title="CMS Overview & Quick Actions"
+                subtitle="Manage and monitor all university website content in real-time"
+                icon={LayoutDashboard}
+              />
+
+              {/* Metrics Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex items-center gap-4 text-left">
+                  <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                    <GraduationCap size={24} />
+                  </div>
                   <div>
-                    <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
-                      Welcome back, Admin!
-                    </h1>
-                    <p className="text-xs sm:text-sm text-gray-500 font-medium mt-0.5">
-                      Overview of live activity across Chalapathi University database.
-                    </p>
+                    <span className="text-2xl font-black text-slate-800">{programs.length}</span>
+                    <p className="text-xs text-gray-500 font-medium">Academic Programs</p>
                   </div>
                 </div>
 
-                {/* 2. Row of 4 Real-time Stat Metric Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  
-                  {/* Card 1: Enquiry Submissions */}
-                  <div className="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-2xs space-y-4 hover:shadow-md transition-all duration-300">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-extrabold text-gray-400 uppercase tracking-wider">Admission Enquiries</span>
-                      <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                        <UserPlus size={20} />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-3xl font-black text-gray-900">{enquiriesCount}</div>
-                      <p className="text-[11px] text-gray-400 font-medium mt-1">Form submissions from admission popup</p>
-                    </div>
+                <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex items-center gap-4 text-left">
+                  <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                    <UserPlus size={24} />
                   </div>
-
-                  {/* Card 2: Certifications */}
-                  <div className="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-2xs space-y-4 hover:shadow-md transition-all duration-300">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-extrabold text-gray-400 uppercase tracking-wider">Global Certifications</span>
-                      <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                        <Award size={20} />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-3xl font-black text-gray-900">{certifications.length}</div>
-                      <p className="text-[11px] text-gray-400 font-medium mt-1">Academics-integrated global certifications</p>
-                    </div>
+                  <div>
+                    <span className="text-2xl font-black text-slate-800">{enquiries.length}</span>
+                    <p className="text-xs text-gray-500 font-medium">Enquiry Leads</p>
                   </div>
-
-                  {/* Card 3: News */}
-                  <div className="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-2xs space-y-4 hover:shadow-md transition-all duration-300">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-extrabold text-gray-400 uppercase tracking-wider">News Articles</span>
-                      <div className="w-10 h-10 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center">
-                        <Megaphone size={20} />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-3xl font-black text-gray-900">{news.length}</div>
-                      <p className="text-[11px] text-gray-400 font-medium mt-1">Published updates & press releases</p>
-                    </div>
-                  </div>
-
-                  {/* Card 4: Events */}
-                  <div className="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-2xs space-y-4 hover:shadow-md transition-all duration-300">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-extrabold text-gray-400 uppercase tracking-wider">Campus Events</span>
-                      <div className="w-10 h-10 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center">
-                        <Calendar size={20} />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-3xl font-black text-gray-900">{events.length}</div>
-                      <p className="text-[11px] text-gray-400 font-medium mt-1">Scheduled academic & sports events</p>
-                    </div>
-                  </div>
-
                 </div>
 
+                <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex items-center gap-4 text-left">
+                  <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                    <Newspaper size={24} />
+                  </div>
+                  <div>
+                    <span className="text-2xl font-black text-slate-800">{news.length + events.length}</span>
+                    <p className="text-xs text-gray-500 font-medium">News & Events</p>
+                  </div>
+                </div>
+
+                <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex items-center gap-4 text-left">
+                  <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+                    <Megaphone size={24} />
+                  </div>
+                  <div>
+                    <span className="text-2xl font-black text-slate-800">{announcements.length}</span>
+                    <p className="text-xs text-gray-500 font-medium">Announcements</p>
+                  </div>
+                </div>
               </div>
-          )}
 
-          {/* 🌟 Tab 2: Announcements */}
-          {activeTab === "announcements" && (
-            <div className="space-y-8">
-              <form onSubmit={handleAddAnnouncement} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end bg-gray-50 border border-gray-100 p-5 rounded-2xl">
-                <div className="md:col-span-2 space-y-1">
-                  <label className="text-[10px] font-bold uppercase text-gray-500">Announcement Title</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g., Admissions 2026 Open"
-                    value={newAnnTitle}
-                    onChange={(e) => setNewAnnTitle(e.target.value)}
-                    className="w-full h-10 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-semibold"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase text-gray-500">Icon Choice</label>
-                  <select
-                    value={newAnnIcon}
-                    onChange={(e) => setNewAnnIcon(e.target.value)}
-                    className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
-                  >
-                    <option value="GraduationCap">Graduation Cap</option>
-                    <option value="Calendar">Calendar</option>
-                    <option value="FileText">File timelimit</option>
-                    <option value="Award">Award Shield</option>
-                    <option value="BookOpen">Open Book</option>
-                  </select>
-                </div>
-                <div>
+              {/* Quick Actions Card */}
+              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs text-left space-y-4">
+                <h3 className="text-sm font-black text-[#072A6C] uppercase tracking-wider">Quick Management Shortcuts</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <button
-                    type="submit"
-                    className="w-full h-10 bg-[#D4AF37] hover:bg-[#C9A84C] text-white font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer inline-flex items-center justify-center gap-1.5"
+                    onClick={() => setActiveTab("homepage")}
+                    className="p-3.5 bg-slate-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 rounded-xl flex flex-col items-center justify-center gap-2 text-center transition-all cursor-pointer"
                   >
-                    <Plus size={14} /> Add Announcement
+                    <Sparkles size={20} className="text-[#072A6C]" />
+                    <span className="text-xs font-bold text-slate-700">Homepage Sections</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("admissions")}
+                    className="p-3.5 bg-slate-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 rounded-xl flex flex-col items-center justify-center gap-2 text-center transition-all cursor-pointer"
+                  >
+                    <UserPlus size={20} className="text-emerald-600" />
+                    <span className="text-xs font-bold text-slate-700">View Enquiries ({enquiries.length})</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("news-events")}
+                    className="p-3.5 bg-slate-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 rounded-xl flex flex-col items-center justify-center gap-2 text-center transition-all cursor-pointer"
+                  >
+                    <Newspaper size={20} className="text-amber-600" />
+                    <span className="text-xs font-bold text-slate-700">Post News/Events</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("academics")}
+                    className="p-3.5 bg-slate-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 rounded-xl flex flex-col items-center justify-center gap-2 text-center transition-all cursor-pointer"
+                  >
+                    <GraduationCap size={20} className="text-purple-600" />
+                    <span className="text-xs font-bold text-slate-700">Edit Programs</span>
                   </button>
                 </div>
-                <div className="md:col-span-4 space-y-1">
-                  <label className="text-[10px] font-bold uppercase text-gray-500">Announcement Description</label>
-                  <textarea
-                    required
-                    rows={2}
-                    placeholder="Provide short detailed description about this notice..."
-                    value={newAnnDesc}
-                    onChange={(e) => setNewAnnDesc(e.target.value)}
-                    className="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-light"
-                  />
-                </div>
-              </form>
+              </div>
 
-              <div className="space-y-3">
-                <h3 className="text-xs font-extrabold text-[#072A6C] uppercase tracking-wider mb-2">Current Announcements</h3>
-                <div className="divide-y divide-gray-100">
-                  {announcements.map((ann, idx) => (
-                    <div key={idx} className="py-4 flex justify-between items-center gap-4 text-xs">
-                      <div className="space-y-0.5">
-                        <div className="flex items-center gap-2">
-                          <span className="font-extrabold text-[#072A6C]">{ann.title}</span>
-                          <span className="text-[9px] text-[#D4AF37] border border-[#D4AF37]/30 px-1.5 py-0.5 rounded-full font-bold uppercase">{ann.iconName}</span>
-                        </div>
-                        <p className="text-gray-500 font-light">{ann.desc}</p>
-                      </div>
+              {/* Recent Enquiries Preview */}
+              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs text-left space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-black text-[#072A6C] uppercase tracking-wider">Recent Admission Enquiries</h3>
+                  <button
+                    onClick={() => setActiveTab("admissions")}
+                    className="text-xs text-[#072A6C] font-bold hover:underline cursor-pointer"
+                  >
+                    View All Enquiries →
+                  </button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-slate-50 text-gray-500 uppercase text-[10px] font-bold border-b border-gray-200">
+                      <tr>
+                        <th className="p-2.5">Name</th>
+                        <th className="p-2.5">Mobile</th>
+                        <th className="p-2.5">Program</th>
+                        <th className="p-2.5">City</th>
+                        <th className="p-2.5">Date</th>
+                        <th className="p-2.5">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {enquiries.slice(0, 5).map((e) => (
+                        <tr key={e.id} className="hover:bg-slate-50/50">
+                          <td className="p-2.5 font-bold text-slate-800">{e.name}</td>
+                          <td className="p-2.5 text-gray-600">{e.mobile}</td>
+                          <td className="p-2.5 text-gray-700 font-medium">{e.program}</td>
+                          <td className="p-2.5 text-gray-600">{e.city}</td>
+                          <td className="p-2.5 text-gray-500">{e.date}</td>
+                          <td className="p-2.5">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-600">
+                              {e.status || "New"}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ════════════════════════════════════════════════════ */}
+          {/* TAB 2: HOMEPAGE CMS                                  */}
+          {/* ════════════════════════════════════════════════════ */}
+          {activeTab === "homepage" && (
+            <div className="space-y-6 animate-fade-in">
+              <SectionHeader
+                title="Homepage CMS & Section Controls"
+                subtitle="Control homepage section ordering, visibility, hero slides, chairman message, and styling"
+                icon={Sparkles}
+                onSave={saveHomepageSections}
+                onReset={() => {
+                  setSectionsList(DEFAULT_HOMEPAGE_SECTIONS);
+                  updateHomepageSections(DEFAULT_HOMEPAGE_SECTIONS);
+                  setSlides(INITIAL_HERO_SLIDES);
+                  updateHeroSlides(INITIAL_HERO_SLIDES);
+                  notifySave("Homepage configuration reset to default!");
+                }}
+                resetLabel="Reset Homepage"
+                saveSuccess={saveSuccess}
+              />
+
+              {/* Sub-tabs */}
+              <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3">
+                {[
+                  { id: "ordering", label: "Section Ordering & Visibility" },
+                  { id: "hero", label: "1. Hero Carousel" },
+                  { id: "ticker", label: "2. Admission Ticker" },
+                  { id: "stats", label: "3. Key Statistics" },
+                  { id: "whyChoose", label: "4. Why Choose Us" },
+                  { id: "programs", label: "5. Schools & Programs" },
+                  { id: "newsEvents", label: "6. News & Events" },
+                  { id: "campusLife", label: "7. Campus Life & Videos" },
+                  { id: "chairman", label: "8. Chairman's Message" },
+                  { id: "placements", label: "9. Placements & Corporate Partners" },
+                  { id: "virtualTour", label: "10. Admissions Strip & Visit Us" },
+                  { id: "styling", label: "Homepage Colors & Style" }
+                ].map((st) => (
+                  <button
+                    key={st.id}
+                    onClick={() => setActiveHomeSubTab(st.id as any)}
+                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      activeHomeSubTab === st.id
+                        ? "bg-[#072A6C] text-white shadow-xs"
+                        : "bg-white text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    {st.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Sub-tab: Ordering & Visibility */}
+              {activeHomeSubTab === "ordering" && (
+                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs text-left space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm font-black text-[#072A6C] uppercase">Homepage Sections Sequence</h3>
+                      <p className="text-xs text-gray-500">Reorder sections up/down, toggle visibility, or click "Edit Content" on any section</p>
+                    </div>
+                    <div className="flex gap-2">
                       <button
-                        onClick={() => handleDeleteAnnouncement(idx)}
-                        className="w-8 h-8 rounded-xl hover:bg-rose-50 text-rose-500 flex items-center justify-center transition-colors cursor-pointer"
+                        type="button"
+                        onClick={() => {
+                          setSectionsList(DEFAULT_HOMEPAGE_SECTIONS);
+                          updateHomepageSections(DEFAULT_HOMEPAGE_SECTIONS);
+                          notifySave("Section ordering reset to default!");
+                        }}
+                        className="h-9 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
                       >
-                        <Trash2 size={16} />
+                        <RotateCcw size={13} /> Reset Order
+                      </button>
+                      <button
+                        onClick={saveHomepageSections}
+                        className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      >
+                        <Save size={13} /> Save Order
                       </button>
                     </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 🌟 Tab 3: About Us */}
-          {activeTab === "about" && (
-            <form onSubmit={handleSaveAbout} className="space-y-6">
-              <div className="space-y-1">
-                <h3 className="text-xs font-extrabold text-[#072A6C] uppercase tracking-wider mb-2">History View Content</h3>
-                <label className="text-[10px] font-bold uppercase text-gray-500">Heritage Introduction Text</label>
-                <textarea
-                  rows={3}
-                  value={aboutHistoryIntro}
-                  onChange={(e) => setAboutHistoryIntro(e.target.value)}
-                  className="w-full p-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-light leading-relaxed"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold uppercase text-gray-500">Core Quote / Mission Statement</label>
-                <input
-                  type="text"
-                  value={aboutHistoryQuote}
-                  onChange={(e) => setAboutHistoryQuote(e.target.value)}
-                  className="w-full h-11 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold text-gray-700"
-                />
-              </div>
-
-              <div className="space-y-1 pt-4 border-t border-gray-100">
-                <h3 className="text-xs font-extrabold text-[#072A6C] uppercase tracking-wider mb-2">Vision View Content</h3>
-                <label className="text-[10px] font-bold uppercase text-gray-500">Our Vision Statement</label>
-                <textarea
-                  rows={2}
-                  value={aboutVisionText}
-                  onChange={(e) => setAboutVisionText(e.target.value)}
-                  className="w-full p-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-light"
-                />
-              </div>
-
-              <div className="space-y-4 pt-4 border-t border-gray-100">
-                <h3 className="text-xs font-extrabold text-[#072A6C] uppercase tracking-wider mb-2">Leadership View Content</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase text-gray-500">Chairman Name</label>
-                    <input
-                      type="text"
-                      value={aboutChairmanName}
-                      onChange={(e) => setAboutChairmanName(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase text-gray-500">Designation / Title</label>
-                    <input
-                      type="text"
-                      value={aboutChairmanTitle}
-                      onChange={(e) => setAboutChairmanTitle(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase text-gray-500">Chairman Quote / Message</label>
-                  <input
-                    type="text"
-                    value={aboutChairmanQuote}
-                    onChange={(e) => setAboutChairmanQuote(e.target.value)}
-                    className="w-full h-11 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
-                  />
-                </div>
-              </div>
-
-              {/* Homepage Chairman Section Settings */}
-              <div className="bg-white p-6 rounded-2xl border border-gray-150 shadow-sm space-y-6 text-left">
-                <span className="text-xs font-black uppercase text-[#072A6C] tracking-wider block border-b border-gray-100 pb-2">
-                  Homepage Chairman Section Settings
-                </span>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase text-gray-500">Section Label</label>
-                    <input
-                      type="text"
-                      value={localStorage.getItem("chalapathi_chairman_label") || "FROM THE CHAIRMAN"}
-                      onChange={(e) => {
-                        localStorage.setItem("chalapathi_chairman_label", e.target.value);
-                        setHChairmanHeading(e.target.value);
-                      }}
-                      className="w-full h-11 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase text-gray-500">Section Subtitle</label>
-                    <input
-                      type="text"
-                      value={hChairmanSubtitle}
-                      onChange={(e) => setHChairmanSubtitle(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase text-gray-500">Chairman Name</label>
-                    <input
-                      type="text"
-                      value={hChairmanName}
-                      onChange={(e) => setHChairmanName(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase text-gray-500">Designation</label>
-                    <input
-                      type="text"
-                      value={hChairmanDesignation}
-                      onChange={(e) => setHChairmanDesignation(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase text-gray-500">Institution Group / Info</label>
-                    <input
-                      type="text"
-                      value={hChairmanGroup}
-                      onChange={(e) => setHChairmanGroup(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase text-gray-500">Chairman Message</label>
-                  <textarea
-                    rows={4}
-                    value={hChairmanMessage}
-                    onChange={(e) => setHChairmanMessage(e.target.value)}
-                    className="w-full p-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase text-gray-500">Chairman Photo URL</label>
-                    <input
-                      type="text"
-                      value={hChairmanImage}
-                      onChange={(e) => setHChairmanImage(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase text-gray-500">Watch Video URL</label>
-                    <input
-                      type="text"
-                      value={hChairmanVideoUrl}
-                      onChange={(e) => setHChairmanVideoUrl(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase text-gray-500">Watch Button Text</label>
-                    <input
-                      type="text"
-                      value={hChairmanBtnText}
-                      onChange={(e) => setHChairmanBtnText(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-gray-100">
-                <button
-                  type="submit"
-                  className="h-11 px-8 bg-[#072A6C] hover:bg-[#051c4a] text-white font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer"
-                >
-                  Save About Us Changes
-                </button>
-              </div>
-            </form>
-          )}
-
-          {/* 🌟 Tab 4: Academics & Programs (With 19-Section CMS) */}
-          {activeTab === "academics" && (
-            <div className="space-y-6 text-left">
-              {/* Top Bar: Selector & Live Preview */}
-              <div className="bg-white border border-gray-150 p-5 rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <span className="text-[10px] font-black uppercase text-[#072A6C] tracking-wider block">
-                    Academic Program Selector
-                  </span>
-                  <div className="flex items-center gap-3">
-                    <select
-                      value={selectedProgSlug}
-                      onChange={(e) => setSelectedProgSlug(e.target.value)}
-                      className="h-11 px-4 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:border-[#072A6C] text-xs font-bold text-gray-800 cursor-pointer min-w-[280px]"
-                    >
-                      {programs.map(p => (
-                        <option key={p.slug} value={p.slug}>
-                          {p.title} ({p.slug})
-                        </option>
-                      ))}
-                    </select>
-                    <span className="text-[11px] font-semibold text-gray-400">
-                      {currentProg?.department || "Academic Department"}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <a
-                    href={`/academics/${selectedProgSlug}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="h-10 px-4 bg-[#072A6C]/10 hover:bg-[#072A6C] text-[#072A6C] hover:text-white font-bold text-xs uppercase tracking-wider rounded-xl inline-flex items-center gap-2 transition-colors cursor-pointer"
-                  >
-                    <ExternalLink size={14} />
-                    Preview Live Page
-                  </a>
-                </div>
-              </div>
-
-              {/* Sub-Navigation Tabs */}
-              <div className="flex items-center gap-2 border-b border-gray-200 pb-3">
-                <button
-                  type="button"
-                  onClick={() => setAcademicsSubTab("sections")}
-                  className={`h-9 px-5 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2 ${
-                    academicsSubTab === "sections"
-                      ? "bg-[#072A6C] text-white shadow-sm"
-                      : "bg-gray-100 hover:bg-gray-200 text-gray-600"
-                  }`}
-                >
-                  <Layers size={14} />
-                  19 Sections Manager (Reorder & Visibility)
-                  <span className="ml-1 px-1.5 py-0.5 rounded-full text-[9px] bg-white/20 text-white font-mono">
-                    {progSectionsList.filter(s => s.enabled).length}/{progSectionsList.length}
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setAcademicsSubTab("content")}
-                  className={`h-9 px-5 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2 ${
-                    academicsSubTab === "content"
-                      ? "bg-[#072A6C] text-white shadow-sm"
-                      : "bg-gray-100 hover:bg-gray-200 text-gray-600"
-                  }`}
-                >
-                  <Edit3 size={14} />
-                  19-Section Content Editor
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setAcademicsSubTab("basic")}
-                  className={`h-9 px-5 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2 ${
-                    academicsSubTab === "basic"
-                      ? "bg-[#072A6C] text-white shadow-sm"
-                      : "bg-gray-100 hover:bg-gray-200 text-gray-600"
-                  }`}
-                >
-                  <FileText size={14} />
-                  Basic Info & Flowchart
-                </button>
-              </div>
-
-              {/* SUB-VIEW 1: 19 Sections Order & Visibility Manager */}
-              {academicsSubTab === "sections" && (
-                <div className="space-y-4">
-                  <div className="bg-amber-50/70 border border-amber-200/80 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                    <div>
-                      <h4 className="text-xs font-black text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
-                        <Sparkles size={14} className="text-amber-600" />
-                        Dynamic 19-Section Page Layout Engine
-                      </h4>
-                      <p className="text-[11px] text-amber-800/90 font-medium mt-0.5">
-                        Reorder sections with the Up/Down controls or toggle visibility to customize this specific program page.
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleResetProgramSections}
-                      className="h-8 px-3.5 bg-white hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-xl text-[10px] font-black uppercase tracking-wider inline-flex items-center gap-1.5 shadow-sm cursor-pointer transition-colors"
-                    >
-                      <RotateCcw size={12} />
-                      Reset to Default 19 Sections
-                    </button>
                   </div>
 
-                  <div className="bg-white border border-gray-150 rounded-2xl shadow-sm divide-y divide-gray-100 overflow-hidden">
-                    {progSectionsList.map((section, idx) => (
-                      <div
-                        key={section.id}
-                        className={`p-3.5 flex items-center justify-between gap-4 transition-colors ${
-                          section.enabled ? "hover:bg-slate-50/70" : "bg-gray-50/70 opacity-60"
-                        }`}
-                      >
-                        <div className="flex items-center gap-3.5 min-w-0">
-                          <span className="w-7 h-7 rounded-lg bg-[#072A6C]/10 text-[#072A6C] font-mono text-xs font-black flex items-center justify-center shrink-0">
-                            {idx + 1}
-                          </span>
-                          <div className="min-w-0">
-                            <span className="text-xs font-bold text-gray-800 block truncate">
-                              {section.title}
+                  <div className="space-y-2.5">
+                    {sectionsList.map((sec, idx) => {
+                      const tabMapping: Record<string, string> = {
+                        hero: "hero",
+                        ticker: "ticker",
+                        stats: "stats",
+                        whyChooseUs: "whyChoose",
+                        whyChoose: "whyChoose",
+                        programs: "programs",
+                        newsEvents: "newsEvents",
+                        campusLife: "campusLife",
+                        chairman: "chairman",
+                        placements: "placements",
+                        virtualTour: "virtualTour"
+                      };
+
+                      return (
+                        <div
+                          key={sec.id}
+                          className={`flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-xl border gap-3 transition-all ${
+                            sec.enabled ? "bg-white border-gray-200 shadow-xs" : "bg-gray-50 border-gray-200 opacity-60"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-700 text-xs font-black flex items-center justify-center">
+                              {sec.order}
                             </span>
-                            <span className="text-[10px] text-gray-400 font-mono">
-                              ID: #{section.id}
-                            </span>
+                            <div>
+                              <h4 className="text-xs font-bold text-slate-800">{sec.name}</h4>
+                              <span className="text-[10px] text-gray-400 font-mono">ID: {sec.id}</span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 self-end sm:self-auto">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const target = tabMapping[sec.id] || "ordering";
+                                setActiveHomeSubTab(target as any);
+                              }}
+                              className="h-7 px-2.5 bg-blue-50 hover:bg-blue-100 text-[#072A6C] text-[11px] font-bold rounded-md flex items-center gap-1 cursor-pointer transition-colors border border-blue-200"
+                            >
+                              <Edit3 size={12} /> Edit Content
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => toggleSectionEnable(sec.id)}
+                              className={`px-2.5 py-1 rounded-md text-[10px] font-bold cursor-pointer transition-colors ${
+                                sec.enabled ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-gray-200 text-gray-600"
+                              }`}
+                            >
+                              {sec.enabled ? "Visible (ON)" : "Hidden (OFF)"}
+                            </button>
+
+                            <button
+                              type="button"
+                              disabled={idx === 0}
+                              onClick={() => moveSection(idx, "up")}
+                              className="p-1.5 bg-gray-100 hover:bg-gray-200 rounded-md text-gray-600 disabled:opacity-30 cursor-pointer"
+                              title="Move Up"
+                            >
+                              <ArrowUp size={14} />
+                            </button>
+                            <button
+                              type="button"
+                              disabled={idx === sectionsList.length - 1}
+                              onClick={() => moveSection(idx, "down")}
+                              className="p-1.5 bg-gray-100 hover:bg-gray-200 rounded-md text-gray-600 disabled:opacity-30 cursor-pointer"
+                              title="Move Down"
+                            >
+                              <ArrowDown size={14} />
+                            </button>
                           </div>
                         </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
-                        <div className="flex items-center gap-2 shrink-0">
-                          {/* Visibility badge */}
-                          <span
-                            className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
-                              section.enabled
-                                ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                                : "bg-rose-50 text-rose-700 border border-rose-200"
-                            }`}
-                          >
-                            {section.enabled ? "Visible" : "Hidden"}
-                          </span>
+              {/* Sub-tab: Hero Slides */}
+              {activeHomeSubTab === "hero" && (
+                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs text-left space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm font-black text-[#072A6C] uppercase">Hero Banner Slides Carousel</h3>
+                      <p className="text-xs text-gray-500">Add or replace full-width banner slides displayed at top of homepage</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSlides(INITIAL_HERO_SLIDES);
+                          updateHeroSlides(INITIAL_HERO_SLIDES);
+                          notifySave("Hero banner slides reset to default!");
+                        }}
+                        className="h-9 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                        title="Reset to default slides"
+                      >
+                        <RotateCcw size={13} /> Reset Slides
+                      </button>
+                      <button
+                        onClick={handleAddHeroSlide}
+                        className="h-9 px-3 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer shadow-xs"
+                      >
+                        <Plus size={14} /> Add Slide
+                      </button>
+                      <button
+                        onClick={saveHeroSlides}
+                        className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      >
+                        <Save size={13} /> Save Slides
+                      </button>
+                    </div>
+                  </div>
 
-                          {/* Toggle Visibility Button */}
+                  <div className="space-y-4">
+                    {slides.map((slide, idx) => (
+                      <div key={slide.id} className="p-4 rounded-xl border border-gray-200 bg-slate-50/50 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-black text-[#072A6C]">Slide #{idx + 1}</span>
                           <button
                             type="button"
-                            onClick={() => handleToggleProgramSection(section.id)}
-                            title={section.enabled ? "Hide Section" : "Show Section"}
-                            className={`w-8 h-8 rounded-lg flex items-center justify-center border text-xs cursor-pointer transition-colors ${
-                              section.enabled
-                                ? "bg-white hover:bg-rose-50 border-gray-200 text-gray-600 hover:text-rose-600 hover:border-rose-200"
-                                : "bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700"
-                            }`}
+                            onClick={() => handleRemoveHeroSlide(slide.id)}
+                            className="text-red-500 hover:text-red-700 text-xs font-bold flex items-center gap-1 cursor-pointer"
                           >
-                            {section.enabled ? <Eye size={14} /> : <EyeOff size={14} />}
+                            <Trash2 size={13} /> Remove
                           </button>
+                        </div>
 
-                          {/* Move Up */}
-                          <button
-                            type="button"
-                            disabled={idx === 0}
-                            onClick={() => handleMoveProgramSection(idx, "up")}
-                            title="Move Section Up"
-                            className="w-8 h-8 rounded-lg flex items-center justify-center border border-gray-200 bg-white hover:bg-[#072A6C] hover:text-white disabled:opacity-30 disabled:hover:bg-white disabled:hover:text-gray-400 text-gray-600 text-xs cursor-pointer transition-colors"
-                          >
-                            <ArrowUp size={14} />
-                          </button>
+                        <ImageField
+                          label="Slide Banner Image"
+                          value={slide.image || INITIAL_HERO_SLIDES[idx]?.image || "/banner_v2.png"}
+                          defaultValue={INITIAL_HERO_SLIDES[idx]?.image || "/banner_v2.png"}
+                          onReset={() => {
+                            const fallback = INITIAL_HERO_SLIDES[idx]?.image || "/banner_v2.png";
+                            handleUpdateHeroSlide(idx, "image", fallback);
+                            notifySave("Slide banner image reset to default!");
+                          }}
+                          onChange={(val) => handleUpdateHeroSlide(idx, "image", val)}
+                          aspectRatio="banner"
+                        />
 
-                          {/* Move Down */}
-                          <button
-                            type="button"
-                            disabled={idx === progSectionsList.length - 1}
-                            onClick={() => handleMoveProgramSection(idx, "down")}
-                            title="Move Section Down"
-                            className="w-8 h-8 rounded-lg flex items-center justify-center border border-gray-200 bg-white hover:bg-[#072A6C] hover:text-white disabled:opacity-30 disabled:hover:bg-white disabled:hover:text-gray-400 text-gray-600 text-xs cursor-pointer transition-colors"
-                          >
-                            <ArrowDown size={14} />
-                          </button>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Heading Title (Optional)</label>
+                            <input
+                              type="text"
+                              value={slide.title || ""}
+                              onChange={(e) => handleUpdateHeroSlide(idx, "title", e.target.value)}
+                              placeholder="e.g. WELCOME TO CHALAPATHI"
+                              className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 font-semibold"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Subtitle (Optional)</label>
+                            <input
+                              type="text"
+                              value={slide.subtitle || ""}
+                              onChange={(e) => handleUpdateHeroSlide(idx, "subtitle", e.target.value)}
+                              placeholder="e.g. Inspiring Excellence & Innovation"
+                              className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
+                            />
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -1825,868 +1436,3578 @@ export default function AdminPortal() {
                 </div>
               )}
 
-              {/* SUB-VIEW 2: 19-Section Content Editor */}
-              {academicsSubTab === "content" && (
-                <form onSubmit={handleSaveCustomProgramData} className="space-y-6">
-                  {/* HOD Message Editor */}
-                  <div className="bg-white p-5 rounded-2xl border border-gray-150 shadow-sm space-y-4">
-                    <h3 className="text-xs font-black uppercase text-[#072A6C] tracking-wider border-b border-gray-100 pb-2 flex items-center gap-2">
-                      <Users size={16} />
-                      Section 2: HOD / Department Head Message
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase text-gray-500">HOD Name</label>
-                        <input
-                          type="text"
-                          value={customFullProgram?.hodMessage?.hodName || ""}
-                          onChange={(e) => setCustomFullProgram({
-                            ...customFullProgram,
-                            hodMessage: { ...customFullProgram.hodMessage, hodName: e.target.value }
-                          })}
-                          className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase text-gray-500">Designation</label>
-                        <input
-                          type="text"
-                          value={customFullProgram?.hodMessage?.designation || ""}
-                          onChange={(e) => setCustomFullProgram({
-                            ...customFullProgram,
-                            hodMessage: { ...customFullProgram.hodMessage, designation: e.target.value }
-                          })}
-                          className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase text-gray-500">Qualification</label>
-                        <input
-                          type="text"
-                          value={customFullProgram?.hodMessage?.qualification || ""}
-                          onChange={(e) => setCustomFullProgram({
-                            ...customFullProgram,
-                            hodMessage: { ...customFullProgram.hodMessage, qualification: e.target.value }
-                          })}
-                          className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
-                        />
-                      </div>
+              {/* Sub-tab: Admission Ticker */}
+              {activeHomeSubTab === "ticker" && (
+                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs text-left space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm font-black text-[#072A6C] uppercase">Admissions Alert Marquee Ticker</h3>
+                      <p className="text-xs text-gray-500">Edit the animated ticker text that scrolls below hero banner</p>
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase text-gray-500">HOD Message Text</label>
-                      <textarea
-                        rows={3}
-                        value={customFullProgram?.hodMessage?.message || ""}
-                        onChange={(e) => setCustomFullProgram({
-                          ...customFullProgram,
-                          hodMessage: { ...customFullProgram.hodMessage, message: e.target.value }
-                        })}
-                        className="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Vision & Mission Editor */}
-                  <div className="bg-white p-5 rounded-2xl border border-gray-150 shadow-sm space-y-4">
-                    <h3 className="text-xs font-black uppercase text-[#072A6C] tracking-wider border-b border-gray-100 pb-2 flex items-center gap-2">
-                      <Compass size={16} />
-                      Section 3: Vision & Mission Statements
-                    </h3>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase text-gray-500">Department Vision Statement</label>
-                      <textarea
-                        rows={2}
-                        value={customFullProgram?.visionMission?.vision || ""}
-                        onChange={(e) => setCustomFullProgram({
-                          ...customFullProgram,
-                          visionMission: { ...customFullProgram.visionMission, vision: e.target.value }
-                        })}
-                        className="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase text-gray-500">Mission Statements (1 statement per line)</label>
-                      <textarea
-                        rows={3}
-                        value={customFullProgram?.visionMission?.mission?.join("\n") || ""}
-                        onChange={(e) => setCustomFullProgram({
-                          ...customFullProgram,
-                          visionMission: {
-                            ...customFullProgram.visionMission,
-                            mission: e.target.value.split("\n").filter(Boolean)
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const defTicker = DEFAULT_HOMEPAGE_SECTIONS.find((s) => s.id === "ticker");
+                          if (defTicker) {
+                            const tickerIndex = sectionsList.findIndex((s) => s.id === "ticker");
+                            const updated = [...sectionsList];
+                            updated[tickerIndex] = { ...updated[tickerIndex], title: defTicker.title, bgColor: defTicker.bgColor, textColor: defTicker.textColor };
+                            setSectionsList(updated);
+                            updateHomepageSections(updated);
+                            notifySave("Ticker content reset to default!");
                           }
-                        })}
-                        className="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
-                      />
+                        }}
+                        className="h-9 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        <RotateCcw size={13} /> Reset Ticker
+                      </button>
+                      <button
+                        onClick={saveHomepageSections}
+                        className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      >
+                        <Save size={13} /> Save Ticker
+                      </button>
                     </div>
                   </div>
 
-                  {/* Placements & Key Highlights */}
-                  <div className="bg-white p-5 rounded-2xl border border-gray-150 shadow-sm space-y-4">
-                    <h3 className="text-xs font-black uppercase text-[#072A6C] tracking-wider border-b border-gray-100 pb-2 flex items-center gap-2">
-                      <Briefcase size={16} />
-                      Section 6: Placements & Statistics
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase text-gray-500">Placement Rate</label>
-                        <input
-                          type="text"
-                          value={customFullProgram?.placements?.placementRate || "95%"}
-                          onChange={(e) => setCustomFullProgram({
-                            ...customFullProgram,
-                            placements: { ...customFullProgram.placements, placementRate: e.target.value }
-                          })}
-                          className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase text-gray-500">Highest Package</label>
-                        <input
-                          type="text"
-                          value={customFullProgram?.placements?.highestPackage || "₹24 LPA"}
-                          onChange={(e) => setCustomFullProgram({
-                            ...customFullProgram,
-                            placements: { ...customFullProgram.placements, highestPackage: e.target.value }
-                          })}
-                          className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase text-gray-500">Average Package</label>
-                        <input
-                          type="text"
-                          value={customFullProgram?.placements?.averagePackage || "₹6.5 LPA"}
-                          onChange={(e) => setCustomFullProgram({
-                            ...customFullProgram,
-                            placements: { ...customFullProgram.placements, averagePackage: e.target.value }
-                          })}
-                          className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
-                        />
-                      </div>
-                    </div>
-                  </div>
+                  {(() => {
+                    const tickerIndex = sectionsList.findIndex((s) => s.id === "ticker");
+                    const ticker = sectionsList[tickerIndex] || { title: "", bgColor: "#F4B400", textColor: "#0A2D6D" };
+                    return (
+                      <div className="space-y-4">
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-bold text-gray-700 uppercase">Marquee Text Content</label>
+                          <textarea
+                            rows={3}
+                            value={ticker.title || ""}
+                            onChange={(e) => {
+                              const updated = [...sectionsList];
+                              updated[tickerIndex] = { ...updated[tickerIndex], title: e.target.value };
+                              setSectionsList(updated);
+                            }}
+                            className="w-full p-3 text-xs bg-slate-50 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-semibold"
+                          />
+                        </div>
 
-                  <div className="pt-2">
-                    <button
-                      type="submit"
-                      className="h-11 px-8 bg-[#072A6C] hover:bg-[#051c4a] text-white font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer shadow-md transition-colors"
-                    >
-                      Save 19-Section Content
-                    </button>
-                  </div>
-                </form>
-              )}
-
-              {/* SUB-VIEW 3: Basic Info & Flowchart */}
-              {academicsSubTab === "basic" && (
-                <form onSubmit={handleSaveProgram} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase text-gray-500">Program Title</label>
-                      <input
-                        type="text"
-                        required
-                        value={progTitle}
-                        onChange={(e) => setProgTitle(e.target.value)}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase text-gray-500">Short Tagline</label>
-                      <input
-                        type="text"
-                        required
-                        value={progDesc}
-                        onChange={(e) => setProgDesc(e.target.value)}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase text-gray-500">Overview / Introduction</label>
-                    <textarea
-                      rows={3}
-                      required
-                      value={progOverview}
-                      onChange={(e) => setProgOverview(e.target.value)}
-                      className="w-full p-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-light leading-relaxed"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase text-gray-500">Curriculum Subjects (comma separated list)</label>
-                    <textarea
-                      rows={2}
-                      required
-                      value={progCurriculum}
-                      onChange={(e) => setProgCurriculum(e.target.value)}
-                      className="w-full p-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase text-gray-500">Flowchart Year 1 Courses (comma separated)</label>
-                      <input
-                        type="text"
-                        value={flowchartY1}
-                        onChange={(e) => setFlowchartY1(e.target.value)}
-                        placeholder="e.g. Python Programming, Computational Mathematics"
-                        className="w-full h-10 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase text-gray-500">Flowchart Year 2 Courses (comma separated)</label>
-                      <input
-                        type="text"
-                        value={flowchartY2}
-                        onChange={(e) => setFlowchartY2(e.target.value)}
-                        placeholder="e.g. Data Structures, Database Systems"
-                        className="w-full h-10 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase text-gray-500">Flowchart Year 3 Courses (comma separated)</label>
-                      <input
-                        type="text"
-                        value={flowchartY3}
-                        onChange={(e) => setFlowchartY3(e.target.value)}
-                        placeholder="e.g. Operating Systems, Computer Networks"
-                        className="w-full h-10 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase text-gray-500">Flowchart Year 4 Courses (comma separated)</label>
-                      <input
-                        type="text"
-                        value={flowchartY4}
-                        onChange={(e) => setFlowchartY4(e.target.value)}
-                        placeholder="e.g. Capstone Project, Cloud Infrastructure"
-                        className="w-full h-10 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Syllabus / Curriculum File Uploader */}
-                  <div className="space-y-2 p-5 border border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center bg-gray-50/50">
-                    <UploadCloud className="text-[#072A6C]/40 mb-1" size={32} />
-                    <span className="text-[11px] font-bold uppercase text-gray-600">Upload Program Syllabus / Curriculum PDF</span>
-                    <span className="text-[10px] text-gray-400 font-light">Current: {curriculumFileName}</span>
-                    <input
-                      type="file"
-                      accept="application/pdf"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                      id="syllabus-file-input"
-                    />
-                    <label
-                      htmlFor="syllabus-file-input"
-                      className="h-9 px-6 border border-gray-200 bg-white hover:bg-gray-50 rounded-xl font-bold text-[10px] uppercase tracking-wider inline-flex items-center justify-center cursor-pointer shadow-sm transition-colors"
-                    >
-                      Choose File
-                    </label>
-                  </div>
-
-                  <div className="pt-4 border-t border-gray-100">
-                    <button
-                      type="submit"
-                      className="h-11 px-8 bg-[#072A6C] hover:bg-[#051c4a] text-white font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer"
-                    >
-                      Save Program Details
-                    </button>
-                  </div>
-                </form>
-              )}
-            </div>
-          )}
-
-          {/* 🌟 Tab 5: Academic Calendar */}
-          {activeTab === "calendar" && (
-            <div className="space-y-8">
-              <div>
-                <h1 className="text-xl font-black text-[#072A6C] uppercase tracking-wider">Academic Calendar Portal</h1>
-                <p className="text-xs text-gray-500 font-light mt-0.5">Add individual milestones manually or upload an Excel CSV sheet to batch map milestones to the calendar.</p>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                
-                {/* LEFT COLUMN: Uploader & Form (5 cols) */}
-                <div className="lg:col-span-5 space-y-6">
-                  
-                  {/* CSV / Excel Sheet Import Card */}
-                  <div className="bg-white p-6 rounded-2xl border border-gray-150 shadow-sm space-y-4 text-left">
-                    <span className="text-xs font-black uppercase text-[#072A6C] tracking-wider block border-b border-gray-100 pb-2 flex items-center gap-1.5">
-                      <FileSpreadsheet size={16} className="text-emerald-600" />
-                      Excel CSV Import
-                    </span>
-                    
-                    <div className="space-y-2">
-                      <div className="border-2 border-dashed border-gray-200 hover:border-emerald-500 rounded-2xl p-6 text-center cursor-pointer transition-colors relative">
-                        <input 
-                          type="file" 
-                          accept=".csv"
-                          onChange={handleCSVUpload}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        />
-                        <UploadCloud className="mx-auto text-gray-400 mb-2.5" size={32} />
-                        <span className="block text-xs font-bold text-gray-700">
-                          {csvFileName || "Upload Academic Calendar CSV"}
-                        </span>
-                        <span className="block text-[10px] text-gray-400 font-light mt-1">
-                          Accepts .csv files exported from Excel
-                        </span>
-                      </div>
-                      
-                      {/* Helpful Sample Guide */}
-                      <div className="bg-slate-50 border border-slate-100 p-3.5 rounded-xl space-y-2">
-                        <span className="text-[10px] font-bold text-slate-600 uppercase block">Expected CSV Format:</span>
-                        <code className="block text-[9px] text-slate-500 bg-white border border-slate-100 p-2 rounded-md font-mono select-all text-left">
-                          Month,Day,Milestone<br />
-                          July,15,Commencement of Classwork<br />
-                          September,5,First Mid-Term Examinations<br />
-                          December,15,End Semester Theory Exams
-                        </code>
-                        <span className="text-[9px] text-slate-400 font-medium block">Create in Excel with "Month", "Day", "Milestone" headers and save as CSV.</span>
-                        <div className="pt-1 flex justify-end">
-                          <a
-                            href="data:text/csv;charset=utf-8,Month,Day,Milestone%0AJuly,15,Commencement of Classwork%0ASeptember,5,First Mid-Term Examinations%0ADecember,15,End Semester Theory Exams"
-                            download="academic_calendar_sample.csv"
-                            className="inline-flex items-center gap-1 text-[10px] font-extrabold text-emerald-600 hover:text-emerald-700 hover:underline cursor-pointer transition-colors"
-                          >
-                            <Download size={12} />
-                            Download Sample Excel CSV
-                          </a>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <ColorField
+                            label="Ticker Background Color"
+                            value={ticker.bgColor || "#F4B400"}
+                            onChange={(val) => {
+                              const updated = [...sectionsList];
+                              updated[tickerIndex] = { ...updated[tickerIndex], bgColor: val };
+                              setSectionsList(updated);
+                            }}
+                          />
+                          <ColorField
+                            label="Ticker Text Color"
+                            value={ticker.textColor || "#0A2D6D"}
+                            onChange={(val) => {
+                              const updated = [...sectionsList];
+                              updated[tickerIndex] = { ...updated[tickerIndex], textColor: val };
+                              setSectionsList(updated);
+                            }}
+                          />
                         </div>
                       </div>
+                    );
+                  })()}
+                </div>
+              )}
+
+              {/* Sub-tab: Key Statistics Bar */}
+              {activeHomeSubTab === "stats" && (
+                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs text-left space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm font-black text-[#072A6C] uppercase">Statistics Bar Counters</h3>
+                      <p className="text-xs text-gray-500">Manage the 6 live counters displayed on homepage</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const defStats = DEFAULT_HOMEPAGE_SECTIONS.find((s) => s.id === "stats")?.extraData || [];
+                          setStatsData(defStats);
+                          const updated = sectionsList.map((s) => (s.id === "stats" ? { ...s, extraData: defStats } : s));
+                          setSectionsList(updated);
+                          updateHomepageSections(updated);
+                          notifySave("Statistics bar reset to default!");
+                        }}
+                        className="h-9 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        <RotateCcw size={13} /> Reset Stats
+                      </button>
+                      <button
+                        onClick={saveStats}
+                        className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      >
+                        <Save size={13} /> Save Stats
+                      </button>
                     </div>
                   </div>
 
-                  {/* Manual Milestone Creator */}
-                  <div className="bg-white p-6 rounded-2xl border border-gray-150 shadow-sm space-y-4 text-left">
-                    <span className="text-xs font-black uppercase text-[#072A6C] tracking-wider block border-b border-gray-100 pb-2">
-                      Add Single Milestone
-                    </span>
-                    <form onSubmit={handleSaveCalendar} className="space-y-4">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase text-gray-500">Month</label>
-                        <select
-                          value={calMonthIdx}
-                          onChange={(e) => setCalMonthIdx(parseInt(e.target.value))}
-                          className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
-                        >
-                          {calendarData.map((m, idx) => (
-                            <option key={idx} value={idx}>{m.name}</option>
-                          ))}
-                        </select>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                    {statsData.map((item, idx) => (
+                      <div key={idx} className="p-3.5 rounded-xl border border-gray-200 bg-slate-50/50 space-y-2">
+                        <span className="text-[10px] font-black text-gray-400 uppercase">Counter #{idx + 1}</span>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Number Value</label>
+                          <input
+                            type="text"
+                            value={item.n || ""}
+                            onChange={(e) => {
+                              const updated = [...statsData];
+                              updated[idx] = { ...updated[idx], n: e.target.value };
+                              setStatsData(updated);
+                            }}
+                            className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold text-[#D4AF37]"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Label Text</label>
+                          <input
+                            type="text"
+                            value={item.label || ""}
+                            onChange={(e) => {
+                              const updated = [...statsData];
+                              updated[idx] = { ...updated[idx], label: e.target.value };
+                              setStatsData(updated);
+                            }}
+                            className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-semibold"
+                          />
+                        </div>
                       </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase text-gray-500">Day (1-31)</label>
-                        <input
-                          type="number"
-                          min={1}
-                          max={31}
-                          value={calDay}
-                          onChange={(e) => setCalDay(parseInt(e.target.value))}
-                          className="w-full h-10 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase text-gray-500">Milestone / Event Text</label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="e.g. First Mid-Term Examinations"
-                          value={calEventText}
-                          onChange={(e) => setCalEventText(e.target.value)}
-                          className="w-full h-10 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-semibold"
-                        />
-                      </div>
-                      <button
-                        type="submit"
-                        className="w-full h-10 bg-[#072A6C] hover:bg-[#051c4a] text-white font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer transition-colors"
-                      >
-                        Set Calendar Milestone
-                      </button>
-                    </form>
+                    ))}
                   </div>
                 </div>
+              )}
 
-                {/* RIGHT COLUMN: Preview & Active Milestones (7 cols) */}
-                <div className="lg:col-span-7 space-y-6">
-                  
-                  {/* CSV Import Preview */}
-                  {parsedEvents.length > 0 && (
-                    <div className="bg-white p-6 rounded-2xl border border-emerald-100 shadow-sm space-y-4 text-left animate-fade-in">
-                      <div className="flex justify-between items-center border-b border-gray-100 pb-2">
-                        <span className="text-xs font-black uppercase text-[#072A6C] tracking-wider block">
-                          Parsed Milestones ({parsedEvents.length})
-                        </span>
-                        <div className="flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleImportCalendarCSV(false)}
-                            className="h-8 px-3.5 bg-slate-100 hover:bg-slate-200 text-[#072A6C] text-[10px] font-bold rounded-lg cursor-pointer transition-all border-none outline-none"
-                          >
-                            Merge Events
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleImportCalendarCSV(true)}
-                            className="h-8 px-3.5 bg-[#072A6C] hover:bg-[#051c4a] text-white text-[10px] font-bold rounded-lg cursor-pointer transition-all border-none outline-none"
-                          >
-                            Overwrite All & Import
-                          </button>
+              {/* Sub-tab: Why Choose Us */}
+              {activeHomeSubTab === "whyChoose" && (
+                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs text-left space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm font-black text-[#072A6C] uppercase">Why Choose Us Feature Cards</h3>
+                      <p className="text-xs text-gray-500">Edit heading, subtext and the 6 key differentiator cards</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const defWhy = DEFAULT_HOMEPAGE_SECTIONS.find((s) => s.id === "whyChoose")?.extraData || [];
+                          setWhyChooseData(defWhy);
+                          const updated = sectionsList.map((s) => (s.id === "whyChoose" ? { ...s, extraData: defWhy } : s));
+                          setSectionsList(updated);
+                          updateHomepageSections(updated);
+                          notifySave("Why Choose Us cards reset to default!");
+                        }}
+                        className="h-9 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        <RotateCcw size={13} /> Reset Cards
+                      </button>
+                      <button
+                        onClick={saveWhyChoose}
+                        className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      >
+                        <Save size={13} /> Save Cards
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                    {whyChooseData.map((card, idx) => (
+                      <div key={idx} className="p-4 rounded-xl border border-gray-200 bg-slate-50/50 space-y-2">
+                        <span className="text-[10px] font-black text-gray-400 uppercase">Card #{idx + 1}</span>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Title</label>
+                          <input
+                            type="text"
+                            value={card.title || ""}
+                            onChange={(e) => {
+                              const updated = [...whyChooseData];
+                              updated[idx] = { ...updated[idx], title: e.target.value };
+                              setWhyChooseData(updated);
+                            }}
+                            className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Description</label>
+                          <textarea
+                            rows={3}
+                            value={card.desc || ""}
+                            onChange={(e) => {
+                              const updated = [...whyChooseData];
+                              updated[idx] = { ...updated[idx], desc: e.target.value };
+                              setWhyChooseData(updated);
+                            }}
+                            className="w-full p-2 text-xs bg-white border border-gray-200 rounded-lg font-medium"
+                          />
                         </div>
                       </div>
-                      
-                      <div className="max-h-[220px] overflow-y-auto pr-1 border border-slate-50 rounded-xl divide-y divide-gray-100">
-                        {parsedEvents.map((evt, idx) => (
-                          <div key={idx} className="py-2.5 px-3 flex justify-between items-center text-xs bg-slate-50/30">
-                            <span className="font-extrabold text-[#072A6C]">{evt.month} {evt.day}</span>
-                            <span className="text-gray-500 text-right max-w-[70%] font-light">{evt.eventText}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Sub-tab: Schools & Programs */}
+              {activeHomeSubTab === "programs" && (
+                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs text-left space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
+                    <div>
+                      <h3 className="text-sm font-black text-[#072A6C] uppercase flex items-center gap-2">
+                        <GraduationCap size={16} className="text-[#072A6C]" />
+                        Explore Our Schools & Programs CMS
+                      </h3>
+                      <p className="text-xs text-gray-500">Configure schools, category/department tabs, and individual degree course cards with photos & target sizes</p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAcademicData(DEFAULT_ACADEMIC_STRUCTURE);
+                          updateAcademicStructure(DEFAULT_ACADEMIC_STRUCTURE);
+                          notifySave("Reset all schools, categories & program cards to defaults!");
+                        }}
+                        className="h-9 px-3.5 bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-700 border border-slate-300 hover:border-red-300 text-xs font-bold rounded-lg shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer"
+                        title="Revert all programs and photos to defaults"
+                      >
+                        <RotateCcw size={13} /> Reset All Programs
+                      </button>
+                      <button
+                        onClick={saveProgramsSection}
+                        className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs shrink-0"
+                      >
+                        <Save size={13} /> Save All Programs
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Section Headings */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50/70 border border-gray-200/80">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-600 uppercase">Section Main Heading</label>
+                      <input
+                        type="text"
+                        value={programsSectionData.title}
+                        onChange={(e) => setProgramsSectionData({ ...programsSectionData, title: e.target.value })}
+                        className="w-full h-9 px-3 text-xs bg-white border border-gray-200 rounded-lg font-bold text-gray-800"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-600 uppercase">Section Subtitle / Tagline</label>
+                      <input
+                        type="text"
+                        value={programsSectionData.subtitle}
+                        onChange={(e) => setProgramsSectionData({ ...programsSectionData, subtitle: e.target.value })}
+                        className="w-full h-9 px-3 text-xs bg-white border border-gray-200 rounded-lg text-gray-700"
+                      />
+                    </div>
+                  </div>
+
+                  {/* School Selector Tabs */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-black text-[#072A6C] uppercase tracking-wider">
+                        1. Select School / Faculty ({Object.keys(academicData).length})
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const name = prompt("Enter new school name (e.g. School of Pharmacy):");
+                          if (!name) return;
+                          const updated = { ...academicData, [name]: {} };
+                          setAcademicData(updated);
+                          setActiveAdminSchool(name);
+                          setActiveAdminDept("");
+                        }}
+                        className="h-7 px-3 bg-blue-50 text-[#072A6C] hover:bg-blue-100 border border-blue-200 text-[10.5px] font-bold rounded-lg flex items-center gap-1 cursor-pointer"
+                      >
+                        <Plus size={12} /> Add School
+                      </button>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 p-2 bg-slate-50 rounded-xl border border-gray-200">
+                      {Object.keys(academicData).map((school) => {
+                        const isActive = activeAdminSchool === school;
+                        return (
+                          <div key={school} className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActiveAdminSchool(school);
+                                const depts = Object.keys(academicData[school] || {});
+                                setActiveAdminDept(depts[0] || "");
+                              }}
+                              className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                                isActive
+                                  ? "bg-[#072A6C] text-white shadow-sm"
+                                  : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+                              }`}
+                            >
+                              {school}
+                            </button>
+                            {isActive && (
+                              <button
+                                type="button"
+                                title="Delete School"
+                                onClick={() => {
+                                  if (Object.keys(academicData).length <= 1) {
+                                    alert("At least one school must be kept.");
+                                    return;
+                                  }
+                                  if (window.confirm(`Delete ${school} and all its categories?`)) {
+                                    const copy = { ...academicData };
+                                    delete copy[school];
+                                    setAcademicData(copy);
+                                    const remaining = Object.keys(copy);
+                                    setActiveAdminSchool(remaining[0] || "");
+                                    setActiveAdminDept(Object.keys(copy[remaining[0]] || {})[0] || "");
+                                  }
+                                }}
+                                className="p-1.5 text-gray-400 hover:text-red-600 rounded cursor-pointer"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Department / Category Tabs under Selected School */}
+                  {activeAdminSchool && (
+                    <div className="space-y-3 pt-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-black text-[#072A6C] uppercase tracking-wider">
+                          2. Categories / Departments under "{activeAdminSchool}"
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const name = prompt(`Enter new category name under ${activeAdminSchool} (e.g. Artificial Intelligence):`);
+                            if (!name) return;
+                            const schoolDepts = academicData[activeAdminSchool] || {};
+                            const updated = {
+                              ...academicData,
+                              [activeAdminSchool]: {
+                                ...schoolDepts,
+                                [name]: []
+                              }
+                            };
+                            setAcademicData(updated);
+                            setActiveAdminDept(name);
+                          }}
+                          className="h-7 px-3 bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200 text-[10.5px] font-bold rounded-lg flex items-center gap-1 cursor-pointer"
+                        >
+                          <Plus size={12} /> Add Category
+                        </button>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 p-2 bg-slate-50 rounded-xl border border-gray-200">
+                        {Object.keys(academicData[activeAdminSchool] || {}).map((dept) => {
+                          const isActive = activeAdminDept === dept;
+                          return (
+                            <div key={dept} className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => setActiveAdminDept(dept)}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                                  isActive
+                                    ? "bg-[#D4AF37] text-slate-900 shadow-sm font-extrabold"
+                                    : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
+                                }`}
+                              >
+                                {dept}
+                              </button>
+                              {isActive && (
+                                <button
+                                  type="button"
+                                  title="Delete Category"
+                                  onClick={() => {
+                                    if (window.confirm(`Delete category "${dept}"?`)) {
+                                      const schoolDepts = { ...academicData[activeAdminSchool] };
+                                      delete schoolDepts[dept];
+                                      const updated = {
+                                        ...academicData,
+                                        [activeAdminSchool]: schoolDepts
+                                      };
+                                      setAcademicData(updated);
+                                      setActiveAdminDept(Object.keys(schoolDepts)[0] || "");
+                                    }
+                                  }}
+                                  className="p-1 text-gray-400 hover:text-red-600 rounded cursor-pointer"
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
+                        {Object.keys(academicData[activeAdminSchool] || {}).length === 0 && (
+                          <div className="text-xs text-gray-400 p-2 italic">
+                            No categories yet. Click "+ Add Category" to create one.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Course Cards under Selected Category */}
+                  {activeAdminSchool && activeAdminDept && (
+                    <div className="space-y-4 pt-2">
+                      <div className="flex items-center justify-between pb-2 border-b border-gray-200">
+                        <div>
+                          <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider">
+                            3. Degree Programs / Course Cards in "{activeAdminDept}" ({academicData[activeAdminSchool]?.[activeAdminDept]?.length || 0})
+                          </h4>
+                          <p className="text-[11px] text-gray-400">Each card appears on the homepage with an interactive hover state and illustration/photo</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newCard: CourseLinkItem = {
+                              label: "B.Tech. Program Name",
+                              to: `/academics/program-${Date.now()}`,
+                              desc: "Program curriculum overview and career pathways.",
+                              image: ""
+                            };
+                            const currentCards = academicData[activeAdminSchool]?.[activeAdminDept] || [];
+                            const updated = {
+                              ...academicData,
+                              [activeAdminSchool]: {
+                                ...(academicData[activeAdminSchool] || {}),
+                                [activeAdminDept]: [...currentCards, newCard]
+                              }
+                            };
+                            setAcademicData(updated);
+                          }}
+                          className="h-8 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer shadow-xs"
+                        >
+                          <Plus size={13} /> Add Course Card
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {(academicData[activeAdminSchool]?.[activeAdminDept] || []).map((course, cIdx) => (
+                          <div key={cIdx} className="p-4 rounded-xl border border-gray-200 bg-slate-50/70 space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-black text-[#072A6C]">Course Card #{cIdx + 1}</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const currentCards = [...(academicData[activeAdminSchool]?.[activeAdminDept] || [])];
+                                  currentCards.splice(cIdx, 1);
+                                  const updated = {
+                                    ...academicData,
+                                    [activeAdminSchool]: {
+                                      ...(academicData[activeAdminSchool] || {}),
+                                      [activeAdminDept]: currentCards
+                                    }
+                                  };
+                                  setAcademicData(updated);
+                                }}
+                                className="text-red-500 hover:text-red-700 text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+                              >
+                                <Trash2 size={12} /> Remove
+                              </button>
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-gray-600 uppercase">Program Degree Title</label>
+                              <input
+                                type="text"
+                                value={course.label}
+                                onChange={(e) => {
+                                  const currentCards = [...(academicData[activeAdminSchool]?.[activeAdminDept] || [])];
+                                  currentCards[cIdx] = { ...currentCards[cIdx], label: e.target.value };
+                                  setAcademicData({
+                                    ...academicData,
+                                    [activeAdminSchool]: {
+                                      ...(academicData[activeAdminSchool] || {}),
+                                      [activeAdminDept]: currentCards
+                                    }
+                                  });
+                                }}
+                                className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold text-slate-800"
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-gray-600 uppercase">Target Page URL / Slug</label>
+                              <input
+                                type="text"
+                                value={course.to}
+                                onChange={(e) => {
+                                  const currentCards = [...(academicData[activeAdminSchool]?.[activeAdminDept] || [])];
+                                  currentCards[cIdx] = { ...currentCards[cIdx], to: e.target.value };
+                                  setAcademicData({
+                                    ...academicData,
+                                    [activeAdminSchool]: {
+                                      ...(academicData[activeAdminSchool] || {}),
+                                      [activeAdminDept]: currentCards
+                                    }
+                                  });
+                                }}
+                                placeholder="/academics/btech-cse"
+                                className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-mono text-gray-700"
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-gray-600 uppercase">Hover Description</label>
+                              <textarea
+                                rows={2}
+                                value={course.desc || ""}
+                                onChange={(e) => {
+                                  const currentCards = [...(academicData[activeAdminSchool]?.[activeAdminDept] || [])];
+                                  currentCards[cIdx] = { ...currentCards[cIdx], desc: e.target.value };
+                                  setAcademicData({
+                                    ...academicData,
+                                    [activeAdminSchool]: {
+                                      ...(academicData[activeAdminSchool] || {}),
+                                      [activeAdminDept]: currentCards
+                                    }
+                                  });
+                                }}
+                                placeholder="Short summary displayed on hover"
+                                className="w-full p-2 text-xs bg-white border border-gray-200 rounded-lg"
+                              />
+                            </div>
+
+                            {/* ImageField with prominent target size & reset button */}
+                            <ImageField
+                              label="Course Illustration / Photo"
+                              value={course.image || getFallbackCourseImage(course.label)}
+                              defaultValue={getFallbackCourseImage(course.label)}
+                              onReset={() => {
+                                const fallback = getFallbackCourseImage(course.label);
+                                const currentCards = [...(academicData[activeAdminSchool]?.[activeAdminDept] || [])];
+                                currentCards[cIdx] = { ...currentCards[cIdx], image: fallback };
+                                setAcademicData({
+                                  ...academicData,
+                                  [activeAdminSchool]: {
+                                    ...(academicData[activeAdminSchool] || {}),
+                                    [activeAdminDept]: currentCards
+                                  }
+                                });
+                                notifySave("Course photo reset to default illustration!");
+                              }}
+                              onChange={(val) => {
+                                const currentCards = [...(academicData[activeAdminSchool]?.[activeAdminDept] || [])];
+                                currentCards[cIdx] = { ...currentCards[cIdx], image: val };
+                                setAcademicData({
+                                  ...academicData,
+                                  [activeAdminSchool]: {
+                                    ...(academicData[activeAdminSchool] || {}),
+                                    [activeAdminDept]: currentCards
+                                  }
+                                });
+                              }}
+                              aspectRatio="square"
+                              recommendedSize="120 × 120 px (Square PNG/SVG)"
+                            />
                           </div>
                         ))}
                       </div>
                     </div>
                   )}
+                </div>
+              )}
 
-                  {/* Active Milestones Grid */}
-                  <div className="bg-white p-6 rounded-2xl border border-gray-150 shadow-sm space-y-4 text-left">
-                    <span className="text-xs font-black uppercase text-[#072A6C] tracking-wider block border-b border-gray-100 pb-2">
-                      Active Calendar Milestones
-                    </span>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {calendarData.map((month, mIdx) => (
-                        <div key={mIdx} className="bg-gray-50/50 border border-gray-100 rounded-2xl p-4 space-y-2 text-left">
-                          <span className="text-[10px] font-black uppercase text-[#D4AF37] tracking-wider">{month.name} milestones</span>
-                          {Object.keys(month.events).length === 0 ? (
-                            <p className="text-[11px] text-gray-400 italic">No milestones set</p>
-                          ) : (
-                            <div className="divide-y divide-gray-100">
-                              {Object.entries(month.events).map(([day, text]) => (
-                                <div key={day} className="py-2 flex justify-between items-center text-xs">
-                                  <span className="font-bold text-gray-700">Day {day}: <span className="font-light text-gray-500">{text}</span></span>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleDeleteCalendarEvent(mIdx, parseInt(day))}
-                                    className="text-rose-500 hover:text-rose-700 cursor-pointer font-bold border-none bg-none outline-none"
-                                  >
-                                    Delete
-                                  </button>
-                                </div>
-                              ))}
+              {/* Sub-tab: News & Events Highlights */}
+              {activeHomeSubTab === "newsEvents" && (
+                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs text-left space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
+                    <div>
+                      <h3 className="text-sm font-black text-[#072A6C] uppercase flex items-center gap-2">
+                        <Newspaper size={16} className="text-[#072A6C]" />
+                        News & Events Highlights CMS
+                      </h3>
+                      <p className="text-xs text-gray-500">Configure Featured News hero card, Latest News list (4 items), and Upcoming Events list (4 items)</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNewsList(INITIAL_NEWS);
+                          setEventsList(INITIAL_EVENTS);
+                          updateNews(INITIAL_NEWS);
+                          updateEvents(INITIAL_EVENTS);
+                          const defNewsEvents = DEFAULT_HOMEPAGE_SECTIONS.find((s) => s.id === "newsEvents");
+                          setNewsEventsData({
+                            title: defNewsEvents?.title || "News & Events Highlights",
+                            subtitle: defNewsEvents?.subtitle || "Stay updated with campus happenings, national awards, research publications, and upcoming workshops.",
+                            buttonText: defNewsEvents?.buttonText || "View All News & Events",
+                            buttonUrl: defNewsEvents?.buttonUrl || "/news-events"
+                          });
+                          notifySave("News & Events highlights reset to default!");
+                        }}
+                        className="h-9 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        <RotateCcw size={13} /> Reset News & Events
+                      </button>
+                      <button
+                        onClick={saveNewsEventsSection}
+                        className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs shrink-0"
+                      >
+                        <Save size={13} /> Save News & Events
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Section Headings */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50/70 border border-gray-200/80">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-600 uppercase">Section Main Heading</label>
+                      <input
+                        type="text"
+                        value={newsEventsData.title}
+                        onChange={(e) => setNewsEventsData({ ...newsEventsData, title: e.target.value })}
+                        className="w-full h-9 px-3 text-xs bg-white border border-gray-200 rounded-lg font-bold text-gray-800"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-600 uppercase">Section Subtitle / Description</label>
+                      <input
+                        type="text"
+                        value={newsEventsData.subtitle}
+                        onChange={(e) => setNewsEventsData({ ...newsEventsData, subtitle: e.target.value })}
+                        className="w-full h-9 px-3 text-xs bg-white border border-gray-200 rounded-lg text-gray-700"
+                      />
+                    </div>
+                  </div>
+
+                  {/* 3 Linearly Aligned Cards */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    
+                    {/* LEFT COLUMN: Featured News Hero Card (lg:col-span-6) */}
+                    <div className="lg:col-span-6 p-5 rounded-2xl border border-blue-200/80 bg-blue-50/30 space-y-4">
+                      <div className="flex items-center justify-between pb-2 border-b border-blue-100">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full bg-[#D4AF37]" />
+                          <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider">
+                            Column 1: Featured News Card (50% Width)
+                          </h4>
+                        </div>
+                        <span className="text-[10px] font-bold text-[#D4AF37] bg-amber-100/60 px-2 py-0.5 rounded">
+                          Hero Card
+                        </span>
+                      </div>
+
+                      {newsList.length > 0 && (
+                        <div className="space-y-3">
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Article Title</label>
+                            <input
+                              type="text"
+                              value={newsList[0]?.title || ""}
+                              onChange={(e) => {
+                                const updated = [...newsList];
+                                updated[0] = { ...updated[0], title: e.target.value };
+                                setNewsList(updated);
+                              }}
+                              className="w-full h-9 px-3 text-xs bg-white border border-gray-200 rounded-lg font-bold text-slate-800"
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2.5">
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-gray-600 uppercase">Category Badge</label>
+                              <input
+                                type="text"
+                                value={newsList[0]?.category || ""}
+                                onChange={(e) => {
+                                  const updated = [...newsList];
+                                  updated[0] = { ...updated[0], category: e.target.value };
+                                  setNewsList(updated);
+                                }}
+                                placeholder="e.g. INNOVATION"
+                                className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold text-[#D4AF37]"
+                              />
                             </div>
-                          )}
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-gray-600 uppercase">Date</label>
+                              <input
+                                type="text"
+                                value={newsList[0]?.date || ""}
+                                onChange={(e) => {
+                                  const updated = [...newsList];
+                                  updated[0] = { ...updated[0], date: e.target.value };
+                                  setNewsList(updated);
+                                }}
+                                placeholder="18 May 2025"
+                                className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-medium"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Summary / Excerpt</label>
+                            <textarea
+                              rows={3}
+                              value={newsList[0]?.excerpt || ""}
+                              onChange={(e) => {
+                                const updated = [...newsList];
+                                updated[0] = { ...updated[0], excerpt: e.target.value };
+                                setNewsList(updated);
+                              }}
+                              className="w-full p-2.5 text-xs bg-white border border-gray-200 rounded-lg leading-relaxed font-medium"
+                            />
+                          </div>
+
+                          <ImageField
+                            label="Featured Cover Photo"
+                            value={newsList[0]?.image || INITIAL_NEWS[0]?.image || ""}
+                            defaultValue={INITIAL_NEWS[0]?.image || ""}
+                            onReset={() => {
+                              const fallback = INITIAL_NEWS[0]?.image || "";
+                              const updated = [...newsList];
+                              if (updated[0]) {
+                                updated[0] = { ...updated[0], image: fallback };
+                                setNewsList(updated);
+                              }
+                              notifySave("Featured cover photo reset to default!");
+                            }}
+                            onChange={(val) => {
+                              const updated = [...newsList];
+                              if (updated[0]) {
+                                updated[0] = { ...updated[0], image: val };
+                                setNewsList(updated);
+                              }
+                            }}
+                            aspectRatio="wide"
+                            recommendedSize="1200 × 800 px (3:2 Landscape)"
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* CENTER COLUMN: Latest News (lg:col-span-3) */}
+                    <div className="lg:col-span-3 p-4 rounded-2xl border border-gray-200 bg-slate-50/70 space-y-3">
+                      <div className="flex items-center justify-between pb-2 border-b border-gray-200">
+                        <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider">
+                          Column 2: Latest News
+                        </h4>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newNews: NewsArticle = {
+                              id: Date.now(),
+                              title: "New University Milestone",
+                              date: new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+                              time: "10:00 AM",
+                              location: "Campus",
+                              category: "Campus",
+                              excerpt: "Short news snippet description.",
+                              bodyText: "Full article text.",
+                              image: "/prog_computer.png",
+                              slug: "news-" + Date.now()
+                            };
+                            setNewsList([newNews, ...newsList]);
+                          }}
+                          className="h-6 px-2 bg-[#072A6C] text-white text-[10px] font-bold rounded cursor-pointer"
+                        >
+                          <Plus size={11} /> Add
+                        </button>
+                      </div>
+
+                      <div className="space-y-3">
+                        {newsList.slice(0, 4).map((item, idx) => (
+                          <div key={item.id || idx} className="p-3 bg-white border border-gray-200 rounded-xl space-y-2 shadow-xs">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-black text-[#D4AF37]">Item #{idx + 1}</span>
+                              <input
+                                type="text"
+                                value={item.date}
+                                onChange={(e) => {
+                                  const updated = [...newsList];
+                                  updated[idx] = { ...updated[idx], date: e.target.value };
+                                  setNewsList(updated);
+                                }}
+                                placeholder="18 May 2025"
+                                className="w-24 h-6 px-1.5 text-[10px] bg-slate-50 border border-gray-200 rounded font-bold text-center"
+                              />
+                            </div>
+                            <input
+                              type="text"
+                              value={item.title}
+                              onChange={(e) => {
+                                const updated = [...newsList];
+                                updated[idx] = { ...updated[idx], title: e.target.value };
+                                setNewsList(updated);
+                              }}
+                              placeholder="News headline"
+                              className="w-full h-7 px-2 text-[11px] font-bold bg-slate-50 border border-gray-200 rounded text-slate-800"
+                            />
+                            <textarea
+                              rows={2}
+                              value={item.excerpt || ""}
+                              onChange={(e) => {
+                                const updated = [...newsList];
+                                updated[idx] = { ...updated[idx], excerpt: e.target.value };
+                                setNewsList(updated);
+                              }}
+                              placeholder="Excerpt"
+                              className="w-full p-1.5 text-[10px] bg-slate-50 border border-gray-200 rounded text-gray-600"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* RIGHT COLUMN: Upcoming Events (lg:col-span-3) */}
+                    <div className="lg:col-span-3 p-4 rounded-2xl border border-gray-200 bg-slate-50/70 space-y-3">
+                      <div className="flex items-center justify-between pb-2 border-b border-gray-200">
+                        <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider">
+                          Column 3: Events
+                        </h4>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newEvent: EventItem = {
+                              id: Date.now(),
+                              slug: "event-" + Date.now(),
+                              title: "Campus Conference 2026",
+                              date: "20 Jun 2026",
+                              time: "10:00 AM",
+                              location: "Main Auditorium",
+                              category: "Technology",
+                              image: "/prog_engineering.png",
+                              bodyText: "Full event schedule and details."
+                            };
+                            setEventsList([newEvent, ...eventsList]);
+                          }}
+                          className="h-6 px-2 bg-[#072A6C] text-white text-[10px] font-bold rounded cursor-pointer"
+                        >
+                          <Plus size={11} /> Add
+                        </button>
+                      </div>
+
+                      <div className="space-y-3">
+                        {eventsList.slice(0, 4).map((item, idx) => (
+                          <div key={item.id || idx} className="p-3 bg-white border border-gray-200 rounded-xl space-y-2 shadow-xs">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-black text-[#D4AF37]">Event #{idx + 1}</span>
+                              <input
+                                type="text"
+                                value={item.date}
+                                onChange={(e) => {
+                                  const updated = [...eventsList];
+                                  updated[idx] = { ...updated[idx], date: e.target.value };
+                                  setEventsList(updated);
+                                }}
+                                placeholder="20 Jun 2026"
+                                className="w-24 h-6 px-1.5 text-[10px] bg-slate-50 border border-gray-200 rounded font-bold text-center"
+                              />
+                            </div>
+                            <input
+                              type="text"
+                              value={item.title}
+                              onChange={(e) => {
+                                const updated = [...eventsList];
+                                updated[idx] = { ...updated[idx], title: e.target.value };
+                                setEventsList(updated);
+                              }}
+                              placeholder="Event name"
+                              className="w-full h-7 px-2 text-[11px] font-bold bg-slate-50 border border-gray-200 rounded text-slate-800"
+                            />
+                            <div className="grid grid-cols-2 gap-1.5">
+                              <input
+                                type="text"
+                                value={item.time}
+                                onChange={(e) => {
+                                  const updated = [...eventsList];
+                                  updated[idx] = { ...updated[idx], time: e.target.value };
+                                  setEventsList(updated);
+                                }}
+                                placeholder="09:30 AM"
+                                className="h-6 px-1.5 text-[10px] bg-slate-50 border border-gray-200 rounded"
+                              />
+                              <input
+                                type="text"
+                                value={item.location}
+                                onChange={(e) => {
+                                  const updated = [...eventsList];
+                                  updated[idx] = { ...updated[idx], location: e.target.value };
+                                  setEventsList(updated);
+                                }}
+                                placeholder="Location"
+                                className="h-6 px-1.5 text-[10px] bg-slate-50 border border-gray-200 rounded"
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              )}
+
+              {/* Sub-tab: Chairman Message */}
+              {activeHomeSubTab === "chairman" && (
+                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs text-left space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm font-black text-[#072A6C] uppercase">Chairman's Vision & Message</h3>
+                      <p className="text-xs text-gray-500">Edit portrait, video URL, quote paragraphs, and titles</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const defL = INITIAL_ABOUT_CONTENT.leadership;
+                          setChairmanData({
+                            name: defL.chairmanName,
+                            designation: defL.designation,
+                            image: defL.chairmanImage,
+                            videoUrl: "/chalapathi_logo_intro.mp4",
+                            message: defL.messageParagraphs.join("\n\n")
+                          });
+                          notifySave("Chairman section reset to default!");
+                        }}
+                        className="h-9 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        <RotateCcw size={13} /> Reset Chairman
+                      </button>
+                      <button
+                        onClick={saveChairman}
+                        className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      >
+                        <Save size={13} /> Save Chairman
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-600 uppercase">Chairman Full Name</label>
+                      <input
+                        type="text"
+                        value={chairmanData.name || ""}
+                        onChange={(e) => setChairmanData({ ...chairmanData, name: e.target.value })}
+                        className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-600 uppercase">Designation / Title</label>
+                      <input
+                        type="text"
+                        value={chairmanData.designation || ""}
+                        onChange={(e) => setChairmanData({ ...chairmanData, designation: e.target.value })}
+                        className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-semibold"
+                      />
+                    </div>
+                  </div>
+
+                  <ImageField
+                    label="Chairman Portrait Photo"
+                    value={chairmanData.image || "/chairman_v4.png"}
+                    defaultValue="/chairman_v4.png"
+                    onReset={() => {
+                      setChairmanData({ ...chairmanData, image: "/chairman_v4.png" });
+                      notifySave("Chairman portrait reset to default!");
+                    }}
+                    onChange={(val) => setChairmanData({ ...chairmanData, image: val })}
+                    aspectRatio="portrait"
+                    recommendedSize="400 × 500 px (Portrait)"
+                  />
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-600 uppercase">Intro Video / Video Message URL</label>
+                    <input
+                      type="text"
+                      value={chairmanData.videoUrl || ""}
+                      onChange={(e) => setChairmanData({ ...chairmanData, videoUrl: e.target.value })}
+                      placeholder="/chalapathi_logo_intro.mp4"
+                      className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-mono"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-600 uppercase">Chairman's Message Text</label>
+                    <textarea
+                      rows={6}
+                      value={chairmanData.message || ""}
+                      onChange={(e) => setChairmanData({ ...chairmanData, message: e.target.value })}
+                      className="w-full p-3 text-xs bg-slate-50 border border-gray-200 rounded-xl leading-relaxed font-medium"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Sub-tab: Campus Life & Media */}
+              {activeHomeSubTab === "campusLife" && (
+                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs text-left space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
+                    <div>
+                      <h3 className="text-sm font-black text-[#072A6C] uppercase flex items-center gap-2">
+                        <Library size={16} className="text-[#072A6C]" />
+                        Campus Life, Video Player & Media CMS
+                      </h3>
+                      <p className="text-xs text-gray-500">Edit 8 campus highlight cards, campus tour video player (with file size MB limits), and quotes</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCampusVideosList(DEFAULT_CAMPUS_VIDEOS);
+                          setCampusTourData(DEFAULT_CAMPUS_TOUR);
+                          setCampusGalleryList(DEFAULT_CAMPUS_GALLERY);
+                          setCampusBannersData(DEFAULT_CAMPUS_BANNERS);
+                          updateCampusVideos(DEFAULT_CAMPUS_VIDEOS);
+                          updateCampusTour(DEFAULT_CAMPUS_TOUR);
+                          updateCampusGallery(DEFAULT_CAMPUS_GALLERY);
+                          updateCampusBanners(DEFAULT_CAMPUS_BANNERS);
+                          notifySave("Campus life & media reset to default!");
+                        }}
+                        className="h-9 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        <RotateCcw size={13} /> Reset Campus Life
+                      </button>
+                      <button
+                        onClick={saveFullCampusCMS}
+                        className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs shrink-0"
+                      >
+                        <Save size={13} /> Save Campus Life & Videos
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Section Headings */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50/70 border border-gray-200/80">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-600 uppercase">Section Main Heading</label>
+                      <input
+                        type="text"
+                        value={campusTourData.heading || "CAMPUS LIFE"}
+                        onChange={(e) => setCampusTourData({ ...campusTourData, heading: e.target.value })}
+                        className="w-full h-9 px-3 text-xs bg-white border border-gray-200 rounded-lg font-bold text-gray-800"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-600 uppercase">Section Subtitle / Description</label>
+                      <input
+                        type="text"
+                        value={campusTourData.subtitle || ""}
+                        onChange={(e) => setCampusTourData({ ...campusTourData, subtitle: e.target.value })}
+                        className="w-full h-9 px-3 text-xs bg-white border border-gray-200 rounded-lg text-gray-700"
+                      />
+                    </div>
+                  </div>
+
+                  {/* 8 Feature Cards Grid */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider">
+                        1. Campus Life 8 Highlight Cards
+                      </h4>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                      {campusCardsList.map((card, idx) => (
+                        <div key={idx} className="p-3.5 rounded-xl border border-gray-200 bg-slate-50/60 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-black text-gray-400">Card #{idx + 1}</span>
+                            <select
+                              value={card.icon || "Users"}
+                              onChange={(e) => {
+                                const updated = [...campusCardsList];
+                                updated[idx] = { ...updated[idx], icon: e.target.value };
+                                setCampusCardsList(updated);
+                              }}
+                              className="h-6 px-1 text-[10px] font-bold bg-white border border-gray-200 rounded cursor-pointer"
+                            >
+                              <option value="Users">Users Icon</option>
+                              <option value="GraduationCap">GraduationCap</option>
+                              <option value="Trophy">Trophy</option>
+                              <option value="Sparkles">Sparkles</option>
+                              <option value="Building2">Building2</option>
+                              <option value="Landmark">Landmark</option>
+                              <option value="Coffee">Coffee</option>
+                              <option value="Bus">Bus</option>
+                            </select>
+                          </div>
+                          <input
+                            type="text"
+                            value={card.title}
+                            onChange={(e) => {
+                              const updated = [...campusCardsList];
+                              updated[idx] = { ...updated[idx], title: e.target.value };
+                              setCampusCardsList(updated);
+                            }}
+                            className="w-full h-7 px-2 text-xs font-bold bg-white border border-gray-200 rounded"
+                          />
+                          <textarea
+                            rows={2}
+                            value={card.desc}
+                            onChange={(e) => {
+                              const updated = [...campusCardsList];
+                              updated[idx] = { ...updated[idx], desc: e.target.value };
+                              setCampusCardsList(updated);
+                            }}
+                            className="w-full p-2 text-[11px] bg-white border border-gray-200 rounded leading-relaxed"
+                          />
                         </div>
                       ))}
                     </div>
                   </div>
 
-                </div>
-              </div>
-            </div>
-          )}
+                  {/* Campus Tour Video Player & Media CMS */}
+                  <div className="p-5 rounded-2xl border border-blue-200 bg-blue-50/40 space-y-4">
+                    <div className="flex items-center justify-between pb-2 border-b border-blue-100">
+                      <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider flex items-center gap-2">
+                        🎬 2. Campus Tour Video Player & Media
+                      </h4>
+                      <span className="text-[10.5px] font-bold text-[#072A6C] bg-white px-2.5 py-0.5 rounded-md border border-blue-200">
+                        Max Recommended Limit: 50.0 MB
+                      </span>
+                    </div>
 
-          {activeTab === "news-events" && (
-            <div className="space-y-8">
-              <div>
-                <h1 className="text-xl font-black text-[#072A6C] uppercase tracking-wider">News Portal</h1>
-                <p className="text-xs text-gray-500 font-light mt-0.5">Manage articles and featured news slides displayed on the homepage.</p>
-              </div>
-
-              <div className="space-y-6">
-                <h3 className="text-sm font-extrabold text-[#072A6C] uppercase tracking-wider pb-1 border-b border-gray-100">Post New News Article</h3>
-                <form onSubmit={handleAddNews} className="space-y-4 bg-gray-50/60 border border-gray-100 p-5 rounded-2xl">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-1 md:col-span-2">
-                      <label className="text-[10px] font-bold uppercase text-gray-500">News Title</label>
-                      <input
-                        type="text"
-                        required
-                        value={newNewsTitle}
-                        onChange={(e) => setNewNewsTitle(e.target.value)}
-                        className="w-full h-10 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-semibold"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase text-gray-500">Category</label>
-                      <select
-                        value={newNewsCategory}
-                        onChange={(e) => setNewNewsCategory(e.target.value)}
-                        className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
-                      >
-                        <option value="Innovation">Innovation</option>
-                        <option value="Achievement">Achievement</option>
-                        <option value="Corporate Link">Corporate Link</option>
-                        <option value="Research">Research</option>
-                        <option value="Campus Life">Campus Life</option>
-                        <option value="Workshop">Workshop</option>
-                        <option value="Events">Events</option>
-                        <option value="Sports">Sports</option>
-                        <option value="Admissions">Admissions</option>
-                        <option value="Placements">Placements</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase text-gray-500">Body Text</label>
-                    <textarea
-                      rows={4}
-                      required
-                      placeholder="Write full article body details here..."
-                      value={newNewsBody}
-                      onChange={(e) => setNewNewsBody(e.target.value)}
-                      className="w-full p-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-light leading-relaxed"
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase text-gray-500">Source URL / Online Link (Optional)</label>
-                      <input
-                        type="url"
-                        placeholder="e.g. https://www.thehindu.com/... or https://www.eenadu.net/..."
-                        value={newNewsSourceUrl}
-                        onChange={(e) => setNewNewsSourceUrl(e.target.value)}
-                        className="w-full h-10 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-semibold"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase text-gray-500">News Location (Optional)</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Main Auditorium"
-                        value={newNewsLoc}
-                        onChange={(e) => setNewNewsLoc(e.target.value)}
-                        className="w-full h-10 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-semibold"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase text-gray-500">News Date (Optional)</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. 21 Jul 2026"
-                        value={newNewsDate}
-                        onChange={(e) => setNewNewsDate(e.target.value)}
-                        className="w-full h-10 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-semibold"
-                      />
-                    </div>
-                    <div className="space-y-1 md:col-span-2">
-                      <label className="text-[10px] font-bold uppercase text-gray-500 block mb-1">Featured Slide Toggle</label>
-                      <div className="flex items-center gap-2.5 h-10 px-3.5 bg-white border border-gray-200 rounded-xl">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Top Badge Text</label>
                         <input
-                          type="checkbox"
-                          id="new-news-featured-toggle"
-                          checked={newNewsFeatured}
-                          onChange={(e) => setNewNewsFeatured(e.target.checked)}
-                          className="w-4 h-4 rounded text-[#072A6C] focus:ring-[#072A6C] cursor-pointer"
+                          type="text"
+                          value={campusTourData.badge || "WATCH CAMPUS TOUR"}
+                          onChange={(e) => setCampusTourData({ ...campusTourData, badge: e.target.value })}
+                          className="w-full h-9 px-3 text-xs bg-white border border-gray-200 rounded-lg font-bold text-[#D4AF37]"
                         />
-                        <label htmlFor="new-news-featured-toggle" className="text-xs font-bold text-[#072A6C] cursor-pointer select-none">
-                          Featured News (Show in Featured Carousel)
-                        </label>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Video Quote Text</label>
+                        <input
+                          type="text"
+                          value={campusTourData.quote || ""}
+                          onChange={(e) => setCampusTourData({ ...campusTourData, quote: e.target.value })}
+                          className="w-full h-9 px-3 text-xs bg-white border border-gray-200 rounded-lg italic text-gray-700"
+                        />
                       </div>
                     </div>
-                  </div>
 
-                  <div className="space-y-2 bg-gray-50 p-4 rounded-xl border border-gray-200">
-                    <label className="text-[10px] font-bold uppercase text-gray-500 block">News Cover Image</label>
-                    <div className="flex items-center gap-4">
-                      {newNewsImage && (
-                        <img 
-                          src={newNewsImage} 
-                          alt="Cover Preview" 
-                          className="w-16 h-12 rounded-lg object-cover border border-gray-300 bg-white"
-                        />
-                      )}
-                      <div className="flex-grow space-y-2">
-                        <input 
-                          type="file" 
-                          accept="image/*"
-                          id="news-image-upload"
-                          className="hidden"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              const reader = new FileReader();
-                              reader.onload = (uploadEvent) => {
-                                const base64 = uploadEvent.target?.result as string;
-                                setNewNewsImage(base64);
-                              };
-                              reader.readAsDataURL(file);
-                            }
+                    {/* VideoField with validation, MB calculation, player preview */}
+                    <VideoField
+                      label="Main Campus Tour Video"
+                      value={campusVideosList[0]?.url || "/chalapathi_logo_intro.mp4"}
+                      sizeMb={campusVideosList[0]?.sizeMb || "12.4 MB"}
+                      maxSizeMb={50}
+                      recommendedLimit="Max 50.0 MB (MP4 / WebM)"
+                      poster={campusTourData.poster || "/Chalapathimain.png"}
+                      onChange={(url, sizeMb) => {
+                        const updated = [...campusVideosList];
+                        updated[0] = { ...updated[0], url, sizeMb: sizeMb || updated[0]?.sizeMb };
+                        setCampusVideosList(updated);
+                      }}
+                      onSizeChange={(sizeMb) => {
+                        const updated = [...campusVideosList];
+                        updated[0] = { ...updated[0], sizeMb };
+                        setCampusVideosList(updated);
+                      }}
+                    />
+
+                    {/* Video Thumbnail / Poster with ImageField */}
+                    <ImageField
+                      label="Video Thumbnail / Poster Frame"
+                      value={campusTourData.poster || "/Chalapathimain.png"}
+                      defaultValue="/Chalapathimain.png"
+                      onReset={() => {
+                        setCampusTourData({ ...campusTourData, poster: "/Chalapathimain.png" });
+                        notifySave("Video poster frame reset to default!");
+                      }}
+                      onChange={(val) => setCampusTourData({ ...campusTourData, poster: val })}
+                      aspectRatio="video"
+                      recommendedSize="1200 × 675 px (16:9 HD)"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Sub-tab: Placements Highlights */}
+              {activeHomeSubTab === "placements" && (() => {
+                const currentStorySafeIdx = (activeStoryIdx >= 0 && activeStoryIdx < storiesList.length) ? activeStoryIdx : 0;
+                const currStory = storiesList[currentStorySafeIdx] || INITIAL_SUCCESS_STORIES[0];
+
+                const updateCurrentStory = (fieldUpdates: Partial<SuccessStory>) => {
+                  const updated = [...storiesList];
+                  updated[currentStorySafeIdx] = { ...updated[currentStorySafeIdx], ...fieldUpdates };
+                  setStoriesList(updated);
+                };
+
+                const updateMilestone = (milestoneField: string, val: string) => {
+                  const updated = [...storiesList];
+                  const current = updated[currentStorySafeIdx];
+                  updated[currentStorySafeIdx] = {
+                    ...current,
+                    milestones: {
+                      ...current.milestones,
+                      [milestoneField]: val
+                    }
+                  };
+                  setStoriesList(updated);
+                };
+
+                const handleAddSkill = () => {
+                  if (!newSkillText.trim()) return;
+                  const currentSkills = currStory.skills || [];
+                  if (!currentSkills.includes(newSkillText.trim())) {
+                    updateCurrentStory({ skills: [...currentSkills, newSkillText.trim()] });
+                  }
+                  setNewSkillText("");
+                };
+
+                const handleRemoveSkill = (sIdx: number) => {
+                  const currentSkills = currStory.skills || [];
+                  updateCurrentStory({ skills: currentSkills.filter((_, i) => i !== sIdx) });
+                };
+
+                return (
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs text-left space-y-8">
+                    {/* Header */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-gray-100">
+                      <div>
+                        <h3 className="text-sm font-black text-[#072A6C] uppercase flex items-center gap-2">
+                          <Briefcase size={16} className="text-[#072A6C]" />
+                          Placement Key Metrics, Success Stories & Corporate Partners CMS
+                        </h3>
+                        <p className="text-xs text-gray-500">Configure homepage placement stats, full student success story testimonials with 4-step milestones, and corporate partner logos</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const defPlacements = DEFAULT_HOMEPAGE_SECTIONS.find((s) => s.id === "placements");
+                            setPlacementsSectionData({
+                              title: defPlacements?.title || "A Step Towards Success!",
+                              subtitle: defPlacements?.subtitle || "Building Careers. Creating Leaders.",
+                              highestPackage: INITIAL_PLACEMENTS_CONTENT.highestPackage,
+                              averagePackage: INITIAL_PLACEMENTS_CONTENT.averagePackage,
+                              placementPercent: INITIAL_PLACEMENTS_CONTENT.placementPercent,
+                              buttonText: defPlacements?.buttonText || "Explore Placements",
+                              buttonUrl: defPlacements?.buttonUrl || "/placements"
+                            });
+                            setStoriesList(INITIAL_SUCCESS_STORIES);
+                            setPlacementsForm(INITIAL_PLACEMENTS_CONTENT);
+                            updatePlacementsContent(INITIAL_PLACEMENTS_CONTENT);
+                            updateSuccessStories(INITIAL_SUCCESS_STORIES);
+                            notifySave("Placements highlights, success stories & partners reset to defaults!");
                           }}
-                        />
-                        <label 
-                          htmlFor="news-image-upload"
-                          className="inline-flex items-center justify-center px-4 py-2 bg-white hover:bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-700 cursor-pointer shadow-2xs transition-all"
+                          className="h-9 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
                         >
-                          <UploadCloud size={14} className="mr-1.5 text-gray-400" />
-                          Choose Cover Image File
-                        </label>
-                        {newNewsImage && <span className="text-[10px] text-emerald-600 font-bold ml-3">Image loaded!</span>}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex justify-end">
-                    <button
-                      type="submit"
-                      className="h-10 px-8 bg-[#072A6C] hover:bg-[#051c4a] text-white font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer"
-                    >
-                      Publish News Article
-                    </button>
-                  </div>
-                </form>
-
-                {/* News listing */}
-                <div className="space-y-2">
-                  <h4 className="text-xs font-extrabold text-[#072A6C] uppercase tracking-wider mb-2">Current News Articles</h4>
-                  <div className="divide-y divide-gray-100 max-h-[250px] overflow-y-auto pr-2">
-                    {news.map((item) => (
-                      <div key={item.id} className="py-3 flex justify-between items-center text-xs">
-                        <div className="space-y-0.5">
-                          <span className="font-extrabold text-[#072A6C]">{item.title}</span>
-                          <p className="text-gray-400 text-[10px]">{item.date} — {item.category}</p>
-                        </div>
+                          <RotateCcw size={13} /> Reset All Defaults
+                        </button>
                         <button
-                          onClick={() => handleDeleteNews(item.id)}
-                          className="text-rose-500 hover:text-rose-700 cursor-pointer font-bold"
+                          onClick={savePlacementsSection}
+                          className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs shrink-0"
                         >
-                          Delete
+                          <Save size={13} /> Save Placements & Stories
                         </button>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+                    </div>
 
-          {activeTab === "events" && (
-            <div className="space-y-8">
-              <div>
-                <h1 className="text-xl font-black text-[#072A6C] uppercase tracking-wider">Events Portal</h1>
-                <p className="text-xs text-gray-500 font-light mt-0.5">Manage and post upcoming campus events displayed on the homepage.</p>
-              </div>
-
-              <div className="space-y-6">
-                <h3 className="text-sm font-extrabold text-[#072A6C] uppercase tracking-wider pb-1 border-b border-gray-100">Create New Event</h3>
-                <form onSubmit={handleAddEvent} className="space-y-4 bg-gray-50/60 border border-gray-100 p-5 rounded-2xl">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div className="space-y-1 md:col-span-2">
-                      <label className="text-[10px] font-bold uppercase text-gray-500">Event Title</label>
-                      <input
-                        type="text"
-                        required
-                        value={newEventTitle}
-                        onChange={(e) => setNewEventTitle(e.target.value)}
-                        className="w-full h-10 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-semibold"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase text-gray-500">Event Date</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. 15 Aug 2026"
-                        required
-                        value={newEventDate}
-                        onChange={(e) => setNewEventDate(e.target.value)}
-                        className="w-full h-10 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase text-gray-500">Category</label>
-                      <select
-                        value={newEventCategory}
-                        onChange={(e) => setNewEventCategory(e.target.value)}
-                        className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
-                      >
-                        <option value="Aerospace">Aerospace</option>
-                        <option value="Summit">Summit</option>
-                        <option value="Research">Research</option>
-                        <option value="Corporate">Corporate</option>
-                        <option value="Alumni Connect">Alumni Connect</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase text-gray-500">Venue</label>
-                      <input
-                        type="text"
-                        placeholder="e.g., MBA Seminar Hall"
-                        value={newEventLoc}
-                        onChange={(e) => setNewEventLoc(e.target.value)}
-                        className="w-full h-10 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase text-gray-500">Time</label>
-                      <input
-                        type="text"
-                        value={newEventTime}
-                        onChange={(e) => setNewEventTime(e.target.value)}
-                        className="w-full h-10 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase text-gray-500">Description</label>
-                    <textarea
-                      rows={3}
-                      required
-                      placeholder="Write full event schedule details here..."
-                      value={newEventBody}
-                      onChange={(e) => setNewEventBody(e.target.value)}
-                      className="w-full p-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-light leading-relaxed"
-                    />
-                  </div>
-                  <div className="flex justify-end">
-                    <button
-                      type="submit"
-                      className="h-10 px-8 bg-[#072A6C] hover:bg-[#051c4a] text-white font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer"
-                    >
-                      Publish Event
-                    </button>
-                  </div>
-                </form>
-
-                {/* Events listing */}
-                <div className="space-y-2">
-                  <h4 className="text-xs font-extrabold text-[#072A6C] uppercase tracking-wider mb-2">Current Events</h4>
-                  <div className="divide-y divide-gray-100 max-h-[250px] overflow-y-auto pr-2">
-                    {events.map((item) => (
-                      <div key={item.id} className="py-3 flex justify-between items-center text-xs">
-                        <div className="space-y-0.5">
-                          <span className="font-extrabold text-[#072A6C]">{item.title}</span>
-                          <p className="text-gray-400 text-[10px]">{item.date} — {item.location}</p>
-                        </div>
-                        <button
-                          onClick={() => handleDeleteEvent(item.id)}
-                          className="text-rose-500 hover:text-rose-700 cursor-pointer font-bold"
-                        >
-                          Delete
-                        </button>
+                    {/* 4 Key Placement Metrics (Matches Website) */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-xs font-black text-[#072A6C] uppercase">Placement Key Statistics (4 Highlights)</h4>
+                        <span className="text-[10px] text-gray-400">Displayed in 4 cards above footer strip</span>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === "hero" && (
-            <div className="space-y-8">
-              <div>
-                <h1 className="text-xl font-black text-[#072A6C] uppercase tracking-wider">Hero Slides Portal</h1>
-                <p className="text-xs text-gray-500 font-light mt-0.5">Manage slides and banners displayed in the top hero section of the homepage.</p>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                {/* Form to add slide */}
-                <div className="lg:col-span-5 space-y-6">
-                  <div className="bg-white p-6 rounded-2xl border border-gray-150 shadow-sm space-y-4">
-                    <span className="text-xs font-black uppercase text-[#072A6C] tracking-wider block border-b border-gray-100 pb-2">Add New Slide</span>
-                    
-                    <form onSubmit={handleAddHeroSlide} className="space-y-4">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase text-gray-500">Slide Title (Optional)</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Chalapathi University"
-                          value={newSlideTitle}
-                          onChange={(e) => setNewSlideTitle(e.target.value)}
-                          className="w-full h-10 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-semibold"
-                        />
-                      </div>
-                      
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase text-gray-500">Slide Subtitle (Optional)</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. WELCOMES YOU"
-                          value={newSlideSubtitle}
-                          onChange={(e) => setNewSlideSubtitle(e.target.value)}
-                          className="w-full h-10 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-semibold"
-                        />
-                      </div>
-
-                      <div className="space-y-2 bg-gray-50 p-4 rounded-xl border border-gray-200">
-                        <label className="text-[10px] font-bold uppercase text-gray-500 block">Slide Image File</label>
-                        <div className="flex flex-col gap-3">
-                          {newSlideImage && (
-                            <img 
-                              src={newSlideImage} 
-                              alt="Slide Preview" 
-                              className="w-full h-32 rounded-lg object-cover border border-gray-300 bg-white"
-                            />
-                          )}
-                          <div className="flex items-center gap-3">
-                            <input 
-                              type="file" 
-                              accept="image/*"
-                              id="slide-image-upload"
-                              className="hidden"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  const reader = new FileReader();
-                                  reader.onload = (uploadEvent) => {
-                                    const base64 = uploadEvent.target?.result as string;
-                                    setNewSlideImage(base64);
-                                  };
-                                  reader.readAsDataURL(file);
-                                }
-                              }}
-                            />
-                            <label 
-                              htmlFor="slide-image-upload"
-                              className="inline-flex items-center justify-center px-4 py-2 bg-white hover:bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-700 cursor-pointer shadow-2xs transition-all"
-                            >
-                              <UploadCloud size={14} className="mr-1.5 text-gray-400" />
-                              Choose Image File
-                            </label>
-                            {newSlideImage && <span className="text-[10px] text-emerald-600 font-bold">Loaded!</span>}
-                          </div>
-                        </div>
-                      </div>
-
-                      <button
-                        type="submit"
-                        className="w-full h-10 bg-[#072A6C] hover:bg-[#051c4a] text-white font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer transition-colors"
-                      >
-                        Add Slide
-                      </button>
-                    </form>
-                  </div>
-                </div>
-
-                {/* Slides list */}
-                <div className="lg:col-span-7 space-y-6">
-                  <div className="bg-white p-6 rounded-2xl border border-gray-150 shadow-sm space-y-4">
-                    <span className="text-xs font-black uppercase text-[#072A6C] tracking-wider block border-b border-gray-100 pb-2">Active Hero Slides ({heroSlides.length})</span>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto pr-1">
-                      {heroSlides.map((slide) => (
-                        <div key={slide.id} className="border border-gray-100 rounded-xl overflow-hidden shadow-2xs bg-white relative group text-left">
-                          <img 
-                            src={slide.image} 
-                            alt={slide.title || "Slide"} 
-                            className="w-full h-32 object-cover"
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        <div className="p-3 rounded-xl border border-gray-200 bg-white shadow-xs space-y-1.5">
+                          <span className="text-[10px] font-bold text-[#072A6C] uppercase flex items-center gap-1">
+                            <Users size={12} /> Students Placed
+                          </span>
+                          <input
+                            type="text"
+                            value={placementsForm.stats?.[0]?.value ?? placementsForm.placementPercent ?? "92%"}
+                            onChange={(e) => {
+                              const currentStats = placementsForm.stats || [
+                                { value: "92%", label: "Students Placed", icon: "Users" },
+                                { value: "30 LPA", label: "Highest Package", icon: "Trophy" },
+                                { value: "116+", label: "Corporate Partners", icon: "Handshake" },
+                                { value: "100%", label: "Placement Assistance", icon: "GraduationCap" }
+                              ];
+                              const updated = [...currentStats];
+                              updated[0] = { ...updated[0], value: e.target.value };
+                              setPlacementsForm({ ...placementsForm, stats: updated, placementPercent: e.target.value });
+                              setPlacementsSectionData({ ...placementsSectionData, placementPercent: e.target.value });
+                            }}
+                            className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg font-black text-[#072A6C]"
+                            placeholder="e.g. 92%"
                           />
-                          <div className="p-3 text-left">
-                            <h4 className="font-bold text-xs text-[#072A6C] line-clamp-1">{slide.title || "Untitled Slide"}</h4>
-                            <p className="text-[10px] text-gray-400 font-medium line-clamp-1">{slide.subtitle || "No Subtitle"}</p>
-                          </div>
-                          
+                        </div>
+
+                        <div className="p-3 rounded-xl border border-gray-200 bg-white shadow-xs space-y-1.5">
+                          <span className="text-[10px] font-bold text-[#D4AF37] uppercase flex items-center gap-1">
+                            <Trophy size={12} /> Highest Package
+                          </span>
+                          <input
+                            type="text"
+                            value={placementsForm.stats?.[1]?.value ?? placementsForm.highestPackage ?? "30 LPA"}
+                            onChange={(e) => {
+                              const currentStats = placementsForm.stats || [
+                                { value: "92%", label: "Students Placed", icon: "Users" },
+                                { value: "30 LPA", label: "Highest Package", icon: "Trophy" },
+                                { value: "116+", label: "Corporate Partners", icon: "Handshake" },
+                                { value: "100%", label: "Placement Assistance", icon: "GraduationCap" }
+                              ];
+                              const updated = [...currentStats];
+                              updated[1] = { ...updated[1], value: e.target.value };
+                              setPlacementsForm({ ...placementsForm, stats: updated, highestPackage: e.target.value });
+                              setPlacementsSectionData({ ...placementsSectionData, highestPackage: e.target.value });
+                            }}
+                            className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg font-black text-[#D4AF37]"
+                            placeholder="e.g. 30 LPA"
+                          />
+                        </div>
+
+                        <div className="p-3 rounded-xl border border-gray-200 bg-white shadow-xs space-y-1.5">
+                          <span className="text-[10px] font-bold text-amber-600 uppercase flex items-center gap-1">
+                            <Handshake size={12} /> Corporate Partners
+                          </span>
+                          <input
+                            type="text"
+                            value={placementsForm.stats?.[2]?.value ?? placementsForm.corporatePartnersCount ?? "116+"}
+                            onChange={(e) => {
+                              const currentStats = placementsForm.stats || [
+                                { value: "92%", label: "Students Placed", icon: "Users" },
+                                { value: "30 LPA", label: "Highest Package", icon: "Trophy" },
+                                { value: "116+", label: "Corporate Partners", icon: "Handshake" },
+                                { value: "100%", label: "Placement Assistance", icon: "GraduationCap" }
+                              ];
+                              const updated = [...currentStats];
+                              updated[2] = { ...updated[2], value: e.target.value };
+                              setPlacementsForm({ ...placementsForm, stats: updated, corporatePartnersCount: e.target.value });
+                            }}
+                            className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg font-black text-amber-600"
+                            placeholder="e.g. 116+"
+                          />
+                        </div>
+
+                        <div className="p-3 rounded-xl border border-gray-200 bg-white shadow-xs space-y-1.5">
+                          <span className="text-[10px] font-bold text-emerald-600 uppercase flex items-center gap-1">
+                            <GraduationCap size={12} /> Placement Assistance
+                          </span>
+                          <input
+                            type="text"
+                            value={placementsForm.stats?.[3]?.value ?? placementsForm.placementAssistance ?? "100%"}
+                            onChange={(e) => {
+                              const currentStats = placementsForm.stats || [
+                                { value: "92%", label: "Students Placed", icon: "Users" },
+                                { value: "30 LPA", label: "Highest Package", icon: "Trophy" },
+                                { value: "116+", label: "Corporate Partners", icon: "Handshake" },
+                                { value: "100%", label: "Placement Assistance", icon: "GraduationCap" }
+                              ];
+                              const updated = [...currentStats];
+                              updated[3] = { ...updated[3], value: e.target.value };
+                              setPlacementsForm({ ...placementsForm, stats: updated, placementAssistance: e.target.value });
+                            }}
+                            className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg font-black text-emerald-600"
+                            placeholder="e.g. 100%"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* ══════════════════════════════════════════════════════════ */}
+                    {/* PLACEMENT SUCCESS STORIES SHOWCASE CMS                     */}
+                    {/* ══════════════════════════════════════════════════════════ */}
+                    <div className="pt-6 border-t border-gray-100 space-y-6">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                          <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-1.5">
+                            <Sparkles size={14} className="text-[#D4AF37]" />
+                            Placement Success Stories Showcase ({storiesList.length} Stories)
+                          </h4>
+                          <p className="text-[11px] text-gray-500">Edit student testimonials, photos, 4-step milestone journeys, skills acquired, and dream packages</p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
                           <button
                             type="button"
-                            onClick={() => handleDeleteHeroSlide(slide.id)}
-                            className="absolute top-2 right-2 p-1.5 bg-rose-500 hover:bg-rose-600 text-white rounded-lg shadow-sm cursor-pointer transition-all border-none outline-none"
-                            title="Delete Slide"
+                            onClick={() => {
+                              const newStory: SuccessStory = {
+                                id: Date.now(),
+                                studentName: "New Student Name",
+                                studentImage: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&h=600&fit=crop&crop=face",
+                                department: "B.Tech - Computer Science & Engineering",
+                                batch: "2024 Batch",
+                                companyName: "Google",
+                                companyLogo: "/logos/google.svg",
+                                packageOffered: "14.5 LPA",
+                                description: "The holistic training, expert faculty, and placement bootcamps at Chalapathi University gave me the exact skills and confidence required to crack competitive campus recruitment rounds.",
+                                skills: ["React", "TypeScript", "Python", "Data Structures", "System Design"],
+                                internshipExp: "6 Months Technology Intern",
+                                achievement: "Smart India Hackathon Finalist & Top Performer",
+                                milestones: {
+                                  learningTitle: "Strong Academic Foundation",
+                                  learningDesc: "Conceptual clarity through innovative teaching",
+                                  internshipTitle: "Skill Development",
+                                  internshipDesc: "Live projects and industry-relevant skills",
+                                  placementTitle: "Internship",
+                                  placementDesc: "Internship experience boosted my practical knowledge",
+                                  careerTitle: "Dream Career",
+                                  careerDesc: "Campus placement opportunity secured"
+                                }
+                              };
+                              const updated = [...storiesList, newStory];
+                              setStoriesList(updated);
+                              setActiveStoryIdx(updated.length - 1);
+                              notifySave("New success story added! Customize fields below.");
+                            }}
+                            className="h-8 px-3 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                          >
+                            <Plus size={13} /> Add Success Story
+                          </button>
+                          {storiesList.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (window.confirm(`Are you sure you want to remove ${currStory.studentName}'s success story?`)) {
+                                  const updated = storiesList.filter((_, i) => i !== currentStorySafeIdx);
+                                  setStoriesList(updated);
+                                  setActiveStoryIdx(Math.max(0, currentStorySafeIdx - 1));
+                                  notifySave("Success story removed.");
+                                }
+                              }}
+                              className="h-8 px-2.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                            >
+                              <Trash2 size={12} /> Delete Story
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setStoriesList(INITIAL_SUCCESS_STORIES);
+                              setActiveStoryIdx(0);
+                              updateSuccessStories(INITIAL_SUCCESS_STORIES);
+                              notifySave("Success stories reset to 3 default students!");
+                            }}
+                            className="h-8 px-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer"
+                          >
+                            <RotateCcw size={12} /> Reset Stories
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Story Switcher Tabs */}
+                      <div className="flex flex-wrap gap-2 pb-2 border-b border-gray-100">
+                        {storiesList.map((st, sIdx) => {
+                          const isCurrent = sIdx === currentStorySafeIdx;
+                          return (
+                            <button
+                              key={st.id || sIdx}
+                              type="button"
+                              onClick={() => setActiveStoryIdx(sIdx)}
+                              className={`h-9 px-3.5 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer transition-all ${
+                                isCurrent
+                                  ? "bg-[#072A6C] text-white shadow-sm ring-2 ring-[#072A6C]/20"
+                                  : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                              }`}
+                            >
+                              <span className={`w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center ${isCurrent ? "bg-[#D4AF37] text-slate-900" : "bg-gray-300 text-gray-700"}`}>
+                                {sIdx + 1}
+                              </span>
+                              <span>{st.studentName || `Story ${sIdx + 1}`}</span>
+                              <span className={`text-[10px] font-semibold opacity-80 ${isCurrent ? "text-amber-200" : "text-gray-500"}`}>
+                                ({st.companyName || "Partner"})
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* LIVE VISUAL PREVIEW CARD (Matches media_1789817710723.png) */}
+                      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-4">
+                        <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+                          <span className="text-[11px] font-black uppercase tracking-widest text-[#072A6C] flex items-center gap-1.5">
+                            <Eye size={13} className="text-[#D4AF37]" /> Live Student Success Story Preview (Website Template Layout)
+                          </span>
+                          <span className="text-[10px] bg-amber-100 text-amber-900 font-bold px-2 py-0.5 rounded-full">
+                            Story #{currentStorySafeIdx + 1} of {storiesList.length}
+                          </span>
+                        </div>
+
+                        {/* Interactive Template Card */}
+                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                            {/* Left Column: Photo + Badges */}
+                            <div className="lg:col-span-5 flex justify-center relative">
+                              <div className="relative w-full max-w-[280px] h-[330px] rounded-[22px] overflow-hidden shadow-xl border border-gray-100 bg-gray-50">
+                                <img 
+                                  src={currStory.studentImage || "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=500&h=600&fit=crop&crop=face"} 
+                                  alt={currStory.studentName} 
+                                  className="w-full h-full object-cover"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+                              </div>
+
+                              {/* Floating Placed At badge */}
+                              <div className="absolute left-3 top-4 bg-white/90 backdrop-blur-md border border-white/60 rounded-xl p-2 flex items-center gap-2 shadow-md max-w-[150px]">
+                                <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center p-1 shadow-xs shrink-0">
+                                  <img 
+                                    src={currStory.companyLogo || "/logos/tcs.svg"} 
+                                    alt={currStory.companyName} 
+                                    className="w-full h-full object-contain"
+                                    onError={(e) => { (e.target as HTMLImageElement).src = "/logos/tcs.svg"; }}
+                                  />
+                                </div>
+                                <div className="text-left min-w-0">
+                                  <span className="text-[7.5px] text-gray-400 font-bold block uppercase tracking-wider">Placed at</span>
+                                  <span className="text-[10px] font-black text-[#072A6C] block truncate">{currStory.companyName || "Company"}</span>
+                                </div>
+                              </div>
+
+                              {/* Floating Package Offered badge */}
+                              <div className="absolute right-3 bottom-4 bg-white/90 backdrop-blur-md border border-white/60 rounded-xl p-2.5 shadow-md min-w-[110px] text-left">
+                                <span className="text-[7.5px] text-gray-400 font-bold block uppercase tracking-wider">Package Offered</span>
+                                <span className="text-base font-black text-[#D4AF37] block leading-none mt-0.5">{currStory.packageOffered || "₹12 LPA"}</span>
+                                <span className="text-[7.5px] text-gray-400 font-medium tracking-wide">PER ANNUM</span>
+                              </div>
+                            </div>
+
+                            {/* Right Column: Meta, Testimonial, Timeline, Skills & Achievements */}
+                            <div className="lg:col-span-7 space-y-4 text-left">
+                              <div className="space-y-0.5">
+                                <span className="text-[9px] font-extrabold uppercase tracking-widest text-[#D4AF37]">Success Story</span>
+                                <h3 className="text-xl font-[900] text-[#072A6C]">{currStory.studentName || "Student Name"}</h3>
+                                <p className="text-[11px] text-gray-500 font-medium">
+                                  {currStory.department || "Department"} <span className="mx-1 text-gray-300">•</span> {currStory.batch || "2024 Batch"}
+                                </p>
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                                {/* Testimonial & 4-Step Timeline */}
+                                <div className="md:col-span-7 space-y-3">
+                                  <div className="pl-3 border-l-4 border-[#D4AF37]">
+                                    <p className="text-[11px] text-gray-600 italic leading-relaxed">
+                                      "{currStory.description || "Student testimonial goes here..."}"
+                                    </p>
+                                  </div>
+
+                                  <div className="space-y-1.5">
+                                    <span className="text-[8.5px] font-bold text-gray-400 uppercase tracking-wider block">Journey Timeline</span>
+                                    <div className="space-y-1.5">
+                                      <div className="flex gap-2 bg-gray-50/70 p-2 rounded-xl border border-gray-100">
+                                        <div className="w-4 h-4 rounded-full bg-blue-50 text-[#072A6C] flex items-center justify-center text-[8px] font-bold shrink-0">1</div>
+                                        <div>
+                                          <span className="text-[10px] font-bold text-[#072A6C] block leading-tight">{currStory.milestones?.learningTitle || "Strong Academic Foundation"}</span>
+                                          <span className="text-[8.5px] text-gray-500 block">{currStory.milestones?.learningDesc || "Conceptual clarity through innovative teaching"}</span>
+                                        </div>
+                                      </div>
+                                      <div className="flex gap-2 bg-gray-50/70 p-2 rounded-xl border border-gray-100">
+                                        <div className="w-4 h-4 rounded-full bg-blue-50 text-[#072A6C] flex items-center justify-center text-[8px] font-bold shrink-0">2</div>
+                                        <div>
+                                          <span className="text-[10px] font-bold text-[#072A6C] block leading-tight">{currStory.milestones?.internshipTitle || "Skill Development"}</span>
+                                          <span className="text-[8.5px] text-gray-500 block">{currStory.milestones?.internshipDesc || "Live projects and industry-relevant skills"}</span>
+                                        </div>
+                                      </div>
+                                      <div className="flex gap-2 bg-gray-50/70 p-2 rounded-xl border border-gray-100">
+                                        <div className="w-4 h-4 rounded-full bg-blue-50 text-[#072A6C] flex items-center justify-center text-[8px] font-bold shrink-0">3</div>
+                                        <div>
+                                          <span className="text-[10px] font-bold text-[#072A6C] block leading-tight">{currStory.milestones?.placementTitle || "Internship"}</span>
+                                          <span className="text-[8.5px] text-gray-500 block">{currStory.milestones?.placementDesc || "Internship experience boosted my practical knowledge"}</span>
+                                        </div>
+                                      </div>
+                                      <div className="flex gap-2 bg-gray-50/70 p-2 rounded-xl border border-gray-100">
+                                        <div className="w-4 h-4 rounded-full bg-blue-50 text-[#072A6C] flex items-center justify-center text-[8px] font-bold shrink-0">4</div>
+                                        <div>
+                                          <span className="text-[10px] font-bold text-[#072A6C] block leading-tight">{currStory.milestones?.careerTitle || "Dream Career"}</span>
+                                          <span className="text-[8.5px] text-gray-500 block">{currStory.milestones?.careerDesc || "Campus placement opportunity"}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Skills, Internship & Achievement */}
+                                <div className="md:col-span-5 space-y-3 bg-gray-50/80 border border-gray-100 rounded-xl p-3 h-fit">
+                                  <div className="space-y-1">
+                                    <span className="text-[8.5px] font-bold text-gray-400 uppercase tracking-wider block">Skills Acquired</span>
+                                    <div className="flex flex-wrap gap-1">
+                                      {currStory.skills && currStory.skills.length > 0 ? (
+                                        currStory.skills.map((skill, sIdx) => (
+                                          <span key={sIdx} className="text-[8px] font-semibold bg-white text-[#072A6C] px-1.5 py-0.5 border border-gray-200 rounded">
+                                            {skill}
+                                          </span>
+                                        ))
+                                      ) : (
+                                        <span className="text-[8px] text-gray-400 italic">No skills listed</span>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  <div className="space-y-0.5 pt-2 border-t border-gray-200/70">
+                                    <span className="text-[8.5px] font-bold text-gray-400 uppercase tracking-wider block">Internship Term</span>
+                                    <span className="text-[10px] font-bold text-[#072A6C] block">{currStory.internshipExp || "6 Months Internship"}</span>
+                                  </div>
+
+                                  <div className="space-y-0.5 pt-2 border-t border-gray-200/70">
+                                    <span className="text-[8.5px] font-bold text-gray-400 uppercase tracking-wider block">Top Achievement</span>
+                                    <span className="text-[10px] font-bold text-emerald-600 block">{currStory.achievement || "Top Contest Performer"}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* EDIT ACTIVE STORY FORM FIELDS */}
+                      <div className="p-5 rounded-2xl border border-gray-200 bg-slate-50/40 space-y-5">
+                        <h5 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-1.5">
+                          <Edit3 size={13} className="text-[#072A6C]" />
+                          Edit Story #{currentStorySafeIdx + 1}: {currStory.studentName}
+                        </h5>
+
+                        {/* Student Meta Grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Student Full Name</label>
+                            <input
+                              type="text"
+                              value={currStory.studentName}
+                              onChange={(e) => updateCurrentStory({ studentName: e.target.value })}
+                              className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold"
+                              placeholder="e.g. Hitaishi Reddy"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Department / Program</label>
+                            <input
+                              type="text"
+                              value={currStory.department}
+                              onChange={(e) => updateCurrentStory({ department: e.target.value })}
+                              className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg"
+                              placeholder="e.g. B.Tech - Computer Science & Engineering"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Batch Year</label>
+                            <input
+                              type="text"
+                              value={currStory.batch}
+                              onChange={(e) => updateCurrentStory({ batch: e.target.value })}
+                              className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg"
+                              placeholder="e.g. 2024 Batch"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Package Offered (CTC)</label>
+                            <input
+                              type="text"
+                              value={currStory.packageOffered}
+                              onChange={(e) => updateCurrentStory({ packageOffered: e.target.value })}
+                              className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-black text-amber-600"
+                              placeholder="e.g. 12 LPA"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Student Photo & Company Logo with ImageField */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="p-3.5 rounded-xl border border-gray-200 bg-white space-y-2">
+                            <ImageField
+                              label="Student Profile Photo"
+                              value={currStory.studentImage}
+                              defaultValue={INITIAL_SUCCESS_STORIES[currentStorySafeIdx]?.studentImage || "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=500&h=600&fit=crop&crop=face"}
+                              aspectRatio="portrait"
+                              recommendedSize="500 × 600 px (Portrait)"
+                              onChange={(val) => updateCurrentStory({ studentImage: val })}
+                              onReset={() => {
+                                const defImg = INITIAL_SUCCESS_STORIES[currentStorySafeIdx]?.studentImage || "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=500&h=600&fit=crop&crop=face";
+                                updateCurrentStory({ studentImage: defImg });
+                                notifySave("Student photo reset to default!");
+                              }}
+                            />
+                          </div>
+                          <div className="p-3.5 rounded-xl border border-gray-200 bg-white space-y-3">
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-gray-600 uppercase">Hiring Company Name</label>
+                              <input
+                                type="text"
+                                value={currStory.companyName}
+                                onChange={(e) => updateCurrentStory({ companyName: e.target.value })}
+                                className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold"
+                                placeholder="e.g. TCS / Google / Deloitte"
+                              />
+                            </div>
+                            <ImageField
+                              label="Company Logo"
+                              value={currStory.companyLogo}
+                              defaultValue={INITIAL_SUCCESS_STORIES[currentStorySafeIdx]?.companyLogo || "/logos/tcs.svg"}
+                              aspectRatio="square"
+                              recommendedSize="200 × 200 px (SVG / PNG)"
+                              onChange={(val) => updateCurrentStory({ companyLogo: val })}
+                              onReset={() => {
+                                const defLogo = INITIAL_SUCCESS_STORIES[currentStorySafeIdx]?.companyLogo || "/logos/tcs.svg";
+                                updateCurrentStory({ companyLogo: defLogo });
+                                notifySave("Company logo reset to default!");
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Testimonial Quote */}
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Student Testimonial / Experience Quote</label>
+                          <textarea
+                            value={currStory.description}
+                            onChange={(e) => updateCurrentStory({ description: e.target.value })}
+                            rows={3}
+                            className="w-full p-2.5 text-xs bg-white border border-gray-200 rounded-lg"
+                            placeholder="Write the student's testimonial quote about their college experience, faculty support, and placement journey..."
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* ══════════════════════════════════════════════════════════ */}
+                    {/* OUR TOP CORPORATE PARTNERS / RECRUITERS MARQUEE CMS        */}
+                    {/* ══════════════════════════════════════════════════════════ */}
+                    <div className="pt-6 border-t border-gray-100 space-y-6">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                          <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-1.5">
+                            <Building size={14} className="text-[#072A6C]" />
+                            Our Top Corporate Partners Marquee ({(placementsForm.recruiters || []).length} Companies)
+                          </h4>
+                          <p className="text-[11px] text-gray-500">Manage all hiring partner logos shown in the homepage auto-scrolling recruiter marquee strip</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPlacementsForm({ ...placementsForm, recruiters: INITIAL_PLACEMENTS_CONTENT.recruiters });
+                              notifySave("All 20 corporate partner logos reset to defaults!");
+                            }}
+                            className="h-8 px-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer"
+                          >
+                            <RotateCcw size={12} /> Reset 20 Default Partners
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newPartner: Recruiter = { name: "New Partner", logo: "/logos/ibm.svg" };
+                              const updated = [...(placementsForm.recruiters || []), newPartner];
+                              setPlacementsForm({ ...placementsForm, recruiters: updated });
+                              notifySave("New corporate partner added!");
+                            }}
+                            className="h-8 px-3 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer"
+                          >
+                            <Plus size={13} /> Add Company Partner
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* LIVE MARQUEE STRIP PREVIEW (Matches media_1789817622000.png) */}
+                      <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800 space-y-3">
+                        <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                          <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest flex items-center gap-1.5">
+                            <Eye size={12} /> Website Live Marquee Strip Preview
+                          </span>
+                          <span className="text-[9.5px] bg-blue-950 text-blue-300 border border-blue-800 px-2 py-0.5 rounded-md font-semibold">
+                            {(placementsForm.recruiters || []).length} Logos in Carousel
+                          </span>
+                        </div>
+                        <div className="relative overflow-hidden bg-slate-950/80 p-4 rounded-xl border border-slate-800">
+                          <div className="flex gap-4 overflow-x-auto py-2 no-scrollbar">
+                            {(placementsForm.recruiters || []).map((r, i) => (
+                              <div key={i} className="h-11 px-5 bg-white border border-gray-200 rounded-xl flex items-center justify-center shadow-xs shrink-0 min-w-[100px] hover:border-[#072A6C] transition-all">
+                                <img src={r.logo} alt={r.name} className="h-6 w-auto object-contain max-w-[85px]" onError={(e) => { (e.target as HTMLImageElement).src = "/logos/wipro.svg"; }} />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* PARTNER LOGOS DIRECTORY GRID */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Partner Logos Directory (Edit Logos & Names)</label>
+                            <p className="text-[10px] text-gray-400">All corporate hiring partners (upload custom logos or use SVG paths)</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setPlacementsForm({ ...placementsForm, recruiters: [...INITIAL_PLACEMENTS_CONTENT.recruiters] });
+                                notifySave("Reset all 20 partners to defaults!");
+                              }}
+                              className="px-2.5 py-1 text-xs font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
+                              title="Reset all partners to default 20 companies"
+                            >
+                              <RotateCcw size={12} /> Reset All
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = [...(placementsForm.recruiters || []), { name: "New Company", logo: "/logos/wipro.svg" }];
+                                setPlacementsForm({ ...placementsForm, recruiters: updated });
+                                notifySave("Added new partner company");
+                              }}
+                              className="px-2.5 py-1 text-xs font-bold text-[#072A6C] bg-blue-50 hover:bg-blue-100 rounded-lg flex items-center gap-1 border border-blue-200 transition-colors cursor-pointer"
+                            >
+                              <Plus size={13} /> Add Company
+                            </button>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                          {(placementsForm.recruiters || []).map((partner, pIdx) => (
+                            <div key={pIdx} className="p-3 rounded-xl border border-gray-200 bg-white shadow-xs space-y-2.5 relative group hover:border-[#072A6C]/40 hover:shadow-sm transition-all flex flex-col justify-between">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">#{pIdx + 1} Partner</span>
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const updated = [...(placementsForm.recruiters || [])];
+                                      const defLogo = INITIAL_PLACEMENTS_CONTENT.recruiters[pIdx]?.logo || "/logos/wipro.svg";
+                                      const defName = INITIAL_PLACEMENTS_CONTENT.recruiters[pIdx]?.name || partner.name;
+                                      updated[pIdx] = { ...updated[pIdx], logo: defLogo, name: defName };
+                                      setPlacementsForm({ ...placementsForm, recruiters: updated });
+                                      notifySave(`${partner.name} reset to default!`);
+                                    }}
+                                    className="p-1 rounded text-gray-400 hover:text-[#072A6C] hover:bg-gray-100 cursor-pointer transition-colors"
+                                    title="Reset logo & name to default"
+                                  >
+                                    <RotateCcw size={12} />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const updated = (placementsForm.recruiters || []).filter((_, i) => i !== pIdx);
+                                      setPlacementsForm({ ...placementsForm, recruiters: updated });
+                                      notifySave(`Removed ${partner.name}`);
+                                    }}
+                                    className="text-red-400 hover:text-red-600 p-1 rounded hover:bg-red-50 cursor-pointer transition-colors"
+                                    title="Delete partner"
+                                  >
+                                    <Trash2 size={12} />
+                                  </button>
+                                </div>
+                              </div>
+
+                              <div className="relative group/logo h-14 w-full bg-slate-50 rounded-lg border border-dashed border-gray-200 flex items-center justify-center p-2 overflow-hidden">
+                                <img
+                                  src={partner.logo}
+                                  alt={partner.name}
+                                  className="h-7 max-h-7 w-auto max-w-[100px] object-contain transition-transform group-hover/logo:scale-105"
+                                  onError={(e) => { (e.target as HTMLImageElement).src = "/logos/wipro.svg"; }}
+                                />
+                                <label className="absolute inset-0 bg-[#072A6C]/85 opacity-0 group-hover/logo:opacity-100 transition-opacity flex items-center justify-center text-white text-[10.5px] font-semibold gap-1.5 cursor-pointer shadow-inner">
+                                  <UploadCloud size={13} />
+                                  <span>Upload Logo</span>
+                                  <input
+                                    type="file"
+                                    accept="image/*,.svg"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        const reader = new FileReader();
+                                        reader.onload = (re) => {
+                                          const url = re.target?.result as string;
+                                          const updated = [...(placementsForm.recruiters || [])];
+                                          updated[pIdx] = { ...updated[pIdx], logo: url };
+                                          setPlacementsForm({ ...placementsForm, recruiters: updated });
+                                          notifySave(`Updated ${partner.name} logo`);
+                                        };
+                                        reader.readAsDataURL(file);
+                                      }
+                                    }}
+                                  />
+                                </label>
+                              </div>
+
+                              <div className="space-y-1.5">
+                                <div>
+                                  <label className="text-[9px] font-bold text-gray-500 uppercase tracking-wide">Company Name</label>
+                                  <input
+                                    type="text"
+                                    value={partner.name}
+                                    onChange={(e) => {
+                                      const updated = [...(placementsForm.recruiters || [])];
+                                      updated[pIdx] = { ...updated[pIdx], name: e.target.value };
+                                      setPlacementsForm({ ...placementsForm, recruiters: updated });
+                                    }}
+                                    className="w-full h-7 px-2 text-xs font-bold bg-white border border-gray-200 rounded-md text-gray-800 focus:border-[#072A6C] focus:outline-none"
+                                    placeholder="e.g. Google"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="text-[9px] font-bold text-gray-500 uppercase tracking-wide">Logo URL / Path</label>
+                                  <input
+                                    type="text"
+                                    value={partner.logo}
+                                    onChange={(e) => {
+                                      const updated = [...(placementsForm.recruiters || [])];
+                                      updated[pIdx] = { ...updated[pIdx], logo: e.target.value };
+                                      setPlacementsForm({ ...placementsForm, recruiters: updated });
+                                    }}
+                                    className="w-full h-7 px-2 text-[11px] font-mono text-gray-600 bg-white border border-gray-200 rounded-md focus:border-[#072A6C] focus:outline-none"
+                                    placeholder="/logos/company.svg"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      {/* ══════════════════════════════════════════════════════════ */}
+                      {/* 4 PLACEMENT HIGHLIGHT STATS CARDS (Matches Image 2)         */}
+                      {/* ══════════════════════════════════════════════════════════ */}
+                      <div className="pt-6 border-t border-gray-100 space-y-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div>
+                            <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-1.5">
+                              <BarChart3 size={14} className="text-[#072A6C]" />
+                              Placement Key Statistics Cards (4 Highlights)
+                            </h4>
+                            <p className="text-[11px] text-gray-500">Edit the 4 metric cards displayed below the recruiter logos marquee on the homepage</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPlacementsForm({
+                                ...placementsForm,
+                                stats: [
+                                  { value: "92%", label: "Students Placed", icon: "Users" },
+                                  { value: "30 LPA", label: "Highest Package", icon: "Trophy" },
+                                  { value: "116+", label: "Corporate Partners", icon: "Handshake" },
+                                  { value: "100%", label: "Placement Assistance", icon: "GraduationCap" }
+                                ],
+                                placementPercent: "92%",
+                                highestPackage: "30 LPA",
+                                corporatePartnersCount: "116+",
+                                placementAssistance: "100%"
+                              });
+                              notifySave("Reset 4 placement stats to defaults!");
+                            }}
+                            className="h-8 px-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                          >
+                            <RotateCcw size={12} /> Reset Stats
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                          {/* Stat 1 */}
+                          <div className="p-3 bg-white rounded-xl border border-gray-200 shadow-xs space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-black text-[#072A6C] uppercase">#1 Students Placed</span>
+                              <div className="w-6 h-6 rounded-full bg-blue-50 text-[#072A6C] flex items-center justify-center">
+                                <Users size={12} />
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-[9px] font-bold text-gray-500 uppercase">Value / Percent</label>
+                              <input
+                                type="text"
+                                value={placementsForm.stats?.[0]?.value ?? placementsForm.placementPercent ?? "92%"}
+                                onChange={(e) => {
+                                  const currentStats = placementsForm.stats || [
+                                    { value: "92%", label: "Students Placed", icon: "Users" },
+                                    { value: "30 LPA", label: "Highest Package", icon: "Trophy" },
+                                    { value: "116+", label: "Corporate Partners", icon: "Handshake" },
+                                    { value: "100%", label: "Placement Assistance", icon: "GraduationCap" }
+                                  ];
+                                  const updated = [...currentStats];
+                                  updated[0] = { ...updated[0], value: e.target.value };
+                                  setPlacementsForm({ ...placementsForm, stats: updated, placementPercent: e.target.value });
+                                }}
+                                className="w-full h-8 px-2.5 text-xs font-black bg-slate-50 border border-gray-200 rounded-lg text-[#072A6C]"
+                                placeholder="92%"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[9px] font-bold text-gray-500 uppercase">Label Text</label>
+                              <input
+                                type="text"
+                                value={placementsForm.stats?.[0]?.label ?? "Students Placed"}
+                                onChange={(e) => {
+                                  const currentStats = placementsForm.stats || [
+                                    { value: "92%", label: "Students Placed", icon: "Users" },
+                                    { value: "30 LPA", label: "Highest Package", icon: "Trophy" },
+                                    { value: "116+", label: "Corporate Partners", icon: "Handshake" },
+                                    { value: "100%", label: "Placement Assistance", icon: "GraduationCap" }
+                                  ];
+                                  const updated = [...currentStats];
+                                  updated[0] = { ...updated[0], label: e.target.value };
+                                  setPlacementsForm({ ...placementsForm, stats: updated });
+                                }}
+                                className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg text-gray-700"
+                                placeholder="Students Placed"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Stat 2 */}
+                          <div className="p-3 bg-white rounded-xl border border-gray-200 shadow-xs space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-black text-[#D4AF37] uppercase">#2 Highest Package</span>
+                              <div className="w-6 h-6 rounded-full bg-amber-50 text-[#D4AF37] flex items-center justify-center">
+                                <Trophy size={12} />
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-[9px] font-bold text-gray-500 uppercase">Value / CTC</label>
+                              <input
+                                type="text"
+                                value={placementsForm.stats?.[1]?.value ?? placementsForm.highestPackage ?? "30 LPA"}
+                                onChange={(e) => {
+                                  const currentStats = placementsForm.stats || [
+                                    { value: "92%", label: "Students Placed", icon: "Users" },
+                                    { value: "30 LPA", label: "Highest Package", icon: "Trophy" },
+                                    { value: "116+", label: "Corporate Partners", icon: "Handshake" },
+                                    { value: "100%", label: "Placement Assistance", icon: "GraduationCap" }
+                                  ];
+                                  const updated = [...currentStats];
+                                  updated[1] = { ...updated[1], value: e.target.value };
+                                  setPlacementsForm({ ...placementsForm, stats: updated, highestPackage: e.target.value });
+                                }}
+                                className="w-full h-8 px-2.5 text-xs font-black bg-slate-50 border border-gray-200 rounded-lg text-[#D4AF37]"
+                                placeholder="30 LPA"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[9px] font-bold text-gray-500 uppercase">Label Text</label>
+                              <input
+                                type="text"
+                                value={placementsForm.stats?.[1]?.label ?? "Highest Package"}
+                                onChange={(e) => {
+                                  const currentStats = placementsForm.stats || [
+                                    { value: "92%", label: "Students Placed", icon: "Users" },
+                                    { value: "30 LPA", label: "Highest Package", icon: "Trophy" },
+                                    { value: "116+", label: "Corporate Partners", icon: "Handshake" },
+                                    { value: "100%", label: "Placement Assistance", icon: "GraduationCap" }
+                                  ];
+                                  const updated = [...currentStats];
+                                  updated[1] = { ...updated[1], label: e.target.value };
+                                  setPlacementsForm({ ...placementsForm, stats: updated });
+                                }}
+                                className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg text-gray-700"
+                                placeholder="Highest Package"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Stat 3 */}
+                          <div className="p-3 bg-white rounded-xl border border-gray-200 shadow-xs space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-black text-amber-600 uppercase">#3 Corporate Partners</span>
+                              <div className="w-6 h-6 rounded-full bg-yellow-50 text-amber-600 flex items-center justify-center">
+                                <Handshake size={12} />
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-[9px] font-bold text-gray-500 uppercase">Value / Count</label>
+                              <input
+                                type="text"
+                                value={placementsForm.stats?.[2]?.value ?? placementsForm.corporatePartnersCount ?? "116+"}
+                                onChange={(e) => {
+                                  const currentStats = placementsForm.stats || [
+                                    { value: "92%", label: "Students Placed", icon: "Users" },
+                                    { value: "30 LPA", label: "Highest Package", icon: "Trophy" },
+                                    { value: "116+", label: "Corporate Partners", icon: "Handshake" },
+                                    { value: "100%", label: "Placement Assistance", icon: "GraduationCap" }
+                                  ];
+                                  const updated = [...currentStats];
+                                  updated[2] = { ...updated[2], value: e.target.value };
+                                  setPlacementsForm({ ...placementsForm, stats: updated, corporatePartnersCount: e.target.value });
+                                }}
+                                className="w-full h-8 px-2.5 text-xs font-black bg-slate-50 border border-gray-200 rounded-lg text-amber-600"
+                                placeholder="116+"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[9px] font-bold text-gray-500 uppercase">Label Text</label>
+                              <input
+                                type="text"
+                                value={placementsForm.stats?.[2]?.label ?? "Corporate Partners"}
+                                onChange={(e) => {
+                                  const currentStats = placementsForm.stats || [
+                                    { value: "92%", label: "Students Placed", icon: "Users" },
+                                    { value: "30 LPA", label: "Highest Package", icon: "Trophy" },
+                                    { value: "116+", label: "Corporate Partners", icon: "Handshake" },
+                                    { value: "100%", label: "Placement Assistance", icon: "GraduationCap" }
+                                  ];
+                                  const updated = [...currentStats];
+                                  updated[2] = { ...updated[2], label: e.target.value };
+                                  setPlacementsForm({ ...placementsForm, stats: updated });
+                                }}
+                                className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg text-gray-700"
+                                placeholder="Corporate Partners"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Stat 4 */}
+                          <div className="p-3 bg-white rounded-xl border border-gray-200 shadow-xs space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-black text-emerald-600 uppercase">#4 Assistance</span>
+                              <div className="w-6 h-6 rounded-full bg-green-50 text-emerald-600 flex items-center justify-center">
+                                <GraduationCap size={12} />
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-[9px] font-bold text-gray-500 uppercase">Value / Percent</label>
+                              <input
+                                type="text"
+                                value={placementsForm.stats?.[3]?.value ?? placementsForm.placementAssistance ?? "100%"}
+                                onChange={(e) => {
+                                  const currentStats = placementsForm.stats || [
+                                    { value: "92%", label: "Students Placed", icon: "Users" },
+                                    { value: "30 LPA", label: "Highest Package", icon: "Trophy" },
+                                    { value: "116+", label: "Corporate Partners", icon: "Handshake" },
+                                    { value: "100%", label: "Placement Assistance", icon: "GraduationCap" }
+                                  ];
+                                  const updated = [...currentStats];
+                                  updated[3] = { ...updated[3], value: e.target.value };
+                                  setPlacementsForm({ ...placementsForm, stats: updated, placementAssistance: e.target.value });
+                                }}
+                                className="w-full h-8 px-2.5 text-xs font-black bg-slate-50 border border-gray-200 rounded-lg text-emerald-600"
+                                placeholder="100%"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[9px] font-bold text-gray-500 uppercase">Label Text</label>
+                              <input
+                                type="text"
+                                value={placementsForm.stats?.[3]?.label ?? "Placement Assistance"}
+                                onChange={(e) => {
+                                  const currentStats = placementsForm.stats || [
+                                    { value: "92%", label: "Students Placed", icon: "Users" },
+                                    { value: "30 LPA", label: "Highest Package", icon: "Trophy" },
+                                    { value: "116+", label: "Corporate Partners", icon: "Handshake" },
+                                    { value: "100%", label: "Placement Assistance", icon: "GraduationCap" }
+                                  ];
+                                  const updated = [...currentStats];
+                                  updated[3] = { ...updated[3], label: e.target.value };
+                                  setPlacementsForm({ ...placementsForm, stats: updated });
+                                }}
+                                className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg text-gray-700"
+                                placeholder="Placement Assistance"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-blue-50/50 border border-blue-100 flex items-center justify-between">
+                      <div>
+                        <h4 className="text-xs font-bold text-[#072A6C]">Full Placements & Recruiters Directory</h4>
+                        <p className="text-[11px] text-gray-600">You can also manage placed students individual cards, brochures, and statistics in the Placements tab.</p>
+                      </div>
+                      <button
+                        onClick={() => setActiveTab("placements")}
+                        className="px-3 py-1.5 bg-[#072A6C] text-white text-xs font-bold rounded-lg cursor-pointer hover:bg-[#051c4a]"
+                      >
+                        Go to Placements CMS ➔
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Sub-tab: 10. Admissions Open & Visit Us */}
+              {activeHomeSubTab === "virtualTour" && (
+                <div className="space-y-6 text-left">
+                  {/* Top Bar with Title and Actions */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <h3 className="text-sm font-black text-[#072A6C] uppercase">10. Admissions Banner & Campus Visit Strip</h3>
+                      <p className="text-xs text-gray-500">Configure the admissions open promotional card, 3 action buttons, student banner image, contact coordinates, and interactive Google Map location.</p>
+                    </div>
+                    <div className="flex gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const defVT = DEFAULT_HOMEPAGE_SECTIONS.find((s) => s.id === "virtualTour");
+                          if (defVT && defVT.extraData) {
+                            setTourData({
+                              bannerTitle: defVT.extraData.bannerTitle || "ADMISSIONS OPEN 2026",
+                              bannerSubtitle: defVT.extraData.bannerSubtitle || "Join a community of innovators and leaders. Shape your future with Chalapathi University.",
+                              bannerImage: defVT.extraData.bannerImage || "/students_admission.png",
+                              btn1Text: defVT.extraData.btn1Text || "Apply Now",
+                              btn1Url: defVT.extraData.btn1Url || "/admissions/apply",
+                              btn2Text: defVT.extraData.btn2Text || "Download Brochure",
+                              btn2Url: defVT.extraData.btn2Url || "/admissions",
+                              btn3Text: defVT.extraData.btn3Text || "Talk to Counselor",
+                              btn3Url: defVT.extraData.btn3Url || "/contact",
+                              visitHeading: defVT.extraData.visitHeading || "VISIT US",
+                              address: defVT.extraData.address || "A.R. Nagar, Mothadaka, Guntur, Andhra Pradesh - 522034",
+                              phone: defVT.extraData.phone || "8886630355 | 8886630356 9905505566",
+                              email: defVT.extraData.email || "admissions@city.ac.in",
+                              website: defVT.extraData.website || "www.city.ac.in",
+                              mapEmbedUrl: defVT.extraData.mapEmbedUrl || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3826.974950454796!2d80.28581691486445!3d16.375218788685984!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a4a79679802cfad%3A0xe67e2a901bbd33fe!2sChalapathi%20Institute%20of%20Technology!5e0!3m2!1sen!2sin!5m2!1sen!2sin",
+                              mapLinkUrl: defVT.extraData.mapLinkUrl || "https://www.google.com/maps/place/Chalapathi+Institute+of+Technology/@16.3752188,80.2858169,17z/data=!3m1!4b1!4m6!3m5!1s0x3a4a79679802cfad:0xe67e2a901bbd33fe!8m2!3d16.3752188!4d80.2858169!16s%2Fg%2F122r446z"
+                            });
+                            notifySave("Reset Admissions & Visit Us to defaults!");
+                          }
+                        }}
+                        className="h-9 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        <RotateCcw size={13} /> Reset Defaults
+                      </button>
+                      <button
+                        onClick={saveVirtualTourSection}
+                        className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      >
+                        <Save size={13} /> Save Section
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Two Cards Editor Grid */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    {/* Card 1: Left Admissions Promotional Banner */}
+                    <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-5">
+                      <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
+                        <span className="px-2.5 py-0.5 bg-blue-100 text-[#072A6C] text-[10px] font-black uppercase rounded-full">Left Banner</span>
+                        <h4 className="text-xs font-bold text-gray-800">Admissions Open Promotional Card</h4>
+                      </div>
+
+                      <div className="space-y-3.5">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Banner Headline (Gold Text)</label>
+                          <input
+                            type="text"
+                            value={tourData.bannerTitle}
+                            onChange={(e) => setTourData({ ...tourData, bannerTitle: e.target.value })}
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold text-gray-800"
+                            placeholder="e.g. ADMISSIONS OPEN 2026"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Banner Subtitle / Description</label>
+                          <textarea
+                            value={tourData.bannerSubtitle}
+                            onChange={(e) => setTourData({ ...tourData, bannerSubtitle: e.target.value })}
+                            rows={3}
+                            className="w-full p-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg text-gray-700 resize-none"
+                            placeholder="e.g. Join a community of innovators and leaders. Shape your future with Chalapathi University."
+                          />
+                        </div>
+
+                        <ImageField
+                          label="Students Cutout / Campus Image"
+                          value={tourData.bannerImage}
+                          defaultValue="/students_admission.png"
+                          aspectRatio="wide"
+                          recommendedSize="800 × 600 px (PNG with transparent or rich background)"
+                          onChange={(val) => setTourData({ ...tourData, bannerImage: val })}
+                          onReset={() => setTourData({ ...tourData, bannerImage: "/students_admission.png" })}
+                        />
+
+                        {/* 3 CTA Buttons */}
+                        <div className="space-y-3 pt-2">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Action Buttons (3 Links)</label>
+                          
+                          {/* Button 1 */}
+                          <div className="p-3 bg-slate-50 rounded-xl border border-gray-200 space-y-2">
+                            <span className="text-[10px] font-bold text-[#072A6C]">Primary Button 1 (White Solid)</span>
+                            <div className="grid grid-cols-2 gap-2">
+                              <input
+                                type="text"
+                                value={tourData.btn1Text}
+                                onChange={(e) => setTourData({ ...tourData, btn1Text: e.target.value })}
+                                placeholder="Button Text (e.g. Apply Now)"
+                                className="h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold"
+                              />
+                              <input
+                                type="text"
+                                value={tourData.btn1Url}
+                                onChange={(e) => setTourData({ ...tourData, btn1Url: e.target.value })}
+                                placeholder="Target Link (e.g. /admissions/apply)"
+                                className="h-8 px-2.5 text-xs font-mono bg-white border border-gray-200 rounded-lg text-gray-600"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Button 2 */}
+                          <div className="p-3 bg-slate-50 rounded-xl border border-gray-200 space-y-2">
+                            <span className="text-[10px] font-bold text-[#D4AF37]">Secondary Button 2 (Gold Outline)</span>
+                            <div className="grid grid-cols-2 gap-2">
+                              <input
+                                type="text"
+                                value={tourData.btn2Text}
+                                onChange={(e) => setTourData({ ...tourData, btn2Text: e.target.value })}
+                                placeholder="Button Text (e.g. Download Brochure)"
+                                className="h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold"
+                              />
+                              <input
+                                type="text"
+                                value={tourData.btn2Url}
+                                onChange={(e) => setTourData({ ...tourData, btn2Url: e.target.value })}
+                                placeholder="Target Link (e.g. /admissions)"
+                                className="h-8 px-2.5 text-xs font-mono bg-white border border-gray-200 rounded-lg text-gray-600"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Button 3 */}
+                          <div className="p-3 bg-slate-50 rounded-xl border border-gray-200 space-y-2">
+                            <span className="text-[10px] font-bold text-[#D4AF37]">Secondary Button 3 (Gold Outline)</span>
+                            <div className="grid grid-cols-2 gap-2">
+                              <input
+                                type="text"
+                                value={tourData.btn3Text}
+                                onChange={(e) => setTourData({ ...tourData, btn3Text: e.target.value })}
+                                placeholder="Button Text (e.g. Talk to Counselor)"
+                                className="h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold"
+                              />
+                              <input
+                                type="text"
+                                value={tourData.btn3Url}
+                                onChange={(e) => setTourData({ ...tourData, btn3Url: e.target.value })}
+                                placeholder="Target Link (e.g. /contact)"
+                                className="h-8 px-2.5 text-xs font-mono bg-white border border-gray-200 rounded-lg text-gray-600"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Card 2: Right Visit Us & Contact */}
+                    <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-5">
+                      <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
+                        <span className="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-black uppercase rounded-full">Right Card</span>
+                        <h4 className="text-xs font-bold text-gray-800">Visit Us & Location Coordinates</h4>
+                      </div>
+
+                      <div className="space-y-3.5">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Card Heading</label>
+                          <input
+                            type="text"
+                            value={tourData.visitHeading}
+                            onChange={(e) => setTourData({ ...tourData, visitHeading: e.target.value })}
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold text-gray-800"
+                            placeholder="e.g. VISIT US"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Campus Physical Address</label>
+                          <input
+                            type="text"
+                            value={tourData.address}
+                            onChange={(e) => setTourData({ ...tourData, address: e.target.value })}
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg text-gray-800"
+                            placeholder="e.g. A.R. Nagar, Mothadaka, Guntur, Andhra Pradesh - 522034"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Contact Phone Numbers</label>
+                          <input
+                            type="text"
+                            value={tourData.phone}
+                            onChange={(e) => setTourData({ ...tourData, phone: e.target.value })}
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg text-gray-800"
+                            placeholder="e.g. 8886630355 | 8886630356 9905505566"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Admissions Email</label>
+                          <input
+                            type="text"
+                            value={tourData.email}
+                            onChange={(e) => setTourData({ ...tourData, email: e.target.value })}
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg text-gray-800"
+                            placeholder="e.g. admissions@city.ac.in"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Official Website URL</label>
+                          <input
+                            type="text"
+                            value={tourData.website}
+                            onChange={(e) => setTourData({ ...tourData, website: e.target.value })}
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg text-gray-800"
+                            placeholder="e.g. www.city.ac.in"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Google Maps Embed iframe URL</label>
+                          <input
+                            type="text"
+                            value={tourData.mapEmbedUrl}
+                            onChange={(e) => setTourData({ ...tourData, mapEmbedUrl: e.target.value })}
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg text-gray-800 font-mono text-[11px]"
+                            placeholder="https://www.google.com/maps/embed?pb=..."
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Google Maps Direct Place Link</label>
+                          <input
+                            type="text"
+                            value={tourData.mapLinkUrl}
+                            onChange={(e) => setTourData({ ...tourData, mapLinkUrl: e.target.value })}
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg text-gray-800 font-mono text-[11px]"
+                            placeholder="https://www.google.com/maps/place/..."
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Live Interactive Preview Box */}
+                  <div className="bg-slate-900 p-6 rounded-2xl text-white space-y-3">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                        <span className="text-xs font-bold uppercase tracking-wider text-slate-300">Live Website Section Preview</span>
+                      </div>
+                      <span className="text-[10px] text-slate-400">Section 10 on live Homepage</span>
+                    </div>
+
+                    <div className="bg-gray-100 p-5 rounded-xl text-slate-900">
+                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+                        {/* Preview Left Blue Card */}
+                        <div className="lg:col-span-8 bg-[#072A6C] text-white rounded-[14px] p-6 flex flex-col md:flex-row items-center justify-between gap-4 overflow-hidden relative">
+                          <div className="space-y-3 relative z-10 w-full md:max-w-[55%]">
+                            <h3 className="text-xl font-black text-[#D4AF37]">{tourData.bannerTitle}</h3>
+                            <p className="text-xs text-blue-100 leading-relaxed font-light">{tourData.bannerSubtitle}</p>
+                            <div className="flex flex-wrap items-center gap-2 pt-1">
+                              {tourData.btn1Text && (
+                                <span className="h-8 px-3 bg-white text-[#072A6C] text-[10px] font-bold rounded-md inline-flex items-center gap-1 shadow-xs">
+                                  {tourData.btn1Text} ➔
+                                </span>
+                              )}
+                              {tourData.btn2Text && (
+                                <span className="h-8 px-3 border border-[#D4AF37] text-[#D4AF37] text-[10px] font-bold rounded-md inline-flex items-center gap-1">
+                                  {tourData.btn2Text}
+                                </span>
+                              )}
+                              {tourData.btn3Text && (
+                                <span className="h-8 px-3 border border-[#D4AF37] text-[#D4AF37] text-[10px] font-bold rounded-md inline-flex items-center gap-1">
+                                  {tourData.btn3Text}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="absolute right-0 top-0 bottom-0 h-full w-full md:w-[42%] overflow-hidden z-0 opacity-90">
+                            <img src={tourData.bannerImage} alt="Students" className="w-full h-full object-cover object-left-top" onError={(e) => { (e.target as HTMLImageElement).src = "/students_admission.png"; }} />
+                          </div>
+                        </div>
+
+                        {/* Preview Right White Card */}
+                        <div className="lg:col-span-4 bg-white border border-gray-200 rounded-[14px] p-4 flex items-center justify-between gap-3 shadow-xs">
+                          <div className="space-y-2.5 flex-1">
+                            <h4 className="text-xs font-black uppercase tracking-wider text-[#072A6C]">{tourData.visitHeading}</h4>
+                            <div className="space-y-1.5 text-[10px] text-gray-600">
+                              <div className="flex items-start gap-1">
+                                <MapPin size={11} className="shrink-0 mt-0.5 text-gray-400" />
+                                <span className="line-clamp-2">{tourData.address}</span>
+                              </div>
+                              <div className="flex items-start gap-1">
+                                <Phone size={11} className="shrink-0 mt-0.5 text-gray-400" />
+                                <span>{tourData.phone}</span>
+                              </div>
+                              <div className="flex items-start gap-1">
+                                <Mail size={11} className="shrink-0 mt-0.5 text-gray-400" />
+                                <span>{tourData.email}</span>
+                              </div>
+                              <div className="flex items-start gap-1">
+                                <Globe size={11} className="shrink-0 mt-0.5 text-gray-400" />
+                                <span>{tourData.website}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="w-[85px] h-[85px] rounded-lg overflow-hidden bg-gray-100 shrink-0 border border-gray-200 relative flex items-center justify-center text-[10px] font-bold text-[#072A6C]">
+                            Maps ↗
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Sub-tab: Homepage Colors & Style */}
+              {activeHomeSubTab === "styling" && (
+                <div className="space-y-6 text-left">
+                  {/* 1. Theme Presets */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <Palette className="text-[#072A6C]" size={18} />
+                          <h3 className="text-sm font-black text-[#072A6C] uppercase tracking-wide">1-Click Theme Palettes</h3>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-0.5">Choose a curated university color scheme or customize individual values below</p>
+                      </div>
+                      <button
+                        onClick={saveStyling}
+                        className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs self-start sm:self-auto"
+                      >
+                        <Save size={13} /> Save Colors & Style
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                      {[
+                        {
+                          name: "Chalapathi Classic (Default)",
+                          desc: "Navy Blue, Gold & Crimson Accent",
+                          primary: "#072A6C",
+                          secondary: "#D4AF37",
+                          accent: "#D71920",
+                          headerBg: "#FFFFFF",
+                          footerBg: "#071A3A",
+                          statsBg: "#072A6C",
+                          whyChooseBg: "#F8FAFC",
+                          chairmanBg: "#072A6C",
+                          campusLifeBg: "#FFFFFF",
+                          certificationsBg: "#F8FAFC",
+                          virtualTourBg: "#0B192C"
+                        },
+                        {
+                          name: "Deep Sapphire & Amber",
+                          desc: "Deep Sapphire, Warm Amber & Red",
+                          primary: "#0A2558",
+                          secondary: "#F59E0B",
+                          accent: "#DC2626",
+                          headerBg: "#FFFFFF",
+                          footerBg: "#051329",
+                          statsBg: "#0A2558",
+                          whyChooseBg: "#F1F5F9",
+                          chairmanBg: "#0A2558",
+                          campusLifeBg: "#FFFFFF",
+                          certificationsBg: "#F1F5F9",
+                          virtualTourBg: "#08162F"
+                        },
+                        {
+                          name: "Royal Emerald & Gold",
+                          desc: "Emerald Forest, Gold & Crimson",
+                          primary: "#064E3B",
+                          secondary: "#D97706",
+                          accent: "#B91C1C",
+                          headerBg: "#FFFFFF",
+                          footerBg: "#022c22",
+                          statsBg: "#064E3B",
+                          whyChooseBg: "#F0FDF4",
+                          chairmanBg: "#064E3B",
+                          campusLifeBg: "#FFFFFF",
+                          certificationsBg: "#F0FDF4",
+                          virtualTourBg: "#022018"
+                        },
+                        {
+                          name: "Midnight Obsidian & Gold",
+                          desc: "Obsidian Slate, Yellow Gold & Coral",
+                          primary: "#0F172A",
+                          secondary: "#EAB308",
+                          accent: "#E11D48",
+                          headerBg: "#FFFFFF",
+                          footerBg: "#020617",
+                          statsBg: "#0F172A",
+                          whyChooseBg: "#F8FAFC",
+                          chairmanBg: "#0F172A",
+                          campusLifeBg: "#FFFFFF",
+                          certificationsBg: "#F8FAFC",
+                          virtualTourBg: "#020617"
+                        }
+                      ].map((preset, idx) => (
+                        <div
+                          key={idx}
+                          onClick={() => {
+                            setColorsForm({
+                              ...colorsForm,
+                              primary: preset.primary,
+                              secondary: preset.secondary,
+                              accent: preset.accent,
+                              headerBg: preset.headerBg,
+                              footerBg: preset.footerBg,
+                              statsBg: preset.statsBg,
+                              whyChooseBg: preset.whyChooseBg,
+                              chairmanBg: preset.chairmanBg,
+                              campusLifeBg: preset.campusLifeBg,
+                              certificationsBg: preset.certificationsBg,
+                              virtualTourBg: preset.virtualTourBg
+                            });
+                          }}
+                          className={`p-3.5 rounded-xl border transition-all cursor-pointer hover:shadow-md ${
+                            colorsForm.primary === preset.primary && colorsForm.secondary === preset.secondary
+                              ? "border-[#072A6C] bg-blue-50/40 shadow-xs ring-2 ring-[#072A6C]/20"
+                              : "border-gray-200 bg-slate-50/50 hover:bg-white"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="text-xs font-bold text-gray-800">{preset.name}</h4>
+                            {colorsForm.primary === preset.primary && colorsForm.secondary === preset.secondary && (
+                              <span className="text-[10px] font-bold text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded">Active</span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1.5 mb-2">
+                            <div className="w-5 h-5 rounded-full border border-gray-300" style={{ backgroundColor: preset.primary }} title={`Primary: ${preset.primary}`} />
+                            <div className="w-5 h-5 rounded-full border border-gray-300" style={{ backgroundColor: preset.secondary }} title={`Secondary: ${preset.secondary}`} />
+                            <div className="w-5 h-5 rounded-full border border-gray-300" style={{ backgroundColor: preset.accent }} title={`Accent: ${preset.accent}`} />
+                            <div className="w-5 h-5 rounded-full border border-gray-300" style={{ backgroundColor: preset.footerBg }} title={`Footer: ${preset.footerBg}`} />
+                          </div>
+                          <p className="text-[11px] text-gray-500">{preset.desc}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 2. Global University Colors */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div>
+                      <h3 className="text-sm font-black text-[#072A6C] uppercase tracking-wide">Global University Colors</h3>
+                      <p className="text-xs text-gray-500">Core palette used across banners, badges, active tabs, buttons, and accents</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <ColorField
+                        label="Primary Brand Color (Navy Blue)"
+                        value={colorsForm.primary}
+                        onChange={(val) => setColorsForm({ ...colorsForm, primary: val })}
+                      />
+                      <ColorField
+                        label="Secondary Accent (Gold / Yellow)"
+                        value={colorsForm.secondary}
+                        onChange={(val) => setColorsForm({ ...colorsForm, secondary: val })}
+                      />
+                      <ColorField
+                        label="Accent Highlight (Crimson Red)"
+                        value={colorsForm.accent}
+                        onChange={(val) => setColorsForm({ ...colorsForm, accent: val })}
+                      />
+                      <ColorField
+                        label="Page Background Color"
+                        value={colorsForm.pageBackground || "#FFFFFF"}
+                        onChange={(val) => setColorsForm({ ...colorsForm, pageBackground: val })}
+                      />
+                      <ColorField
+                        label="Primary Text Color"
+                        value={colorsForm.textPrimary || "#0F172A"}
+                        onChange={(val) => setColorsForm({ ...colorsForm, textPrimary: val })}
+                      />
+                      <ColorField
+                        label="Secondary / Muted Text Color"
+                        value={colorsForm.textSecondary || "#475569"}
+                        onChange={(val) => setColorsForm({ ...colorsForm, textSecondary: val })}
+                      />
+                    </div>
+                  </div>
+
+                  {/* 3. Section-Specific Background & Text Color Overrides */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div>
+                      <h3 className="text-sm font-black text-[#072A6C] uppercase tracking-wide">Homepage Section Background & Header/Footer Colors</h3>
+                      <p className="text-xs text-gray-500">Override specific section backgrounds and navigation headers independently</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <ColorField
+                        label="Top Header Navigation Background"
+                        value={colorsForm.headerBg || "#FFFFFF"}
+                        onChange={(val) => setColorsForm({ ...colorsForm, headerBg: val })}
+                      />
+                      <ColorField
+                        label="Header Nav Links Text Color"
+                        value={colorsForm.headerText || "#072A6C"}
+                        onChange={(val) => setColorsForm({ ...colorsForm, headerText: val })}
+                      />
+                      <ColorField
+                        label="Key Statistics Bar Background"
+                        value={colorsForm.statsBg || "#072A6C"}
+                        onChange={(val) => setColorsForm({ ...colorsForm, statsBg: val })}
+                      />
+                      <ColorField
+                        label="Why Choose Us Section Background"
+                        value={colorsForm.whyChooseBg || "#F8FAFC"}
+                        onChange={(val) => setColorsForm({ ...colorsForm, whyChooseBg: val })}
+                      />
+                      <ColorField
+                        label="Chairman's Message Section Background"
+                        value={colorsForm.chairmanBg || "#072A6C"}
+                        onChange={(val) => setColorsForm({ ...colorsForm, chairmanBg: val })}
+                      />
+                      <ColorField
+                        label="Campus Life Section Background"
+                        value={colorsForm.campusLifeBg || "#FFFFFF"}
+                        onChange={(val) => setColorsForm({ ...colorsForm, campusLifeBg: val })}
+                      />
+                      <ColorField
+                        label="Admissions Strip & Visit Us Background"
+                        value={colorsForm.virtualTourBg || "#F9FAFB"}
+                        onChange={(val) => setColorsForm({ ...colorsForm, virtualTourBg: val })}
+                      />
+                      <ColorField
+                        label="Footer Main Background"
+                        value={colorsForm.footerBg || "#071A3A"}
+                        onChange={(val) => setColorsForm({ ...colorsForm, footerBg: val })}
+                      />
+                      <ColorField
+                        label="Footer Text Color"
+                        value={colorsForm.footerText || "#FFFFFF"}
+                        onChange={(val) => setColorsForm({ ...colorsForm, footerText: val })}
+                      />
+                    </div>
+                  </div>
+
+                  {/* 4. Typography & Font Style Controls */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Type className="text-[#072A6C]" size={18} />
+                      <div>
+                        <h3 className="text-sm font-black text-[#072A6C] uppercase tracking-wide">Typography & Fonts</h3>
+                        <p className="text-xs text-gray-500">Select the typography font styling applied across headers, body content, and UI elements</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="p-4 rounded-xl border border-gray-200 bg-slate-50/50 space-y-2">
+                        <label className="text-xs font-bold text-gray-700 uppercase tracking-wider block">Primary Font Family</label>
+                        <select
+                          defaultValue="Poppins"
+                          className="w-full h-10 px-3 text-xs bg-white border border-gray-200 rounded-lg font-medium text-gray-800 focus:outline-none focus:border-blue-500"
+                        >
+                          <option value="Poppins">Poppins (Official University Font — Modern Sans-Serif)</option>
+                          <option value="Inter">Inter (Ultra-clean Digital Sans)</option>
+                          <option value="Montserrat">Montserrat (Geometric Classic)</option>
+                          <option value="Plus Jakarta Sans">Plus Jakarta Sans (Contemporary Editorial)</option>
+                          <option value="Roboto">Roboto (Google Standard Neo-Grotesque)</option>
+                        </select>
+                        <p className="text-[11px] text-gray-500">Official university typographic standard with complete weight variants (Light 300 to Black 900).</p>
+                      </div>
+
+                      <div className="p-4 rounded-xl border border-gray-200 bg-slate-50/50 space-y-2">
+                        <label className="text-xs font-bold text-gray-700 uppercase tracking-wider block">Heading Font Weight</label>
+                        <select
+                          defaultValue="Extra Bold (800)"
+                          className="w-full h-10 px-3 text-xs bg-white border border-gray-200 rounded-lg font-medium text-gray-800 focus:outline-none focus:border-blue-500"
+                        >
+                          <option value="Bold (700)">Bold (700) — Standard</option>
+                          <option value="Extra Bold (800)">Extra Bold (800) — University Default</option>
+                          <option value="Black (900)">Black (900) — High Impact</option>
+                        </select>
+                        <p className="text-[11px] text-gray-500">Used for section hero titles, announcement headings, and program banners.</p>
+                      </div>
+                    </div>
+
+                    {/* Live typography & component preview */}
+                    <div className="mt-4 p-4 rounded-xl border border-dashed border-gray-300 bg-white space-y-3">
+                      <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider">Live Visual Sample with Selected Colors</span>
+                      <div className="p-4 rounded-xl flex flex-wrap items-center justify-between gap-4" style={{ backgroundColor: colorsForm.whyChooseBg || "#F8FAFC" }}>
+                        <div>
+                          <span className="text-[11px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full text-white inline-block mb-1" style={{ backgroundColor: colorsForm.accent }}>
+                            Admissions Open 2026-27
+                          </span>
+                          <h4 className="text-base font-black" style={{ color: colorsForm.primary }}>
+                            Chalapathi University — Empowering Future Leaders
+                          </h4>
+                          <p className="text-xs font-medium" style={{ color: colorsForm.textSecondary }}>
+                            NAAC 'A+' Accredited | UGC Recognised | Approved by AICTE & PCI
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            className="px-4 py-2 text-xs font-bold rounded-lg text-white shadow-xs cursor-pointer"
+                            style={{ backgroundColor: colorsForm.primary }}
+                          >
+                            Explore Programs
+                          </button>
+                          <button
+                            type="button"
+                            className="px-4 py-2 text-xs font-bold rounded-lg shadow-xs cursor-pointer"
+                            style={{ backgroundColor: colorsForm.secondary, color: "#000000" }}
+                          >
+                            Apply Now
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bottom Save Bar */}
+                  <div className="flex justify-end pt-2">
+                    <button
+                      onClick={saveStyling}
+                      className="h-10 px-6 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl flex items-center gap-2 cursor-pointer shadow-md transition-all hover:scale-[1.02]"
+                    >
+                      <Save size={14} /> Save Homepage Colors & Style
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ════════════════════════════════════════════════════ */}
+          {/* TAB 3: ABOUT US CMS                                  */}
+          {/* ════════════════════════════════════════════════════ */}
+          {activeTab === "about" && (
+            <div className="space-y-6 animate-fade-in">
+              <SectionHeader
+                title="About Us CMS"
+                subtitle="Manage institutional heritage, vision & mission, leadership & chairman message, and Chalapathi Advantage"
+                icon={Building}
+                onSave={saveAbout}
+                saveSuccess={saveSuccess}
+              />
+
+              {/* Sub-tabs */}
+              <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3">
+                {[
+                  { id: "genesis", label: "1. Genesis & Heritage" },
+                  { id: "vision", label: "2. Vision & Mission" },
+                  { id: "leadership", label: "3. Leadership & Chairman" },
+                  { id: "advantage", label: "4. Chalapathi Advantage" }
+                ].map((st) => (
+                  <button
+                    key={st.id}
+                    onClick={() => setActiveAboutSubTab(st.id as any)}
+                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      activeAboutSubTab === st.id
+                        ? "bg-[#072A6C] text-white shadow-xs"
+                        : "bg-white text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    {st.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* 1. Sub-tab: Genesis */}
+              {activeAboutSubTab === "genesis" && (
+                <div className="space-y-6 text-left">
+                  {/* Top Bar with Save Button */}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white p-5 rounded-2xl border border-gray-200 shadow-xs">
+                    <div>
+                      <h3 className="text-base font-black text-[#072A6C] tracking-tight">Genesis & Heritage (30-Year Journey)</h3>
+                      <p className="text-xs text-gray-500">Edit the hero banners, 3D interactive timeline milestone steps, photos, and institutional narratives</p>
+                    </div>
+                    <button
+                      onClick={saveAbout}
+                      className="h-10 px-5 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl flex items-center gap-2 cursor-pointer shadow-sm transition-all"
+                    >
+                      <Save size={14} /> Save Genesis Content
+                    </button>
+                  </div>
+
+                  {/* Hero & Intro Header */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider">Hero Banner & Header</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Tagline / Eyebrow Text</label>
+                        <input
+                          type="text"
+                          value={aboutForm.history.heroTagline || "OUR GENESIS"}
+                          onChange={(e) =>
+                            setAboutForm({
+                              ...aboutForm,
+                              history: { ...aboutForm.history, heroTagline: e.target.value }
+                            })
+                          }
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold text-blue-900"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Main Hero Heading</label>
+                        <input
+                          type="text"
+                          value={aboutForm.history.heroTitle || "A Journey of Vision, Values & Transformation"}
+                          onChange={(e) =>
+                            setAboutForm({
+                              ...aboutForm,
+                              history: { ...aboutForm.history, heroTitle: e.target.value }
+                            })
+                          }
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-600 uppercase">Hero Subtitle & Vision Overview</label>
+                      <textarea
+                        rows={2}
+                        value={aboutForm.history.heroSubtitle || "From a vision rooted in knowledge to a future-ready multidisciplinary university driven by innovation, research, and global excellence."}
+                        onChange={(e) =>
+                          setAboutForm({
+                            ...aboutForm,
+                            history: { ...aboutForm.history, heroSubtitle: e.target.value }
+                          })
+                        }
+                        className="w-full p-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-medium"
+                      />
+                    </div>
+                  </div>
+
+                  {/* 3D Milestones Timeline with Photos & Validation */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider">3D Milestone Steps & Campus Journey (5 Timeline Eras)</h4>
+                        <p className="text-xs text-gray-500">Each step renders with a 3D glass pedestal, year badge, and validated historical photo</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = [
+                            ...aboutForm.history.milestones,
+                            { 
+                              year: "2027", 
+                              title: "Global Innovation Hub", 
+                              desc: "Next-generation research infrastructure and global campus tie-ups.",
+                              img: "genesis/2026.jpg",
+                              alt: "New Era"
+                            }
+                          ];
+                          setAboutForm({
+                            ...aboutForm,
+                            history: { ...aboutForm.history, milestones: updated }
+                          });
+                        }}
+                        className="h-8 px-3 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer shadow-xs"
+                      >
+                        <Plus size={13} /> Add Timeline Step
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                      {aboutForm.history.milestones.map((m, idx) => (
+                        <div key={idx} className="p-4 rounded-xl border border-gray-200 bg-slate-50/70 space-y-3 flex flex-col justify-between">
+                          <div className="space-y-2.5">
+                            <div className="flex justify-between items-center pb-2 border-b border-gray-200">
+                              <span className="text-[11px] font-black text-[#072A6C] uppercase">Step {idx + 1}</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = aboutForm.history.milestones.filter((_, i) => i !== idx);
+                                  setAboutForm({ ...aboutForm, history: { ...aboutForm.history, milestones: updated } });
+                                }}
+                                className="text-red-500 hover:text-red-700 cursor-pointer p-1"
+                                title="Delete Milestone"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-gray-500 uppercase">Year / Era Label</label>
+                              <input
+                                type="text"
+                                value={m.year}
+                                onChange={(e) => {
+                                  const updated = [...aboutForm.history.milestones];
+                                  updated[idx] = { ...updated[idx], year: e.target.value };
+                                  setAboutForm({ ...aboutForm, history: { ...aboutForm.history, milestones: updated } });
+                                }}
+                                className="w-full h-8 px-2 text-xs font-bold text-[#072A6C] bg-white border border-gray-200 rounded"
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-gray-500 uppercase">Title</label>
+                              <input
+                                type="text"
+                                value={m.title}
+                                onChange={(e) => {
+                                  const updated = [...aboutForm.history.milestones];
+                                  updated[idx] = { ...updated[idx], title: e.target.value };
+                                  setAboutForm({ ...aboutForm, history: { ...aboutForm.history, milestones: updated } });
+                                }}
+                                placeholder="Milestone Title"
+                                className="w-full h-8 px-2 text-xs font-bold bg-white border border-gray-200 rounded"
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-gray-500 uppercase">Description</label>
+                              <textarea
+                                rows={3}
+                                value={m.desc}
+                                onChange={(e) => {
+                                  const updated = [...aboutForm.history.milestones];
+                                  updated[idx] = { ...updated[idx], desc: e.target.value };
+                                  setAboutForm({ ...aboutForm, history: { ...aboutForm.history, milestones: updated } });
+                                }}
+                                placeholder="Milestone Description"
+                                className="w-full p-2 text-xs bg-white border border-gray-200 rounded font-normal"
+                              />
+                            </div>
+
+                            <ImageField
+                              label="Historical Photo (Validated)"
+                              value={m.img || ""}
+                              onChange={(newImg) => {
+                                const updated = [...aboutForm.history.milestones];
+                                updated[idx] = { ...updated[idx], img: newImg };
+                                setAboutForm({ ...aboutForm, history: { ...aboutForm.history, milestones: updated } });
+                              }}
+                              aspectRatio="video"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 3. NEP 2020 Ecosystem Section */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider">NEP 2020 Ecosystem Section</h4>
+                        <p className="text-xs text-gray-500">Interactive orbital modules displaying institutional pillars inspired by NEP 2020</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const currentNodes = aboutForm.history.nep2020?.nodes || [
+                            { label: "Holistic Learning", stat: "360°", desc: "Comprehensive physical & emotional growth." },
+                            { label: "Research", stat: "Tier-1", desc: "Advanced labs & dedicated funding programs." },
+                            { label: "Innovation", stat: "100+", desc: "Patents filed and ideation centers active." },
+                            { label: "Skill Development", stat: "95%", desc: "Industry-ready practical curriculum." },
+                            { label: "Entrepreneurship", stat: "50+", desc: "Startups incubated on campus annually." },
+                            { label: "Multidisciplinary", stat: "12", desc: "Interconnected disciplines of study." }
+                          ];
+                          const updated = [...currentNodes, { label: "New Pillar", stat: "100%", desc: "Description of institutional capability." }];
+                          setAboutForm({
+                            ...aboutForm,
+                            history: {
+                              ...aboutForm.history,
+                              nep2020: {
+                                ...(aboutForm.history.nep2020 || {
+                                  heading: "A University Inspired by NEP 2020",
+                                  subheading: "Experiencing education as a living, interconnected ecosystem of knowledge, skills, and innovation.",
+                                  coreBadge: "NEP 2020"
+                                }),
+                                nodes: updated
+                              }
+                            }
+                          });
+                        }}
+                        className="h-8 px-3 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer shadow-xs"
+                      >
+                        <Plus size={13} /> Add Orbital Node
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Section Heading</label>
+                        <input
+                          type="text"
+                          value={aboutForm.history.nep2020?.heading || "A University Inspired by NEP 2020"}
+                          onChange={(e) =>
+                            setAboutForm({
+                              ...aboutForm,
+                              history: {
+                                ...aboutForm.history,
+                                nep2020: {
+                                  ...(aboutForm.history.nep2020 || {
+                                    heading: "A University Inspired by NEP 2020",
+                                    subheading: "Experiencing education as a living, interconnected ecosystem of knowledge, skills, and innovation.",
+                                    coreBadge: "NEP 2020",
+                                    nodes: []
+                                  }),
+                                  heading: e.target.value
+                                }
+                              }
+                            })
+                          }
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold text-[#072A6C]"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Core Sphere Badge Text</label>
+                        <input
+                          type="text"
+                          value={aboutForm.history.nep2020?.coreBadge || "NEP 2020"}
+                          onChange={(e) =>
+                            setAboutForm({
+                              ...aboutForm,
+                              history: {
+                                ...aboutForm.history,
+                                nep2020: {
+                                  ...(aboutForm.history.nep2020 || {
+                                    heading: "A University Inspired by NEP 2020",
+                                    subheading: "Experiencing education as a living, interconnected ecosystem of knowledge, skills, and innovation.",
+                                    coreBadge: "NEP 2020",
+                                    nodes: []
+                                  }),
+                                  coreBadge: e.target.value
+                                }
+                              }
+                            })
+                          }
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-600 uppercase">Section Subtitle</label>
+                      <input
+                        type="text"
+                        value={aboutForm.history.nep2020?.subheading || "Experiencing education as a living, interconnected ecosystem of knowledge, skills, and innovation."}
+                        onChange={(e) =>
+                          setAboutForm({
+                            ...aboutForm,
+                            history: {
+                              ...aboutForm.history,
+                              nep2020: {
+                                ...(aboutForm.history.nep2020 || {
+                                  heading: "A University Inspired by NEP 2020",
+                                  subheading: "Experiencing education as a living, interconnected ecosystem of knowledge, skills, and innovation.",
+                                  coreBadge: "NEP 2020",
+                                  nodes: []
+                                }),
+                                subheading: e.target.value
+                              }
+                            }
+                          })
+                        }
+                        className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-medium"
+                      />
+                    </div>
+
+                    {/* Nodes Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-2">
+                      {(aboutForm.history.nep2020?.nodes || [
+                        { label: "Holistic Learning", stat: "360°", desc: "Comprehensive physical & emotional growth." },
+                        { label: "Research", stat: "Tier-1", desc: "Advanced labs & dedicated funding programs." },
+                        { label: "Innovation", stat: "100+", desc: "Patents filed and ideation centers active." },
+                        { label: "Skill Development", stat: "95%", desc: "Industry-ready practical curriculum." },
+                        { label: "Entrepreneurship", stat: "50+", desc: "Startups incubated on campus annually." },
+                        { label: "Multidisciplinary", stat: "12", desc: "Interconnected disciplines of study." }
+                      ]).map((node, nIdx) => (
+                        <div key={nIdx} className="p-3.5 rounded-xl border border-gray-200 bg-slate-50 space-y-2">
+                          <div className="flex justify-between items-center">
+                            <input
+                              type="text"
+                              value={node.stat}
+                              onChange={(e) => {
+                                const currentNodes = [...(aboutForm.history.nep2020?.nodes || [
+                                  { label: "Holistic Learning", stat: "360°", desc: "Comprehensive physical & emotional growth." },
+                                  { label: "Research", stat: "Tier-1", desc: "Advanced labs & dedicated funding programs." },
+                                  { label: "Innovation", stat: "100+", desc: "Patents filed and ideation centers active." },
+                                  { label: "Skill Development", stat: "95%", desc: "Industry-ready practical curriculum." },
+                                  { label: "Entrepreneurship", stat: "50+", desc: "Startups incubated on campus annually." },
+                                  { label: "Multidisciplinary", stat: "12", desc: "Interconnected disciplines of study." }
+                                ])];
+                                currentNodes[nIdx] = { ...currentNodes[nIdx], stat: e.target.value };
+                                setAboutForm({
+                                  ...aboutForm,
+                                  history: {
+                                    ...aboutForm.history,
+                                    nep2020: {
+                                      ...(aboutForm.history.nep2020 || {
+                                        heading: "A University Inspired by NEP 2020",
+                                        subheading: "Experiencing education as a living, interconnected ecosystem of knowledge, skills, and innovation.",
+                                        coreBadge: "NEP 2020"
+                                      }),
+                                      nodes: currentNodes
+                                    }
+                                  }
+                                });
+                              }}
+                              placeholder="Badge (e.g. 360°)"
+                              className="w-20 h-7 px-2 text-xs font-bold text-blue-700 bg-white border border-gray-200 rounded"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const currentNodes = [...(aboutForm.history.nep2020?.nodes || [
+                                  { label: "Holistic Learning", stat: "360°", desc: "Comprehensive physical & emotional growth." },
+                                  { label: "Research", stat: "Tier-1", desc: "Advanced labs & dedicated funding programs." },
+                                  { label: "Innovation", stat: "100+", desc: "Patents filed and ideation centers active." },
+                                  { label: "Skill Development", stat: "95%", desc: "Industry-ready practical curriculum." },
+                                  { label: "Entrepreneurship", stat: "50+", desc: "Startups incubated on campus annually." },
+                                  { label: "Multidisciplinary", stat: "12", desc: "Interconnected disciplines of study." }
+                                ])];
+                                const updated = currentNodes.filter((_, i) => i !== nIdx);
+                                setAboutForm({
+                                  ...aboutForm,
+                                  history: {
+                                    ...aboutForm.history,
+                                    nep2020: {
+                                      ...(aboutForm.history.nep2020 || {
+                                        heading: "A University Inspired by NEP 2020",
+                                        subheading: "Experiencing education as a living, interconnected ecosystem of knowledge, skills, and innovation.",
+                                        coreBadge: "NEP 2020"
+                                      }),
+                                      nodes: updated
+                                    }
+                                  }
+                                });
+                              }}
+                              className="text-red-500 hover:text-red-700 p-1 cursor-pointer"
+                              title="Delete Node"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                          <input
+                            type="text"
+                            value={node.label}
+                            onChange={(e) => {
+                              const currentNodes = [...(aboutForm.history.nep2020?.nodes || [
+                                { label: "Holistic Learning", stat: "360°", desc: "Comprehensive physical & emotional growth." },
+                                { label: "Research", stat: "Tier-1", desc: "Advanced labs & dedicated funding programs." },
+                                { label: "Innovation", stat: "100+", desc: "Patents filed and ideation centers active." },
+                                { label: "Skill Development", stat: "95%", desc: "Industry-ready practical curriculum." },
+                                { label: "Entrepreneurship", stat: "50+", desc: "Startups incubated on campus annually." },
+                                { label: "Multidisciplinary", stat: "12", desc: "Interconnected disciplines of study." }
+                              ])];
+                              currentNodes[nIdx] = { ...currentNodes[nIdx], label: e.target.value };
+                              setAboutForm({
+                                ...aboutForm,
+                                history: {
+                                  ...aboutForm.history,
+                                  nep2020: {
+                                    ...(aboutForm.history.nep2020 || {
+                                      heading: "A University Inspired by NEP 2020",
+                                      subheading: "Experiencing education as a living, interconnected ecosystem of knowledge, skills, and innovation.",
+                                      coreBadge: "NEP 2020"
+                                    }),
+                                    nodes: currentNodes
+                                  }
+                                }
+                              });
+                            }}
+                            placeholder="Node Title"
+                            className="w-full h-8 px-2 text-xs font-bold text-[#072A6C] bg-white border border-gray-200 rounded"
+                          />
+                          <textarea
+                            rows={2}
+                            value={node.desc}
+                            onChange={(e) => {
+                              const currentNodes = [...(aboutForm.history.nep2020?.nodes || [
+                                { label: "Holistic Learning", stat: "360°", desc: "Comprehensive physical & emotional growth." },
+                                { label: "Research", stat: "Tier-1", desc: "Advanced labs & dedicated funding programs." },
+                                { label: "Innovation", stat: "100+", desc: "Patents filed and ideation centers active." },
+                                { label: "Skill Development", stat: "95%", desc: "Industry-ready practical curriculum." },
+                                { label: "Entrepreneurship", stat: "50+", desc: "Startups incubated on campus annually." },
+                                { label: "Multidisciplinary", stat: "12", desc: "Interconnected disciplines of study." }
+                              ])];
+                              currentNodes[nIdx] = { ...currentNodes[nIdx], desc: e.target.value };
+                              setAboutForm({
+                                ...aboutForm,
+                                history: {
+                                  ...aboutForm.history,
+                                  nep2020: {
+                                    ...(aboutForm.history.nep2020 || {
+                                      heading: "A University Inspired by NEP 2020",
+                                      subheading: "Experiencing education as a living, interconnected ecosystem of knowledge, skills, and innovation.",
+                                      coreBadge: "NEP 2020"
+                                    }),
+                                    nodes: currentNodes
+                                  }
+                                }
+                              });
+                            }}
+                            placeholder="Description"
+                            className="w-full p-2 text-[11px] bg-white border border-gray-200 rounded font-normal"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 4. Academic Evolution & Schools */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider">Academic Evolution & Constituent Schools</h4>
+                        <p className="text-xs text-gray-500">Edit the 3 core university schools and their academic departments/specializations</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const currentSchools = aboutForm.history.academicEvolution?.schools || [
+                            { title: "School of Computing Sciences", tags: ["Computer Science & Engineering", "Artificial Intelligence", "Data Science", "Cyber Security"] },
+                            { title: "School of Engineering", tags: ["Electronics and Communication Engineering", "Civil Engineering", "Basic Science & Humanities"] },
+                            { title: "School of Business & Management", tags: ["Business and Management"] }
+                          ];
+                          const updated = [...currentSchools, { title: "New School of Studies", tags: ["Department 1", "Department 2"] }];
+                          setAboutForm({
+                            ...aboutForm,
+                            history: {
+                              ...aboutForm.history,
+                              academicEvolution: {
+                                ...(aboutForm.history.academicEvolution || {
+                                  heading: "Academic Evolution",
+                                  subheading: "Three schools designed for the future of industry and research."
+                                }),
+                                schools: updated
+                              }
+                            }
+                          });
+                        }}
+                        className="h-8 px-3 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer shadow-xs"
+                      >
+                        <Plus size={13} /> Add School
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Section Heading</label>
+                        <input
+                          type="text"
+                          value={aboutForm.history.academicEvolution?.heading || "Academic Evolution"}
+                          onChange={(e) =>
+                            setAboutForm({
+                              ...aboutForm,
+                              history: {
+                                ...aboutForm.history,
+                                academicEvolution: {
+                                  ...(aboutForm.history.academicEvolution || {
+                                    heading: "Academic Evolution",
+                                    subheading: "Three schools designed for the future of industry and research.",
+                                    schools: []
+                                  }),
+                                  heading: e.target.value
+                                }
+                              }
+                            })
+                          }
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold text-[#072A6C]"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Section Subtitle</label>
+                        <input
+                          type="text"
+                          value={aboutForm.history.academicEvolution?.subheading || "Three schools designed for the future of industry and research."}
+                          onChange={(e) =>
+                            setAboutForm({
+                              ...aboutForm,
+                              history: {
+                                ...aboutForm.history,
+                                academicEvolution: {
+                                  ...(aboutForm.history.academicEvolution || {
+                                    heading: "Academic Evolution",
+                                    subheading: "Three schools designed for the future of industry and research.",
+                                    schools: []
+                                  }),
+                                  subheading: e.target.value
+                                }
+                              }
+                            })
+                          }
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-medium"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {(aboutForm.history.academicEvolution?.schools || [
+                        { title: "School of Computing Sciences", tags: ["Computer Science & Engineering", "Artificial Intelligence", "Data Science", "Cyber Security"] },
+                        { title: "School of Engineering", tags: ["Electronics and Communication Engineering", "Civil Engineering", "Basic Science & Humanities"] },
+                        { title: "School of Business & Management", tags: ["Business and Management"] }
+                      ]).map((sch, sIdx) => (
+                        <div key={sIdx} className="p-4 rounded-xl border border-gray-200 bg-slate-50 space-y-3">
+                          <div className="flex justify-between items-center">
+                            <span className="text-[10px] font-bold uppercase text-gray-500">School {sIdx + 1}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const currentSchools = [...(aboutForm.history.academicEvolution?.schools || [
+                                  { title: "School of Computing Sciences", tags: ["Computer Science & Engineering", "Artificial Intelligence", "Data Science", "Cyber Security"] },
+                                  { title: "School of Engineering", tags: ["Electronics and Communication Engineering", "Civil Engineering", "Basic Science & Humanities"] },
+                                  { title: "School of Business & Management", tags: ["Business and Management"] }
+                                ])];
+                                const updated = currentSchools.filter((_, i) => i !== sIdx);
+                                setAboutForm({
+                                  ...aboutForm,
+                                  history: {
+                                    ...aboutForm.history,
+                                    academicEvolution: {
+                                      ...(aboutForm.history.academicEvolution || {
+                                        heading: "Academic Evolution",
+                                        subheading: "Three schools designed for the future of industry and research."
+                                      }),
+                                      schools: updated
+                                    }
+                                  }
+                                });
+                              }}
+                              className="text-red-500 hover:text-red-700 p-1 cursor-pointer"
+                              title="Delete School"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[9px] font-bold text-gray-500 uppercase">School Title</label>
+                            <input
+                              type="text"
+                              value={sch.title}
+                              onChange={(e) => {
+                                const currentSchools = [...(aboutForm.history.academicEvolution?.schools || [
+                                  { title: "School of Computing Sciences", tags: ["Computer Science & Engineering", "Artificial Intelligence", "Data Science", "Cyber Security"] },
+                                  { title: "School of Engineering", tags: ["Electronics and Communication Engineering", "Civil Engineering", "Basic Science & Humanities"] },
+                                  { title: "School of Business & Management", tags: ["Business and Management"] }
+                                ])];
+                                currentSchools[sIdx] = { ...currentSchools[sIdx], title: e.target.value };
+                                setAboutForm({
+                                  ...aboutForm,
+                                  history: {
+                                    ...aboutForm.history,
+                                    academicEvolution: {
+                                      ...(aboutForm.history.academicEvolution || {
+                                        heading: "Academic Evolution",
+                                        subheading: "Three schools designed for the future of industry and research."
+                                      }),
+                                      schools: currentSchools
+                                    }
+                                  }
+                                });
+                              }}
+                              className="w-full h-8 px-2 text-xs font-bold text-[#072A6C] bg-white border border-gray-200 rounded"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[9px] font-bold text-gray-500 uppercase">Departments / Tags (Comma-separated)</label>
+                            <textarea
+                              rows={3}
+                              value={sch.tags.join(", ")}
+                              onChange={(e) => {
+                                const tagsArr = e.target.value.split(",").map(t => t.trim()).filter(Boolean);
+                                const currentSchools = [...(aboutForm.history.academicEvolution?.schools || [
+                                  { title: "School of Computing Sciences", tags: ["Computer Science & Engineering", "Artificial Intelligence", "Data Science", "Cyber Security"] },
+                                  { title: "School of Engineering", tags: ["Electronics and Communication Engineering", "Civil Engineering", "Basic Science & Humanities"] },
+                                  { title: "School of Business & Management", tags: ["Business and Management"] }
+                                ])];
+                                currentSchools[sIdx] = { ...currentSchools[sIdx], tags: tagsArr };
+                                setAboutForm({
+                                  ...aboutForm,
+                                  history: {
+                                    ...aboutForm.history,
+                                    academicEvolution: {
+                                      ...(aboutForm.history.academicEvolution || {
+                                        heading: "Academic Evolution",
+                                        subheading: "Three schools designed for the future of industry and research."
+                                      }),
+                                      schools: currentSchools
+                                    }
+                                  }
+                                });
+                              }}
+                              className="w-full p-2 text-[11px] bg-white border border-gray-200 rounded font-medium"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 5. Innovation Ecosystem Flowchart */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider">Innovation Ecosystem Flowchart</h4>
+                        <p className="text-xs text-gray-500">Ordered step-by-step pipeline from Student to Global Impact</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const currentSteps = aboutForm.history.innovationEcosystem?.steps || [
+                            "Student", "Idea", "Innovation Lab", "Prototype", "Research", "Incubation", "Startup", "Industry", "Global Impact"
+                          ];
+                          const updated = [...currentSteps, "New Step"];
+                          setAboutForm({
+                            ...aboutForm,
+                            history: {
+                              ...aboutForm.history,
+                              innovationEcosystem: {
+                                ...(aboutForm.history.innovationEcosystem || { heading: "Innovation Ecosystem" }),
+                                steps: updated
+                              }
+                            }
+                          });
+                        }}
+                        className="h-8 px-3 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer shadow-xs"
+                      >
+                        <Plus size={13} /> Add Flow Step
+                      </button>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-600 uppercase">Section Heading</label>
+                      <input
+                        type="text"
+                        value={aboutForm.history.innovationEcosystem?.heading || "Innovation Ecosystem"}
+                        onChange={(e) =>
+                          setAboutForm({
+                            ...aboutForm,
+                            history: {
+                              ...aboutForm.history,
+                              innovationEcosystem: {
+                                ...(aboutForm.history.innovationEcosystem || { steps: [] }),
+                                heading: e.target.value
+                              }
+                            }
+                          })
+                        }
+                        className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold text-[#072A6C]"
+                      />
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 pt-2">
+                      {(aboutForm.history.innovationEcosystem?.steps || [
+                        "Student", "Idea", "Innovation Lab", "Prototype", "Research", "Incubation", "Startup", "Industry", "Global Impact"
+                      ]).map((step, sIdx, arr) => (
+                        <div key={sIdx} className="flex items-center gap-1 bg-slate-50 border border-gray-200 px-3 py-1.5 rounded-xl">
+                          <span className="text-[10px] font-bold text-gray-400 mr-1">{sIdx + 1}</span>
+                          <input
+                            type="text"
+                            value={step}
+                            onChange={(e) => {
+                              const currentSteps = [...(aboutForm.history.innovationEcosystem?.steps || [
+                                "Student", "Idea", "Innovation Lab", "Prototype", "Research", "Incubation", "Startup", "Industry", "Global Impact"
+                              ])];
+                              currentSteps[sIdx] = e.target.value;
+                              setAboutForm({
+                                ...aboutForm,
+                                history: {
+                                  ...aboutForm.history,
+                                  innovationEcosystem: {
+                                    ...(aboutForm.history.innovationEcosystem || { heading: "Innovation Ecosystem" }),
+                                    steps: currentSteps
+                                  }
+                                }
+                              });
+                            }}
+                            className="w-28 h-6 px-1 text-xs font-bold text-[#072A6C] bg-white border border-gray-200 rounded"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const currentSteps = [...(aboutForm.history.innovationEcosystem?.steps || [
+                                "Student", "Idea", "Innovation Lab", "Prototype", "Research", "Incubation", "Startup", "Industry", "Global Impact"
+                              ])];
+                              const updated = currentSteps.filter((_, i) => i !== sIdx);
+                              setAboutForm({
+                                ...aboutForm,
+                                history: {
+                                  ...aboutForm.history,
+                                  innovationEcosystem: {
+                                    ...(aboutForm.history.innovationEcosystem || { heading: "Innovation Ecosystem" }),
+                                    steps: updated
+                                  }
+                                }
+                              });
+                            }}
+                            className="text-gray-400 hover:text-red-600 p-0.5 cursor-pointer ml-1"
+                            title="Delete Step"
                           >
                             <Trash2 size={12} />
                           </button>
@@ -2694,906 +5015,2882 @@ export default function AdminPortal() {
                       ))}
                     </div>
                   </div>
-                </div>
-              </div>
-            </div>
-          )}
 
-          {activeTab === "directories" && (
-            <div className="space-y-6">
-              <div>
-                <h1 className="text-xl font-black text-[#072A6C] uppercase tracking-wider">Management Portal</h1>
-                <p className="text-xs text-gray-500 font-light mt-0.5">Manage board members and teaching faculty profiles.</p>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                {/* Left side: Selector & List */}
-                <div className="lg:col-span-6 space-y-6">
-                  {/* Category selectors */}
-                  <div className="bg-white p-5 rounded-2xl border border-gray-150 shadow-sm space-y-4">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase text-gray-500">Select Category</label>
-                      <div className="grid grid-cols-2 gap-2">
-                        {[
-                          { id: "board", label: "Board Members" },
-                          { id: "faculty", label: "Faculty" }
-                        ].map((d) => (
-                          <button
-                            key={d.id}
-                            type="button"
-                            onClick={() => setSelectedDir(d.id as any)}
-                            className={`h-9 rounded-xl border text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                              selectedDir === d.id
-                                ? "bg-[#072A6C] border-[#072A6C] text-white shadow-sm"
-                                : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
-                            }`}
-                          >
-                            {d.label}
-                          </button>
-                        ))}
+                  {/* 6. Innovation Infrastructure (Bento Facilities) */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider">Innovation Infrastructure (4 Facilities Bento)</h4>
+                        <p className="text-xs text-gray-500">Manage Innovation Centre, Centres of Excellence, Maker Space, and E-Cell facilities with validated images</p>
                       </div>
                     </div>
 
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase text-gray-500">Select Department / Wing</label>
-                      <select
-                        value={selectedDirDept}
-                        onChange={(e) => {
-                          setSelectedDirDept(e.target.value);
-                          setEditMemberIdx(null);
-                        }}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium bg-white"
-                      >
-                        {Object.keys(
-                          selectedDir === "faculty"
-                            ? facultyData
-                            : boardData
-                        ).map((key) => (
-                          <option key={key} value={key}>
-                            {key}
-                          </option>
-                        ))}
-                      </select>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Section Heading</label>
+                        <input
+                          type="text"
+                          value={aboutForm.history.innovationInfrastructure?.heading || "Innovation Infrastructure"}
+                          onChange={(e) =>
+                            setAboutForm({
+                              ...aboutForm,
+                              history: {
+                                ...aboutForm.history,
+                                innovationInfrastructure: {
+                                  ...(aboutForm.history.innovationInfrastructure || {
+                                    heading: "Innovation Infrastructure",
+                                    subheading: "State-of-the-art facilities designed to transition students from passive recipients into active innovators.",
+                                    items: []
+                                  }),
+                                  heading: e.target.value
+                                }
+                              }
+                            })
+                          }
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Subheading / Description</label>
+                        <input
+                          type="text"
+                          value={aboutForm.history.innovationInfrastructure?.subheading || "State-of-the-art facilities designed to transition students from passive recipients into active innovators."}
+                          onChange={(e) =>
+                            setAboutForm({
+                              ...aboutForm,
+                              history: {
+                                ...aboutForm.history,
+                                innovationInfrastructure: {
+                                  ...(aboutForm.history.innovationInfrastructure || {
+                                    heading: "Innovation Infrastructure",
+                                    subheading: "State-of-the-art facilities designed to transition students from passive recipients into active innovators.",
+                                    items: []
+                                  }),
+                                  heading: aboutForm.history.innovationInfrastructure?.heading || "Innovation Infrastructure",
+                                  subheading: e.target.value,
+                                  items: aboutForm.history.innovationInfrastructure?.items || []
+                                }
+                              }
+                            })
+                          }
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg text-gray-700"
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  {/* List of Members */}
-                  <div className="bg-white p-5 rounded-2xl border border-gray-150 shadow-sm space-y-5">
-                    <div className="flex justify-between items-center border-b border-gray-100 pb-3">
-                      <span className="text-xs font-extrabold uppercase text-gray-500 tracking-wider">Directory Members</span>
-                      <button
-                        type="button"
-                        onClick={() => startEditMember("new")}
-                        className="h-8 px-3 rounded-lg bg-[#D4AF37] hover:bg-[#D4AF37]/90 text-white text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 cursor-pointer transition-colors"
-                      >
-                        <Plus size={12} /> Add Member
-                      </button>
-                    </div>
-
-                    {/* HOD Card */}
-                    <div className="space-y-2">
-                      <span className="text-[9px] font-bold uppercase tracking-wider text-rose-500 block">Department Head / Lead</span>
-                      {(() => {
-                        const target = selectedDir === "faculty" ? facultyData : boardData;
-                        const deptInfo = target[selectedDirDept] || { hod: null, others: [] };
-                        const hod = deptInfo.hod;
-                        if (!hod || !hod.name) return <p className="text-xs text-gray-400 font-light italic">No head assigned</p>;
-                        return (
-                          <div className="p-3.5 rounded-xl bg-gray-50/70 border border-gray-100 flex justify-between items-center text-xs">
-                            <div>
-                              <span className="font-extrabold text-[#072A6C] block">{hod.name}</span>
-                              <span className="text-[10px] text-gray-400 font-medium block">{hod.title}</span>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => startEditMember("hod", hod)}
-                              className="text-blue-600 hover:text-blue-800 font-bold uppercase text-[10px] cursor-pointer"
-                            >
-                              Edit Profile
-                            </button>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+                      {(aboutForm.history.innovationInfrastructure?.items || [
+                        { id: "center", title: "Innovation Centre", desc: "Seed-stage mentoring, prototyping support, and startup incubation.", img: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80" },
+                        { id: "excellence", title: "Centres of Excellence", desc: "AI/ML, IoT & Robotics" },
+                        { id: "maker", title: "Maker Space", desc: "Hands-on fabrication" },
+                        { id: "ecell", title: "E-Cell & Industry Interface", desc: "Structured venture-creation training and continuous industry alignment." }
+                      ]).map((item, iIdx) => (
+                        <div key={iIdx} className="p-3 bg-slate-50 rounded-xl border border-gray-200 space-y-2">
+                          <span className="text-[10px] font-black uppercase text-[#072A6C]">Facility {iIdx + 1}</span>
+                          <div className="space-y-1">
+                            <label className="text-[9px] font-bold text-gray-500 uppercase">Facility Name</label>
+                            <input
+                              type="text"
+                              value={item.title}
+                              onChange={(e) => {
+                                const currentItems = [...(aboutForm.history.innovationInfrastructure?.items || [
+                                  { id: "center", title: "Innovation Centre", desc: "Seed-stage mentoring, prototyping support, and startup incubation.", img: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80" },
+                                  { id: "excellence", title: "Centres of Excellence", desc: "AI/ML, IoT & Robotics" },
+                                  { id: "maker", title: "Maker Space", desc: "Hands-on fabrication" },
+                                  { id: "ecell", title: "E-Cell & Industry Interface", desc: "Structured venture-creation training and continuous industry alignment." }
+                                ])];
+                                currentItems[iIdx] = { ...currentItems[iIdx], title: e.target.value };
+                                setAboutForm({
+                                  ...aboutForm,
+                                  history: {
+                                    ...aboutForm.history,
+                                    innovationInfrastructure: {
+                                      ...(aboutForm.history.innovationInfrastructure || {
+                                        heading: "Innovation Infrastructure",
+                                        subheading: "State-of-the-art facilities designed to transition students from passive recipients into active innovators."
+                                      }),
+                                      items: currentItems
+                                    }
+                                  }
+                                });
+                              }}
+                              className="w-full h-8 px-2 text-xs font-bold text-[#072A6C] bg-white border border-gray-200 rounded"
+                            />
                           </div>
-                        );
-                      })()}
+                          <div className="space-y-1">
+                            <label className="text-[9px] font-bold text-gray-500 uppercase">Description</label>
+                            <textarea
+                              rows={2}
+                              value={item.desc}
+                              onChange={(e) => {
+                                const currentItems = [...(aboutForm.history.innovationInfrastructure?.items || [
+                                  { id: "center", title: "Innovation Centre", desc: "Seed-stage mentoring, prototyping support, and startup incubation.", img: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80" },
+                                  { id: "excellence", title: "Centres of Excellence", desc: "AI/ML, IoT & Robotics" },
+                                  { id: "maker", title: "Maker Space", desc: "Hands-on fabrication" },
+                                  { id: "ecell", title: "E-Cell & Industry Interface", desc: "Structured venture-creation training and continuous industry alignment." }
+                                ])];
+                                currentItems[iIdx] = { ...currentItems[iIdx], desc: e.target.value };
+                                setAboutForm({
+                                  ...aboutForm,
+                                  history: {
+                                    ...aboutForm.history,
+                                    innovationInfrastructure: {
+                                      ...(aboutForm.history.innovationInfrastructure || {
+                                        heading: "Innovation Infrastructure",
+                                        subheading: "State-of-the-art facilities designed to transition students from passive recipients into active innovators."
+                                      }),
+                                      items: currentItems
+                                    }
+                                  }
+                                });
+                              }}
+                              className="w-full p-2 text-[11px] bg-white border border-gray-200 rounded font-medium"
+                            />
+                          </div>
+                          {iIdx === 0 && (
+                            <ImageField
+                              label="Innovation Centre Background Photo (Validated)"
+                              value={item.img || "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80"}
+                              defaultValue="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80"
+                              onReset={() => {
+                                const currentItems = [...(aboutForm.history.innovationInfrastructure?.items || [])];
+                                if (currentItems[0]) {
+                                  currentItems[0] = { ...currentItems[0], img: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80" };
+                                  setAboutForm({
+                                    ...aboutForm,
+                                    history: {
+                                      ...aboutForm.history,
+                                      innovationInfrastructure: {
+                                        ...(aboutForm.history.innovationInfrastructure || {
+                                          heading: "Innovation Infrastructure",
+                                          subheading: "State-of-the-art facilities designed to transition students from passive recipients into active innovators."
+                                        }),
+                                        items: currentItems
+                                      }
+                                    }
+                                  });
+                                  notifySave("Innovation centre photo reset to default!");
+                                }
+                              }}
+                              onChange={(newImg) => {
+                                const currentItems = [...(aboutForm.history.innovationInfrastructure?.items || [
+                                  { id: "center", title: "Innovation Centre", desc: "Seed-stage mentoring, prototyping support, and startup incubation.", img: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80" },
+                                  { id: "excellence", title: "Centres of Excellence", desc: "AI/ML, IoT & Robotics" },
+                                  { id: "maker", title: "Maker Space", desc: "Hands-on fabrication" },
+                                  { id: "ecell", title: "E-Cell & Industry Interface", desc: "Structured venture-creation training and continuous industry alignment." }
+                                ])];
+                                currentItems[iIdx] = { ...currentItems[iIdx], img: newImg };
+                                setAboutForm({
+                                  ...aboutForm,
+                                  history: {
+                                    ...aboutForm.history,
+                                    innovationInfrastructure: {
+                                      ...(aboutForm.history.innovationInfrastructure || {
+                                        heading: "Innovation Infrastructure",
+                                        subheading: "State-of-the-art facilities designed to transition students from passive recipients into active innovators."
+                                      }),
+                                      items: currentItems
+                                    }
+                                  }
+                                });
+                              }}
+                              aspectRatio="video"
+                              recommendedSize="1200 × 700 px (Landscape Facility)"
+                            />
+                          )}
+                        </div>
+                      ))}
                     </div>
+                  </div>
 
-                    {/* Others list */}
-                    <div className="space-y-2">
-                      <span className="text-[9px] font-bold uppercase tracking-wider text-gray-400 block">Other Members / Faculty</span>
-                      <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
-                        {(() => {
-                          const target = selectedDir === "faculty" ? facultyData : boardData;
-                          const deptInfo = target[selectedDirDept] || { hod: null, others: [] };
-                          const others = deptInfo.others || [];
-                          if (others.length === 0) return <p className="text-xs text-gray-400 font-light italic">No other members listed</p>;
-                          return others.map((member, idx) => (
-                            <div key={idx} className="p-3.5 rounded-xl bg-white border border-gray-100 flex justify-between items-center text-xs shadow-sm hover:border-[#D4AF37]/20 transition-colors">
-                              <div>
-                                <span className="font-bold text-gray-700 block">{member.name}</span>
-                                <span className="text-[10px] text-gray-400 font-medium block">{member.title}</span>
-                              </div>
-                              <div className="flex gap-3">
-                                <button
-                                  type="button"
-                                  onClick={() => startEditMember(idx, member)}
-                                  className="text-blue-600 hover:text-blue-800 font-bold uppercase text-[10px] cursor-pointer"
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteMember(idx)}
-                                  className="text-rose-500 hover:text-rose-700 font-bold uppercase text-[10px] cursor-pointer"
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            </div>
-                          ));
-                        })()}
-                      </div>
+                  {/* 7. Our Vision for Tomorrow (Finale) */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider">Our Vision for Tomorrow (Finale Banner)</h4>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-600 uppercase">Section Heading</label>
+                      <input
+                        type="text"
+                        value={aboutForm.history.visionForTomorrow?.heading || "Our Vision for Tomorrow"}
+                        onChange={(e) =>
+                          setAboutForm({
+                            ...aboutForm,
+                            history: {
+                              ...aboutForm.history,
+                              visionForTomorrow: {
+                                ...(aboutForm.history.visionForTomorrow || {
+                                  paragraph: "Chalapathi University is envisioned as a multidisciplinary institution where innovation meets purpose, research fuels progress, and every learner is empowered to become a leader capable of creating meaningful impact across the world."
+                                }),
+                                heading: e.target.value
+                              }
+                            }
+                          })
+                        }
+                        className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold text-[#072A6C]"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-600 uppercase">Vision Narrative Statement</label>
+                      <textarea
+                        rows={3}
+                        value={aboutForm.history.visionForTomorrow?.paragraph || "Chalapathi University is envisioned as a multidisciplinary institution where innovation meets purpose, research fuels progress, and every learner is empowered to become a leader capable of creating meaningful impact across the world."}
+                        onChange={(e) =>
+                          setAboutForm({
+                            ...aboutForm,
+                            history: {
+                              ...aboutForm.history,
+                              visionForTomorrow: {
+                                ...(aboutForm.history.visionForTomorrow || {
+                                  heading: "Our Vision for Tomorrow"
+                                }),
+                                paragraph: e.target.value
+                              }
+                            }
+                          })
+                        }
+                        className="w-full p-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-medium"
+                      />
                     </div>
                   </div>
                 </div>
+              )}
 
-                {/* Right side: Editor Form */}
-                <div className="lg:col-span-6">
-                  {editMemberIdx !== null ? (
-                    <form onSubmit={handleSaveMember} className="bg-white p-6 rounded-2xl border border-gray-150 shadow-sm space-y-4">
-                      <div className="flex justify-between items-center border-b border-gray-100 pb-3">
-                        <span className="text-xs font-black uppercase text-[#072A6C] tracking-wider">
-                          {editMemberIdx === "new" ? "Add Directory Member" : `Edit Member: ${editMemberIdx === "hod" ? "Head" : "Staff"}`}
-                        </span>
+              {/* 2. Sub-tab: Vision & Mission */}
+              {activeAboutSubTab === "vision" && (
+                <div className="space-y-5 text-left">
+                  {/* Vision Statement */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-sm font-black text-[#072A6C] uppercase">Official Vision Statement</h3>
+                        <p className="text-xs text-gray-500">Core guiding institutional vision for Chalapathi University</p>
+                      </div>
+                      <div className="flex gap-2">
                         <button
                           type="button"
-                          onClick={() => setEditMemberIdx(null)}
-                          className="text-gray-400 hover:text-gray-600 text-xs font-bold uppercase tracking-wider cursor-pointer"
+                          onClick={() => {
+                            setAboutForm({
+                              ...aboutForm,
+                              vision: INITIAL_ABOUT_CONTENT.vision
+                            });
+                            notifySave("Vision & Mission reset to default!");
+                          }}
+                          className="h-9 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
                         >
-                          Cancel
+                          <RotateCcw size={13} /> Reset Vision & Mission
+                        </button>
+                        <button
+                          onClick={saveAbout}
+                          className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+                        >
+                          <Save size={13} /> Save Vision & Mission
                         </button>
                       </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold uppercase text-gray-500">Full Name</label>
-                          <input
-                            type="text"
-                            required
-                            value={memberForm.name}
-                            onChange={(e) => setMemberForm({ ...memberForm, name: e.target.value })}
-                            className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
-                          />
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold uppercase text-gray-500">Title / Designation</label>
-                          <input
-                            type="text"
-                            required
-                            value={memberForm.title}
-                            onChange={(e) => setMemberForm({ ...memberForm, title: e.target.value })}
-                            className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
-                          />
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold uppercase text-gray-500">Education Details</label>
-                          <input
-                            type="text"
-                            required
-                            value={memberForm.edu}
-                            onChange={(e) => setMemberForm({ ...memberForm, edu: e.target.value })}
-                            className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
-                          />
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold uppercase text-gray-500">Expertise / Interests</label>
-                          <input
-                            type="text"
-                            value={memberForm.interests}
-                            onChange={(e) => setMemberForm({ ...memberForm, interests: e.target.value })}
-                            className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
-                          />
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold uppercase text-gray-500">Phone</label>
-                          <input
-                            type="text"
-                            value={memberForm.phone}
-                            onChange={(e) => setMemberForm({ ...memberForm, phone: e.target.value })}
-                            className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
-                          />
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold uppercase text-gray-500">Email Address</label>
-                          <input
-                            type="email"
-                            required
-                            value={memberForm.email}
-                            onChange={(e) => setMemberForm({ ...memberForm, email: e.target.value })}
-                            className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
-                          />
-                        </div>
-
-                        <div className="space-y-2 col-span-1 sm:col-span-2 bg-gray-50 p-4 rounded-xl border border-gray-200">
-                          <label className="text-[10px] font-bold uppercase text-gray-500 block">Faculty/Member Photo</label>
-                          <div className="flex items-center gap-4">
-                            {memberForm.avatar && (
-                              <img 
-                                src={memberForm.avatar.startsWith("data:") || memberForm.avatar.startsWith("http") ? memberForm.avatar : `https://eu.ui-avatars.com/api/?name=${encodeURIComponent(memberForm.avatar)}&background=072A6C&color=fff&size=100`} 
-                                alt="Preview" 
-                                className="w-12 h-12 rounded-lg object-cover border border-gray-300 bg-white"
-                              />
-                            )}
-                            <div className="flex-grow space-y-2">
-                              <input 
-                                type="file" 
-                                accept="image/*"
-                                id="faculty-photo-upload"
-                                className="hidden"
-                                onChange={(e) => {
-                                  const file = e.target.files?.[0];
-                                  if (file) {
-                                    const reader = new FileReader();
-                                    reader.onload = (uploadEvent) => {
-                                      const base64 = uploadEvent.target?.result as string;
-                                      setMemberForm({ ...memberForm, avatar: base64 });
-                                    };
-                                    reader.readAsDataURL(file);
-                                  }
-                                }}
-                              />
-                              <label 
-                                htmlFor="faculty-photo-upload"
-                                className="inline-flex items-center justify-center px-4 py-2 bg-white hover:bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-700 cursor-pointer shadow-2xs transition-all"
-                              >
-                                <UploadCloud size={14} className="mr-1.5 text-gray-400" />
-                                Choose Photo File
-                              </label>
-                              <p className="text-[10px] text-gray-400 font-light">Or enter initials / URL below:</p>
-                              <input
-                                type="text"
-                                required
-                                value={memberForm.avatar}
-                                onChange={(e) => setMemberForm({ ...memberForm, avatar: e.target.value })}
-                                className="w-full h-9 px-3 rounded-lg border border-gray-200 focus:outline-none focus:border-[#072A6C] text-[11px] font-medium bg-white"
-                                placeholder="Initials (e.g. YVA) or Image URL"
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold uppercase text-gray-500">Age</label>
-                          <input
-                            type="text"
-                            value={memberForm.age}
-                            onChange={(e) => setMemberForm({ ...memberForm, age: e.target.value })}
-                            className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
-                          />
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold uppercase text-gray-500">Experience</label>
-                          <input
-                            type="text"
-                            value={memberForm.experience}
-                            onChange={(e) => setMemberForm({ ...memberForm, experience: e.target.value })}
-                            className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
-                          />
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold uppercase text-gray-500">ID Number / Code</label>
-                          <input
-                            type="text"
-                            required
-                            value={memberForm.idNo}
-                            onChange={(e) => setMemberForm({ ...memberForm, idNo: e.target.value })}
-                            className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium"
-                          />
-                        </div>
-                      </div>
-
-                      <button
-                        type="submit"
-                        className="w-full h-11 bg-[#072A6C] hover:bg-[#072A6C]/90 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow transition-colors cursor-pointer mt-2"
-                      >
-                        Save Profile Details
-                      </button>
-                    </form>
-                  ) : (
-                    <div className="bg-gray-50 border border-dashed border-gray-200 p-8 rounded-2xl flex flex-col items-center justify-center text-center min-h-[300px]">
-                      <Users className="text-gray-300 mb-3" size={40} />
-                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">No Member Selected</span>
-                      <p className="text-[11px] text-gray-400 font-light mt-1 max-w-[280px]">Select any department head or faculty member from the directory list on the left to edit their details.</p>
                     </div>
-                  )}
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-600 uppercase">Vision Statement Text</label>
+                      <textarea
+                        rows={3}
+                        value={aboutForm.vision.visionText}
+                        onChange={(e) =>
+                          setAboutForm({
+                            ...aboutForm,
+                            vision: { ...aboutForm.vision, visionText: e.target.value }
+                          })
+                        }
+                        className="w-full p-3 text-xs bg-slate-50 border border-gray-200 rounded-xl leading-relaxed font-medium"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Mission Statements */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-sm font-black text-[#072A6C] uppercase">Mission Statements</h3>
+                        <p className="text-xs text-gray-500">Bullet points defining the university's academic and societal mission</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = [...(aboutForm.vision.missionList || []), "New institutional mission objective."];
+                          setAboutForm({
+                            ...aboutForm,
+                            vision: { ...aboutForm.vision, missionList: updated }
+                          });
+                        }}
+                        className="h-8 px-3 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer"
+                      >
+                        <Plus size={13} /> Add Mission Point
+                      </button>
+                    </div>
+
+                    <div className="space-y-2.5">
+                      {aboutForm.vision.missionList?.map((item, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <span className="w-6 h-6 rounded-full bg-blue-50 text-blue-900 text-xs font-bold flex items-center justify-center shrink-0">
+                            {idx + 1}
+                          </span>
+                          <input
+                            type="text"
+                            value={item}
+                            onChange={(e) => {
+                              const updated = [...aboutForm.vision.missionList];
+                              updated[idx] = e.target.value;
+                              setAboutForm({
+                                ...aboutForm,
+                                vision: { ...aboutForm.vision, missionList: updated }
+                              });
+                            }}
+                            className="flex-1 h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg text-gray-800"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = aboutForm.vision.missionList.filter((_, i) => i !== idx);
+                              setAboutForm({
+                                ...aboutForm,
+                                vision: { ...aboutForm.vision, missionList: updated }
+                              });
+                            }}
+                            className="text-gray-400 hover:text-red-600 p-1.5 cursor-pointer"
+                            title="Delete"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          )}
-          {activeTab === "placements" && (
-            <div className="space-y-6">
-              <div>
-                <h1 className="text-xl font-black text-[#072A6C] uppercase tracking-wider">Placements Page Editor</h1>
-                <p className="text-xs text-gray-500 font-light mt-0.5">Edit all placements page content — hero text, statistics, placed students, career programs, and recruiters.</p>
-              </div>
+              )}
 
-              {/* Sub-section toggles */}
-              <div className="grid grid-cols-4 gap-2">
-                {[
-                  { id: "content", label: "Content & Stats" },
-                  { id: "students", label: "Placed Students" },
-                  { id: "stories", label: "Success Stories" },
-                  { id: "recruiters", label: "Top Recruiters" }
-                ].map((s) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => setPlacementsSection(s.id as any)}
-                    className={`h-9 rounded-xl border text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                      placementsSection === s.id
-                        ? "bg-[#072A6C] border-[#072A6C] text-white shadow-sm"
-                        : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    {s.label}
-                  </button>
-                ))}
-              </div>
+              {/* 3. Sub-tab: Leadership & Chairman */}
+              {activeAboutSubTab === "leadership" && (
+                <div className="space-y-6 text-left">
+                  {/* Top Header & Save */}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white p-5 rounded-2xl border border-gray-200 shadow-xs">
+                    <div>
+                      <h3 className="text-base font-black text-[#072A6C] tracking-tight">University Leadership & Governing Board</h3>
+                      <p className="text-xs text-gray-500">Manage the Chairman profile, university officers, and governing board members directory with photos and credentials</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAboutForm({
+                            ...aboutForm,
+                            leadership: INITIAL_ABOUT_CONTENT.leadership
+                          });
+                          setBoardForm(INITIAL_BOARD_DATA);
+                          updateBoardData(INITIAL_BOARD_DATA);
+                          notifySave("Leadership & Board reset to default!");
+                        }}
+                        className="h-10 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer transition-colors"
+                      >
+                        <RotateCcw size={14} /> Reset Leadership
+                      </button>
+                      <button
+                        onClick={() => {
+                          saveAbout();
+                          saveDirectories();
+                          notifySave("Leadership & Board Directory published live!");
+                        }}
+                        className="h-10 px-5 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl flex items-center gap-2 cursor-pointer shadow-sm transition-all"
+                      >
+                        <Save size={14} /> Save Leadership & Board
+                      </button>
+                    </div>
+                  </div>
 
-              {/* Content & Stats Sub-section */}
-              {placementsSection === "content" && (
-                <div className="space-y-6">
-                  {/* Hero Text */}
-                  <div className="bg-white p-5 rounded-2xl border border-gray-150 shadow-sm space-y-4">
-                    <span className="text-xs font-black uppercase text-[#072A6C] tracking-wider block border-b border-gray-100 pb-2">Hero Section</span>
+                  {/* Chairman Profile */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider">Chairman & Founder President Profile</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase text-gray-500">Hero Title</label>
-                        <input type="text" value={placementsForm.heroTitle} onChange={(e) => setPlacementsForm({ ...placementsForm, heroTitle: e.target.value })} className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" />
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Chairman Full Name</label>
+                        <input
+                          type="text"
+                          value={aboutForm.leadership.chairmanName || ""}
+                          onChange={(e) =>
+                            setAboutForm({
+                              ...aboutForm,
+                              leadership: { ...aboutForm.leadership, chairmanName: e.target.value }
+                            })
+                          }
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold"
+                        />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase text-gray-500">Hero Subtitle</label>
-                        <input type="text" value={placementsForm.heroSubtitle} onChange={(e) => setPlacementsForm({ ...placementsForm, heroSubtitle: e.target.value })} className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" />
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Designation / Role Title</label>
+                        <input
+                          type="text"
+                          value={aboutForm.leadership.designation || ""}
+                          onChange={(e) =>
+                            setAboutForm({
+                              ...aboutForm,
+                              leadership: { ...aboutForm.leadership, designation: e.target.value }
+                            })
+                          }
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-semibold"
+                        />
                       </div>
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase text-gray-500">Hero Description</label>
-                      <textarea rows={4} value={placementsForm.heroDescription} onChange={(e) => setPlacementsForm({ ...placementsForm, heroDescription: e.target.value })} className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium resize-none" />
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Headline Quote / Philosophy Tagline</label>
+                        <input
+                          type="text"
+                          value={aboutForm.leadership.messageQuote || ""}
+                          onChange={(e) =>
+                            setAboutForm({
+                              ...aboutForm,
+                              leadership: { ...aboutForm.leadership, messageQuote: e.target.value }
+                            })
+                          }
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-semibold text-blue-900"
+                        />
+                      </div>
+                      <ImageField
+                        label="Chairman Portrait Photo"
+                        value={aboutForm.leadership.chairmanImage || "/chairman_v4.png"}
+                        defaultValue="/chairman_v4.png"
+                        onReset={() => {
+                          setAboutForm({
+                            ...aboutForm,
+                            leadership: { ...aboutForm.leadership, chairmanImage: "/chairman_v4.png" }
+                          });
+                          notifySave("Chairman portrait reset to default!");
+                        }}
+                        onChange={(newImg) =>
+                          setAboutForm({
+                            ...aboutForm,
+                            leadership: { ...aboutForm.leadership, chairmanImage: newImg }
+                          })
+                        }
+                        aspectRatio="portrait"
+                        recommendedSize="400 × 500 px (Portrait)"
+                      />
                     </div>
                   </div>
 
-                  {/* Stats */}
-                  <div className="bg-white p-5 rounded-2xl border border-gray-150 shadow-sm space-y-4">
-                    <span className="text-xs font-black uppercase text-[#072A6C] tracking-wider block border-b border-gray-100 pb-2">Statistics</span>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase text-gray-500">Highest Package</label>
-                        <input type="text" value={placementsForm.highestPackage} onChange={(e) => setPlacementsForm({ ...placementsForm, highestPackage: e.target.value })} className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" />
+                  {/* Chairman Message Paragraphs */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider">Official Message Narrative</h4>
+                        <p className="text-xs text-gray-500">Each paragraph renders in sequence on the leadership message section</p>
                       </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase text-gray-500">Average Package</label>
-                        <input type="text" value={placementsForm.averagePackage} onChange={(e) => setPlacementsForm({ ...placementsForm, averagePackage: e.target.value })} className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase text-gray-500">Placement %</label>
-                        <input type="text" value={placementsForm.placementPercent} onChange={(e) => setPlacementsForm({ ...placementsForm, placementPercent: e.target.value })} className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" />
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = [...(aboutForm.leadership.messageParagraphs || []), "New paragraph content for chairman message."];
+                          setAboutForm({
+                            ...aboutForm,
+                            leadership: { ...aboutForm.leadership, messageParagraphs: updated }
+                          });
+                        }}
+                        className="h-8 px-3 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer"
+                      >
+                        <Plus size={13} /> Add Paragraph
+                      </button>
+                    </div>
+
+                    <div className="space-y-3">
+                      {aboutForm.leadership.messageParagraphs?.map((p, idx) => (
+                        <div key={idx} className="p-3 rounded-xl border border-gray-200 bg-slate-50/50 space-y-1.5">
+                          <div className="flex justify-between items-center">
+                            <span className="text-[10px] font-bold uppercase text-gray-500">Paragraph {idx + 1}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = aboutForm.leadership.messageParagraphs.filter((_, i) => i !== idx);
+                                setAboutForm({
+                                  ...aboutForm,
+                                  leadership: { ...aboutForm.leadership, messageParagraphs: updated }
+                                });
+                              }}
+                              className="text-red-500 hover:text-red-700 p-1 cursor-pointer"
+                              title="Delete Paragraph"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                          <textarea
+                            rows={3}
+                            value={p}
+                            onChange={(e) => {
+                              const updated = [...aboutForm.leadership.messageParagraphs];
+                              updated[idx] = e.target.value;
+                              setAboutForm({
+                                ...aboutForm,
+                                leadership: { ...aboutForm.leadership, messageParagraphs: updated }
+                              });
+                            }}
+                            className="w-full p-2.5 text-xs bg-white border border-gray-200 rounded-lg leading-relaxed"
+                          />
+                        </div>
+                      ))}
                     </div>
                   </div>
 
-                  {/* Philosophy */}
-                  <div className="bg-white p-5 rounded-2xl border border-gray-150 shadow-sm space-y-4">
-                    <span className="text-xs font-black uppercase text-[#072A6C] tracking-wider block border-b border-gray-100 pb-2">Placement Philosophy</span>
-                    <textarea rows={4} value={placementsForm.philosophyText} onChange={(e) => setPlacementsForm({ ...placementsForm, philosophyText: e.target.value })} className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium resize-none" />
-                  </div>
-
-                  {/* Career Programs */}
-                  <div className="bg-white p-5 rounded-2xl border border-gray-150 shadow-sm space-y-4">
-                    <div className="flex justify-between items-center border-b border-gray-100 pb-2">
-                      <span className="text-xs font-black uppercase text-[#072A6C] tracking-wider">Career Development Programs</span>
-                      <button type="button" onClick={() => setPlacementsForm({ ...placementsForm, careerPrograms: [...placementsForm.careerPrograms, ""] })} className="h-7 px-2 rounded-lg bg-[#D4AF37] text-white text-[10px] font-bold uppercase flex items-center gap-1 cursor-pointer"><Plus size={12} /> Add</button>
-                    </div>
-                    {placementsForm.careerPrograms.map((item, idx) => (
-                      <div key={idx} className="flex gap-2 items-center">
-                        <input type="text" value={item} onChange={(e) => { const arr = [...placementsForm.careerPrograms]; arr[idx] = e.target.value; setPlacementsForm({ ...placementsForm, careerPrograms: arr }); }} className="flex-1 h-9 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" />
-                        <button type="button" onClick={() => { const arr = placementsForm.careerPrograms.filter((_, i) => i !== idx); setPlacementsForm({ ...placementsForm, careerPrograms: arr }); }} className="text-rose-500 hover:text-rose-700 text-[10px] font-bold cursor-pointer">✕</button>
+                  {/* Governing Board Members & Officers Directory */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                      <div>
+                        <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider">Governing Board Members & Leadership Council</h4>
+                        <p className="text-xs text-gray-500">Edit member photos, names, titles, qualifications, and bios displayed on /about/leadership</p>
                       </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newKey = `Officer_${Date.now()}`;
+                          const newMember: FacultyMember = {
+                            name: "New Board Member",
+                            title: "Member, Governing Council",
+                            edu: "Ph.D. / M.Tech",
+                            interests: "Institutional planning & research governance",
+                            phone: "0863 2345499",
+                            email: "member@city.ac.in",
+                            avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
+                            age: "45 Years",
+                            experience: "15 Years",
+                            idNo: `CUB-M-${Date.now().toString().slice(-4)}`,
+                            department: "Governing Council"
+                          };
+                          const updated = {
+                            ...boardForm,
+                            [newKey]: { hod: newMember, others: [] }
+                          };
+                          setBoardForm(updated);
+                          updateBoardData(updated);
+                        }}
+                        className="h-8 px-3 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer shadow-xs"
+                      >
+                        <Plus size={13} /> Add Board Member
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {Object.entries(boardForm).map(([roleKey, dirData]) => {
+                        const member = dirData.hod;
+                        if (!member) return null;
+
+                        return (
+                          <div key={roleKey} className="p-4 rounded-xl border border-gray-200 bg-slate-50/70 space-y-3 flex flex-col justify-between">
+                            <div className="space-y-2.5">
+                              <div className="flex justify-between items-center pb-2 border-b border-gray-200">
+                                <span className="text-[11px] font-black text-[#072A6C] truncate max-w-[200px]">{roleKey}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const copy = { ...boardForm };
+                                    delete copy[roleKey];
+                                    setBoardForm(copy);
+                                    updateBoardData(copy);
+                                  }}
+                                  className="text-red-500 hover:text-red-700 cursor-pointer p-1"
+                                  title="Delete Board Member"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+
+                              <ImageField
+                                label="Member Photo (Validated)"
+                                value={member.avatar || INITIAL_BOARD_DATA[roleKey]?.hod?.avatar || ""}
+                                defaultValue={INITIAL_BOARD_DATA[roleKey]?.hod?.avatar || member.avatar || ""}
+                                onReset={() => {
+                                  const fallback = INITIAL_BOARD_DATA[roleKey]?.hod?.avatar || member.avatar || "";
+                                  const updated = {
+                                    ...boardForm,
+                                    [roleKey]: {
+                                      ...dirData,
+                                      hod: { ...member, avatar: fallback }
+                                    }
+                                  };
+                                  setBoardForm(updated);
+                                  notifySave("Member photo reset to default!");
+                                }}
+                                onChange={(newAvatar) => {
+                                  const updated = {
+                                    ...boardForm,
+                                    [roleKey]: {
+                                      ...dirData,
+                                      hod: { ...member, avatar: newAvatar }
+                                    }
+                                  };
+                                  setBoardForm(updated);
+                                }}
+                                aspectRatio="portrait"
+                                recommendedSize="400 × 500 px (Portrait)"
+                              />
+
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-500 uppercase">Full Name</label>
+                                <input
+                                  type="text"
+                                  value={member.name}
+                                  onChange={(e) => {
+                                    const updated = {
+                                      ...boardForm,
+                                      [roleKey]: {
+                                        ...dirData,
+                                        hod: { ...member, name: e.target.value }
+                                      }
+                                    };
+                                    setBoardForm(updated);
+                                  }}
+                                  className="w-full h-8 px-2 text-xs font-bold bg-white border border-gray-200 rounded"
+                                />
+                              </div>
+
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-500 uppercase">Title / Designation</label>
+                                <input
+                                  type="text"
+                                  value={member.title}
+                                  onChange={(e) => {
+                                    const updated = {
+                                      ...boardForm,
+                                      [roleKey]: {
+                                        ...dirData,
+                                        hod: { ...member, title: e.target.value }
+                                      }
+                                    };
+                                    setBoardForm(updated);
+                                  }}
+                                  className="w-full h-8 px-2 text-xs bg-white border border-gray-200 rounded"
+                                />
+                              </div>
+
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-500 uppercase">Education / Qualifications</label>
+                                <input
+                                  type="text"
+                                  value={member.edu}
+                                  onChange={(e) => {
+                                    const updated = {
+                                      ...boardForm,
+                                      [roleKey]: {
+                                        ...dirData,
+                                        hod: { ...member, edu: e.target.value }
+                                      }
+                                    };
+                                    setBoardForm(updated);
+                                  }}
+                                  className="w-full h-8 px-2 text-[11px] bg-white border border-gray-200 rounded text-gray-700"
+                                />
+                              </div>
+
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-500 uppercase">Specialization / Interests</label>
+                                <textarea
+                                  rows={2}
+                                  value={member.interests}
+                                  onChange={(e) => {
+                                    const updated = {
+                                      ...boardForm,
+                                      [roleKey]: {
+                                        ...dirData,
+                                        hod: { ...member, interests: e.target.value }
+                                      }
+                                    };
+                                    setBoardForm(updated);
+                                  }}
+                                  className="w-full p-2 text-[11px] bg-white border border-gray-200 rounded"
+                                />
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="space-y-1">
+                                  <label className="text-[9px] font-bold text-gray-500 uppercase">Experience</label>
+                                  <input
+                                    type="text"
+                                    value={member.experience}
+                                    onChange={(e) => {
+                                      const updated = {
+                                        ...boardForm,
+                                        [roleKey]: {
+                                          ...dirData,
+                                          hod: { ...member, experience: e.target.value }
+                                        }
+                                      };
+                                      setBoardForm(updated);
+                                    }}
+                                    className="w-full h-7 px-2 text-[11px] bg-white border border-gray-200 rounded"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[9px] font-bold text-gray-500 uppercase">Email</label>
+                                  <input
+                                    type="text"
+                                    value={member.email}
+                                    onChange={(e) => {
+                                      const updated = {
+                                        ...boardForm,
+                                        [roleKey]: {
+                                          ...dirData,
+                                          hod: { ...member, email: e.target.value }
+                                        }
+                                      };
+                                      setBoardForm(updated);
+                                    }}
+                                    className="w-full h-7 px-2 text-[11px] bg-white border border-gray-200 rounded"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 4. Sub-tab: Chalapathi Advantage */}
+              {activeAboutSubTab === "advantage" && (
+                <div className="space-y-5 text-left">
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-sm font-black text-[#072A6C] uppercase">The Chalapathi Advantage Cards</h3>
+                        <p className="text-xs text-gray-500">Manage curriculum, immersion, infrastructure, and placement advantage pillars</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const updated = [
+                              ...(aboutForm.advantage.cards || []),
+                              { title: "New Advantage Pillar", desc: "Brief summary of institutional benefit.", detail: "Comprehensive description and in-depth details." }
+                            ];
+                            setAboutForm({
+                              ...aboutForm,
+                              advantage: { ...aboutForm.advantage, cards: updated }
+                            });
+                          }}
+                          className="h-8 px-3 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer"
+                        >
+                          <Plus size={13} /> Add Card
+                        </button>
+                        <button
+                          onClick={saveAbout}
+                          className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+                        >
+                          <Save size={13} /> Save Advantage
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {aboutForm.advantage.cards?.map((card, idx) => (
+                        <div key={idx} className="p-4 rounded-xl border border-gray-200 bg-slate-50/50 space-y-2.5">
+                          <div className="flex justify-between items-center">
+                            <span className="text-[10px] font-bold text-gray-500 uppercase">Advantage Pillar {idx + 1}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = aboutForm.advantage.cards.filter((_, i) => i !== idx);
+                                setAboutForm({
+                                  ...aboutForm,
+                                  advantage: { ...aboutForm.advantage, cards: updated }
+                                });
+                              }}
+                              className="text-red-500 hover:text-red-700 p-1 cursor-pointer"
+                              title="Delete Card"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Title</label>
+                            <input
+                              type="text"
+                              value={card.title}
+                              onChange={(e) => {
+                                const updated = [...aboutForm.advantage.cards];
+                                updated[idx] = { ...updated[idx], title: e.target.value };
+                                setAboutForm({
+                                  ...aboutForm,
+                                  advantage: { ...aboutForm.advantage, cards: updated }
+                                });
+                              }}
+                              className="w-full h-8 px-2.5 text-xs font-bold bg-white border border-gray-200 rounded-lg text-gray-800"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Short Summary Description</label>
+                            <textarea
+                              rows={2}
+                              value={card.desc}
+                              onChange={(e) => {
+                                const updated = [...aboutForm.advantage.cards];
+                                updated[idx] = { ...updated[idx], desc: e.target.value };
+                                setAboutForm({
+                                  ...aboutForm,
+                                  advantage: { ...aboutForm.advantage, cards: updated }
+                                });
+                              }}
+                              className="w-full p-2 text-xs bg-white border border-gray-200 rounded-lg"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">In-Depth Details</label>
+                            <textarea
+                              rows={3}
+                              value={card.detail}
+                              onChange={(e) => {
+                                const updated = [...aboutForm.advantage.cards];
+                                updated[idx] = { ...updated[idx], detail: e.target.value };
+                                setAboutForm({
+                                  ...aboutForm,
+                                  advantage: { ...aboutForm.advantage, cards: updated }
+                                });
+                              }}
+                              className="w-full p-2 text-xs bg-white border border-gray-200 rounded-lg"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ════════════════════════════════════════════════════ */}
+          {/* TAB 4: ACADEMICS & 19-SECTION PROGRAM BUILDER        */}
+          {/* ════════════════════════════════════════════════════ */}
+          {activeTab === "academics" && (
+            <div className="space-y-6 animate-fade-in text-left">
+              <SectionHeader
+                title="Academics & 19-Section Program Builder"
+                subtitle="Manage program curriculum, syllabus files, year flowcharts, and section visibility"
+                icon={GraduationCap}
+                onSave={saveProgramDetails}
+                saveSuccess={saveSuccess}
+                onReset={() => {
+                  setProgramsList(PROGRAMS_DATA);
+                  updatePrograms(PROGRAMS_DATA);
+                  setAcademicData(DEFAULT_ACADEMIC_STRUCTURE);
+                  updateAcademicStructure(DEFAULT_ACADEMIC_STRUCTURE);
+                  setProgSectionsOrder(DEFAULT_PROGRAM_SECTIONS);
+                  notifySave("Academics content reset to default!");
+                }}
+                resetLabel="Reset Academics"
+              />
+
+              {/* Program Selector */}
+              <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs flex flex-col sm:flex-row gap-3 items-center justify-between">
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <span className="text-xs font-bold text-gray-700 uppercase shrink-0">Select Program:</span>
+                  <select
+                    value={selectedProgSlug}
+                    onChange={(e) => setSelectedProgSlug(e.target.value)}
+                    className="flex-1 sm:w-80 h-9 px-3 text-xs font-bold bg-slate-50 border border-gray-200 rounded-xl text-[#072A6C] focus:outline-none focus:border-blue-500 cursor-pointer"
+                  >
+                    {programsList.map((p) => (
+                      <option key={p.slug} value={p.slug}>
+                        {p.title} ({p.department})
+                      </option>
                     ))}
-                  </div>
+                  </select>
+                </div>
 
-                  {/* Industry Connect */}
-                  <div className="bg-white p-5 rounded-2xl border border-gray-150 shadow-sm space-y-4">
-                    <span className="text-xs font-black uppercase text-[#072A6C] tracking-wider block border-b border-gray-100 pb-2">Industry Connect</span>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase text-gray-500">Description</label>
-                      <textarea rows={2} value={placementsForm.industryConnectDesc} onChange={(e) => setPlacementsForm({ ...placementsForm, industryConnectDesc: e.target.value })} className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium resize-none" />
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <label className="text-[10px] font-bold uppercase text-gray-500">Items</label>
-                      <button type="button" onClick={() => setPlacementsForm({ ...placementsForm, industryConnectItems: [...placementsForm.industryConnectItems, ""] })} className="h-7 px-2 rounded-lg bg-[#D4AF37] text-white text-[10px] font-bold uppercase flex items-center gap-1 cursor-pointer"><Plus size={12} /> Add</button>
-                    </div>
-                    {placementsForm.industryConnectItems.map((item, idx) => (
-                      <div key={idx} className="flex gap-2 items-center">
-                        <input type="text" value={item} onChange={(e) => { const arr = [...placementsForm.industryConnectItems]; arr[idx] = e.target.value; setPlacementsForm({ ...placementsForm, industryConnectItems: arr }); }} className="flex-1 h-9 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" />
-                        <button type="button" onClick={() => { const arr = placementsForm.industryConnectItems.filter((_, i) => i !== idx); setPlacementsForm({ ...placementsForm, industryConnectItems: arr }); }} className="text-rose-500 hover:text-rose-700 text-[10px] font-bold cursor-pointer">✕</button>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Placement Cell */}
-                  <div className="bg-white p-5 rounded-2xl border border-gray-150 shadow-sm space-y-4">
-                    <span className="text-xs font-black uppercase text-[#072A6C] tracking-wider block border-b border-gray-100 pb-2">Placement Cell Responsibilities</span>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase text-gray-500">Description</label>
-                      <textarea rows={2} value={placementsForm.placementCellDesc} onChange={(e) => setPlacementsForm({ ...placementsForm, placementCellDesc: e.target.value })} className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium resize-none" />
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <label className="text-[10px] font-bold uppercase text-gray-500">Responsibility Cards</label>
-                      <button type="button" onClick={() => setPlacementsForm({ ...placementsForm, placementCellItems: [...placementsForm.placementCellItems, { t: "", d: "" }] })} className="h-7 px-2 rounded-lg bg-[#D4AF37] text-white text-[10px] font-bold uppercase flex items-center gap-1 cursor-pointer"><Plus size={12} /> Add</button>
-                    </div>
-                    {placementsForm.placementCellItems.map((item, idx) => (
-                      <div key={idx} className="grid grid-cols-12 gap-2 items-center">
-                        <input type="text" placeholder="Title" value={item.t} onChange={(e) => { const arr = [...placementsForm.placementCellItems]; arr[idx] = { ...arr[idx], t: e.target.value }; setPlacementsForm({ ...placementsForm, placementCellItems: arr }); }} className="col-span-4 h-9 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" />
-                        <input type="text" placeholder="Description" value={item.d} onChange={(e) => { const arr = [...placementsForm.placementCellItems]; arr[idx] = { ...arr[idx], d: e.target.value }; setPlacementsForm({ ...placementsForm, placementCellItems: arr }); }} className="col-span-7 h-9 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" />
-                        <button type="button" onClick={() => { const arr = placementsForm.placementCellItems.filter((_, i) => i !== idx); setPlacementsForm({ ...placementsForm, placementCellItems: arr }); }} className="col-span-1 text-rose-500 hover:text-rose-700 text-[10px] font-bold cursor-pointer text-center">✕</button>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Save Content */}
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => {
-                      updatePlacementsContent(placementsForm);
-                      showNotification();
+                      const title = prompt("Enter new program title (e.g. B.Tech - Robotics & Automation):");
+                      if (!title) return;
+                      const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+                      const newProg: ProgramDetail = {
+                        slug,
+                        title,
+                        department: "School of Engineering",
+                        duration: "4 Years (Undergraduate)",
+                        degreeType: "B.Tech",
+                        overview: "Industry aligned degree program.",
+                        desc: "Comprehensive engineering curriculum.",
+                        curriculum: ["Semester 1", "Semester 2", "Semester 3", "Semester 4"],
+                        careers: [{ title: "Domain Specialist", desc: "Industry professional." }]
+                      };
+                      const updated = [newProg, ...programsList];
+                      setProgramsList(updated);
+                      updatePrograms(updated);
+                      setSelectedProgSlug(slug);
+                      notifySave(`Created new program: ${title}`);
                     }}
-                    className="w-full h-11 bg-[#072A6C] hover:bg-[#072A6C]/90 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow transition-colors cursor-pointer"
+                    className="h-8 px-3 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer"
                   >
-                    Save All Placements Content
+                    <Plus size={13} /> Add Program
+                  </button>
+                  <Link
+                    to={`/academics/${selectedProgSlug}`}
+                    target="_blank"
+                    className="h-8 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg flex items-center gap-1"
+                  >
+                    <ExternalLink size={12} /> View Program Page
+                  </Link>
+                </div>
+              </div>
+
+              {/* 19 Section Order & Visibility */}
+              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-black text-[#072A6C] uppercase">
+                      19 Program Sections (Order & Visibility for {currentProg?.title})
+                    </h3>
+                    <p className="text-xs text-gray-500">Reorder and toggle specific sections for this program detail page</p>
+                  </div>
+                  <button
+                    onClick={saveProgramDetails}
+                    className="h-8 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer"
+                  >
+                    <Save size={13} /> Save Program
                   </button>
                 </div>
-              )}
 
-              {/* Placed Students Sub-section */}
-              {placementsSection === "students" && (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                  <div className="lg:col-span-6 space-y-4">
-                    <div className="bg-white p-5 rounded-2xl border border-gray-150 shadow-sm space-y-4">
-                      <div className="flex justify-between items-center border-b border-gray-100 pb-2">
-                        <span className="text-xs font-extrabold uppercase text-gray-500 tracking-wider">Placed Students ({placementsContent.placedStudents.length})</span>
-                        <button type="button" onClick={() => { setEditStudentIdx("new"); setStudentForm({ name: "", branch: "", company: "", ctc: "", img: "" }); }} className="h-8 px-3 rounded-lg bg-[#D4AF37] hover:bg-[#D4AF37]/90 text-white text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 cursor-pointer transition-colors"><Plus size={12} /> Add Student</button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                  {progSectionsOrder.map((sec, idx) => (
+                    <div
+                      key={sec.id}
+                      className={`flex items-center justify-between p-2.5 rounded-xl border text-xs ${
+                        sec.enabled ? "bg-white border-gray-200" : "bg-gray-50 border-gray-200 opacity-60"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-700 text-[10px] font-bold flex items-center justify-center">
+                          {idx + 1}
+                        </span>
+                        <span className="font-bold text-slate-800 truncate max-w-[150px]">{sec.title}</span>
                       </div>
-                      <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
-                        {placementsContent.placedStudents.map((s, idx) => (
-                          <div key={idx} className="p-3.5 rounded-xl bg-white border border-gray-100 flex justify-between items-center text-xs shadow-sm hover:border-[#D4AF37]/20 transition-colors">
-                            <div>
-                              <span className="font-bold text-gray-700 block">{s.name}</span>
-                              <span className="text-[10px] text-gray-400 font-medium block">{s.company} — {s.ctc}</span>
-                            </div>
-                            <div className="flex gap-3">
-                              <button type="button" onClick={() => { setEditStudentIdx(idx); setStudentForm({ ...s }); }} className="text-blue-600 hover:text-blue-800 font-bold uppercase text-[10px] cursor-pointer">Edit</button>
-                              <button type="button" onClick={() => { const arr = placementsContent.placedStudents.filter((_, i) => i !== idx); updatePlacementsContent({ ...placementsContent, placedStudents: arr }); showNotification(); }} className="text-rose-500 hover:text-rose-700 font-bold uppercase text-[10px] cursor-pointer">Delete</button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
 
-                  <div className="lg:col-span-6">
-                    {editStudentIdx !== null ? (
-                      <form onSubmit={(e) => { e.preventDefault(); const arr = [...placementsContent.placedStudents]; if (editStudentIdx === "new") { arr.push(studentForm); } else { arr[editStudentIdx] = studentForm; } updatePlacementsContent({ ...placementsContent, placedStudents: arr }); setEditStudentIdx(null); showNotification(); }} className="bg-white p-6 rounded-2xl border border-gray-150 shadow-sm space-y-4">
-                        <div className="flex justify-between items-center border-b border-gray-100 pb-3">
-                          <span className="text-xs font-black uppercase text-[#072A6C] tracking-wider">{editStudentIdx === "new" ? "Add Placed Student" : "Edit Student"}</span>
-                          <button type="button" onClick={() => setEditStudentIdx(null)} className="text-gray-400 hover:text-gray-600 text-xs font-bold uppercase tracking-wider cursor-pointer">Cancel</button>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="space-y-1"><label className="text-[10px] font-bold uppercase text-gray-500">Student Name</label><input type="text" required value={studentForm.name} onChange={(e) => setStudentForm({ ...studentForm, name: e.target.value })} className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" /></div>
-                          <div className="space-y-1"><label className="text-[10px] font-bold uppercase text-gray-500">Branch</label><input type="text" required value={studentForm.branch} onChange={(e) => setStudentForm({ ...studentForm, branch: e.target.value })} className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" /></div>
-                          <div className="space-y-1"><label className="text-[10px] font-bold uppercase text-gray-500">Company</label><input type="text" required value={studentForm.company} onChange={(e) => setStudentForm({ ...studentForm, company: e.target.value })} className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" /></div>
-                          <div className="space-y-1"><label className="text-[10px] font-bold uppercase text-gray-500">CTC / Package</label><input type="text" required value={studentForm.ctc} onChange={(e) => setStudentForm({ ...studentForm, ctc: e.target.value })} className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" /></div>
-                        </div>
-                        <div className="space-y-1"><label className="text-[10px] font-bold uppercase text-gray-500">Photo URL</label><input type="text" required value={studentForm.img} onChange={(e) => setStudentForm({ ...studentForm, img: e.target.value })} className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" /></div>
-                        <button type="submit" className="w-full h-11 bg-[#072A6C] hover:bg-[#072A6C]/90 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow transition-colors cursor-pointer mt-2">Save Student</button>
-                      </form>
-                    ) : (
-                      <div className="bg-gray-50 border border-dashed border-gray-200 p-8 rounded-2xl flex flex-col items-center justify-center text-center min-h-[300px]">
-                        <Briefcase className="text-gray-300 mb-3" size={40} />
-                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">No Student Selected</span>
-                        <p className="text-[11px] text-gray-400 font-light mt-1 max-w-[280px]">Select a placed student from the list to edit their details, or click Add Student.</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Success Stories Sub-section */}
-              {placementsSection === "stories" && (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start text-left">
-                  <div className="lg:col-span-6 space-y-4">
-                    <div className="bg-white p-5 rounded-2xl border border-gray-150 shadow-sm space-y-4">
-                      <div className="flex justify-between items-center border-b border-gray-100 pb-2">
-                        <span className="text-xs font-extrabold uppercase text-gray-500 tracking-wider">Success Stories ({successStories.length})</span>
-                        <button 
-                          type="button" 
-                          onClick={() => { 
-                            setEditStoryIdx("new"); 
-                            setStoryForm({ 
-                              id: Date.now(), 
-                              studentName: "", 
-                              studentImage: "", 
-                              department: "", 
-                              batch: "", 
-                              companyName: "", 
-                              companyLogo: "", 
-                              packageOffered: "", 
-                              description: "", 
-                              skills: [],
-                              internshipExp: "",
-                              achievement: "",
-                              milestones: { 
-                                learningTitle: "", 
-                                learningDesc: "", 
-                                internshipTitle: "", 
-                                internshipDesc: "", 
-                                placementTitle: "", 
-                                placementDesc: "", 
-                                careerTitle: "", 
-                                careerDesc: "" 
-                              } 
-                            }); 
-                          }} 
-                          className="h-8 px-3 rounded-lg bg-[#D4AF37] hover:bg-[#D4AF37]/90 text-white text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 cursor-pointer transition-colors"
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const updated = progSectionsOrder.map((s) => (s.id === sec.id ? { ...s, enabled: !s.enabled } : s));
+                            setProgSectionsOrder(updated);
+                          }}
+                          className={`px-2 py-0.5 rounded text-[9px] font-bold cursor-pointer ${
+                            sec.enabled ? "bg-emerald-50 text-emerald-700" : "bg-gray-200 text-gray-600"
+                          }`}
                         >
-                          <Plus size={12} /> Add Story
+                          {sec.enabled ? "ON" : "OFF"}
+                        </button>
+                        <button
+                          type="button"
+                          disabled={idx === 0}
+                          onClick={() => {
+                            const updated = [...progSectionsOrder];
+                            const temp = updated[idx];
+                            updated[idx] = updated[idx - 1];
+                            updated[idx - 1] = temp;
+                            setProgSectionsOrder(updated);
+                          }}
+                          className="p-1 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-30 cursor-pointer"
+                        >
+                          <ArrowUp size={11} />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={idx === progSectionsOrder.length - 1}
+                          onClick={() => {
+                            const updated = [...progSectionsOrder];
+                            const temp = updated[idx];
+                            updated[idx] = updated[idx + 1];
+                            updated[idx + 1] = temp;
+                            setProgSectionsOrder(updated);
+                          }}
+                          className="p-1 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-30 cursor-pointer"
+                        >
+                          <ArrowDown size={11} />
                         </button>
                       </div>
-                      <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
-                        {successStories.map((story, idx) => (
-                          <div key={story.id} className="p-3.5 rounded-xl bg-white border border-gray-100 flex justify-between items-center text-xs shadow-sm hover:border-[#D4AF37]/20 transition-colors">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden">
-                                <img src={story.studentImage} alt={story.studentName} className="w-full h-full object-cover" />
-                              </div>
-                              <div className="text-left">
-                                <span className="font-bold text-gray-700 block">{story.studentName}</span>
-                                <span className="text-[10px] text-gray-400 block">{story.companyName} • {story.packageOffered}</span>
-                              </div>
-                            </div>
-                            <div className="flex gap-3">
-                              <button type="button" onClick={() => { setEditStoryIdx(idx); setStoryForm({ ...story }); }} className="text-blue-600 hover:text-blue-800 font-bold uppercase text-[10px] cursor-pointer">Edit</button>
-                              <button type="button" onClick={() => { const arr = successStories.filter((_, i) => i !== idx); updateSuccessStories(arr); showNotification(); }} className="text-rose-500 hover:text-rose-700 font-bold uppercase text-[10px] cursor-pointer">Delete</button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
                     </div>
-                  </div>
-
-                  <div className="lg:col-span-6">
-                    {editStoryIdx !== null ? (
-                      <form onSubmit={(e) => { 
-                        e.preventDefault(); 
-                        const arr = [...successStories]; 
-                        if (editStoryIdx === "new") { 
-                          arr.push({ ...storyForm, id: Date.now() }); 
-                        } else { 
-                          arr[editStoryIdx] = storyForm; 
-                        } 
-                        updateSuccessStories(arr); 
-                        setEditStoryIdx(null); 
-                        showNotification(); 
-                      }} className="bg-white p-6 rounded-2xl border border-gray-150 shadow-sm space-y-4 text-left">
-                        <div className="flex justify-between items-center border-b border-gray-100 pb-3">
-                          <span className="text-xs font-black uppercase text-[#072A6C] tracking-wider">{editStoryIdx === "new" ? "Add Success Story" : "Edit Story"}</span>
-                          <button type="button" onClick={() => setEditStoryIdx(null)} className="text-gray-400 hover:text-gray-600 text-xs font-bold uppercase tracking-wider cursor-pointer">Cancel</button>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-bold uppercase text-gray-500">Student Name</label>
-                            <input type="text" required value={storyForm.studentName} onChange={(e) => setStoryForm({ ...storyForm, studentName: e.target.value })} className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-bold uppercase text-gray-500">Department</label>
-                            <input type="text" required value={storyForm.department} onChange={(e) => setStoryForm({ ...storyForm, department: e.target.value })} className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-bold uppercase text-gray-500">Batch</label>
-                            <input type="text" required value={storyForm.batch} onChange={(e) => setStoryForm({ ...storyForm, batch: e.target.value })} className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-bold uppercase text-gray-500">Company Name</label>
-                            <input type="text" required value={storyForm.companyName} onChange={(e) => setStoryForm({ ...storyForm, companyName: e.target.value })} className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-bold uppercase text-gray-500">Company Logo URL</label>
-                            <input type="text" required value={storyForm.companyLogo} onChange={(e) => setStoryForm({ ...storyForm, companyLogo: e.target.value })} className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-bold uppercase text-gray-500">Package Offered</label>
-                            <input type="text" required value={storyForm.packageOffered} onChange={(e) => setStoryForm({ ...storyForm, packageOffered: e.target.value })} className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" />
-                          </div>
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold uppercase text-gray-500">Student Photo URL</label>
-                          <input type="text" required value={storyForm.studentImage} onChange={(e) => setStoryForm({ ...storyForm, studentImage: e.target.value })} className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold uppercase text-gray-500">Testimonial Description</label>
-                          <textarea required rows={3} value={storyForm.description} onChange={(e) => setStoryForm({ ...storyForm, description: e.target.value })} className="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium resize-none" />
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-bold uppercase text-gray-500">Skills Acquired (comma separated)</label>
-                            <input type="text" value={storyForm.skills?.join(", ") || ""} onChange={(e) => setStoryForm({ ...storyForm, skills: e.target.value.split(",").map(s => s.trim()).filter(Boolean) })} className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-bold uppercase text-gray-500">Internship Term / Experience</label>
-                            <input type="text" value={storyForm.internshipExp || ""} onChange={(e) => setStoryForm({ ...storyForm, internshipExp: e.target.value })} className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" />
-                          </div>
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold uppercase text-gray-500">Top Career Achievement</label>
-                          <input type="text" value={storyForm.achievement || ""} onChange={(e) => setStoryForm({ ...storyForm, achievement: e.target.value })} className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" />
-                        </div>
-
-                        {/* Milestones Edit */}
-                        <div className="border-t border-gray-100 pt-4 space-y-4">
-                          <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider block">Milestones Setup</span>
-                          
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-1">
-                              <label className="text-[9px] font-bold uppercase text-gray-500">Step 1 Title</label>
-                              <input type="text" required value={storyForm.milestones.learningTitle} onChange={(e) => setStoryForm({ ...storyForm, milestones: { ...storyForm.milestones, learningTitle: e.target.value } })} className="w-full h-9 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" />
-                            </div>
-                            <div className="space-y-1">
-                              <label className="text-[9px] font-bold uppercase text-gray-500">Step 1 Details</label>
-                              <input type="text" required value={storyForm.milestones.learningDesc} onChange={(e) => setStoryForm({ ...storyForm, milestones: { ...storyForm.milestones, learningDesc: e.target.value } })} className="w-full h-9 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" />
-                            </div>
-                            <div className="space-y-1">
-                              <label className="text-[9px] font-bold uppercase text-gray-500">Step 2 Title</label>
-                              <input type="text" required value={storyForm.milestones.internshipTitle} onChange={(e) => setStoryForm({ ...storyForm, milestones: { ...storyForm.milestones, internshipTitle: e.target.value } })} className="w-full h-9 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" />
-                            </div>
-                            <div className="space-y-1">
-                              <label className="text-[9px] font-bold uppercase text-gray-500">Step 2 Details</label>
-                              <input type="text" required value={storyForm.milestones.internshipDesc} onChange={(e) => setStoryForm({ ...storyForm, milestones: { ...storyForm.milestones, internshipDesc: e.target.value } })} className="w-full h-9 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" />
-                            </div>
-                            <div className="space-y-1">
-                              <label className="text-[9px] font-bold uppercase text-gray-500">Step 3 Title</label>
-                              <input type="text" required value={storyForm.milestones.placementTitle} onChange={(e) => setStoryForm({ ...storyForm, milestones: { ...storyForm.milestones, placementTitle: e.target.value } })} className="w-full h-9 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" />
-                            </div>
-                            <div className="space-y-1">
-                              <label className="text-[9px] font-bold uppercase text-gray-500">Step 3 Details</label>
-                              <input type="text" required value={storyForm.milestones.placementDesc} onChange={(e) => setStoryForm({ ...storyForm, milestones: { ...storyForm.milestones, placementDesc: e.target.value } })} className="w-full h-9 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" />
-                            </div>
-                            <div className="space-y-1">
-                              <label className="text-[9px] font-bold uppercase text-gray-500">Step 4 Title</label>
-                              <input type="text" required value={storyForm.milestones.careerTitle} onChange={(e) => setStoryForm({ ...storyForm, milestones: { ...storyForm.milestones, careerTitle: e.target.value } })} className="w-full h-9 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" />
-                            </div>
-                            <div className="space-y-1">
-                              <label className="text-[9px] font-bold uppercase text-gray-500">Step 4 Details</label>
-                              <input type="text" required value={storyForm.milestones.careerDesc} onChange={(e) => setStoryForm({ ...storyForm, milestones: { ...storyForm.milestones, careerDesc: e.target.value } })} className="w-full h-9 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" />
-                            </div>
-                          </div>
-                        </div>
-
-                        <button type="submit" className="w-full h-11 bg-[#072A6C] hover:bg-[#072A6C]/90 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow transition-colors cursor-pointer mt-4">Save Story</button>
-                      </form>
-                    ) : (
-                      <div className="bg-gray-50 border border-dashed border-gray-200 p-8 rounded-2xl flex flex-col items-center justify-center text-center min-h-[300px]">
-                        <Users className="text-gray-300 mb-3" size={40} />
-                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">No Story Selected</span>
-                        <p className="text-[11px] text-gray-400 font-light mt-1 max-w-[280px]">Select a success story from the list to edit, or click Add Story to add a new student achievement.</p>
-                      </div>
-                    )}
-                  </div>
+                  ))}
                 </div>
-              )}
-
-              {/* Recruiters Sub-section */}
-              {placementsSection === "recruiters" && (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                  <div className="lg:col-span-6 space-y-4">
-                    <div className="bg-white p-5 rounded-2xl border border-gray-150 shadow-sm space-y-4">
-                      <div className="flex justify-between items-center border-b border-gray-100 pb-2">
-                        <span className="text-xs font-extrabold uppercase text-gray-500 tracking-wider">Recruiters ({placementsContent.recruiters.length})</span>
-                        <button type="button" onClick={() => { setEditRecruiterIdx("new"); setRecruiterForm({ name: "", logo: "" }); }} className="h-8 px-3 rounded-lg bg-[#D4AF37] hover:bg-[#D4AF37]/90 text-white text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 cursor-pointer transition-colors"><Plus size={12} /> Add Recruiter</button>
-                      </div>
-                      <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
-                        {placementsContent.recruiters.map((r, idx) => (
-                          <div key={idx} className="p-3.5 rounded-xl bg-white border border-gray-100 flex justify-between items-center text-xs shadow-sm hover:border-[#D4AF37]/20 transition-colors">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden"><img src={r.logo} alt={r.name} className="w-6 h-6 object-contain" onError={(e) => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${r.name}&background=072A6C&color=fff&size=32`; }} /></div>
-                              <span className="font-bold text-gray-700">{r.name}</span>
-                            </div>
-                            <div className="flex gap-3">
-                              <button type="button" onClick={() => { setEditRecruiterIdx(idx); setRecruiterForm({ ...r }); }} className="text-blue-600 hover:text-blue-800 font-bold uppercase text-[10px] cursor-pointer">Edit</button>
-                              <button type="button" onClick={() => { const arr = placementsContent.recruiters.filter((_, i) => i !== idx); updatePlacementsContent({ ...placementsContent, recruiters: arr }); showNotification(); }} className="text-rose-500 hover:text-rose-700 font-bold uppercase text-[10px] cursor-pointer">Delete</button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="lg:col-span-6">
-                    {editRecruiterIdx !== null ? (
-                      <form onSubmit={(e) => { e.preventDefault(); const arr = [...placementsContent.recruiters]; if (editRecruiterIdx === "new") { arr.push(recruiterForm); } else { arr[editRecruiterIdx] = recruiterForm; } updatePlacementsContent({ ...placementsContent, recruiters: arr }); setEditRecruiterIdx(null); showNotification(); }} className="bg-white p-6 rounded-2xl border border-gray-150 shadow-sm space-y-4">
-                        <div className="flex justify-between items-center border-b border-gray-100 pb-3">
-                          <span className="text-xs font-black uppercase text-[#072A6C] tracking-wider">{editRecruiterIdx === "new" ? "Add Recruiter" : "Edit Recruiter"}</span>
-                          <button type="button" onClick={() => setEditRecruiterIdx(null)} className="text-gray-400 hover:text-gray-600 text-xs font-bold uppercase tracking-wider cursor-pointer">Cancel</button>
-                        </div>
-                        <div className="space-y-4">
-                          <div className="space-y-1"><label className="text-[10px] font-bold uppercase text-gray-500">Company Name</label><input type="text" required value={recruiterForm.name} onChange={(e) => setRecruiterForm({ ...recruiterForm, name: e.target.value })} className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" /></div>
-                          <div className="space-y-1"><label className="text-[10px] font-bold uppercase text-gray-500">Logo URL</label><input type="text" required value={recruiterForm.logo} onChange={(e) => setRecruiterForm({ ...recruiterForm, logo: e.target.value })} className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-medium" /></div>
-                        </div>
-                        <button type="submit" className="w-full h-11 bg-[#072A6C] hover:bg-[#072A6C]/90 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow transition-colors cursor-pointer mt-2">Save Recruiter</button>
-                      </form>
-                    ) : (
-                      <div className="bg-gray-50 border border-dashed border-gray-200 p-8 rounded-2xl flex flex-col items-center justify-center text-center min-h-[300px]">
-                        <Briefcase className="text-gray-300 mb-3" size={40} />
-                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">No Recruiter Selected</span>
-                        <p className="text-[11px] text-gray-400 font-light mt-1 max-w-[280px]">Select a recruiter from the list to edit, or click Add Recruiter to add a new company.</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
           )}
-          {activeTab === "campus-life" && (
-            <form onSubmit={handleSaveCampusLife} className="space-y-6">
-              <div>
-                <h1 className="text-xl font-black text-[#072A6C] uppercase tracking-wider">Campus Life Editor</h1>
-                <p className="text-xs text-gray-500 font-light mt-0.5">Modify headers, interactive feature cards grid, HTML5 campus tour videos, and carousel gallery content.</p>
+
+          {/* ════════════════════════════════════════════════════ */}
+          {/* TAB 5: ADMISSIONS & LEADS MANAGEMENT                */}
+          {/* ════════════════════════════════════════════════════ */}
+          {activeTab === "admissions" && (
+            <div className="space-y-6 animate-fade-in text-left">
+              <SectionHeader
+                title="Admissions & Lead Management"
+                subtitle="View, search, filter and export incoming student admission enquiries"
+                icon={UserPlus}
+                onReset={() => {
+                  updateEnquiries(INITIAL_ENQUIRIES);
+                  notifySave("Admissions enquiries reset to default!");
+                }}
+                resetLabel="Reset Enquiries"
+              />
+
+              {/* Controls & Export */}
+              <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs flex flex-col sm:flex-row gap-3 items-center justify-between">
+                <div className="flex flex-1 items-center gap-2 w-full">
+                  <div className="relative flex-1">
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Search enquiries by name, phone, city, program..."
+                      value={leadSearch}
+                      onChange={(e) => setLeadSearch(e.target.value)}
+                      className="w-full h-9 pl-9 pr-3 text-xs bg-slate-50 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+                  <select
+                    value={leadStatusFilter}
+                    onChange={(e) => setLeadStatusFilter(e.target.value)}
+                    className="h-9 px-3 text-xs font-bold bg-slate-50 border border-gray-200 rounded-xl cursor-pointer"
+                  >
+                    <option value="All">All Statuses</option>
+                    <option value="New">New</option>
+                    <option value="Contacted">Contacted</option>
+                    <option value="Admitted">Admitted</option>
+                    <option value="Closed">Closed</option>
+                  </select>
+                </div>
+
+                <button
+                  onClick={exportLeadsToCSV}
+                  className="h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-xs"
+                >
+                  <Download size={14} /> Export to CSV
+                </button>
               </div>
 
-              {/* Title & Headers */}
-              <div className="bg-white p-6 rounded-2xl border border-gray-150 shadow-sm space-y-4 text-left">
-                <span className="text-xs font-black uppercase text-[#072A6C] tracking-wider block border-b border-gray-100 pb-2">Headers & Subtitles</span>
+              {/* Table */}
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-slate-50 text-gray-600 uppercase text-[10px] font-bold border-b border-gray-200">
+                      <tr>
+                        <th className="p-3">ID</th>
+                        <th className="p-3">Candidate</th>
+                        <th className="p-3">Contact</th>
+                        <th className="p-3">Location</th>
+                        <th className="p-3">Program</th>
+                        <th className="p-3">Date</th>
+                        <th className="p-3">Status</th>
+                        <th className="p-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {filteredLeads.map((lead) => (
+                        <tr key={lead.id} className="hover:bg-slate-50/50">
+                          <td className="p-3 font-mono text-gray-500">{lead.id}</td>
+                          <td className="p-3">
+                            <span className="font-bold text-slate-800 block">{lead.name}</span>
+                            <span className="text-[10px] text-gray-400">{lead.qualification} ({lead.yearOfPassing})</span>
+                          </td>
+                          <td className="p-3">
+                            <span className="font-semibold text-slate-700 block">{lead.mobile}</span>
+                            <span className="text-[10px] text-gray-400">{lead.email}</span>
+                          </td>
+                          <td className="p-3">
+                            <span className="font-medium text-slate-700 block">{lead.city}</span>
+                            <span className="text-[10px] text-gray-400">{lead.state}</span>
+                          </td>
+                          <td className="p-3 font-bold text-[#072A6C]">{lead.program}</td>
+                          <td className="p-3 text-gray-500 whitespace-nowrap">{lead.date}</td>
+                          <td className="p-3">
+                            <select
+                              value={lead.status || "New"}
+                              onChange={(e) => updateLeadStatus(lead.id, e.target.value as any)}
+                              className={`px-2 py-1 rounded-md text-[10px] font-bold cursor-pointer border ${
+                                lead.status === "Admitted"
+                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                  : lead.status === "Contacted"
+                                  ? "bg-amber-50 text-amber-700 border-amber-200"
+                                  : "bg-blue-50 text-blue-700 border-blue-200"
+                              }`}
+                            >
+                              <option value="New">New</option>
+                              <option value="Contacted">Contacted</option>
+                              <option value="Admitted">Admitted</option>
+                              <option value="Closed">Closed</option>
+                            </select>
+                          </td>
+                          <td className="p-3 text-right">
+                            <button
+                              onClick={() => deleteLead(lead.id)}
+                              className="text-gray-400 hover:text-red-600 p-1 transition-colors cursor-pointer"
+                              title="Delete Lead"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {filteredLeads.length === 0 && (
+                  <div className="p-10 text-center text-gray-400 text-xs font-medium">
+                    No enquiries match the filter criteria.
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ════════════════════════════════════════════════════ */}
+          {/* TAB 5b: CAMPUS LIFE & FACILITIES                     */}
+          {/* ════════════════════════════════════════════════════ */}
+          {activeTab === "campus-life" && (
+            <div className="space-y-6 animate-fade-in text-left">
+              <SectionHeader
+                title="Campus Life, Facilities & Video Player CMS"
+                subtitle="Manage 8 campus highlight cards, campus tour video player (with file size MB limits), and quotes"
+                icon={Library}
+                onSave={saveFullCampusCMS}
+                saveSuccess={saveSuccess}
+                onReset={() => {
+                  setCampusTourData(DEFAULT_CAMPUS_TOUR);
+                  updateCampusTour(DEFAULT_CAMPUS_TOUR);
+                  setCampusCardsList([
+                    { title: "Vibrant Community", desc: "A diverse and inclusive campus with students from across India and the world.", icon: "Users" },
+                    { title: "Clubs & Activities", desc: "50+ student clubs to explore passions and build leadership skills.", icon: "GraduationCap" },
+                    { title: "Sports & Fitness", desc: "World-class sports facilities to keep you active, healthy and motivated.", icon: "Trophy" },
+                    { title: "Arts & Culture", desc: "Celebrate creativity with events, fests, and cultural extravaganzas.", icon: "Sparkles" },
+                    { title: "Smart Learning Spaces", desc: "Modern classrooms, advanced labs, and digital resources for future-ready learning.", icon: "Building2" },
+                    { title: "Hostel Life", desc: "Safe, comfortable and modern hostels that feel like a second home.", icon: "Landmark" },
+                    { title: "Food & Cafeteria", desc: "Hygienic, affordable and variety-rich meals for every taste.", icon: "Coffee" },
+                    { title: "Transport Facility", desc: "Convenient and reliable transportation across city routes.", icon: "Bus" }
+                  ]);
+                  setCampusVideosList(DEFAULT_CAMPUS_VIDEOS);
+                  updateCampusVideos(DEFAULT_CAMPUS_VIDEOS);
+                  notifySave("Campus life content reset to default!");
+                }}
+                resetLabel="Reset Campus Life"
+              />
+
+              {/* Section Headings */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-2xl bg-white border border-gray-200 shadow-xs">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-600 uppercase">Section Main Heading</label>
+                  <input
+                    type="text"
+                    value={campusTourData.heading || "CAMPUS LIFE"}
+                    onChange={(e) => setCampusTourData({ ...campusTourData, heading: e.target.value })}
+                    className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold text-gray-800"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-600 uppercase">Section Subtitle / Description</label>
+                  <input
+                    type="text"
+                    value={campusTourData.subtitle || ""}
+                    onChange={(e) => setCampusTourData({ ...campusTourData, subtitle: e.target.value })}
+                    className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg text-gray-700"
+                  />
+                </div>
+              </div>
+
+              {/* 8 Feature Cards Grid */}
+              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+                  <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider">
+                    1. Campus Life 8 Highlight Cards
+                  </h4>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {campusCardsList.map((card, idx) => (
+                    <div key={idx} className="p-3.5 rounded-xl border border-gray-200 bg-slate-50/60 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-black text-gray-400">Card #{idx + 1}</span>
+                        <select
+                          value={card.icon || "Users"}
+                          onChange={(e) => {
+                            const updated = [...campusCardsList];
+                            updated[idx] = { ...updated[idx], icon: e.target.value };
+                            setCampusCardsList(updated);
+                          }}
+                          className="h-6 px-1 text-[10px] font-bold bg-white border border-gray-200 rounded cursor-pointer"
+                        >
+                          <option value="Users">Users Icon</option>
+                          <option value="GraduationCap">GraduationCap</option>
+                          <option value="Trophy">Trophy</option>
+                          <option value="Sparkles">Sparkles</option>
+                          <option value="Building2">Building2</option>
+                          <option value="Landmark">Landmark</option>
+                          <option value="Coffee">Coffee</option>
+                          <option value="Bus">Bus</option>
+                        </select>
+                      </div>
+                      <input
+                        type="text"
+                        value={card.title}
+                        onChange={(e) => {
+                          const updated = [...campusCardsList];
+                          updated[idx] = { ...updated[idx], title: e.target.value };
+                          setCampusCardsList(updated);
+                        }}
+                        className="w-full h-7 px-2 text-xs font-bold bg-white border border-gray-200 rounded"
+                      />
+                      <textarea
+                        rows={2}
+                        value={card.desc}
+                        onChange={(e) => {
+                          const updated = [...campusCardsList];
+                          updated[idx] = { ...updated[idx], desc: e.target.value };
+                          setCampusCardsList(updated);
+                        }}
+                        className="w-full p-2 text-[11px] bg-white border border-gray-200 rounded leading-relaxed"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Campus Tour Video Player & Media CMS */}
+              <div className="p-6 rounded-2xl border border-blue-200 bg-blue-50/40 shadow-xs space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-blue-100">
+                  <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider flex items-center gap-2">
+                    🎬 2. Campus Tour Video Player & Media
+                  </h4>
+                  <span className="text-[10.5px] font-bold text-[#072A6C] bg-white px-2.5 py-0.5 rounded-md border border-blue-200">
+                    Max Recommended Limit: 50.0 MB
+                  </span>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase text-gray-500">Section Label</label>
+                    <label className="text-[10px] font-bold text-gray-600 uppercase">Top Badge Text</label>
                     <input
                       type="text"
-                      value={campusLabel}
-                      onChange={(e) => setCampusLabel(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
+                      value={campusTourData.badge || "WATCH CAMPUS TOUR"}
+                      onChange={(e) => setCampusTourData({ ...campusTourData, badge: e.target.value })}
+                      className="w-full h-9 px-3 text-xs bg-white border border-gray-200 rounded-lg font-bold text-[#D4AF37]"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase text-gray-500">Section Subtitle</label>
+                    <label className="text-[10px] font-bold text-gray-600 uppercase">Video Quote Text</label>
                     <input
                       type="text"
-                      value={campusSubtitle}
-                      onChange={(e) => setCampusSubtitle(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-bold"
+                      value={campusTourData.quote || ""}
+                      onChange={(e) => setCampusTourData({ ...campusTourData, quote: e.target.value })}
+                      className="w-full h-9 px-3 text-xs bg-white border border-gray-200 rounded-lg italic text-gray-700"
                     />
                   </div>
                 </div>
-              </div>
 
-              {/* Feature Cards Raw Config JSON */}
-              <div className="bg-white p-6 rounded-2xl border border-gray-150 shadow-sm space-y-4 text-left">
-                <div className="flex justify-between items-center border-b border-gray-100 pb-2">
-                  <span className="text-xs font-black uppercase text-[#072A6C] tracking-wider">Interactive Feature Cards (2x4 Grid JSON)</span>
-                  <span className="text-[10px] text-gray-400 font-bold uppercase">Must be a valid JSON array</span>
-                </div>
-                <textarea
-                  rows={8}
-                  value={campusCardsRaw}
-                  onChange={(e) => setCampusCardsRaw(e.target.value)}
-                  className="w-full p-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-mono"
+                {/* VideoField with validation, MB calculation, player preview */}
+                <VideoField
+                  label="Main Campus Tour Video"
+                  value={campusVideosList[0]?.url || "/chalapathi_logo_intro.mp4"}
+                  sizeMb={campusVideosList[0]?.sizeMb || "12.4 MB"}
+                  maxSizeMb={50}
+                  recommendedLimit="Max 50.0 MB (MP4 / WebM)"
+                  poster={campusTourData.poster || "/Chalapathimain.png"}
+                  onChange={(url, sizeMb) => {
+                    const updated = [...campusVideosList];
+                    updated[0] = { ...updated[0], url, sizeMb: sizeMb || updated[0]?.sizeMb };
+                    setCampusVideosList(updated);
+                  }}
+                  onSizeChange={(sizeMb) => {
+                    const updated = [...campusVideosList];
+                    updated[0] = { ...updated[0], sizeMb };
+                    setCampusVideosList(updated);
+                  }}
                 />
-              </div>
 
-              {/* Campus Videos List JSON */}
-              <div className="bg-white p-6 rounded-2xl border border-gray-150 shadow-sm space-y-4 text-left">
-                <div className="flex justify-between items-center border-b border-gray-100 pb-2">
-                  <span className="text-xs font-black uppercase text-[#072A6C] tracking-wider">Campus Tour Sliding Videos JSON</span>
-                  <span className="text-[10px] text-gray-400 font-bold uppercase">Must be a valid JSON array</span>
-                </div>
-                <textarea
-                  rows={6}
-                  value={campusVideosRaw}
-                  onChange={(e) => setCampusVideosRaw(e.target.value)}
-                  className="w-full p-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-mono"
+                <ImageField
+                  label="Video Poster Image (When Video Not Playing)"
+                  value={campusTourData.poster || "/Chalapathimain.png"}
+                  defaultValue="/Chalapathimain.png"
+                  recommendedSize="1280 × 720 px (16:9 Landscape)"
+                  aspectRatio="video"
+                  onChange={(poster) => setCampusTourData({ ...campusTourData, poster })}
+                  onReset={() => setCampusTourData({ ...campusTourData, poster: "/Chalapathimain.png" })}
                 />
-              </div>
-
-              {/* Gallery Images List JSON */}
-              <div className="bg-white p-6 rounded-2xl border border-gray-150 shadow-sm space-y-4 text-left">
-                <div className="flex justify-between items-center border-b border-gray-100 pb-2">
-                  <span className="text-xs font-black uppercase text-[#072A6C] tracking-wider">Campus Gallery Carousel Items (Memories) JSON</span>
-                  <span className="text-[10px] text-gray-400 font-bold uppercase">Must be a valid JSON array</span>
-                </div>
-                <textarea
-                  rows={8}
-                  value={campusGalleryRaw}
-                  onChange={(e) => setCampusGalleryRaw(e.target.value)}
-                  className="w-full p-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#072A6C] text-xs font-mono"
-                />
-              </div>
-
-              {/* Save Button */}
-              <div className="pt-4 border-t border-gray-100">
-                <button
-                  type="submit"
-                  className="h-11 px-8 bg-[#072A6C] hover:bg-[#051c4a] text-white font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer shadow-md transition-colors"
-                >
-                  Save Campus Life Changes
-                </button>
-              </div>
-            </form>
-          )}
-
-          {/* Generic Management View for remaining tabs */}
-          {["users", "admissions", "examinations", "finance", "communication", "library", "reports", "settings"].includes(activeTab) && (
-            <div className="space-y-6 animate-fade-in text-left">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
-                <div>
-                  <h2 className="text-xl font-extrabold text-gray-900 capitalize">{activeTab} Management</h2>
-                  <p className="text-xs text-gray-500 mt-0.5">Manage records, configurations, and data for {activeTab}.</p>
-                </div>
-                <button 
-                  onClick={() => showNotification()}
-                  className="h-10 px-5 bg-[#071A3A] hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow transition-colors inline-flex items-center gap-2 cursor-pointer"
-                >
-                  <Plus size={14} />
-                  <span>Add New Entry</span>
-                </button>
-              </div>
-
-              {/* Data Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs font-medium">
-                  <thead>
-                    <tr className="border-b border-gray-200 text-[10px] text-gray-400 uppercase tracking-wider bg-gray-50">
-                      <th className="py-3 px-4">ID</th>
-                      <th className="py-3 px-4">Record Title / Name</th>
-                      <th className="py-3 px-4">Category</th>
-                      <th className="py-3 px-4">Status</th>
-                      <th className="py-3 px-4">Last Updated</th>
-                      <th className="py-3 px-4 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {[
-                      { id: "REC-101", title: `Standard ${activeTab.toUpperCase()} Record`, cat: activeTab.toUpperCase(), status: "Active", date: "20 May 2025" },
-                      { id: "REC-102", title: "Central System Configuration", cat: activeTab.toUpperCase(), status: "Verified", date: "19 May 2025" },
-                      { id: "REC-103", title: "Departmental Operation Data", cat: activeTab.toUpperCase(), status: "Active", date: "18 May 2025" }
-                    ].map((row, i) => (
-                      <tr key={i} className="hover:bg-slate-50">
-                        <td className="py-3 px-4 font-mono font-bold text-blue-600">{row.id}</td>
-                        <td className="py-3 px-4 font-bold text-gray-900">{row.title}</td>
-                        <td className="py-3 px-4 text-gray-600">{row.cat}</td>
-                        <td className="py-3 px-4">
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            {row.status}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-gray-400">{row.date}</td>
-                        <td className="py-3 px-4 text-right">
-                          <button onClick={() => showNotification()} className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors cursor-pointer">
-                            <Edit3 size={15} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
               </div>
             </div>
           )}
 
-        </div>
-      </main>
+          {/* ════════════════════════════════════════════════════ */}
+          {/* TAB 6: NEWS, EVENTS & ANNOUNCEMENTS                  */}
+          {/* ════════════════════════════════════════════════════ */}
+          {activeTab === "news-events" && (
+            <div className="space-y-6 animate-fade-in text-left">
+              <SectionHeader
+                title="News, Events & Announcements CMS"
+                subtitle="Publish articles, schedule campus events, and manage the drawer announcements"
+                icon={Newspaper}
+                onSave={saveNewsList}
+                saveSuccess={saveSuccess}
+                onReset={() => {
+                  setNewsList(INITIAL_NEWS);
+                  updateNews(INITIAL_NEWS);
+                  setEventsList(INITIAL_EVENTS);
+                  updateEvents(INITIAL_EVENTS);
+                  setAnnouncementsList(INITIAL_ANNOUNCEMENTS);
+                  updateAnnouncements(INITIAL_ANNOUNCEMENTS);
+                  notifySave("News, events & announcements reset to default!");
+                }}
+                resetLabel="Reset News & Events"
+              />
+
+              {/* News Articles Manager */}
+              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-black text-[#072A6C] uppercase">News Articles ({newsList.length})</h3>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newArticle: NewsArticle = {
+                        id: Date.now(),
+                        title: "New University Highlight",
+                        date: new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+                        time: "10:00 AM",
+                        location: "Campus Main Auditorium",
+                        category: "Achievement",
+                        excerpt: "Short summary of the story.",
+                        bodyText: "Full article body text goes here.",
+                        image: "/prog_computer.png",
+                        slug: "news-" + Date.now(),
+                        featured: true
+                      };
+                      setNewsList([newArticle, ...newsList]);
+                      updateNews([newArticle, ...newsList]);
+                      notifySave("Added new news draft!");
+                    }}
+                    className="h-8 px-3 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer shadow-xs"
+                  >
+                    <Plus size={13} /> Add News Article
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  {newsList.map((article, idx) => (
+                    <div key={article.id} className="p-4 rounded-xl border border-gray-200 bg-slate-50/50 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-black text-[#072A6C]">Article #{idx + 1}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const updated = newsList.filter((n) => n.id !== article.id);
+                            setNewsList(updated);
+                            updateNews(updated);
+                            notifySave("Article deleted.");
+                          }}
+                          className="text-red-500 hover:text-red-700 text-xs font-bold flex items-center gap-1 cursor-pointer"
+                        >
+                          <Trash2 size={13} /> Delete
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Article Title</label>
+                          <input
+                            type="text"
+                            value={article.title}
+                            onChange={(e) => {
+                              const updated = [...newsList];
+                              updated[idx] = { ...updated[idx], title: e.target.value };
+                              setNewsList(updated);
+                            }}
+                            className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded font-bold text-slate-800"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Category</label>
+                          <input
+                            type="text"
+                            value={article.category}
+                            onChange={(e) => {
+                              const updated = [...newsList];
+                              updated[idx] = { ...updated[idx], category: e.target.value };
+                              setNewsList(updated);
+                            }}
+                            className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded font-semibold text-slate-700"
+                          />
+                        </div>
+                      </div>
+
+                      <ImageField
+                        label="Article Thumbnail Photo"
+                        value={article.image || INITIAL_NEWS[idx]?.image || "/prog_computer.png"}
+                        defaultValue={INITIAL_NEWS[idx]?.image || "/prog_computer.png"}
+                        onChange={(val) => {
+                          const updated = [...newsList];
+                          updated[idx] = { ...updated[idx], image: val };
+                          setNewsList(updated);
+                        }}
+                        onReset={() => {
+                          const updated = [...newsList];
+                          updated[idx] = { ...updated[idx], image: INITIAL_NEWS[idx]?.image || "/prog_computer.png" };
+                          setNewsList(updated);
+                        }}
+                        aspectRatio="video"
+                      />
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Full Story Text</label>
+                        <textarea
+                          rows={4}
+                          value={article.bodyText}
+                          onChange={(e) => {
+                            const updated = [...newsList];
+                            updated[idx] = { ...updated[idx], bodyText: e.target.value };
+                            setNewsList(updated);
+                          }}
+                          className="w-full p-2.5 text-xs bg-white border border-gray-200 rounded-lg leading-relaxed"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Announcements Drawer Manager */}
+              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-black text-[#072A6C] uppercase">Announcements Drawer ({announcementsList.length})</h3>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newAnn: Announcement = {
+                        title: "New Announcement",
+                        desc: "Details about this notification.",
+                        date: new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+                        iconName: "GraduationCap"
+                      };
+                      const updated = [newAnn, ...announcementsList];
+                      setAnnouncementsList(updated);
+                      updateAnnouncements(updated);
+                      notifySave("Added announcement!");
+                    }}
+                    className="h-8 px-3 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer shadow-xs"
+                  >
+                    <Plus size={13} /> Add Announcement
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {announcementsList.map((ann, idx) => (
+                    <div key={idx} className="p-3.5 rounded-xl border border-gray-200 bg-slate-50/50 space-y-2">
+                      <div className="flex justify-between items-center">
+                        <input
+                          type="text"
+                          value={ann.title}
+                          onChange={(e) => {
+                            const updated = [...announcementsList];
+                            updated[idx] = { ...updated[idx], title: e.target.value };
+                            setAnnouncementsList(updated);
+                          }}
+                          className="w-full h-7 px-2 text-xs font-bold text-[#072A6C] bg-white border border-gray-200 rounded mr-2"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const updated = announcementsList.filter((_, i) => i !== idx);
+                            setAnnouncementsList(updated);
+                            updateAnnouncements(updated);
+                            notifySave("Announcement removed.");
+                          }}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                      <textarea
+                        rows={2}
+                        value={ann.desc}
+                        onChange={(e) => {
+                          const updated = [...announcementsList];
+                          updated[idx] = { ...updated[idx], desc: e.target.value };
+                          setAnnouncementsList(updated);
+                        }}
+                        className="w-full p-2 text-[11px] bg-white border border-gray-200 rounded"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ════════════════════════════════════════════════════ */}
+          {/* TAB 7: PLACEMENTS & RECRUITERS                      */}
+          {/* ════════════════════════════════════════════════════ */}
+          {activeTab === "placements" && (
+            <div className="space-y-6 animate-fade-in text-left">
+              <SectionHeader
+                title="Placements & Recruiters CMS"
+                subtitle="Manage placement statistics, top recruiter logos, placed students, and success stories"
+                icon={Briefcase}
+                onSave={savePlacements}
+                saveSuccess={saveSuccess}
+                onReset={() => {
+                  setPlacementsForm(INITIAL_PLACEMENTS_CONTENT);
+                  updatePlacementsContent(INITIAL_PLACEMENTS_CONTENT);
+                  notifySave("Placements content reset to default!");
+                }}
+                resetLabel="Reset Placements"
+              />
+
+              {/* Placement Stats (4 Highlights matching website) */}
+              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+                  <h3 className="text-sm font-black text-[#072A6C] uppercase flex items-center gap-1.5">
+                    <BarChart3 size={15} /> Placement Key Statistics (4 Highlights)
+                  </h3>
+                  <span className="text-xs text-gray-400">Live website metric cards</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  <div className="p-3.5 bg-slate-50 rounded-xl border border-gray-200 space-y-1.5">
+                    <label className="text-[10px] font-bold text-[#072A6C] uppercase flex items-center gap-1">
+                      <Users size={12} /> #1 Students Placed
+                    </label>
+                    <input
+                      type="text"
+                      value={placementsForm.stats?.[0]?.value ?? placementsForm.placementPercent ?? "92%"}
+                      onChange={(e) => {
+                        const currentStats = placementsForm.stats || [
+                          { value: "92%", label: "Students Placed", icon: "Users" },
+                          { value: "30 LPA", label: "Highest Package", icon: "Trophy" },
+                          { value: "116+", label: "Corporate Partners", icon: "Handshake" },
+                          { value: "100%", label: "Placement Assistance", icon: "GraduationCap" }
+                        ];
+                        const updated = [...currentStats];
+                        updated[0] = { ...updated[0], value: e.target.value };
+                        setPlacementsForm({ ...placementsForm, stats: updated, placementPercent: e.target.value });
+                      }}
+                      className="w-full h-9 px-3 text-xs bg-white border border-gray-200 rounded-lg font-black text-[#072A6C]"
+                      placeholder="92%"
+                    />
+                  </div>
+
+                  <div className="p-3.5 bg-slate-50 rounded-xl border border-gray-200 space-y-1.5">
+                    <label className="text-[10px] font-bold text-[#D4AF37] uppercase flex items-center gap-1">
+                      <Trophy size={12} /> #2 Highest Package
+                    </label>
+                    <input
+                      type="text"
+                      value={placementsForm.stats?.[1]?.value ?? placementsForm.highestPackage ?? "30 LPA"}
+                      onChange={(e) => {
+                        const currentStats = placementsForm.stats || [
+                          { value: "92%", label: "Students Placed", icon: "Users" },
+                          { value: "30 LPA", label: "Highest Package", icon: "Trophy" },
+                          { value: "116+", label: "Corporate Partners", icon: "Handshake" },
+                          { value: "100%", label: "Placement Assistance", icon: "GraduationCap" }
+                        ];
+                        const updated = [...currentStats];
+                        updated[1] = { ...updated[1], value: e.target.value };
+                        setPlacementsForm({ ...placementsForm, stats: updated, highestPackage: e.target.value });
+                      }}
+                      className="w-full h-9 px-3 text-xs bg-white border border-gray-200 rounded-lg font-black text-[#D4AF37]"
+                      placeholder="30 LPA"
+                    />
+                  </div>
+
+                  <div className="p-3.5 bg-slate-50 rounded-xl border border-gray-200 space-y-1.5">
+                    <label className="text-[10px] font-bold text-amber-600 uppercase flex items-center gap-1">
+                      <Handshake size={12} /> #3 Corporate Partners
+                    </label>
+                    <input
+                      type="text"
+                      value={placementsForm.stats?.[2]?.value ?? placementsForm.corporatePartnersCount ?? "116+"}
+                      onChange={(e) => {
+                        const currentStats = placementsForm.stats || [
+                          { value: "92%", label: "Students Placed", icon: "Users" },
+                          { value: "30 LPA", label: "Highest Package", icon: "Trophy" },
+                          { value: "116+", label: "Corporate Partners", icon: "Handshake" },
+                          { value: "100%", label: "Placement Assistance", icon: "GraduationCap" }
+                        ];
+                        const updated = [...currentStats];
+                        updated[2] = { ...updated[2], value: e.target.value };
+                        setPlacementsForm({ ...placementsForm, stats: updated, corporatePartnersCount: e.target.value });
+                      }}
+                      className="w-full h-9 px-3 text-xs bg-white border border-gray-200 rounded-lg font-black text-amber-600"
+                      placeholder="116+"
+                    />
+                  </div>
+
+                  <div className="p-3.5 bg-slate-50 rounded-xl border border-gray-200 space-y-1.5">
+                    <label className="text-[10px] font-bold text-emerald-600 uppercase flex items-center gap-1">
+                      <GraduationCap size={12} /> #4 Placement Assistance
+                    </label>
+                    <input
+                      type="text"
+                      value={placementsForm.stats?.[3]?.value ?? placementsForm.placementAssistance ?? "100%"}
+                      onChange={(e) => {
+                        const currentStats = placementsForm.stats || [
+                          { value: "92%", label: "Students Placed", icon: "Users" },
+                          { value: "30 LPA", label: "Highest Package", icon: "Trophy" },
+                          { value: "116+", label: "Corporate Partners", icon: "Handshake" },
+                          { value: "100%", label: "Placement Assistance", icon: "GraduationCap" }
+                        ];
+                        const updated = [...currentStats];
+                        updated[3] = { ...updated[3], value: e.target.value };
+                        setPlacementsForm({ ...placementsForm, stats: updated, placementAssistance: e.target.value });
+                      }}
+                      className="w-full h-9 px-3 text-xs bg-white border border-gray-200 rounded-lg font-black text-emerald-600"
+                      placeholder="100%"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* ══════════════════════════════════════════════════════════ */}
+              {/* PLACEMENT SUCCESS STORIES SHOWCASE CMS                     */}
+              {/* ══════════════════════════════════════════════════════════ */}
+              {(() => {
+                const currentStorySafeIdx = (activeStoryIdx >= 0 && activeStoryIdx < storiesList.length) ? activeStoryIdx : 0;
+                const currStory = storiesList[currentStorySafeIdx] || INITIAL_SUCCESS_STORIES[0];
+
+                const updateCurrentStory = (fieldUpdates: Partial<SuccessStory>) => {
+                  const updated = [...storiesList];
+                  updated[currentStorySafeIdx] = { ...updated[currentStorySafeIdx], ...fieldUpdates };
+                  setStoriesList(updated);
+                };
+
+                const updateMilestone = (milestoneField: string, val: string) => {
+                  const updated = [...storiesList];
+                  const current = updated[currentStorySafeIdx];
+                  updated[currentStorySafeIdx] = {
+                    ...current,
+                    milestones: {
+                      ...current.milestones,
+                      [milestoneField]: val
+                    }
+                  };
+                  setStoriesList(updated);
+                };
+
+                const handleAddSkill = () => {
+                  if (!newSkillText.trim()) return;
+                  const currentSkills = currStory.skills || [];
+                  if (!currentSkills.includes(newSkillText.trim())) {
+                    updateCurrentStory({ skills: [...currentSkills, newSkillText.trim()] });
+                  }
+                  setNewSkillText("");
+                };
+
+                const handleRemoveSkill = (sIdx: number) => {
+                  const currentSkills = currStory.skills || [];
+                  updateCurrentStory({ skills: currentSkills.filter((_, i) => i !== sIdx) });
+                };
+
+                return (
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
+                      <div>
+                        <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-1.5">
+                          <Sparkles size={14} className="text-[#D4AF37]" />
+                          Placement Success Stories Showcase ({storiesList.length} Stories)
+                        </h4>
+                        <p className="text-[11px] text-gray-500">Edit student testimonials, photos, 4-step milestone journeys, skills acquired, and dream packages</p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newStory: SuccessStory = {
+                              id: Date.now(),
+                              studentName: "New Student Name",
+                              studentImage: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&h=600&fit=crop&crop=face",
+                              department: "B.Tech - Computer Science & Engineering",
+                              batch: "2024 Batch",
+                              companyName: "Google",
+                              companyLogo: "/logos/google.svg",
+                              packageOffered: "14.5 LPA",
+                              description: "The holistic training, expert faculty, and placement bootcamps at Chalapathi University gave me the exact skills and confidence required to crack competitive campus recruitment rounds.",
+                              skills: ["React", "TypeScript", "Python", "Data Structures", "System Design"],
+                              internshipExp: "6 Months Technology Intern",
+                              achievement: "Smart India Hackathon Finalist & Top Performer",
+                              milestones: {
+                                learningTitle: "Strong Academic Foundation",
+                                learningDesc: "Conceptual clarity through innovative teaching",
+                                internshipTitle: "Skill Development",
+                                internshipDesc: "Live projects and industry-relevant skills",
+                                placementTitle: "Internship",
+                                placementDesc: "Internship experience boosted my practical knowledge",
+                                careerTitle: "Dream Career",
+                                careerDesc: "Campus placement opportunity secured"
+                              }
+                            };
+                            const updated = [...storiesList, newStory];
+                            setStoriesList(updated);
+                            setActiveStoryIdx(updated.length - 1);
+                            notifySave("New success story added! Customize fields below.");
+                          }}
+                          className="h-8 px-3 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                        >
+                          <Plus size={13} /> Add Success Story
+                        </button>
+                        {storiesList.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (window.confirm(`Are you sure you want to remove ${currStory.studentName}'s success story?`)) {
+                                const updated = storiesList.filter((_, i) => i !== currentStorySafeIdx);
+                                setStoriesList(updated);
+                                setActiveStoryIdx(Math.max(0, currentStorySafeIdx - 1));
+                                notifySave("Success story removed.");
+                              }
+                            }}
+                            className="h-8 px-2.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                          >
+                            <Trash2 size={12} /> Delete Story
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setStoriesList(INITIAL_SUCCESS_STORIES);
+                            setActiveStoryIdx(0);
+                            updateSuccessStories(INITIAL_SUCCESS_STORIES);
+                            notifySave("Success stories reset to 3 default students!");
+                          }}
+                          className="h-8 px-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer"
+                        >
+                          <RotateCcw size={12} /> Reset Stories
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Story Switcher Tabs */}
+                    <div className="flex flex-wrap gap-2 pb-2 border-b border-gray-100">
+                      {storiesList.map((st, sIdx) => {
+                        const isCurrent = sIdx === currentStorySafeIdx;
+                        return (
+                          <button
+                            key={st.id || sIdx}
+                            type="button"
+                            onClick={() => setActiveStoryIdx(sIdx)}
+                            className={`h-9 px-3.5 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer transition-all ${
+                              isCurrent
+                                ? "bg-[#072A6C] text-white shadow-sm ring-2 ring-[#072A6C]/20"
+                                : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                            }`}
+                          >
+                            <span className={`w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center ${isCurrent ? "bg-[#D4AF37] text-slate-900" : "bg-gray-300 text-gray-700"}`}>
+                              {sIdx + 1}
+                            </span>
+                            <span>{st.studentName || `Story ${sIdx + 1}`}</span>
+                            <span className={`text-[10px] font-semibold opacity-80 ${isCurrent ? "text-amber-200" : "text-gray-500"}`}>
+                              ({st.companyName || "Partner"})
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* LIVE VISUAL PREVIEW CARD (Matches media_1789817710723.png) */}
+                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-4">
+                      <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+                        <span className="text-[11px] font-black uppercase tracking-widest text-[#072A6C] flex items-center gap-1.5">
+                          <Eye size={13} className="text-[#D4AF37]" /> Live Student Success Story Preview (Website Template Layout)
+                        </span>
+                        <span className="text-[10px] bg-amber-100 text-amber-900 font-bold px-2 py-0.5 rounded-full">
+                          Story #{currentStorySafeIdx + 1} of {storiesList.length}
+                        </span>
+                      </div>
+
+                      {/* Interactive Template Card */}
+                      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                          {/* Left Column: Photo + Badges */}
+                          <div className="lg:col-span-5 flex justify-center relative">
+                            <div className="relative w-full max-w-[280px] h-[330px] rounded-[22px] overflow-hidden shadow-xl border border-gray-100 bg-gray-50">
+                              <img 
+                                src={currStory.studentImage || "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=500&h=600&fit=crop&crop=face"} 
+                                alt={currStory.studentName} 
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+                            </div>
+
+                            {/* Floating Placed At badge */}
+                            <div className="absolute left-3 top-4 bg-white/90 backdrop-blur-md border border-white/60 rounded-xl p-2 flex items-center gap-2 shadow-md max-w-[150px]">
+                              <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center p-1 shadow-xs shrink-0">
+                                <img 
+                                  src={currStory.companyLogo || "/logos/tcs.svg"} 
+                                  alt={currStory.companyName} 
+                                  className="w-full h-full object-contain"
+                                  onError={(e) => { (e.target as HTMLImageElement).src = "/logos/tcs.svg"; }}
+                                />
+                              </div>
+                              <div className="text-left min-w-0">
+                                <span className="text-[7.5px] text-gray-400 font-bold block uppercase tracking-wider">Placed at</span>
+                                <span className="text-[10px] font-black text-[#072A6C] block truncate">{currStory.companyName || "Company"}</span>
+                              </div>
+                            </div>
+
+                            {/* Floating Package Offered badge */}
+                            <div className="absolute right-3 bottom-4 bg-white/90 backdrop-blur-md border border-white/60 rounded-xl p-2.5 shadow-md min-w-[110px] text-left">
+                              <span className="text-[7.5px] text-gray-400 font-bold block uppercase tracking-wider">Package Offered</span>
+                              <span className="text-base font-black text-[#D4AF37] block leading-none mt-0.5">{currStory.packageOffered || "₹12 LPA"}</span>
+                              <span className="text-[7.5px] text-gray-400 font-medium tracking-wide">PER ANNUM</span>
+                            </div>
+                          </div>
+
+                          {/* Right Column: Meta, Testimonial, Timeline, Skills & Achievements */}
+                          <div className="lg:col-span-7 space-y-4 text-left">
+                            <div className="space-y-0.5">
+                              <span className="text-[9px] font-extrabold uppercase tracking-widest text-[#D4AF37]">Success Story</span>
+                              <h3 className="text-xl font-[900] text-[#072A6C]">{currStory.studentName || "Student Name"}</h3>
+                              <p className="text-[11px] text-gray-500 font-medium">
+                                {currStory.department || "Department"} <span className="mx-1 text-gray-300">•</span> {currStory.batch || "2024 Batch"}
+                              </p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                              {/* Testimonial & 4-Step Timeline */}
+                              <div className="md:col-span-7 space-y-3">
+                                <div className="pl-3 border-l-4 border-[#D4AF37]">
+                                  <p className="text-[11px] text-gray-600 italic leading-relaxed">
+                                    "{currStory.description || "Student testimonial goes here..."}"
+                                  </p>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                  <span className="text-[8.5px] font-bold text-gray-400 uppercase tracking-wider block">Journey Timeline</span>
+                                  <div className="space-y-1.5">
+                                    <div className="flex gap-2 bg-gray-50/70 p-2 rounded-xl border border-gray-100">
+                                      <div className="w-4 h-4 rounded-full bg-blue-50 text-[#072A6C] flex items-center justify-center text-[8px] font-bold shrink-0">1</div>
+                                      <div>
+                                        <span className="text-[10px] font-bold text-[#072A6C] block leading-tight">{currStory.milestones?.learningTitle || "Strong Academic Foundation"}</span>
+                                        <span className="text-[8.5px] text-gray-500 block">{currStory.milestones?.learningDesc || "Conceptual clarity through innovative teaching"}</span>
+                                      </div>
+                                    </div>
+                                    <div className="flex gap-2 bg-gray-50/70 p-2 rounded-xl border border-gray-100">
+                                      <div className="w-4 h-4 rounded-full bg-blue-50 text-[#072A6C] flex items-center justify-center text-[8px] font-bold shrink-0">2</div>
+                                      <div>
+                                        <span className="text-[10px] font-bold text-[#072A6C] block leading-tight">{currStory.milestones?.internshipTitle || "Skill Development"}</span>
+                                        <span className="text-[8.5px] text-gray-500 block">{currStory.milestones?.internshipDesc || "Live projects and industry-relevant skills"}</span>
+                                      </div>
+                                    </div>
+                                    <div className="flex gap-2 bg-gray-50/70 p-2 rounded-xl border border-gray-100">
+                                      <div className="w-4 h-4 rounded-full bg-blue-50 text-[#072A6C] flex items-center justify-center text-[8px] font-bold shrink-0">3</div>
+                                      <div>
+                                        <span className="text-[10px] font-bold text-[#072A6C] block leading-tight">{currStory.milestones?.placementTitle || "Internship"}</span>
+                                        <span className="text-[8.5px] text-gray-500 block">{currStory.milestones?.placementDesc || "Internship experience boosted my practical knowledge"}</span>
+                                      </div>
+                                    </div>
+                                    <div className="flex gap-2 bg-gray-50/70 p-2 rounded-xl border border-gray-100">
+                                      <div className="w-4 h-4 rounded-full bg-blue-50 text-[#072A6C] flex items-center justify-center text-[8px] font-bold shrink-0">4</div>
+                                      <div>
+                                        <span className="text-[10px] font-bold text-[#072A6C] block leading-tight">{currStory.milestones?.careerTitle || "Dream Career"}</span>
+                                        <span className="text-[8.5px] text-gray-500 block">{currStory.milestones?.careerDesc || "Campus placement opportunity"}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Skills, Internship & Achievement */}
+                              <div className="md:col-span-5 space-y-3 bg-gray-50/80 border border-gray-100 rounded-xl p-3 h-fit">
+                                <div className="space-y-1">
+                                  <span className="text-[8.5px] font-bold text-gray-400 uppercase tracking-wider block">Skills Acquired</span>
+                                  <div className="flex flex-wrap gap-1">
+                                    {currStory.skills && currStory.skills.length > 0 ? (
+                                      currStory.skills.map((skill, sIdx) => (
+                                        <span key={sIdx} className="text-[8px] font-semibold bg-white text-[#072A6C] px-1.5 py-0.5 border border-gray-200 rounded">
+                                          {skill}
+                                        </span>
+                                      ))
+                                    ) : (
+                                      <span className="text-[8px] text-gray-400 italic">No skills listed</span>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="space-y-0.5 pt-2 border-t border-gray-200/70">
+                                  <span className="text-[8.5px] font-bold text-gray-400 uppercase tracking-wider block">Internship Term</span>
+                                  <span className="text-[10px] font-bold text-[#072A6C] block">{currStory.internshipExp || "6 Months Internship"}</span>
+                                </div>
+
+                                <div className="space-y-0.5 pt-2 border-t border-gray-200/70">
+                                  <span className="text-[8.5px] font-bold text-gray-400 uppercase tracking-wider block">Top Achievement</span>
+                                  <span className="text-[10px] font-bold text-emerald-600 block">{currStory.achievement || "Top Contest Performer"}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* EDIT ACTIVE STORY FORM FIELDS */}
+                    <div className="p-5 rounded-2xl border border-gray-200 bg-slate-50/40 space-y-5">
+                      <h5 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-1.5">
+                        <Edit3 size={13} className="text-[#072A6C]" />
+                        Edit Story #{currentStorySafeIdx + 1}: {currStory.studentName}
+                      </h5>
+
+                      {/* Student Meta Grid */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Student Full Name</label>
+                          <input
+                            type="text"
+                            value={currStory.studentName}
+                            onChange={(e) => updateCurrentStory({ studentName: e.target.value })}
+                            className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold"
+                            placeholder="e.g. Hitaishi Reddy"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Department / Program</label>
+                          <input
+                            type="text"
+                            value={currStory.department}
+                            onChange={(e) => updateCurrentStory({ department: e.target.value })}
+                            className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg"
+                            placeholder="e.g. B.Tech - Computer Science & Engineering"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Batch Year</label>
+                          <input
+                            type="text"
+                            value={currStory.batch}
+                            onChange={(e) => updateCurrentStory({ batch: e.target.value })}
+                            className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg"
+                            placeholder="e.g. 2024 Batch"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Package Offered (CTC)</label>
+                          <input
+                            type="text"
+                            value={currStory.packageOffered}
+                            onChange={(e) => updateCurrentStory({ packageOffered: e.target.value })}
+                            className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-black text-amber-600"
+                            placeholder="e.g. 12 LPA"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Student Photo & Company Logo with ImageField */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="p-3.5 rounded-xl border border-gray-200 bg-white space-y-2">
+                          <ImageField
+                            label="Student Profile Photo"
+                            value={currStory.studentImage}
+                            defaultValue={INITIAL_SUCCESS_STORIES[currentStorySafeIdx]?.studentImage || "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=500&h=600&fit=crop&crop=face"}
+                            aspectRatio="portrait"
+                            recommendedSize="500 × 600 px (Portrait)"
+                            onChange={(val) => updateCurrentStory({ studentImage: val })}
+                            onReset={() => {
+                              const defImg = INITIAL_SUCCESS_STORIES[currentStorySafeIdx]?.studentImage || "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=500&h=600&fit=crop&crop=face";
+                              updateCurrentStory({ studentImage: defImg });
+                              notifySave("Student photo reset to default!");
+                            }}
+                          />
+                        </div>
+                        <div className="p-3.5 rounded-xl border border-gray-200 bg-white space-y-3">
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Hiring Company Name</label>
+                            <input
+                              type="text"
+                              value={currStory.companyName}
+                              onChange={(e) => updateCurrentStory({ companyName: e.target.value })}
+                              className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold"
+                              placeholder="e.g. TCS / Google / Deloitte"
+                            />
+                          </div>
+                          <ImageField
+                            label="Company Logo"
+                            value={currStory.companyLogo}
+                            defaultValue={INITIAL_SUCCESS_STORIES[currentStorySafeIdx]?.companyLogo || "/logos/tcs.svg"}
+                            aspectRatio="square"
+                            recommendedSize="200 × 200 px (SVG / PNG)"
+                            onChange={(val) => updateCurrentStory({ companyLogo: val })}
+                            onReset={() => {
+                              const defLogo = INITIAL_SUCCESS_STORIES[currentStorySafeIdx]?.companyLogo || "/logos/tcs.svg";
+                              updateCurrentStory({ companyLogo: defLogo });
+                              notifySave("Company logo reset to default!");
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Testimonial Quote */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Student Testimonial / Experience Quote</label>
+                        <textarea
+                          value={currStory.description}
+                          onChange={(e) => updateCurrentStory({ description: e.target.value })}
+                          rows={3}
+                          className="w-full p-2.5 text-xs bg-white border border-gray-200 rounded-lg"
+                          placeholder="Write the student's testimonial quote about their college experience, faculty support, and placement journey..."
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* ══════════════════════════════════════════════════════════ */}
+              {/* OUR TOP CORPORATE PARTNERS / RECRUITERS MARQUEE CMS        */}
+              {/* ══════════════════════════════════════════════════════════ */}
+              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
+                  <div>
+                    <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-1.5">
+                      <Building size={14} className="text-[#072A6C]" />
+                      Our Top Corporate Partners Marquee ({(placementsForm.recruiters || []).length} Companies)
+                    </h4>
+                    <p className="text-[11px] text-gray-500">Manage all hiring partner logos shown in the homepage auto-scrolling recruiter marquee strip</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPlacementsForm({ ...placementsForm, recruiters: INITIAL_PLACEMENTS_CONTENT.recruiters });
+                        notifySave("All 20 corporate partner logos reset to defaults!");
+                      }}
+                      className="h-8 px-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer"
+                    >
+                      <RotateCcw size={12} /> Reset 20 Default Partners
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newPartner: Recruiter = { name: "New Partner", logo: "/logos/ibm.svg" };
+                        const updated = [...(placementsForm.recruiters || []), newPartner];
+                        setPlacementsForm({ ...placementsForm, recruiters: updated });
+                        notifySave("New corporate partner added!");
+                      }}
+                      className="h-8 px-3 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer"
+                    >
+                      <Plus size={13} /> Add Company Partner
+                    </button>
+                  </div>
+                </div>
+
+                {/* LIVE MARQUEE STRIP PREVIEW (Matches media_1789817622000.png) */}
+                <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                    <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest flex items-center gap-1.5">
+                      <Eye size={12} /> Website Live Marquee Strip Preview
+                    </span>
+                    <span className="text-[9.5px] bg-blue-950 text-blue-300 border border-blue-800 px-2 py-0.5 rounded-md font-semibold">
+                      {(placementsForm.recruiters || []).length} Logos in Carousel
+                    </span>
+                  </div>
+                  <div className="relative overflow-hidden bg-slate-950/80 p-4 rounded-xl border border-slate-800">
+                    <div className="flex gap-4 overflow-x-auto py-2 no-scrollbar">
+                      {(placementsForm.recruiters || []).map((r, i) => (
+                        <div key={i} className="h-11 px-5 bg-white border border-gray-200 rounded-xl flex items-center justify-center shadow-xs shrink-0 min-w-[100px] hover:border-[#072A6C] transition-all">
+                          <img src={r.logo} alt={r.name} className="h-6 w-auto object-contain max-w-[85px]" onError={(e) => { (e.target as HTMLImageElement).src = "/logos/wipro.svg"; }} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* PARTNER LOGOS DIRECTORY GRID */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <label className="text-[10px] font-bold text-gray-600 uppercase">Partner Logos Directory (Edit Logos & Names)</label>
+                      <p className="text-[10px] text-gray-400">All corporate hiring partners (upload custom logos or use SVG paths)</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPlacementsForm({ ...placementsForm, recruiters: [...INITIAL_PLACEMENTS_CONTENT.recruiters] });
+                          notifySave("Reset all 20 partners to defaults!");
+                        }}
+                        className="px-2.5 py-1 text-xs font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
+                        title="Reset all partners to default 20 companies"
+                      >
+                        <RotateCcw size={12} /> Reset All
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = [...(placementsForm.recruiters || []), { name: "New Company", logo: "/logos/wipro.svg" }];
+                          setPlacementsForm({ ...placementsForm, recruiters: updated });
+                          notifySave("Added new partner company");
+                        }}
+                        className="px-2.5 py-1 text-xs font-bold text-[#072A6C] bg-blue-50 hover:bg-blue-100 rounded-lg flex items-center gap-1 border border-blue-200 transition-colors cursor-pointer"
+                      >
+                        <Plus size={13} /> Add Company
+                      </button>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    {(placementsForm.recruiters || []).map((partner, pIdx) => (
+                      <div key={pIdx} className="p-3 rounded-xl border border-gray-200 bg-white shadow-xs space-y-2.5 relative group hover:border-[#072A6C]/40 hover:shadow-sm transition-all flex flex-col justify-between">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">#{pIdx + 1} Partner</span>
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = [...(placementsForm.recruiters || [])];
+                                const defLogo = INITIAL_PLACEMENTS_CONTENT.recruiters[pIdx]?.logo || "/logos/wipro.svg";
+                                const defName = INITIAL_PLACEMENTS_CONTENT.recruiters[pIdx]?.name || partner.name;
+                                updated[pIdx] = { ...updated[pIdx], logo: defLogo, name: defName };
+                                setPlacementsForm({ ...placementsForm, recruiters: updated });
+                                notifySave(`${partner.name} reset to default!`);
+                              }}
+                              className="p-1 rounded text-gray-400 hover:text-[#072A6C] hover:bg-gray-100 cursor-pointer transition-colors"
+                              title="Reset logo & name to default"
+                            >
+                              <RotateCcw size={12} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = (placementsForm.recruiters || []).filter((_, i) => i !== pIdx);
+                                setPlacementsForm({ ...placementsForm, recruiters: updated });
+                                notifySave(`Removed ${partner.name}`);
+                              }}
+                              className="text-red-400 hover:text-red-600 p-1 rounded hover:bg-red-50 cursor-pointer transition-colors"
+                              title="Delete partner"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="relative group/logo h-14 w-full bg-slate-50 rounded-lg border border-dashed border-gray-200 flex items-center justify-center p-2 overflow-hidden">
+                          <img
+                            src={partner.logo}
+                            alt={partner.name}
+                            className="h-7 max-h-7 w-auto max-w-[100px] object-contain transition-transform group-hover/logo:scale-105"
+                            onError={(e) => { (e.target as HTMLImageElement).src = "/logos/wipro.svg"; }}
+                          />
+                          <label className="absolute inset-0 bg-[#072A6C]/85 opacity-0 group-hover/logo:opacity-100 transition-opacity flex items-center justify-center text-white text-[10.5px] font-semibold gap-1.5 cursor-pointer shadow-inner">
+                            <UploadCloud size={13} />
+                            <span>Upload Logo</span>
+                            <input
+                              type="file"
+                              accept="image/*,.svg"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  const reader = new FileReader();
+                                  reader.onload = (re) => {
+                                    const url = re.target?.result as string;
+                                    const updated = [...(placementsForm.recruiters || [])];
+                                    updated[pIdx] = { ...updated[pIdx], logo: url };
+                                    setPlacementsForm({ ...placementsForm, recruiters: updated });
+                                    notifySave(`Updated ${partner.name} logo`);
+                                  };
+                                  reader.readAsDataURL(file);
+                                }
+                              }}
+                            />
+                          </label>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <div>
+                            <label className="text-[9px] font-bold text-gray-500 uppercase tracking-wide">Company Name</label>
+                            <input
+                              type="text"
+                              value={partner.name}
+                              onChange={(e) => {
+                                const updated = [...(placementsForm.recruiters || [])];
+                                updated[pIdx] = { ...updated[pIdx], name: e.target.value };
+                                setPlacementsForm({ ...placementsForm, recruiters: updated });
+                              }}
+                              className="w-full h-7 px-2 text-xs font-bold bg-white border border-gray-200 rounded-md text-gray-800 focus:border-[#072A6C] focus:outline-none"
+                              placeholder="e.g. Google"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[9px] font-bold text-gray-500 uppercase tracking-wide">Logo URL / Path</label>
+                            <input
+                              type="text"
+                              value={partner.logo}
+                              onChange={(e) => {
+                                const updated = [...(placementsForm.recruiters || [])];
+                                updated[pIdx] = { ...updated[pIdx], logo: e.target.value };
+                                setPlacementsForm({ ...placementsForm, recruiters: updated });
+                              }}
+                              className="w-full h-7 px-2 text-[11px] font-mono text-gray-600 bg-white border border-gray-200 rounded-md focus:border-[#072A6C] focus:outline-none"
+                              placeholder="/logos/company.svg"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Placed Students Cards */}
+              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-black text-[#072A6C] uppercase">Placed Students Gallery ({placementsForm.placedStudents.length})</h3>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newStudent: PlacedStudent = {
+                        name: "Student Name",
+                        branch: "Computer Science",
+                        company: "Amazon",
+                        ctc: "₹18.0 LPA",
+                        img: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&h=500&fit=crop"
+                      };
+                      setPlacementsForm({
+                        ...placementsForm,
+                        placedStudents: [newStudent, ...placementsForm.placedStudents]
+                      });
+                    }}
+                    className="h-8 px-3 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer"
+                  >
+                    <Plus size={13} /> Add Placed Student
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {placementsForm.placedStudents.map((st, idx) => (
+                    <div key={idx} className="p-3.5 rounded-xl border border-gray-200 bg-slate-50/50 space-y-2">
+                      <div className="flex justify-between items-center">
+                        <input
+                          type="text"
+                          value={st.name}
+                          onChange={(e) => {
+                            const updated = [...placementsForm.placedStudents];
+                            updated[idx] = { ...updated[idx], name: e.target.value };
+                            setPlacementsForm({ ...placementsForm, placedStudents: updated });
+                          }}
+                          className="w-full h-7 px-2 text-xs font-bold bg-white border border-gray-200 rounded mr-2"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const updated = placementsForm.placedStudents.filter((_, i) => i !== idx);
+                            setPlacementsForm({ ...placementsForm, placedStudents: updated });
+                          }}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        <input
+                          type="text"
+                          value={st.company}
+                          onChange={(e) => {
+                            const updated = [...placementsForm.placedStudents];
+                            updated[idx] = { ...updated[idx], company: e.target.value };
+                            setPlacementsForm({ ...placementsForm, placedStudents: updated });
+                          }}
+                          placeholder="Company"
+                          className="h-7 px-2 text-[11px] font-semibold bg-white border border-gray-200 rounded"
+                        />
+                        <input
+                          type="text"
+                          value={st.ctc}
+                          onChange={(e) => {
+                            const updated = [...placementsForm.placedStudents];
+                            updated[idx] = { ...updated[idx], ctc: e.target.value };
+                            setPlacementsForm({ ...placementsForm, placedStudents: updated });
+                          }}
+                          placeholder="CTC"
+                          className="h-7 px-2 text-[11px] font-bold text-[#D4AF37] bg-white border border-gray-200 rounded"
+                        />
+                      </div>
+                      <ImageField
+                        label="Student Photo"
+                        value={st.img || INITIAL_PLACEMENTS_CONTENT.placedStudents[idx]?.img || "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&h=500&fit=crop"}
+                        defaultValue={INITIAL_PLACEMENTS_CONTENT.placedStudents[idx]?.img || "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&h=500&fit=crop"}
+                        aspectRatio="portrait"
+                        recommendedSize="400 × 500 px (Portrait)"
+                        onChange={(img) => {
+                          const updated = [...placementsForm.placedStudents];
+                          updated[idx] = { ...updated[idx], img };
+                          setPlacementsForm({ ...placementsForm, placedStudents: updated });
+                        }}
+                        onReset={() => {
+                          const updated = [...placementsForm.placedStudents];
+                          updated[idx] = { ...updated[idx], img: INITIAL_PLACEMENTS_CONTENT.placedStudents[idx]?.img || "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&h=500&fit=crop" };
+                          setPlacementsForm({ ...placementsForm, placedStudents: updated });
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ════════════════════════════════════════════════════ */}
+          {/* TAB 8: DIRECTORIES (Faculty & Board)                 */}
+          {/* ════════════════════════════════════════════════════ */}
+          {activeTab === "directories" && (
+            <div className="space-y-6 animate-fade-in text-left">
+              <SectionHeader
+                title="Directories & Faculty CMS"
+                subtitle="Manage Board of Governance, Department HODs, and Teaching Staff"
+                icon={Users}
+                onSave={saveDirectories}
+                saveSuccess={saveSuccess}
+                onReset={() => {
+                  setFacultyForm(INITIAL_FACULTY_DATA);
+                  updateFacultyData(INITIAL_FACULTY_DATA);
+                  setBoardForm(INITIAL_BOARD_DATA);
+                  updateBoardData(INITIAL_BOARD_DATA);
+                  notifySave("Directories reset to default!");
+                }}
+                resetLabel="Reset Directories"
+              />
+
+              {/* Department Picker */}
+              <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs flex items-center gap-3">
+                <span className="text-xs font-bold text-gray-700 uppercase">Select Department:</span>
+                <select
+                  value={selectedDept}
+                  onChange={(e) => setSelectedDept(e.target.value)}
+                  className="h-9 px-3 text-xs font-bold bg-slate-50 border border-gray-200 rounded-xl text-[#072A6C]"
+                >
+                  {Object.keys(facultyForm).map((dept) => (
+                    <option key={dept} value={dept}>
+                      {dept}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* HOD Card */}
+              {facultyForm[selectedDept] && (
+                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                  <h3 className="text-sm font-black text-[#072A6C] uppercase">Head of Department (HOD)</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-600 uppercase">Name</label>
+                      <input
+                        type="text"
+                        value={facultyForm[selectedDept].hod.name}
+                        onChange={(e) => {
+                          const updated = { ...facultyForm };
+                          updated[selectedDept].hod.name = e.target.value;
+                          setFacultyForm(updated);
+                        }}
+                        className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded font-bold"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-600 uppercase">Qualifications</label>
+                      <input
+                        type="text"
+                        value={facultyForm[selectedDept].hod.edu}
+                        onChange={(e) => {
+                          const updated = { ...facultyForm };
+                          updated[selectedDept].hod.edu = e.target.value;
+                          setFacultyForm(updated);
+                        }}
+                        className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded font-medium"
+                      />
+                    </div>
+                  </div>
+                  <ImageField
+                    label="HOD Portrait Photo"
+                    value={facultyForm[selectedDept].hod.avatar || INITIAL_FACULTY_DATA[selectedDept]?.hod?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=500&fit=crop"}
+                    defaultValue={INITIAL_FACULTY_DATA[selectedDept]?.hod?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=500&fit=crop"}
+                    aspectRatio="portrait"
+                    recommendedSize="400 × 500 px (Portrait)"
+                    onChange={(avatar) => {
+                      const updated = { ...facultyForm };
+                      updated[selectedDept].hod.avatar = avatar;
+                      setFacultyForm(updated);
+                    }}
+                    onReset={() => {
+                      const updated = { ...facultyForm };
+                      updated[selectedDept].hod.avatar = INITIAL_FACULTY_DATA[selectedDept]?.hod?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=500&fit=crop";
+                      setFacultyForm(updated);
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ════════════════════════════════════════════════════ */}
+          {/* TAB 8b: GALLERY & MEDIA CMS                          */}
+          {/* ════════════════════════════════════════════════════ */}
+          {activeTab === "gallery" && (
+            <div className="space-y-6 animate-fade-in text-left">
+              <SectionHeader
+                title="Gallery, Moments & Media CMS"
+                subtitle="Manage Moments that make Memories photo cards (with exact 600x600 px size validator), video galleries, and CTA banners"
+                icon={ImageIcon}
+                onSave={saveFullCampusCMS}
+                saveSuccess={saveSuccess}
+                onReset={() => {
+                  setCampusGalleryList(DEFAULT_CAMPUS_GALLERY);
+                  updateCampusGallery(DEFAULT_CAMPUS_GALLERY);
+                  setCampusBannersData(DEFAULT_CAMPUS_BANNERS);
+                  updateCampusBanners(DEFAULT_CAMPUS_BANNERS);
+                  notifySave("Gallery & media reset to default!");
+                }}
+                resetLabel="Reset Gallery"
+              />
+
+              {/* Moments that Make Memories Section */}
+              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+                  <div>
+                    <h3 className="text-sm font-black text-[#072A6C] uppercase">
+                      Moments that Make Memories ({campusGalleryList.length} Cards)
+                    </h3>
+                    <p className="text-xs text-gray-500">Live square gallery carousel displayed on the home page</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newGalleryItem: CampusGalleryItem = {
+                        title: "Campus Highlight",
+                        image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=600&auto=format&fit=crop"
+                      };
+                      setCampusGalleryList([...campusGalleryList, newGalleryItem]);
+                      notifySave("Added gallery card draft!");
+                    }}
+                    className="h-8 px-3 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer"
+                  >
+                    <Plus size={13} /> Add Moments Photo Card
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {campusGalleryList.map((item, idx) => (
+                    <div key={idx} className="p-4 rounded-xl border border-gray-200 bg-slate-50/70 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-black text-[#072A6C]">Photo #{idx + 1}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const updated = campusGalleryList.filter((_, i) => i !== idx);
+                            setCampusGalleryList(updated);
+                            notifySave("Gallery photo card removed.");
+                          }}
+                          className="text-red-500 hover:text-red-700 text-xs font-bold flex items-center gap-1"
+                        >
+                          <Trash2 size={13} /> Delete
+                        </button>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Card Caption / Event Title</label>
+                        <input
+                          type="text"
+                          value={item.title}
+                          onChange={(e) => {
+                            const updated = [...campusGalleryList];
+                            updated[idx] = { ...updated[idx], title: e.target.value };
+                            setCampusGalleryList(updated);
+                          }}
+                          className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded font-bold"
+                        />
+                      </div>
+
+                      <ImageField
+                        label="Photo Image"
+                        value={item.image || DEFAULT_CAMPUS_GALLERY[idx]?.image || "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=600&auto=format&fit=crop"}
+                        defaultValue={DEFAULT_CAMPUS_GALLERY[idx]?.image || "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=600&auto=format&fit=crop"}
+                        recommendedSize="600 × 600 px (Square 1:1)"
+                        aspectRatio="square"
+                        onChange={(img) => {
+                          const updated = [...campusGalleryList];
+                          updated[idx] = { ...updated[idx], image: img };
+                          setCampusGalleryList(updated);
+                        }}
+                        onReset={() => {
+                          const updated = [...campusGalleryList];
+                          updated[idx] = { ...updated[idx], image: DEFAULT_CAMPUS_GALLERY[idx]?.image || "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=600&auto=format&fit=crop" };
+                          setCampusGalleryList(updated);
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Bottom CTA Banners */}
+              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                <h3 className="text-sm font-black text-[#072A6C] uppercase pb-2 border-b border-gray-100">
+                  Bottom Call-To-Action Banners
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Banner 1: Community */}
+                  <div className="p-4 rounded-xl border border-blue-200 bg-blue-50/40 space-y-3">
+                    <span className="text-[11px] font-black text-[#072A6C] uppercase">Left Banner (Blue Gradient)</span>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-600 uppercase">Banner Title</label>
+                      <input
+                        type="text"
+                        value={campusBannersData.community.title}
+                        onChange={(e) => setCampusBannersData({
+                          ...campusBannersData,
+                          community: { ...campusBannersData.community, title: e.target.value }
+                        })}
+                        className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded font-bold"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-600 uppercase">Description</label>
+                      <input
+                        type="text"
+                        value={campusBannersData.community.desc}
+                        onChange={(e) => setCampusBannersData({
+                          ...campusBannersData,
+                          community: { ...campusBannersData.community, desc: e.target.value }
+                        })}
+                        className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded text-gray-700"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Button Text</label>
+                        <input
+                          type="text"
+                          value={campusBannersData.community.buttonText}
+                          onChange={(e) => setCampusBannersData({
+                            ...campusBannersData,
+                            community: { ...campusBannersData.community, buttonText: e.target.value }
+                          })}
+                          className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded font-bold text-[#072A6C]"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Button Link</label>
+                        <input
+                          type="text"
+                          value={campusBannersData.community.url}
+                          onChange={(e) => setCampusBannersData({
+                            ...campusBannersData,
+                            community: { ...campusBannersData.community, url: e.target.value }
+                          })}
+                          className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded font-mono text-gray-700"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Banner 2: Events */}
+                  <div className="p-4 rounded-xl border border-red-200 bg-red-50/40 space-y-3">
+                    <span className="text-[11px] font-black text-[#D71920] uppercase">Right Banner (Red Gradient)</span>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-600 uppercase">Banner Title</label>
+                      <input
+                        type="text"
+                        value={campusBannersData.events.title}
+                        onChange={(e) => setCampusBannersData({
+                          ...campusBannersData,
+                          events: { ...campusBannersData.events, title: e.target.value }
+                        })}
+                        className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded font-bold"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-600 uppercase">Description</label>
+                      <input
+                        type="text"
+                        value={campusBannersData.events.desc}
+                        onChange={(e) => setCampusBannersData({
+                          ...campusBannersData,
+                          events: { ...campusBannersData.events, desc: e.target.value }
+                        })}
+                        className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded text-gray-700"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Button Text</label>
+                        <input
+                          type="text"
+                          value={campusBannersData.events.buttonText}
+                          onChange={(e) => setCampusBannersData({
+                            ...campusBannersData,
+                            events: { ...campusBannersData.events, buttonText: e.target.value }
+                          })}
+                          className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded font-bold text-[#D71920]"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Button Link</label>
+                        <input
+                          type="text"
+                          value={campusBannersData.events.url}
+                          onChange={(e) => setCampusBannersData({
+                            ...campusBannersData,
+                            events: { ...campusBannersData.events, url: e.target.value }
+                          })}
+                          className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded font-mono text-gray-700"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ════════════════════════════════════════════════════ */}
+          {/* TAB 9: CONTACT US CMS                                */}
+          {/* ════════════════════════════════════════════════════ */}
+          {activeTab === "contact" && (
+            <div className="space-y-6 animate-fade-in text-left">
+              <SectionHeader
+                title="Contact Details & Google Maps"
+                subtitle="Edit university campus address, admission phone numbers, support emails, and map embed"
+                icon={Phone}
+                onSave={() => {
+                  updateSiteSettings(settingsForm);
+                  notifySave("Contact information updated!");
+                }}
+                saveSuccess={saveSuccess}
+                onReset={() => {
+                  setSettingsForm({
+                    ...settingsForm,
+                    contactAddress: DEFAULT_SITE_SETTINGS.contactAddress,
+                    contactPhone: DEFAULT_SITE_SETTINGS.contactPhone,
+                    contactEmail: DEFAULT_SITE_SETTINGS.contactEmail,
+                    googleMapEmbedUrl: DEFAULT_SITE_SETTINGS.googleMapEmbedUrl
+                  });
+                  updateSiteSettings({
+                    ...siteSettings,
+                    contactAddress: DEFAULT_SITE_SETTINGS.contactAddress,
+                    contactPhone: DEFAULT_SITE_SETTINGS.contactPhone,
+                    contactEmail: DEFAULT_SITE_SETTINGS.contactEmail,
+                    googleMapEmbedUrl: DEFAULT_SITE_SETTINGS.googleMapEmbedUrl
+                  });
+                  notifySave("Contact details reset to default!");
+                }}
+                resetLabel="Reset Contact"
+              />
+
+              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-600 uppercase">Campus Postal Address</label>
+                  <textarea
+                    rows={2}
+                    value={settingsForm.contactAddress}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, contactAddress: e.target.value })}
+                    className="w-full p-2.5 text-xs bg-slate-50 border border-gray-200 rounded-xl font-medium"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-600 uppercase">Admissions Phone Numbers</label>
+                    <input
+                      type="text"
+                      value={settingsForm.contactPhone}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, contactPhone: e.target.value })}
+                      className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-600 uppercase">Admissions Email Address</label>
+                    <input
+                      type="email"
+                      value={settingsForm.contactEmail}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, contactEmail: e.target.value })}
+                      className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-600 uppercase">Google Maps Embed URL (Iframe src)</label>
+                  <input
+                    type="text"
+                    value={settingsForm.googleMapEmbedUrl}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, googleMapEmbedUrl: e.target.value })}
+                    className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-mono text-gray-600"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ════════════════════════════════════════════════════ */}
+          {/* TAB 10: FOOTER CMS                                   */}
+          {/* ════════════════════════════════════════════════════ */}
+          {activeTab === "footer" && (
+            <div className="space-y-6 animate-fade-in text-left">
+              <SectionHeader
+                title="Footer Content & Navigation CMS"
+                subtitle="Edit footer brand summary, quick links columns, social media handles, and copyright"
+                icon={Layers}
+                onSave={saveFooter}
+                saveSuccess={saveSuccess}
+                onReset={() => {
+                  setFooterForm(DEFAULT_FOOTER_CONTENT);
+                  updateFooterContent(DEFAULT_FOOTER_CONTENT);
+                  notifySave("Footer content reset to default!");
+                }}
+                resetLabel="Reset Footer"
+              />
+
+              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-600 uppercase">Footer Brand Summary Description</label>
+                  <textarea
+                    rows={3}
+                    value={footerForm.brandDescription}
+                    onChange={(e) => setFooterForm({ ...footerForm, brandDescription: e.target.value })}
+                    className="w-full p-2.5 text-xs bg-slate-50 border border-gray-200 rounded-xl"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-600 uppercase">Copyright Notice Text</label>
+                  <input
+                    type="text"
+                    value={footerForm.copyrightText}
+                    onChange={(e) => setFooterForm({ ...footerForm, copyrightText: e.target.value })}
+                    className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-medium"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ════════════════════════════════════════════════════ */}
+          {/* TAB 11: WEBSITE SETTINGS & BRANDING                  */}
+          {/* ════════════════════════════════════════════════════ */}
+          {activeTab === "settings" && (
+            <div className="space-y-6 animate-fade-in text-left">
+              <SectionHeader
+                title="Website Settings & Global Branding"
+                subtitle="Configure logos, splash screen intro video, global colors, and SEO metadata"
+                icon={Settings}
+                onSave={saveSettings}
+                saveSuccess={saveSuccess}
+                onReset={() => {
+                  setSettingsForm(DEFAULT_SITE_SETTINGS);
+                  updateSiteSettings(DEFAULT_SITE_SETTINGS);
+                  setColorsForm(DEFAULT_THEME_COLORS);
+                  updateThemeColors(DEFAULT_THEME_COLORS);
+                  notifySave("Site settings and theme reset to default!");
+                }}
+                resetLabel="Reset Settings"
+              />
+
+              {/* Logos & Branding */}
+              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                <h3 className="text-sm font-black text-[#072A6C] uppercase">University Identity & Logos</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-600 uppercase">University Name</label>
+                    <input
+                      type="text"
+                      value={settingsForm.universityName}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, universityName: e.target.value })}
+                      className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-600 uppercase">Slogan / Tagline</label>
+                    <input
+                      type="text"
+                      value={settingsForm.tagline}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, tagline: e.target.value })}
+                      className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-medium"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <ImageField
+                    label="Primary University Logo"
+                    value={settingsForm.logoUrl || "/chalapathi_logo.png"}
+                    defaultValue="/chalapathi_logo.png"
+                    onChange={(val) => setSettingsForm({ ...settingsForm, logoUrl: val })}
+                    onReset={() => setSettingsForm({ ...settingsForm, logoUrl: "/chalapathi_logo.png" })}
+                    aspectRatio="square"
+                  />
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-600 uppercase">Splash Screen Video URL</label>
+                      <input
+                        type="text"
+                        value={settingsForm.splashVideoUrl}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, splashVideoUrl: e.target.value })}
+                        className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-mono text-gray-600"
+                      />
+                    </div>
+                    <label className="flex items-center gap-2 cursor-pointer pt-2">
+                      <input
+                        type="checkbox"
+                        checked={settingsForm.enableSplash}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, enableSplash: e.target.checked })}
+                        className="w-4 h-4 rounded text-blue-600"
+                      />
+                      <span className="text-xs font-bold text-gray-700">Enable Splash Screen Video on First Load</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Global Theme Colors */}
+              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                <h3 className="text-sm font-black text-[#072A6C] uppercase">Global Theme Colors</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <ColorField
+                    label="Primary Navy Color"
+                    value={colorsForm.primary}
+                    onChange={(val) => setColorsForm({ ...colorsForm, primary: val })}
+                  />
+                  <ColorField
+                    label="Secondary Gold Color"
+                    value={colorsForm.secondary}
+                    onChange={(val) => setColorsForm({ ...colorsForm, secondary: val })}
+                  />
+                  <ColorField
+                    label="Accent Maroon/Red"
+                    value={colorsForm.accent}
+                    onChange={(val) => setColorsForm({ ...colorsForm, accent: val })}
+                  />
+                </div>
+              </div>
+
+              {/* SEO Meta */}
+              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                <h3 className="text-sm font-black text-[#072A6C] uppercase">Default SEO Metadata</h3>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-600 uppercase">SEO Page Title</label>
+                  <input
+                    type="text"
+                    value={settingsForm.seoTitle}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, seoTitle: e.target.value })}
+                    className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-600 uppercase">SEO Meta Description</label>
+                  <textarea
+                    rows={2}
+                    value={settingsForm.seoDescription}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, seoDescription: e.target.value })}
+                    className="w-full p-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
     </div>
-  </div>
-);
+  );
 }

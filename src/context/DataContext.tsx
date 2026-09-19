@@ -1,6 +1,20 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { PROGRAMS_DATA, ProgramDetail } from "../data/programsData";
+import imgComputerScience from "../assets/illustrations/computer_science.png";
+import imgMtechCSE from "../assets/illustrations/mtech_cse.png";
+import imgMCA from "../assets/illustrations/mca.png";
+import imgPhdCSE from "../assets/illustrations/phd_cse.png";
+import imgDataScience from "../assets/illustrations/data_science.png";
+import imgArtificialIntelligence from "../assets/illustrations/artificial_intelligence.png";
+import imgAIMachineLearning from "../assets/illustrations/aiml.png";
+import imgCyberSecurity from "../assets/illustrations/cyber_security.png";
+import imgElectronicsCommunication from "../assets/illustrations/electronics.png";
+import imgVLSIEmbedded from "../assets/illustrations/vlsi.png";
+import imgCivilEngineering from "../assets/illustrations/civil.png";
+import imgStructuralEngineering from "../assets/illustrations/structural.png";
+import imgMBA from "../assets/illustrations/mba.png";
 
+export { PROGRAMS_DATA };
 export type { ProgramDetail };
 
 // Hero Slide interface
@@ -13,10 +27,11 @@ export interface HeroSlide {
 
 // Announcements interface
 export interface Announcement {
+  id?: string;
   title: string;
   desc: string;
   date: string;
-  iconName: string; // We will map string names to Lucide icons
+  iconName: string;
 }
 
 // News interface
@@ -73,7 +88,6 @@ export interface SuccessStory {
   };
 }
 
-// Calendar Event interface
 export interface CalendarEvent {
   day: number;
   eventText: string;
@@ -87,12 +101,71 @@ export interface MonthCalendarData {
   events: Record<number, string>;
 }
 
-// About Us Content interface
+export interface MilestoneItem {
+  year: string;
+  title: string;
+  desc: string;
+  img?: string;
+  height?: string;
+  alt?: string;
+}
+
+export interface NepNodeItem {
+  label: string;
+  stat: string;
+  desc: string;
+}
+
+export interface AcademicSchoolItem {
+  title: string;
+  tags: string[];
+}
+
+export interface InnovationFacilityItem {
+  id: string;
+  title: string;
+  desc: string;
+  img?: string;
+}
+
 export interface AboutUsContent {
   history: {
+    heroTagline?: string;
+    heroTitle?: string;
+    heroSubtitle?: string;
     introText: string;
     quoteText: string;
-    milestones: { year: string; title: string; desc: string }[];
+    milestones: MilestoneItem[];
+    brighterTomorrow?: {
+      tagline?: string;
+      heading?: string;
+      description?: string;
+      pillars?: { title: string; desc?: string }[];
+    };
+    nep2020?: {
+      heading: string;
+      subheading: string;
+      coreBadge: string;
+      nodes: NepNodeItem[];
+    };
+    academicEvolution?: {
+      heading: string;
+      subheading: string;
+      schools: AcademicSchoolItem[];
+    };
+    innovationEcosystem?: {
+      heading: string;
+      steps: string[];
+    };
+    innovationInfrastructure?: {
+      heading: string;
+      subheading: string;
+      items: InnovationFacilityItem[];
+    };
+    visionForTomorrow?: {
+      heading: string;
+      paragraph: string;
+    };
   };
   vision: {
     visionText: string;
@@ -102,6 +175,7 @@ export interface AboutUsContent {
   leadership: {
     chairmanName: string;
     designation: string;
+    chairmanImage?: string;
     messageQuote: string;
     messageParagraphs: string[];
     philosophies: { title: string; desc: string }[];
@@ -130,7 +204,6 @@ export interface DirectoryData {
   others: FacultyMember[];
 }
 
-// Placements page content
 export interface PlacedStudent {
   name: string;
   branch: string;
@@ -144,6 +217,12 @@ export interface Recruiter {
   logo: string;
 }
 
+export interface PlacementStatCard {
+  value: string;
+  label: string;
+  icon?: string;
+}
+
 export interface PlacementsContent {
   heroTitle: string;
   heroSubtitle: string;
@@ -151,6 +230,9 @@ export interface PlacementsContent {
   highestPackage: string;
   averagePackage: string;
   placementPercent: string;
+  corporatePartnersCount?: string;
+  placementAssistance?: string;
+  stats?: PlacementStatCard[];
   philosophyText: string;
   careerPrograms: string[];
   industryConnectDesc: string;
@@ -161,41 +243,661 @@ export interface PlacementsContent {
   recruiters: Recruiter[];
 }
 
+export interface EnquiryLead {
+  id: string;
+  name: string;
+  mobile: string;
+  email: string;
+  city: string;
+  state: string;
+  qualification: string;
+  yearOfPassing: string;
+  program: string;
+  query?: string;
+  date: string;
+  status?: "New" | "Contacted" | "Admitted" | "Closed";
+}
+
+export interface SiteSettings {
+  universityName: string;
+  tagline: string;
+  logoUrl: string;
+  logoWhiteUrl: string;
+  faviconUrl: string;
+  splashVideoUrl: string;
+  enableSplash: boolean;
+  contactPhone: string;
+  contactEmail: string;
+  contactAddress: string;
+  workingHours: string;
+  googleMapEmbedUrl: string;
+  socialLinks: {
+    instagram: string;
+    linkedin: string;
+    facebook: string;
+    youtube: string;
+    twitter: string;
+  };
+  seoTitle: string;
+  seoDescription: string;
+  seoKeywords: string;
+}
+
+export interface ThemeColors {
+  primary: string;
+  secondary: string;
+  accent: string;
+  pageBackground: string;
+  textPrimary: string;
+  textSecondary: string;
+  headerBg: string;
+  headerText: string;
+  footerBg: string;
+  footerText: string;
+  statsBg: string;
+  whyChooseBg: string;
+  chairmanBg: string;
+  campusLifeBg: string;
+  certificationsBg: string;
+  virtualTourBg: string;
+}
+
+export interface HomepageSectionConfig {
+  id: string;
+  name: string;
+  enabled: boolean;
+  order: number;
+  title?: string;
+  subtitle?: string;
+  description?: string;
+  buttonText?: string;
+  buttonUrl?: string;
+  bgColor?: string;
+  textColor?: string;
+  accentColor?: string;
+  extraData?: any;
+}
+
+export interface NavMenuItem {
+  id: string;
+  label: string;
+  to: string;
+  enabled: boolean;
+  order: number;
+  children?: { label: string; to: string }[];
+}
+
+export interface FooterContent {
+  brandDescription: string;
+  quickLinks: { label: string; to: string }[];
+  academicsLinks: { label: string; to: string }[];
+  admissionsLinks: { label: string; to: string }[];
+  campusLifeLinks: { label: string; to: string }[];
+  copyrightText: string;
+}
+
+export interface CourseLinkItem {
+  label: string;
+  to: string;
+  desc?: string;
+  image?: string;
+}
+
+export type AcademicStructure = Record<string, Record<string, CourseLinkItem[]>>;
+
+export interface CampusVideoItem {
+  url: string;
+  title: string;
+  sizeMb?: string;
+}
+
+export interface CampusTourConfig {
+  badge: string;
+  quote: string;
+  poster: string;
+  heading?: string;
+  subtitle?: string;
+}
+
+export interface CampusGalleryItem {
+  title: string;
+  image: string;
+}
+
+export interface CampusBannersConfig {
+  community: {
+    title: string;
+    desc: string;
+    buttonText: string;
+    url: string;
+  };
+  events: {
+    title: string;
+    desc: string;
+    buttonText: string;
+    url: string;
+  };
+}
+
 interface DataContextType {
+  siteSettings: SiteSettings;
+  updateSiteSettings: (settings: SiteSettings) => void;
+
+  themeColors: ThemeColors;
+  updateThemeColors: (colors: ThemeColors) => void;
+
+  homepageSections: HomepageSectionConfig[];
+  updateHomepageSections: (sections: HomepageSectionConfig[]) => void;
+
+  navigationMenu: NavMenuItem[];
+  updateNavigationMenu: (menu: NavMenuItem[]) => void;
+
+  footerContent: FooterContent;
+  updateFooterContent: (content: FooterContent) => void;
+
+  enquiries: EnquiryLead[];
+  updateEnquiries: (leads: EnquiryLead[]) => void;
+  addEnquiry: (lead: Omit<EnquiryLead, "id" | "date">) => void;
+
   announcements: Announcement[];
-  programs: ProgramDetail[];
-  news: NewsArticle[];
-  events: EventItem[];
-  aboutContent: AboutUsContent;
-  calendarData: MonthCalendarData[];
-  facultyData: Record<string, DirectoryData>;
-  boardData: Record<string, DirectoryData>;
-  staffData: Record<string, DirectoryData>;
-  placementsContent: PlacementsContent;
-  successStories: SuccessStory[];
-  heroSlides: HeroSlide[];
-  
-  // Update functions
   updateAnnouncements: (list: Announcement[]) => void;
+
+  programs: ProgramDetail[];
   updatePrograms: (list: ProgramDetail[]) => void;
+
+  academicStructure: AcademicStructure;
+  updateAcademicStructure: (structure: AcademicStructure) => void;
+
+  news: NewsArticle[];
   updateNews: (list: NewsArticle[]) => void;
+
+  events: EventItem[];
   updateEvents: (list: EventItem[]) => void;
+
+  campusVideos: CampusVideoItem[];
+  updateCampusVideos: (list: CampusVideoItem[]) => void;
+
+  campusTour: CampusTourConfig;
+  updateCampusTour: (tour: CampusTourConfig) => void;
+
+  campusGallery: CampusGalleryItem[];
+  updateCampusGallery: (list: CampusGalleryItem[]) => void;
+
+  campusBanners: CampusBannersConfig;
+  updateCampusBanners: (banners: CampusBannersConfig) => void;
+
+  aboutContent: AboutUsContent;
   updateAboutContent: (content: AboutUsContent) => void;
+
+  calendarData: MonthCalendarData[];
   updateCalendarData: (data: MonthCalendarData[]) => void;
+
+  facultyData: Record<string, DirectoryData>;
   updateFacultyData: (data: Record<string, DirectoryData>) => void;
+
+  boardData: Record<string, DirectoryData>;
   updateBoardData: (data: Record<string, DirectoryData>) => void;
+
+  staffData: Record<string, DirectoryData>;
   updateStaffData: (data: Record<string, DirectoryData>) => void;
+
+  placementsContent: PlacementsContent;
   updatePlacementsContent: (data: PlacementsContent) => void;
+
+  successStories: SuccessStory[];
   updateSuccessStories: (list: SuccessStory[]) => void;
+
+  heroSlides: HeroSlide[];
   updateHeroSlides: (list: HeroSlide[]) => void;
+
   showAnnouncementsDrawer: boolean;
   setShowAnnouncementsDrawer: (show: boolean) => void;
+
+  resetToDefaults: () => void;
+  lastSavedTime: string | null;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
-// Initial states (Compact but detailed)
-const INITIAL_ANNOUNCEMENTS: Announcement[] = [
+// ==========================================
+// INITIAL DEFAULT DATA (Source of Truth)
+// ==========================================
+
+export const DEFAULT_SITE_SETTINGS: SiteSettings = {
+  universityName: "Chalapathi University",
+  tagline: "Inspiring Excellence, Integrity & Innovation",
+  logoUrl: "/logo.png?v=3",
+  logoWhiteUrl: "/logo.png?v=3",
+  faviconUrl: "/favicon.ico",
+  splashVideoUrl: "/chalapathi_logo_intro.mp4",
+  enableSplash: true,
+  contactPhone: "8886630355 | 8886630356 9905505566",
+  contactEmail: "admissions@city.ac.in",
+  contactAddress: "A.R. Nagar, Mothadaka, Guntur, Andhra Pradesh - 522034",
+  workingHours: "Monday - Saturday: 9:00 AM - 5:00 PM",
+  googleMapEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3827.4851241772656!2d80.34758507514275!3d16.399946484330836!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a4a75e3a890b0e5%3A0x6b146476bbd92bc7!2sChalapathi%20Institute%20of%20Technology!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin",
+  socialLinks: {
+    instagram: "https://instagram.com",
+    linkedin: "https://linkedin.com",
+    facebook: "https://facebook.com",
+    youtube: "https://youtube.com",
+    twitter: "https://twitter.com"
+  },
+  seoTitle: "Chalapathi University | Best University in Andhra Pradesh",
+  seoDescription: "Chalapathi University offers world-class higher education with premium undergraduate, postgraduate, and research programs. Admissions Open for 2026–2027.",
+  seoKeywords: "Chalapathi University, Engineering College Guntur, Best University Andhra Pradesh, B.Tech Admissions"
+};
+
+export const DEFAULT_THEME_COLORS: ThemeColors = {
+  primary: "#072A6C",
+  secondary: "#D4AF37",
+  accent: "#D71920",
+  pageBackground: "#F7F8FC",
+  textPrimary: "#222222",
+  textSecondary: "#64748B",
+  headerBg: "#072A6C",
+  headerText: "#FFFFFF",
+  footerBg: "#072A6C",
+  footerText: "#D1D5DB",
+  statsBg: "#072A6C",
+  whyChooseBg: "#F8FAFC",
+  chairmanBg: "#FFFFFF",
+  campusLifeBg: "#FFFFFF",
+  certificationsBg: "#F9FAFB",
+  virtualTourBg: "#F9FAFB"
+};
+
+export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionConfig[] = [
+  {
+    id: "hero",
+    name: "Hero Banner Carousel",
+    enabled: true,
+    order: 1,
+    extraData: {
+      height: 720,
+      autoPlaySpeed: 5000,
+      showOverlay: true
+    }
+  },
+  {
+    id: "ticker",
+    name: "Admissions Alert Marquee",
+    enabled: true,
+    order: 2,
+    title: "🚨 Admissions Open for Academic Year 2026–27 • Applications Closing Soon • Apply Now • Scholarships Available for Meritorious Students • Limited Seats • Register Today • Highest Placement Opportunities • Admissions Open for 2026–27 •",
+    bgColor: "#F4B400",
+    textColor: "#0A2D6D"
+  },
+  {
+    id: "stats",
+    name: "Key Statistics Bar",
+    enabled: true,
+    order: 3,
+    bgColor: "#072A6C",
+    textColor: "#FFFFFF",
+    accentColor: "#D4AF37",
+    extraData: [
+      { n: "25+", label: "Years of Excellence", icon: "Trophy" },
+      { n: "150+", label: "Programs Offered", icon: "GraduationCap" },
+      { n: "50+", label: "Expert Faculty", icon: "Users" },
+      { n: "300+", label: "Industry Partners", icon: "Handshake" },
+      { n: "20,000+", label: "Successful Alumni", icon: "Landmark" },
+      { n: "95%", label: "Placement Success", icon: "Award" }
+    ]
+  },
+  {
+    id: "whyChooseUs",
+    name: "Why Choose Chalapathi University",
+    enabled: true,
+    order: 4,
+    title: "Why To Choose Chalapathi University?",
+    subtitle: "Experience an education that blends academic excellence, innovation, industry collaboration, research, global exposure, and holistic development—preparing students to become future-ready professionals and responsible global leaders.",
+    bgColor: "#F8FAFC",
+    extraData: [
+      {
+        title: "Industry integrated curriculum",
+        desc: "Curriculum designed with practical learning and industry collaboration to ensure graduates are career-ready.",
+        icon: "Trophy",
+        color: "#123A7A"
+      },
+      {
+        title: "Expert Faculty & Research",
+        desc: "Learn from accomplished faculty members, researchers, and industry experts who inspire innovation.",
+        icon: "Users",
+        color: "#1F4FA8"
+      },
+      {
+        title: "Smart Campus Infrastructure",
+        desc: "Technology-enabled classrooms, modern laboratories, and collaborative learning spaces designed for excellence.",
+        icon: "Building2",
+        color: "#123A7A"
+      },
+      {
+        title: "Career & Placement Excellence",
+        desc: "Industry partnerships, internships, and placement training help students launch successful careers.",
+        icon: "Handshake",
+        color: "#1F4FA8"
+      },
+      {
+        title: "Global Learning Opportunities",
+        desc: "International certifications, collaborative learning, and global industry exposure.",
+        icon: "Globe",
+        color: "#123A7A"
+      },
+      {
+        title: "Leadership & Holistic Development",
+        desc: "Develop leadership, communication, creativity, and life skills through a vibrant campus ecosystem.",
+        icon: "Sparkles",
+        color: "#1F4FA8"
+      }
+    ]
+  },
+  {
+    id: "programs",
+    name: "Explore Our Schools & Programs",
+    enabled: true,
+    order: 5,
+    title: "Explore Our Schools & Programs",
+    subtitle: "Choose from industry-aligned degrees across cutting-edge disciplines",
+    bgColor: "#f8f9fa"
+  },
+  {
+    id: "newsEvents",
+    name: "News & Events Highlights",
+    enabled: true,
+    order: 6,
+    title: "News & Events",
+    subtitle: "Stay updated with campus happenings, national awards, research publications, and upcoming workshops.",
+    bgColor: "#FFFFFF"
+  },
+  {
+    id: "campusLife",
+    name: "Campus Life & Video Tour",
+    enabled: true,
+    order: 7,
+    title: "CAMPUS LIFE",
+    subtitle: "A vibrant campus where students learn, innovate, explore, compete, and create unforgettable memories.",
+    bgColor: "#FFFFFF",
+    extraData: {
+      cards: [
+        { title: "Vibrant Community", desc: "A diverse and inclusive campus with students from across India and the world.", icon: "Users" },
+        { title: "Clubs & Activities", desc: "50+ student clubs to explore passions and build leadership skills.", icon: "GraduationCap" },
+        { title: "Sports & Fitness", desc: "World-class sports facilities to keep you active, healthy and motivated.", icon: "Trophy" },
+        { title: "Arts & Culture", desc: "Celebrate creativity with events, fests, and cultural extravaganzas.", icon: "Sparkles" },
+        { title: "Smart Learning Spaces", desc: "Modern classrooms, advanced labs, and digital resources for future-ready learning.", icon: "Building2" },
+        { title: "Hostel Life", desc: "Safe, comfortable and modern hostels that feel like a second home.", icon: "Landmark" },
+        { title: "Food & Cafeteria", desc: "Hygienic, affordable and variety-rich meals for every taste.", icon: "Coffee" },
+        { title: "Transport Facility", desc: "Convenient and reliable transportation across city routes.", icon: "Bus" }
+      ],
+      videos: [
+        { url: "/chalapathi_logo_intro.mp4", title: "Campus Overview" },
+        { url: "https://assets.mixkit.co/videos/preview/mixkit-drones-eye-view-of-a-modern-university-campus-41555-large.mp4", title: "Smart Classrooms & Labs" },
+        { url: "https://assets.mixkit.co/videos/preview/mixkit-group-of-students-walking-on-college-campus-41553-large.mp4", title: "Student Life & Clubs" }
+      ],
+      gallery: [
+        { title: "Annual Fest", image: "/media__1783770842966.png" },
+        { title: "Sports Meet", image: "/media__1783771619196.png" },
+        { title: "Tech Events", image: "/media__1783772591375.png" },
+        { title: "NSS Activities", image: "/media__1783774201695.png" },
+        { title: "Cultural Events", image: "/media__1783775062821.png" },
+        { title: "Workshops", image: "/media__1783776081975.png" },
+        { title: "Student Clubs", image: "/media__1783776395046.png" },
+        { title: "Innovation Expo", image: "/media__1783777762350.png" }
+      ]
+    }
+  },
+  {
+    id: "chairman",
+    name: "Chairman's Vision & Message",
+    enabled: true,
+    order: 8,
+    title: "A Vision. A Commitment. A Legacy.",
+    subtitle: "Guiding generations through excellence, innovation, integrity, and student success.",
+    bgColor: "#FFFFFF",
+    extraData: {
+      name: "Dr. Y. V Anjaneyulu",
+      designation: "Chairman",
+      group: "Chalapathi Group of Institutions",
+      message: "At Chalapathi University, we believe education is the most powerful transformer of lives and the key to building a better society. Our mission is to empower young minds with knowledge, values, and innovation to help them lead with purpose and create a lasting impact on the world.\n\nWe are committed to providing a nurturing environment, world-class infrastructure, and industry-oriented education to shape future leaders and responsible citizens.",
+      videoUrl: "/chalapathi_logo_intro.mp4",
+      image: "/chairman_v4.png",
+      buttonText: "Watch Chairman's Message"
+    }
+  },
+  {
+    id: "placements",
+    name: "Placements & Career Milestones",
+    enabled: true,
+    order: 9,
+    title: "A Step Towards Success!",
+    subtitle: "Building Careers. Creating Leaders.",
+    bgColor: "#F9FAFB"
+  },
+  {
+    id: "virtualTour",
+    name: "Admissions Banner & Visit Us",
+    enabled: true,
+    order: 10,
+    title: "ADMISSIONS OPEN 2026",
+    subtitle: "Join a community of innovators and leaders. Shape your future with Chalapathi University.",
+    bgColor: "#F9FAFB",
+    extraData: {
+      bannerTitle: "ADMISSIONS OPEN 2026",
+      bannerSubtitle: "Join a community of innovators and leaders. Shape your future with Chalapathi University.",
+      bannerImage: "/students_admission.png",
+      btn1Text: "Apply Now",
+      btn1Url: "/admissions/apply",
+      btn2Text: "Download Brochure",
+      btn2Url: "/admissions",
+      btn3Text: "Talk to Counselor",
+      btn3Url: "/contact",
+      visitHeading: "VISIT US",
+      address: "A.R. Nagar, Mothadaka, Guntur, Andhra Pradesh - 522034",
+      phone: "8886630355 | 8886630356 9905505566",
+      email: "admissions@city.ac.in",
+      website: "www.city.ac.in",
+      mapEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3826.974950454796!2d80.28581691486445!3d16.375218788685984!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a4a79679802cfad%3A0xe67e2a901bbd33fe!2sChalapathi%20Institute%20of%20Technology!5e0!3m2!1sen!2sin!5m2!1sen!2sin",
+      mapLinkUrl: "https://www.google.com/maps/place/Chalapathi+Institute+of+Technology/@16.3752188,80.2858169,17z/data=!3m1!4b1!4m6!3m5!1s0x3a4a79679802cfad:0xe67e2a901bbd33fe!8m2!3d16.3752188!4d80.2858169!16s%2Fg%2F122r446z"
+    }
+  }
+];
+
+export const DEFAULT_NAV_MENU: NavMenuItem[] = [
+  { id: "home", label: "Home", to: "/", enabled: true, order: 1 },
+  { 
+    id: "about", 
+    label: "About Us", 
+    to: "/about", 
+    enabled: true, 
+    order: 2,
+    children: [
+      { label: "Overview", to: "/about" },
+      { label: "Genesis & Heritage", to: "/about/genesis" },
+      { label: "Vision & Mission", to: "/about/vision" },
+      { label: "Leadership", to: "/about/leadership" },
+      { label: "Chalapathi Advantage", to: "/about/advantage" }
+    ]
+  },
+  { 
+    id: "academics", 
+    label: "Academics", 
+    to: "/academics", 
+    enabled: true, 
+    order: 3,
+    children: [
+      { label: "Schools & Programs", to: "/academics" },
+      { label: "Academic Calendar", to: "/academics/calendar" },
+      { label: "Academic Flexibilities", to: "/academics/flexibilities" },
+      { label: "Grading System", to: "/academics/grading" },
+      { label: "Rules & Regulations", to: "/academics/rules" }
+    ]
+  },
+  { 
+    id: "admissions", 
+    label: "Admissions", 
+    to: "/admissions", 
+    enabled: true, 
+    order: 4,
+    children: [
+      { label: "Undergraduate", to: "/admissions/undergraduate" },
+      { label: "Postgraduate", to: "/admissions/postgraduate" },
+      { label: "Fee Structure", to: "/admissions/fees" },
+      { label: "Scholarships", to: "/admissions/scholarships" },
+      { label: "Apply Online", to: "/admissions/apply" }
+    ]
+  },
+  { 
+    id: "campus-life", 
+    label: "Campus Life", 
+    to: "/campus-life", 
+    enabled: true, 
+    order: 5,
+    children: [
+      { label: "Hostels", to: "/campus-life/hostels" },
+      { label: "Library", to: "/campus-life/library" },
+      { label: "Sports", to: "/campus-life/sports" },
+      { label: "Clubs", to: "/campus-life/clubs" },
+      { label: "Laboratories", to: "/campus-life/laboratories" }
+    ]
+  },
+  { id: "placements", label: "Placements", to: "/placements", enabled: true, order: 6 },
+  { id: "news-events", label: "News & Events", to: "/news", enabled: true, order: 7 },
+  { id: "contact", label: "Contact Us", to: "/contact", enabled: true, order: 8 }
+];
+
+export const DEFAULT_FOOTER_CONTENT: FooterContent = {
+  brandDescription: "Empowering minds through quality education, advanced learning and real-world experience. Your future begins here.",
+  quickLinks: [
+    { label: "About Us", to: "/about" },
+    { label: "Vision & Mission", to: "/about/vision" },
+    { label: "Leadership", to: "/about/leadership" },
+    { label: "Genesis & Heritage", to: "/about/genesis" },
+    { label: "Chalapathi Advantage", to: "/about/advantage" },
+    { label: "Accreditations", to: "/about" }
+  ],
+  academicsLinks: [
+    { label: "Programs", to: "/academics" },
+    { label: "Computer Science", to: "/academics/computer-science" },
+    { label: "AI & ML", to: "/academics/artificial-intelligence" },
+    { label: "Data Science", to: "/academics/data-science" },
+    { label: "Schools", to: "/academics/schools" }
+  ],
+  admissionsLinks: [
+    { label: "Undergraduate", to: "/admissions/undergraduate" },
+    { label: "Postgraduate", to: "/admissions/postgraduate" },
+    { label: "Fee Structure", to: "/admissions/fees" },
+    { label: "Scholarships", to: "/admissions/scholarships" },
+    { label: "Apply Online", to: "/admissions/apply" }
+  ],
+  campusLifeLinks: [
+    { label: "Hostels", to: "/campus-life/hostels" },
+    { label: "Library", to: "/campus-life/library" },
+    { label: "Sports", to: "/campus-life/sports" },
+    { label: "Clubs", to: "/campus-life/clubs" },
+    { label: "Amenities", to: "/campus-life" }
+  ],
+  copyrightText: "© 2026 Chalapathi University. All rights reserved."
+};
+
+export const getFallbackCourseImage = (label: string): string => {
+  const t = (label || "").toLowerCase();
+  if (t.includes('m.tech') && t.includes('computer')) return imgMtechCSE;
+  if (t.includes('mca') || t.includes('master of computer')) return imgMCA;
+  if (t.includes('ph.d') && (t.includes('computer') || t.includes('cse'))) return imgPhdCSE;
+  if (t.includes('cse') && t.includes('ai')) return imgArtificialIntelligence;
+  if (t.includes('machine learning') || t.includes('aiml')) return imgAIMachineLearning;
+  if (t.includes('artificial intelligence') || t.includes('ai')) return imgArtificialIntelligence;
+  if (t.includes('data science') || t.includes('data')) return imgDataScience;
+  if (t.includes('cyber security') || t.includes('security')) return imgCyberSecurity;
+  if (t.includes('electronics') || t.includes('communication') || t.includes('ece')) return imgElectronicsCommunication;
+  if (t.includes('vlsi') || t.includes('embedded')) return imgVLSIEmbedded;
+  if (t.includes('structural')) return imgStructuralEngineering;
+  if (t.includes('civil')) return imgCivilEngineering;
+  if (t.includes('mba') || t.includes('business') || t.includes('management')) return imgMBA;
+  return imgComputerScience;
+};
+
+export const DEFAULT_ACADEMIC_STRUCTURE: AcademicStructure = {
+  "School of Computing Sciences": {
+    "Computer Science & Engineering": [
+      { label: "B.Tech. Computer Science & Engineering", to: "/academics/btech-cse", desc: "Comprehensive engineering curriculum with focus on systems and software.", image: imgComputerScience },
+      { label: "M.Tech. Computer Science & Engineering", to: "/academics/mtech-cse", desc: "Advanced systems, algorithms and research focus.", image: imgMtechCSE },
+      { label: "MCA", to: "/academics/mca", desc: "Master of Computer Applications industry-oriented program.", image: imgMCA },
+      { label: "Ph.D. Computer Science & Engineering", to: "/academics/phd-cse", desc: "Doctoral research in computer science and advanced engineering.", image: imgPhdCSE }
+    ],
+    "Artificial Intelligence": [
+      { label: "B.Tech. CSE (Artificial Intelligence)", to: "/academics/btech-cse-ai-ml", desc: "Specialization in intelligent systems and machine learning algorithms.", image: imgArtificialIntelligence },
+      { label: "B.Tech. Artificial Intelligence & Machine Learning", to: "/academics/btech-aiml", desc: "Full-stack AI/ML engineering and neural architectures.", image: imgAIMachineLearning },
+      { label: "M.Tech. CSE (AI & ML)", to: "/academics/mtech-aiml", desc: "Postgraduate specialized research in deep learning.", image: imgArtificialIntelligence }
+    ],
+    "Data Science": [
+      { label: "B.Tech. CSE (Data Science)", to: "/academics/btech-cse-data-science", desc: "Big Data processing, statistical analytics and predictive modelling.", image: imgDataScience }
+    ],
+    "Cyber Security": [
+      { label: "B.Tech. CSE (Cyber Security)", to: "/academics/btech-cse-cyber-security", desc: "Information assurance, ethical hacking, and network defense.", image: imgCyberSecurity }
+    ]
+  },
+  "School of Engineering": {
+    "Electronics and Communication Engineering": [
+      { label: "B.Tech. Electronics and Communication Engineering", to: "/academics/btech-ece", desc: "Hardware systems, signal processing and communication technologies.", image: imgElectronicsCommunication },
+      { label: "M.Tech. VLSI and Embedded Systems Design", to: "/academics/mtech-vlsi", desc: "Advanced semiconductor design and microcontroller systems.", image: imgVLSIEmbedded },
+      { label: "Ph.D. Electronics and Communication Engineering", to: "/academics/phd-ece", desc: "Doctoral research in microelectronics and communications.", image: imgPhdCSE }
+    ],
+    "Civil Engineering": [
+      { label: "B.Tech. Civil Engineering", to: "/academics/btech-civil", desc: "Infrastructure engineering, sustainable constructions and survey.", image: imgCivilEngineering },
+      { label: "M.Tech. Structural Engineering", to: "/academics/mtech-structural", desc: "Structural dynamics, earthquake engineering and materials.", image: imgStructuralEngineering },
+      { label: "Ph.D. Structural Engineering", to: "/academics/phd-structural", desc: "Research in advanced structural mechanisms and composites.", image: imgCivilEngineering }
+    ],
+    "Basic Science & Humanities": []
+  },
+  "School of Business & Management": {
+    "Business and Management": [
+      { label: "MBA", to: "/academics/mba", desc: "Master of Business Administration with leadership specializations.", image: imgMBA }
+    ]
+  }
+};
+
+export const DEFAULT_CAMPUS_VIDEOS: CampusVideoItem[] = [
+  { url: "/chalapathi_logo_intro.mp4", title: "Campus Overview", sizeMb: "12.4 MB" },
+  { url: "https://assets.mixkit.co/videos/preview/mixkit-drones-eye-view-of-a-modern-university-campus-41555-large.mp4", title: "Smart Classrooms & Labs", sizeMb: "24.8 MB" },
+  { url: "https://assets.mixkit.co/videos/preview/mixkit-group-of-students-walking-on-college-campus-41553-large.mp4", title: "Student Life & Clubs", sizeMb: "18.2 MB" }
+];
+
+export const DEFAULT_CAMPUS_TOUR: CampusTourConfig = {
+  badge: "WATCH CAMPUS TOUR",
+  quote: "Life at Chalapathi is about learning, growing and celebrating every moment together.",
+  poster: "/Chalapathimain.png",
+  heading: "CAMPUS LIFE",
+  subtitle: "A vibrant campus where students learn, innovate, explore, compete, and create unforgettable memories."
+};
+
+export const DEFAULT_CAMPUS_GALLERY: CampusGalleryItem[] = [
+  { title: "Annual Fest", image: "/gallery_annual_fest.png" },
+  { title: "Sports Meet", image: "/gallery_sports_meet.png" },
+  { title: "Tech Events", image: "/gallery_tech_events.png" },
+  { title: "NSS Activities", image: "/gallery_nss_activities.png" },
+  { title: "Cultural Events", image: "/gallery_cultural_events.png" },
+  { title: "Workshops", image: "/gallery_workshops.png" },
+  { title: "Student Clubs", image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=600&auto=format&fit=crop" },
+  { title: "Innovation Expo", image: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=600&auto=format&fit=crop" }
+];
+
+export const DEFAULT_CAMPUS_BANNERS: CampusBannersConfig = {
+  community: {
+    title: "Be a Part of Our Community",
+    desc: "Experience life beyond academics and build a brighter future.",
+    buttonText: "Explore Campus Life →",
+    url: "/campus-life"
+  },
+  events: {
+    title: "Upcoming Campus Events",
+    desc: "There's always something exciting happening.",
+    buttonText: "View All Events →",
+    url: "/news"
+  }
+};
+
+export const INITIAL_ANNOUNCEMENTS: Announcement[] = [
   { title: "Admissions 2026 Applications Open", desc: "Apply online for all undergraduate and postgraduate engineering, management, and pharmacy streams.", date: "12 May 2026", iconName: "GraduationCap" },
   { title: "Orientation Program 2026 Schedule", desc: "Schedule and venue details released for the incoming freshers orientation week starting next month.", date: "08 May 2026", iconName: "Calendar" },
   { title: "Semester Examination Notification", desc: "The final semester examination timetable has been officially released by the controller of examinations.", date: "02 May 2026", iconName: "FileText" },
@@ -203,11 +905,11 @@ const INITIAL_ANNOUNCEMENTS: Announcement[] = [
   { title: "Mega Campus Placement Drive 2026", desc: "Registrations now open for eligible pre-final year candidates for upcoming on-campus MNC recruitment drives.", date: "22 Apr 2026", iconName: "BookOpen" }
 ];
 
-const INITIAL_HERO_SLIDES: HeroSlide[] = [
+export const INITIAL_HERO_SLIDES: HeroSlide[] = [
   { id: 1, image: "/Chalapathimain.png", title: "", subtitle: "" }
 ];
 
-const INITIAL_NEWS: NewsArticle[] = [
+export const INITIAL_NEWS: NewsArticle[] = [
   {
     id: 1,
     title: "AI Research Lab Inaugurated on Campus",
@@ -287,49 +989,10 @@ const INITIAL_NEWS: NewsArticle[] = [
     image: "/prog_pharmacy.png",
     slug: "annual-convocation",
     sourceUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-  },
-  {
-    id: 7,
-    title: "Annual Innovation & Entrepreneurship Summit",
-    date: "10 May 2025",
-    time: "09:30 AM",
-    location: "Campus Incubation & Startup Block",
-    category: "Events",
-    excerpt: "Empowering student founders, early-stage startups, and venture capitalists to collaborate on product solutions.",
-    bodyText: "The Annual Innovation & Entrepreneurship Summit at City Chalapathi stands as our premier event dedicated to building startup ecosystems. Student groups will pitch prototypes directly to angel investors, regional venture capital firms, and incubator heads.",
-    image: "/prog_engineering.png",
-    slug: "innovation-summit",
-    sourceUrl: "https://tv9telugu.com/chalapathi-startup-innovation-summit-guntur-2025/article/99281"
-  },
-  {
-    id: 8,
-    title: "Annual Sports Meet Kickstarts with Inter-Department Matches",
-    date: "08 May 2025",
-    time: "09:00 AM",
-    location: "Central Sports Complex",
-    category: "Sports",
-    excerpt: "The campus cricket and basketball tournaments kicked off with participation from over 500 athletes.",
-    bodyText: "The annual campus sports tournament commenced yesterday with a spectacular torch run and flag hoisting ceremony at the main sports complex. Over 500 student athletes representing all departments are participating.",
-    image: "/prog_pharmacy.png",
-    slug: "annual-sports-meet",
-    sourceUrl: "https://ntvtelugu.com/chalapathi-annual-sports-meet-2025/article/7716"
-  },
-  {
-    id: 9,
-    title: "Admissions Open for Academic Year 2025-26",
-    date: "05 May 2025",
-    time: "10:00 AM",
-    location: "Admissions Cell",
-    category: "Admissions",
-    excerpt: "Applications are invited for UG, PG, and Ph.D. courses. Apply online today.",
-    bodyText: "Admissions are officially open for the academic term 2025-2026. Prospective candidates can check qualifications, course fees, placement details, and apply online through our official portal.",
-    image: "/prog_computer.png",
-    slug: "admissions-open",
-    sourceUrl: "https://www.chalapathiengg.ac.in/admissions-2025-26"
   }
 ];
 
-const INITIAL_EVENTS: EventItem[] = [
+export const INITIAL_EVENTS: EventItem[] = [
   { 
     id: 1, 
     slug: "air-taxi-demonstration-aviation-forum", 
@@ -387,16 +1050,106 @@ const INITIAL_EVENTS: EventItem[] = [
   }
 ];
 
-const INITIAL_ABOUT_CONTENT: AboutUsContent = {
+export const INITIAL_ABOUT_CONTENT: AboutUsContent = {
   history: {
+    heroTagline: "OUR GENESIS",
+    heroTitle: "A Journey of Vision, Values & Transformation",
+    heroSubtitle: "From a vision rooted in knowledge to a future-ready multidisciplinary university driven by innovation, research, and global excellence.",
     introText: "A LEGACY OF EXCELLENCE — 30+ YEARS IN EDUCATION\n\nA Strong Society, A Stronger Vision for the Future\nChalapathi University is backed by a highly reputed and visionary educational society, with over three decades of excellence in education, research, and innovation. This deep-rooted legacy reflects a long-term commitment to academic quality, institutional growth, and societal impact.\n\nToday, the society proudly runs six professional and educational institutions, shaping thousands of careers across diverse fields of study. This strong foundation empowers Chalapathi University with stability, credibility, and a forward-looking vision, enabling it to continuously innovate and evolve in line with global educational trends and industry demands.\n\nDriven by decades of experience and an unwavering commitment to excellence, the society stands as a pillar of trust, growth, and opportunity — nurturing generations of students to become confident, capable, and future-ready professionals.\n\nABOUT US\nAt Chalapathi University, we don't just teach — we transform potential into performance. We are building more than degrees; we are building industry-ready innovators, problem-solvers, and leaders of tomorrow. Through cutting-edge infrastructure, mentorship from accomplished faculty, and curricula co-designed with industry demands, every student is equipped not just to enter the workforce — but to lead it.\n\nOur student-first philosophy blends knowledge with real-world application, research with relevance, and creativity with career readiness — through hands-on projects, live industry collaborations, skill labs, and innovation hubs that ensure learning goes beyond the classroom and into impact.",
     quoteText: "To provide value-based quality technical education and produce competent engineers who can contribute to the progress of the society.",
     milestones: [
-      { year: "2001", title: "Inception", desc: "Started operations with core engineering undergraduate branches and 180 intake." },
-      { year: "2008", title: "NBA Accreditation", desc: "Received first NBA accreditation for key programs, verifying academic standards." },
-      { year: "2015", title: "Conferred Autonomous Status", desc: "Granted UGC autonomous status, enabling flexible industry-centric curricula." },
-      { year: "2021", title: "NAAC A+ Rank", desc: "Achieved prestigious NAAC A+ accreditation status with outstanding GPA scores." }
-    ]
+      { 
+        year: "1995", 
+        title: "The Beginning", 
+        desc: "Chalapathi Educational Society (CES) established with a mission to serve society through quality education.",
+        img: "genesis/1995.jpg", 
+        height: "30%",
+        alt: "Seed of education"
+      },
+      { 
+        year: "1995–2005", 
+        title: "Building the Foundation", 
+        desc: "Laid the groundwork with schools and junior & degree colleges, nurturing young minds.",
+        img: "genesis/2005.jpg", 
+        height: "45%",
+        alt: "Traditional academic institution"
+      },
+      { 
+        year: "2005–2015", 
+        title: "Expanding Horizons", 
+        desc: "Ventured into professional and technical education, creating opportunities for future-ready careers.",
+        img: "genesis/2015.jpg", 
+        height: "60%",
+        alt: "Modern engineering campus"
+      },
+      { 
+        year: "2015–2025", 
+        title: "Strengthening Excellence", 
+        desc: "Chalapathi Institute of Technology at Mothadaka grew into a center for quality technical education and innovation.",
+        img: "genesis/2025.jpg", 
+        height: "75%",
+        alt: "Premium research campus"
+      },
+      { 
+        year: "2026", 
+        title: "A New Chapter", 
+        desc: "Chalapathi University — a multidisciplinary, research-driven, future-ready institution shaping global leaders.",
+        img: "genesis/2026.jpg", 
+        height: "90%",
+        alt: "Iconic future-ready Chalapathi University"
+      }
+    ],
+    brighterTomorrow: {
+      tagline: "Towards a",
+      heading: "Brighter Tomorrow",
+      description: "Guided by its founding values and inspired by innovation, Chalapathi University continues to evolve into a multidisciplinary institution dedicated to academic excellence, research, entrepreneurship, and global impact.",
+      pillars: [
+        { title: "Knowledge" },
+        { title: "Innovation" },
+        { title: "Global Opportunities" },
+        { title: "Service to Society" }
+      ]
+    },
+    nep2020: {
+      heading: "A University Inspired by NEP 2020",
+      subheading: "Experiencing education as a living, interconnected ecosystem of knowledge, skills, and innovation.",
+      coreBadge: "NEP 2020",
+      nodes: [
+        { label: "Holistic Learning", stat: "360°", desc: "Comprehensive physical & emotional growth." },
+        { label: "Research", stat: "Tier-1", desc: "Advanced labs & dedicated funding programs." },
+        { label: "Innovation", stat: "100+", desc: "Patents filed and ideation centers active." },
+        { label: "Skill Development", stat: "95%", desc: "Industry-ready practical curriculum." },
+        { label: "Entrepreneurship", stat: "50+", desc: "Startups incubated on campus annually." },
+        { label: "Multidisciplinary", stat: "12", desc: "Interconnected disciplines of study." }
+      ]
+    },
+    academicEvolution: {
+      heading: "Academic Evolution",
+      subheading: "Three schools designed for the future of industry and research.",
+      schools: [
+        { title: "School of Computing Sciences", tags: ["Computer Science & Engineering", "Artificial Intelligence", "Data Science", "Cyber Security"] },
+        { title: "School of Engineering", tags: ["Electronics and Communication Engineering", "Civil Engineering", "Basic Science & Humanities"] },
+        { title: "School of Business & Management", tags: ["Business and Management"] }
+      ]
+    },
+    innovationEcosystem: {
+      heading: "Innovation Ecosystem",
+      steps: ["Student", "Idea", "Innovation Lab", "Prototype", "Research", "Incubation", "Startup", "Industry", "Global Impact"]
+    },
+    innovationInfrastructure: {
+      heading: "Innovation Infrastructure",
+      subheading: "State-of-the-art facilities designed to transition students from passive recipients into active innovators.",
+      items: [
+        { id: "center", title: "Innovation Centre", desc: "Seed-stage mentoring, prototyping support, and startup incubation.", img: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80" },
+        { id: "excellence", title: "Centres of Excellence", desc: "AI/ML, IoT & Robotics" },
+        { id: "maker", title: "Maker Space", desc: "Hands-on fabrication" },
+        { id: "ecell", title: "E-Cell & Industry Interface", desc: "Structured venture-creation training and continuous industry alignment." }
+      ]
+    },
+    visionForTomorrow: {
+      heading: "Our Vision for Tomorrow",
+      paragraph: "Chalapathi University is envisioned as a multidisciplinary institution where innovation meets purpose, research fuels progress, and every learner is empowered to become a leader capable of creating meaningful impact across the world."
+    }
   },
   vision: {
     visionText: "To become a globally respected university that empowers students through excellence in education, innovation, research, and ethical leadership.",
@@ -417,6 +1170,7 @@ const INITIAL_ABOUT_CONTENT: AboutUsContent = {
   leadership: {
     chairmanName: "Dr. Y. V Anjaneyulu",
     designation: "Founder Chairman & President",
+    chairmanImage: "/chairman_v4.png",
     messageQuote: "Inspiring Excellence, Integrity & Innovation",
     messageParagraphs: [
       "Welcome to Chalapathi University, an institution built upon the pillars of academic rigour, social responsibility, and future-centric innovation. From our modest beginnings, we have constantly pushed the boundaries of knowledge, seeking to create an educational ecosystem that nurtures tomorrow's global leaders.",
@@ -440,7 +1194,7 @@ const INITIAL_ABOUT_CONTENT: AboutUsContent = {
   }
 };
 
-const INITIAL_CALENDAR_DATA: MonthCalendarData[] = [
+export const INITIAL_CALENDAR_DATA: MonthCalendarData[] = [
   { name: "July", yearOffset: 0, startDay: 2, totalDays: 31, events: { 15: "Commencement of Classwork" } },
   { name: "August", yearOffset: 0, startDay: 5, totalDays: 31, events: {} },
   { name: "September", yearOffset: 0, startDay: 1, totalDays: 30, events: { 5: "First Mid-Term Examinations" } },
@@ -450,13 +1204,21 @@ const INITIAL_CALENDAR_DATA: MonthCalendarData[] = [
   { name: "January", yearOffset: 1, startDay: 4, totalDays: 31, events: { 5: "Commencement of Next Semester" } }
 ];
 
-const INITIAL_PLACEMENTS_CONTENT: PlacementsContent = {
+export const INITIAL_PLACEMENTS_CONTENT: PlacementsContent = {
   heroTitle: "A Step Towards Success!",
   heroSubtitle: "Building Careers. Creating Leaders.",
   heroDescription: "At Chalapathi University, placements are more than securing a job—they are about preparing students for lifelong professional success. Our dedicated Training & Placement Cell bridges the gap between academic learning and industry expectations by equipping students with the knowledge, skills, and confidence to excel in today's competitive global workforce.",
-  highestPackage: "₹18 LPA",
+  highestPackage: "30 LPA",
   averagePackage: "₹5.5 LPA",
-  placementPercent: "95%",
+  placementPercent: "92%",
+  corporatePartnersCount: "116+",
+  placementAssistance: "100%",
+  stats: [
+    { value: "92%", label: "Students Placed", icon: "Users" },
+    { value: "30 LPA", label: "Highest Package", icon: "Trophy" },
+    { value: "116+", label: "Corporate Partners", icon: "Handshake" },
+    { value: "100%", label: "Placement Assistance", icon: "GraduationCap" }
+  ],
   philosophyText: "We focus on developing industry-ready professionals through a holistic approach that combines academic excellence, technical expertise, professional skills, and real-world exposure. Students receive continuous support throughout their academic journey, enabling them to confidently transition from campus to career.",
   careerPrograms: [
     "Industry-oriented technical training",
@@ -524,7 +1286,7 @@ const INITIAL_PLACEMENTS_CONTENT: PlacementsContent = {
   ]
 };
 
-const INITIAL_SUCCESS_STORIES: SuccessStory[] = [
+export const INITIAL_SUCCESS_STORIES: SuccessStory[] = [
   {
     id: 1,
     studentName: "Hitaishi Reddy",
@@ -599,8 +1361,7 @@ const INITIAL_SUCCESS_STORIES: SuccessStory[] = [
   }
 ];
 
-
-const INITIAL_FACULTY_DATA: Record<string, DirectoryData> = {
+export const INITIAL_FACULTY_DATA: Record<string, DirectoryData> = {
   "Computer Science & Engineering": {
     hod: { name: "Prof. P. V. Ramana", title: "HOD & Professor", edu: "Ph.D - Indian Institute of Technology Madras, India", interests: "Algorithms, Distributed Networks, Database Optimization", phone: "0863 2345432", email: "hod.cse@city.ac.in", avatar: "PVR", age: "52 Years", experience: "24 Years of Teaching & Research", idNo: "CCIT-CSE-001", department: "Computer Science & Engineering" },
     others: [
@@ -644,7 +1405,7 @@ const INITIAL_FACULTY_DATA: Record<string, DirectoryData> = {
   }
 };
 
-const INITIAL_BOARD_DATA: Record<string, DirectoryData> = {
+export const INITIAL_BOARD_DATA: Record<string, DirectoryData> = {
   "Governing Council": {
     hod: { name: "Sri Y. V. Anjaneyulu", title: "Chairman & President", edu: "Graduate in Engineering & Humanities", interests: "Administration, institutional strategy, policy planning, and infrastructure development.", phone: "0863 2345401", email: "chairman@city.ac.in", avatar: "YVA", age: "65 Years", experience: "35 Years of Administrative Leadership", idNo: "CUB-GC-001", department: "Governing Council" },
     others: []
@@ -699,7 +1460,7 @@ const INITIAL_BOARD_DATA: Record<string, DirectoryData> = {
   }
 };
 
-const INITIAL_STAFF_DATA: Record<string, DirectoryData> = {
+export const INITIAL_STAFF_DATA: Record<string, DirectoryData> = {
   "Registrar Office": {
     hod: { name: "Sri M. Srinivasa Rao", title: "Assistant Registrar", edu: "M.A. in Public Administration - Andhra University", interests: "General administration, statutory records maintenance, legal compliances support.", phone: "0863 2345530", email: "registrar.office@city.ac.in", avatar: "MSR", age: "48 Years", experience: "18 Years", idNo: "CUS-REG-001", department: "Registrar Office" },
     others: [
@@ -789,18 +1550,68 @@ const INITIAL_STAFF_DATA: Record<string, DirectoryData> = {
   }
 };
 
+export const INITIAL_ENQUIRIES: EnquiryLead[] = [
+  { id: "ENQ-1", name: "Rahul Verma", mobile: "9876543210", email: "rahul@gmail.com", city: "Guntur", state: "Andhra Pradesh", qualification: "Class 12 / Intermediate", yearOfPassing: "2025", program: "B.Tech - Computer Science and Engineering", date: "20 May 2025", status: "New" },
+  { id: "ENQ-2", name: "Priya Sen", mobile: "8765432109", email: "priya@gmail.com", city: "Vijayawada", state: "Andhra Pradesh", qualification: "Class 12 / Intermediate", yearOfPassing: "2025", program: "B.Tech - CSE (Data Science)", date: "19 May 2025", status: "Contacted" },
+  { id: "ENQ-3", name: "Kiran Dev", mobile: "7654321098", email: "kiran@gmail.com", city: "Hyderabad", state: "Telangana", qualification: "Class 12 / Intermediate", yearOfPassing: "2025", program: "B.Tech - CSE (Artificial Intelligence)", date: "18 May 2025", status: "New" }
+];
+
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [showAnnouncementsDrawer, setShowAnnouncementsDrawer] = useState(false);
+  const [lastSavedTime, setLastSavedTime] = useState<string | null>(() => localStorage.getItem("chalapathi_last_saved") || null);
+
+  // Site Settings
+  const [siteSettings, setSiteSettings] = useState<SiteSettings>(() => {
+    const local = localStorage.getItem("chalapathi_site_settings");
+    return local ? { ...DEFAULT_SITE_SETTINGS, ...JSON.parse(local) } : DEFAULT_SITE_SETTINGS;
+  });
+
+  // Theme Colors
+  const [themeColors, setThemeColors] = useState<ThemeColors>(() => {
+    const local = localStorage.getItem("chalapathi_theme_colors");
+    return local ? { ...DEFAULT_THEME_COLORS, ...JSON.parse(local) } : DEFAULT_THEME_COLORS;
+  });
+
+  // Homepage Sections (Order & Enabled)
+  const [homepageSections, setHomepageSections] = useState<HomepageSectionConfig[]>(() => {
+    const local = localStorage.getItem("chalapathi_homepage_sections_v2");
+    if (local) {
+      try {
+        const parsed = JSON.parse(local);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {}
+    }
+    return DEFAULT_HOMEPAGE_SECTIONS;
+  });
+
+  // Navigation Menu
+  const [navigationMenu, setNavigationMenu] = useState<NavMenuItem[]>(() => {
+    const local = localStorage.getItem("chalapathi_navigation_menu");
+    return local ? JSON.parse(local) : DEFAULT_NAV_MENU;
+  });
+
+  // Footer Content
+  const [footerContent, setFooterContent] = useState<FooterContent>(() => {
+    const local = localStorage.getItem("chalapathi_footer_content");
+    return local ? JSON.parse(local) : DEFAULT_FOOTER_CONTENT;
+  });
+
+  // Enquiries Leads
+  const [enquiries, setEnquiries] = useState<EnquiryLead[]>(() => {
+    const local = localStorage.getItem("chalapathi_enquiries");
+    return local ? JSON.parse(local) : INITIAL_ENQUIRIES;
+  });
+
+  // Announcements
   const [announcements, setAnnouncements] = useState<Announcement[]>(() => {
     const local = localStorage.getItem("chalapathi_announcements");
     return local ? JSON.parse(local) : INITIAL_ANNOUNCEMENTS;
   });
 
+  // Programs
   const [programs, setPrograms] = useState<ProgramDetail[]>(() => {
     const local = localStorage.getItem("chalapathi_programs");
     const parsed = local ? JSON.parse(local) : null;
-    
-    // If local storage is missing new statically added programs, overwrite it
     if (!parsed || parsed.length < PROGRAMS_DATA.length) {
       localStorage.setItem("chalapathi_programs", JSON.stringify(PROGRAMS_DATA));
       return PROGRAMS_DATA;
@@ -808,11 +1619,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return parsed;
   });
 
+  // News
   const [news, setNews] = useState<NewsArticle[]>(() => {
     const local = localStorage.getItem("chalapathi_news");
     return local ? JSON.parse(local) : INITIAL_NEWS;
   });
 
+  // Events
   const [events, setEvents] = useState<EventItem[]>(() => {
     const local = localStorage.getItem("chalapathi_events");
     const parsed = local ? JSON.parse(local) : [];
@@ -823,16 +1636,19 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return parsed;
   });
 
+  // About Content
   const [aboutContent, setAboutContent] = useState<AboutUsContent>(() => {
     const local = localStorage.getItem("chalapathi_about_v2");
     return local ? JSON.parse(local) : INITIAL_ABOUT_CONTENT;
   });
 
+  // Calendar
   const [calendarData, setCalendarData] = useState<MonthCalendarData[]>(() => {
     const local = localStorage.getItem("chalapathi_calendar");
     return local ? JSON.parse(local) : INITIAL_CALENDAR_DATA;
   });
 
+  // Directories
   const [facultyData, setFacultyData] = useState<Record<string, DirectoryData>>(() => {
     const local = localStorage.getItem("chalapathi_faculty_data_v2");
     return local ? JSON.parse(local) : INITIAL_FACULTY_DATA;
@@ -848,11 +1664,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return local ? JSON.parse(local) : INITIAL_STAFF_DATA;
   });
 
+  // Placements
   const [placementsContent, setPlacementsContent] = useState<PlacementsContent>(() => {
     const local = localStorage.getItem("chalapathi_placements");
     return local ? JSON.parse(local) : INITIAL_PLACEMENTS_CONTENT;
   });
 
+  // Success Stories
   const [successStories, setSuccessStories] = useState<SuccessStory[]>(() => {
     const local = localStorage.getItem("chalapathi_success_stories");
     const parsed = local ? JSON.parse(local) : INITIAL_SUCCESS_STORIES;
@@ -863,6 +1681,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return parsed;
   });
 
+  // Hero Slides
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>(() => {
     const local = localStorage.getItem("chalapathi_hero_slides");
     if (!local) return INITIAL_HERO_SLIDES;
@@ -879,72 +1698,286 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   });
 
+  const recordSave = () => {
+    const timeStr = new Date().toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
+    setLastSavedTime(timeStr);
+    localStorage.setItem("chalapathi_last_saved", timeStr);
+  };
+
+  const updateSiteSettings = (settings: SiteSettings) => {
+    setSiteSettings(settings);
+    localStorage.setItem("chalapathi_site_settings", JSON.stringify(settings));
+    recordSave();
+  };
+
+  const updateThemeColors = (colors: ThemeColors) => {
+    setThemeColors(colors);
+    localStorage.setItem("chalapathi_theme_colors", JSON.stringify(colors));
+    recordSave();
+  };
+
+  const updateHomepageSections = (sections: HomepageSectionConfig[]) => {
+    setHomepageSections(sections);
+    localStorage.setItem("chalapathi_homepage_sections_v2", JSON.stringify(sections));
+    recordSave();
+  };
+
+  const updateNavigationMenu = (menu: NavMenuItem[]) => {
+    setNavigationMenu(menu);
+    localStorage.setItem("chalapathi_navigation_menu", JSON.stringify(menu));
+    recordSave();
+  };
+
+  const updateFooterContent = (content: FooterContent) => {
+    setFooterContent(content);
+    localStorage.setItem("chalapathi_footer_content", JSON.stringify(content));
+    recordSave();
+  };
+
+  const updateEnquiries = (leads: EnquiryLead[]) => {
+    setEnquiries(leads);
+    localStorage.setItem("chalapathi_enquiries", JSON.stringify(leads));
+    recordSave();
+  };
+
+  const addEnquiry = (lead: Omit<EnquiryLead, "id" | "date">) => {
+    const newLead: EnquiryLead = {
+      ...lead,
+      id: "ENQ-" + Date.now(),
+      date: new Date().toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" }),
+      status: "New"
+    };
+    const updated = [newLead, ...enquiries];
+    setEnquiries(updated);
+    localStorage.setItem("chalapathi_enquiries", JSON.stringify(updated));
+  };
+
   const updateAnnouncements = (list: Announcement[]) => {
     setAnnouncements(list);
     localStorage.setItem("chalapathi_announcements", JSON.stringify(list));
+    recordSave();
   };
 
   const updatePrograms = (list: ProgramDetail[]) => {
     setPrograms(list);
     localStorage.setItem("chalapathi_programs", JSON.stringify(list));
+    recordSave();
   };
 
   const updateNews = (list: NewsArticle[]) => {
     setNews(list);
     localStorage.setItem("chalapathi_news", JSON.stringify(list));
+    recordSave();
   };
 
   const updateEvents = (list: EventItem[]) => {
     setEvents(list);
     localStorage.setItem("chalapathi_events", JSON.stringify(list));
+    recordSave();
   };
 
   const updateAboutContent = (content: AboutUsContent) => {
     setAboutContent(content);
     localStorage.setItem("chalapathi_about_v2", JSON.stringify(content));
+    recordSave();
   };
 
   const updateCalendarData = (data: MonthCalendarData[]) => {
     setCalendarData(data);
     localStorage.setItem("chalapathi_calendar", JSON.stringify(data));
+    recordSave();
   };
 
   const updateFacultyData = (data: Record<string, DirectoryData>) => {
     setFacultyData(data);
     localStorage.setItem("chalapathi_faculty_data_v2", JSON.stringify(data));
+    recordSave();
   };
 
   const updateBoardData = (data: Record<string, DirectoryData>) => {
     setBoardData(data);
     localStorage.setItem("chalapathi_board_data", JSON.stringify(data));
+    recordSave();
   };
 
   const updateStaffData = (data: Record<string, DirectoryData>) => {
     setStaffData(data);
     localStorage.setItem("chalapathi_staff_data", JSON.stringify(data));
+    recordSave();
   };
 
   const updatePlacementsContent = (data: PlacementsContent) => {
     setPlacementsContent(data);
     localStorage.setItem("chalapathi_placements", JSON.stringify(data));
+    recordSave();
   };
 
   const updateSuccessStories = (list: SuccessStory[]) => {
     setSuccessStories(list);
     localStorage.setItem("chalapathi_success_stories", JSON.stringify(list));
+    recordSave();
+  };
+
+  // Academic Structure
+  const [academicStructure, setAcademicStructure] = useState<AcademicStructure>(() => {
+    try {
+      const local = localStorage.getItem("chalapathi_academic_structure");
+      if (local) {
+        const parsed: AcademicStructure = JSON.parse(local);
+        let updated = false;
+        Object.keys(parsed).forEach(school => {
+          Object.keys(parsed[school] || {}).forEach(dept => {
+            parsed[school][dept] = (parsed[school][dept] || []).map(card => {
+              if (!card.image) {
+                updated = true;
+                return { ...card, image: getFallbackCourseImage(card.label) };
+              }
+              return card;
+            });
+          });
+        });
+        if (updated) {
+          localStorage.setItem("chalapathi_academic_structure", JSON.stringify(parsed));
+        }
+        return parsed;
+      }
+    } catch (e) {}
+    return DEFAULT_ACADEMIC_STRUCTURE;
+  });
+
+  // Campus Videos
+  const [campusVideos, setCampusVideos] = useState<CampusVideoItem[]>(() => {
+    const local = localStorage.getItem("chalapathi_campus_videos");
+    return local ? JSON.parse(local) : DEFAULT_CAMPUS_VIDEOS;
+  });
+
+  // Campus Tour Config
+  const [campusTour, setCampusTour] = useState<CampusTourConfig>(() => {
+    const savedPoster = localStorage.getItem("chalapathi_campus_poster");
+    const savedBadge = localStorage.getItem("chalapathi_campus_badge");
+    const savedQuote = localStorage.getItem("chalapathi_campus_quote");
+    const savedHeading = localStorage.getItem("chalapathi_campus_label");
+    const savedSubtitle = localStorage.getItem("chalapathi_campus_subtitle");
+    return {
+      poster: savedPoster || DEFAULT_CAMPUS_TOUR.poster,
+      badge: savedBadge || DEFAULT_CAMPUS_TOUR.badge,
+      quote: savedQuote || DEFAULT_CAMPUS_TOUR.quote,
+      heading: savedHeading || DEFAULT_CAMPUS_TOUR.heading,
+      subtitle: savedSubtitle || DEFAULT_CAMPUS_TOUR.subtitle
+    };
+  });
+
+  // Campus Gallery
+  const [campusGallery, setCampusGallery] = useState<CampusGalleryItem[]>(() => {
+    const local = localStorage.getItem("chalapathi_campus_gallery");
+    return local ? JSON.parse(local) : DEFAULT_CAMPUS_GALLERY;
+  });
+
+  // Campus Banners
+  const [campusBanners, setCampusBanners] = useState<CampusBannersConfig>(() => {
+    const local = localStorage.getItem("chalapathi_campus_banners");
+    return local ? JSON.parse(local) : DEFAULT_CAMPUS_BANNERS;
+  });
+
+  const updateAcademicStructure = (structure: AcademicStructure) => {
+    setAcademicStructure(structure);
+    localStorage.setItem("chalapathi_academic_structure", JSON.stringify(structure));
+    recordSave();
+  };
+
+  const updateCampusVideos = (list: CampusVideoItem[]) => {
+    setCampusVideos(list);
+    localStorage.setItem("chalapathi_campus_videos", JSON.stringify(list));
+    recordSave();
+  };
+
+  const updateCampusTour = (tour: CampusTourConfig) => {
+    setCampusTour(tour);
+    localStorage.setItem("chalapathi_campus_poster", tour.poster);
+    localStorage.setItem("chalapathi_campus_badge", tour.badge);
+    localStorage.setItem("chalapathi_campus_quote", tour.quote);
+    if (tour.heading) localStorage.setItem("chalapathi_campus_label", tour.heading);
+    if (tour.subtitle) localStorage.setItem("chalapathi_campus_subtitle", tour.subtitle);
+    recordSave();
+  };
+
+  const updateCampusGallery = (list: CampusGalleryItem[]) => {
+    setCampusGallery(list);
+    localStorage.setItem("chalapathi_campus_gallery", JSON.stringify(list));
+    recordSave();
+  };
+
+  const updateCampusBanners = (banners: CampusBannersConfig) => {
+    setCampusBanners(banners);
+    localStorage.setItem("chalapathi_campus_banners", JSON.stringify(banners));
+    recordSave();
   };
 
   const updateHeroSlides = (list: HeroSlide[]) => {
     setHeroSlides(list);
     localStorage.setItem("chalapathi_hero_slides", JSON.stringify(list));
+    recordSave();
+  };
+
+  const resetToDefaults = () => {
+    if (window.confirm("Are you sure you want to reset all CMS content to original university defaults? This will restore original website content.")) {
+      localStorage.clear();
+      setSiteSettings(DEFAULT_SITE_SETTINGS);
+      setThemeColors(DEFAULT_THEME_COLORS);
+      setHomepageSections(DEFAULT_HOMEPAGE_SECTIONS);
+      setNavigationMenu(DEFAULT_NAV_MENU);
+      setFooterContent(DEFAULT_FOOTER_CONTENT);
+      setAnnouncements(INITIAL_ANNOUNCEMENTS);
+      setPrograms(PROGRAMS_DATA);
+      setAcademicStructure(DEFAULT_ACADEMIC_STRUCTURE);
+      setNews(INITIAL_NEWS);
+      setEvents(INITIAL_EVENTS);
+      setCampusVideos(DEFAULT_CAMPUS_VIDEOS);
+      setCampusTour(DEFAULT_CAMPUS_TOUR);
+      setCampusGallery(DEFAULT_CAMPUS_GALLERY);
+      setCampusBanners(DEFAULT_CAMPUS_BANNERS);
+      setAboutContent(INITIAL_ABOUT_CONTENT);
+      setCalendarData(INITIAL_CALENDAR_DATA);
+      setFacultyData(INITIAL_FACULTY_DATA);
+      setBoardData(INITIAL_BOARD_DATA);
+      setStaffData(INITIAL_STAFF_DATA);
+      setPlacementsContent(INITIAL_PLACEMENTS_CONTENT);
+      setSuccessStories(INITIAL_SUCCESS_STORIES);
+      setHeroSlides(INITIAL_HERO_SLIDES);
+      setEnquiries(INITIAL_ENQUIRIES);
+      recordSave();
+    }
   };
 
   return (
     <DataContext.Provider value={{
+      siteSettings,
+      updateSiteSettings,
+      themeColors,
+      updateThemeColors,
+      homepageSections,
+      updateHomepageSections,
+      navigationMenu,
+      updateNavigationMenu,
+      footerContent,
+      updateFooterContent,
+      enquiries,
+      updateEnquiries,
+      addEnquiry,
       announcements,
       programs,
+      academicStructure,
+      updateAcademicStructure,
       news,
       events,
+      campusVideos,
+      updateCampusVideos,
+      campusTour,
+      updateCampusTour,
+      campusGallery,
+      updateCampusGallery,
+      campusBanners,
+      updateCampusBanners,
       aboutContent,
       calendarData,
       facultyData,
@@ -966,7 +1999,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       updateSuccessStories,
       updateHeroSlides,
       showAnnouncementsDrawer,
-      setShowAnnouncementsDrawer
+      setShowAnnouncementsDrawer,
+      resetToDefaults,
+      lastSavedTime
     }}>
       {children}
     </DataContext.Provider>

@@ -108,7 +108,7 @@ const CATEGORY_INFO: Record<string, { desc: string; linkText: string; to: string
 };
 
 export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {}) {
-  const { announcements, showAnnouncementsDrawer, setShowAnnouncementsDrawer, programs } = useData();
+  const { announcements, showAnnouncementsDrawer, setShowAnnouncementsDrawer, programs, siteSettings, themeColors } = useData();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -328,8 +328,8 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
           {/* Logo */}
           <Link to="/" className="flex items-center shrink-0 py-1">
             <img
-              src="/logo.png?v=3"
-              alt="Chalapathi University"
+              src={siteSettings?.logoUrl || "/logo.png?v=3"}
+              alt={siteSettings?.universityName || "Chalapathi University"}
               className="h-10 min-[1280px]:h-14 min-[1440px]:h-18 w-auto object-contain no-lift transition-all duration-300"
             />
           </Link>
