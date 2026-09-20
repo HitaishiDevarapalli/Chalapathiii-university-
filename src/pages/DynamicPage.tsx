@@ -4617,8 +4617,12 @@ function PlacementsView() {
       <div className="space-y-4">
         <div className="flex justify-between items-end">
           <div className="space-y-1">
-            <span className="text-[10px] text-[#D4AF37] font-extrabold uppercase tracking-widest">Our Placed Stars</span>
-            <h2 className="text-xl md:text-2xl font-black text-[#072A6C] uppercase tracking-wide">Recent Placements</h2>
+            <span className="text-[10px] text-[#D4AF37] font-extrabold uppercase tracking-widest">
+              {placementsContent.recentPlacementsBadge || "OUR PLACED STARS"}
+            </span>
+            <h2 className="text-xl md:text-2xl font-black text-[#072A6C] uppercase tracking-wide">
+              {placementsContent.recentPlacementsTitle || "RECENT PLACEMENTS"}
+            </h2>
           </div>
           
           <div className="flex gap-2">
@@ -4776,7 +4780,9 @@ function PlacementsView() {
 
       {/* Placement Philosophy */}
       <div className="bg-white border border-gray-150 p-6 rounded-2xl shadow-sm border-l-4 border-l-[#D4AF37]">
-        <h3 className="font-extrabold text-[#072A6C] text-sm uppercase tracking-wider mb-2">Our Placement Philosophy</h3>
+        <h3 className="font-extrabold text-[#072A6C] text-sm uppercase tracking-wider mb-2">
+          {placementsContent.philosophyTitle || "Our Placement Philosophy"}
+        </h3>
         <p className="text-xs text-gray-500 font-light leading-relaxed">
           {placementsContent.philosophyText}
         </p>
@@ -4786,7 +4792,7 @@ function PlacementsView() {
       <div className="space-y-6">
         <div className="text-center space-y-2">
           <h2 className="text-2xl font-black text-[#072A6C] uppercase tracking-wide">
-            {placementsContent.industriesTitle || "Industries We Cater"}
+            {placementsContent.industriesTitle || "INDUSTRIES WE CATER"}
           </h2>
           <div className="w-16 h-1 bg-[#D4AF37] mx-auto rounded-full" />
         </div>
@@ -4816,7 +4822,7 @@ function PlacementsView() {
         {/* Career Development Card */}
         <div className="bg-white border border-gray-150 rounded-2xl p-6 shadow-sm space-y-4">
           <h4 className="font-extrabold text-[#072A6C] text-sm uppercase tracking-wider border-b border-gray-100 pb-2 flex items-center gap-2">
-            <Award className="text-[#D4AF37]" size={18} /> Career Development Programs
+            <Award className="text-[#D4AF37]" size={18} /> {placementsContent.careerProgramsTitle || "CAREER DEVELOPMENT PROGRAMS"}
           </h4>
           <ul className="space-y-2.5 text-xs text-gray-500 font-light">
             {placementsContent.careerPrograms.map((item, idx) => (
@@ -4831,7 +4837,7 @@ function PlacementsView() {
         {/* Industry Connect Card */}
         <div className="bg-white border border-gray-150 rounded-2xl p-6 shadow-sm space-y-4">
           <h4 className="font-extrabold text-[#072A6C] text-sm uppercase tracking-wider border-b border-gray-100 pb-2 flex items-center gap-2">
-            <Globe className="text-[#D4AF37]" size={18} /> Industry Connect
+            <Globe className="text-[#D4AF37]" size={18} /> {placementsContent.industryConnectTitle || "INDUSTRY CONNECT"}
           </h4>
           <p className="text-xs text-gray-400 font-light leading-relaxed">
             {placementsContent.industryConnectDesc}
@@ -4850,7 +4856,7 @@ function PlacementsView() {
       {/* Placement Cell Responsibilities */}
       <div className="bg-white border border-gray-150 rounded-2xl p-6 shadow-sm space-y-4">
         <h4 className="font-extrabold text-[#072A6C] text-sm uppercase tracking-wider border-b border-gray-100 pb-2">
-          Dedicated Training & Placement Cell
+          {placementsContent.placementCellTitle || "DEDICATED TRAINING & PLACEMENT CELL"}
         </h4>
         <p className="text-xs text-gray-400 font-light leading-relaxed">
           {placementsContent.placementCellDesc}
@@ -4868,8 +4874,12 @@ function PlacementsView() {
       {/* 5. Infinite scrolling company logo marquee visited Chalapathi */}
       <div className="space-y-4 pt-4 border-t border-gray-100 overflow-hidden">
         <div className="text-center">
-          <span className="text-[10px] text-[#D4AF37] font-extrabold uppercase tracking-widest">Global Collaborators</span>
-          <h3 className="text-lg font-black text-[#072A6C] uppercase tracking-wide">Top Recruiters Visited</h3>
+          <span className="text-[10px] text-[#D4AF37] font-extrabold uppercase tracking-widest">
+            {placementsContent.recruitersBadge || "GLOBAL COLLABORATORS"}
+          </span>
+          <h3 className="text-lg font-black text-[#072A6C] uppercase tracking-wide">
+            {placementsContent.recruitersTitle || "TOP RECRUITERS VISITED"}
+          </h3>
         </div>
 
         <style dangerouslySetInnerHTML={{__html: `
@@ -4894,6 +4904,59 @@ function PlacementsView() {
               <RecruiterCard key={i} company={company} />
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* 6. Quick Navigation & Admission Helpdesk (Matching Screenshot 4) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+        {/* Quick Navigation Card */}
+        <div className="bg-[#072A6C] text-white rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <h3 className="font-black text-sm mb-4 uppercase tracking-wider text-left text-white">Quick Navigation</h3>
+            <ul className="grid grid-cols-2 gap-3 text-xs text-blue-100/90 text-left font-medium">
+              <li>
+                <Link to="/about" className="hover:text-white transition-colors flex items-center justify-between group">
+                  About Institution <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform" />
+                </Link>
+              </li>
+              <li>
+                <Link to="/academics" className="hover:text-white transition-colors flex items-center justify-between group">
+                  Academic Programs <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform" />
+                </Link>
+              </li>
+              <li>
+                <Link to="/admissions" className="hover:text-white transition-colors flex items-center justify-between group">
+                  Enrollment & Fees <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform" />
+                </Link>
+              </li>
+              <li>
+                <Link to="/placements" className="hover:text-white transition-colors flex items-center justify-between group text-[#D4AF37] font-bold">
+                  Placements & Statistics <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform" />
+                </Link>
+              </li>
+              <li className="col-span-2">
+                <Link to="/contact" className="hover:text-white transition-colors flex items-center justify-between group">
+                  Contact Support <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform" />
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Admission Helpdesk Card */}
+        <div className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-left">
+          <div className="space-y-1.5 sm:max-w-[65%]">
+            <h3 className="font-black text-sm text-[#072A6C] uppercase tracking-wider">Admission Helpdesk</h3>
+            <p className="text-xs text-gray-500 leading-relaxed font-light">
+              Have questions about registration, courses, or hostels? Reach our advisors directly.
+            </p>
+          </div>
+          <a 
+            href="tel:8886630355" 
+            className="h-11 px-5 bg-[#D4AF37] hover:bg-[#C9A84C] text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-colors shrink-0 outline-none border-none cursor-pointer shadow-sm uppercase tracking-wider text-decoration-none"
+          >
+            <Phone size={14} /> Call Counselor
+          </a>
         </div>
       </div>
 

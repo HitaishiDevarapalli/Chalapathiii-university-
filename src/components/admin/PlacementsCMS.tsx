@@ -328,13 +328,26 @@ export const PlacementsCMS: React.FC<PlacementsCMSProps> = ({
                 <p className="text-xs text-gray-500 mt-0.5">Narrative statement on Chalapathi University's career vision and methodology</p>
               </div>
             </div>
-            <textarea
-              rows={4}
-              value={placementsForm.philosophyText}
-              onChange={(e) => setPlacementsForm({ ...placementsForm, philosophyText: e.target.value })}
-              className="w-full p-3.5 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800 leading-relaxed focus:bg-white resize-y"
-              placeholder="Enter placement philosophy narrative..."
-            />
+            <div className="space-y-1.5 max-w-md">
+              <label className="text-[11px] font-bold text-gray-700 uppercase">Philosophy Heading</label>
+              <input
+                type="text"
+                value={placementsForm.philosophyTitle ?? "Our Placement Philosophy"}
+                onChange={(e) => setPlacementsForm({ ...placementsForm, philosophyTitle: e.target.value })}
+                className="w-full h-10 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
+                placeholder="Our Placement Philosophy"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-gray-700 uppercase">Philosophy Description</label>
+              <textarea
+                rows={4}
+                value={placementsForm.philosophyText}
+                onChange={(e) => setPlacementsForm({ ...placementsForm, philosophyText: e.target.value })}
+                className="w-full p-3.5 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800 leading-relaxed focus:bg-white resize-y"
+                placeholder="Enter placement philosophy narrative..."
+              />
+            </div>
           </div>
         </div>
       )}
@@ -344,7 +357,7 @@ export const PlacementsCMS: React.FC<PlacementsCMSProps> = ({
       {/* ──────────────────────────────────────────────── */}
       {placementsSubTab === "placedStudents" && (
         <div className="space-y-6">
-          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
               <div>
                 <h3 className="text-sm font-black text-[#072A6C] uppercase flex items-center gap-2">
@@ -358,6 +371,8 @@ export const PlacementsCMS: React.FC<PlacementsCMSProps> = ({
                   onClick={() => {
                     setPlacementsForm({
                       ...placementsForm,
+                      recentPlacementsBadge: "OUR PLACED STARS",
+                      recentPlacementsTitle: "RECENT PLACEMENTS",
                       placedStudents: INITIAL_PLACEMENTS_CONTENT.placedStudents
                     });
                     notifySave("Reset placed students to default!");
@@ -385,6 +400,30 @@ export const PlacementsCMS: React.FC<PlacementsCMSProps> = ({
                 >
                   <Plus size={14} /> Add Placed Student
                 </button>
+              </div>
+            </div>
+
+            {/* Section Badge & Heading Titles */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-[#D4AF37] uppercase">Top Badge Text</label>
+                <input
+                  type="text"
+                  value={placementsForm.recentPlacementsBadge ?? "OUR PLACED STARS"}
+                  onChange={(e) => setPlacementsForm({ ...placementsForm, recentPlacementsBadge: e.target.value })}
+                  className="w-full h-10 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#D4AF37]"
+                  placeholder="OUR PLACED STARS"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-[#072A6C] uppercase">Section Heading (Title)</label>
+                <input
+                  type="text"
+                  value={placementsForm.recentPlacementsTitle ?? "RECENT PLACEMENTS"}
+                  onChange={(e) => setPlacementsForm({ ...placementsForm, recentPlacementsTitle: e.target.value })}
+                  className="w-full h-10 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-black text-[#072A6C]"
+                  placeholder="RECENT PLACEMENTS"
+                />
               </div>
             </div>
 
@@ -727,6 +766,17 @@ export const PlacementsCMS: React.FC<PlacementsCMSProps> = ({
               </button>
             </div>
 
+            <div className="space-y-1.5 max-w-md">
+              <label className="text-[11px] font-bold text-gray-700 uppercase">Section Heading</label>
+              <input
+                type="text"
+                value={placementsForm.careerProgramsTitle ?? "CAREER DEVELOPMENT PROGRAMS"}
+                onChange={(e) => setPlacementsForm({ ...placementsForm, careerProgramsTitle: e.target.value })}
+                className="w-full h-10 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
+                placeholder="CAREER DEVELOPMENT PROGRAMS"
+              />
+            </div>
+
             <div className="space-y-2.5">
               {placementsForm.careerPrograms?.map((prog, idx) => (
                 <div key={idx} className="flex items-center gap-2">
@@ -780,6 +830,17 @@ export const PlacementsCMS: React.FC<PlacementsCMSProps> = ({
               >
                 <Plus size={14} /> Add Connect Point
               </button>
+            </div>
+
+            <div className="space-y-1.5 max-w-md">
+              <label className="text-[11px] font-bold text-[#D4AF37] uppercase">Section Heading</label>
+              <input
+                type="text"
+                value={placementsForm.industryConnectTitle ?? "INDUSTRY CONNECT"}
+                onChange={(e) => setPlacementsForm({ ...placementsForm, industryConnectTitle: e.target.value })}
+                className="w-full h-10 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
+                placeholder="INDUSTRY CONNECT"
+              />
             </div>
 
             <div className="space-y-2">
@@ -845,6 +906,17 @@ export const PlacementsCMS: React.FC<PlacementsCMSProps> = ({
               >
                 <Plus size={14} /> Add Pillar Card
               </button>
+            </div>
+
+            <div className="space-y-1.5 max-w-md">
+              <label className="text-[11px] font-bold text-[#072A6C] uppercase">Section Heading</label>
+              <input
+                type="text"
+                value={placementsForm.placementCellTitle ?? "DEDICATED TRAINING & PLACEMENT CELL"}
+                onChange={(e) => setPlacementsForm({ ...placementsForm, placementCellTitle: e.target.value })}
+                className="w-full h-10 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
+                placeholder="DEDICATED TRAINING & PLACEMENT CELL"
+              />
             </div>
 
             <div className="space-y-2">
@@ -951,6 +1023,8 @@ export const PlacementsCMS: React.FC<PlacementsCMSProps> = ({
                   onClick={() => {
                     setPlacementsForm({
                       ...placementsForm,
+                      recruitersBadge: "GLOBAL COLLABORATORS",
+                      recruitersTitle: "TOP RECRUITERS VISITED",
                       recruiters: INITIAL_PLACEMENTS_CONTENT.recruiters
                     });
                     notifySave("Reset recruiters to default list!");
@@ -975,6 +1049,30 @@ export const PlacementsCMS: React.FC<PlacementsCMSProps> = ({
                 >
                   <Plus size={14} /> Add Recruiter Logo
                 </button>
+              </div>
+            </div>
+
+            {/* Section Badge & Heading Titles */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-[#D4AF37] uppercase">Top Badge Text</label>
+                <input
+                  type="text"
+                  value={placementsForm.recruitersBadge ?? "GLOBAL COLLABORATORS"}
+                  onChange={(e) => setPlacementsForm({ ...placementsForm, recruitersBadge: e.target.value })}
+                  className="w-full h-10 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#D4AF37]"
+                  placeholder="GLOBAL COLLABORATORS"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-[#072A6C] uppercase">Section Heading (Title)</label>
+                <input
+                  type="text"
+                  value={placementsForm.recruitersTitle ?? "TOP RECRUITERS VISITED"}
+                  onChange={(e) => setPlacementsForm({ ...placementsForm, recruitersTitle: e.target.value })}
+                  className="w-full h-10 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-black text-[#072A6C]"
+                  placeholder="TOP RECRUITERS VISITED"
+                />
               </div>
             </div>
 

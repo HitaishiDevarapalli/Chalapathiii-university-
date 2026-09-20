@@ -267,14 +267,22 @@ export interface PlacementsContent {
   corporatePartnersCount?: string;
   placementAssistance?: string;
   stats?: PlacementStatCard[];
+  philosophyTitle?: string;
   philosophyText: string;
+  recentPlacementsBadge?: string;
+  recentPlacementsTitle?: string;
   industriesTitle?: string;
   industries?: IndustryCaterItem[];
+  careerProgramsTitle?: string;
   careerPrograms: string[];
+  industryConnectTitle?: string;
   industryConnectDesc: string;
   industryConnectItems: string[];
+  placementCellTitle?: string;
   placementCellDesc: string;
   placementCellItems: { t: string; d: string }[];
+  recruitersBadge?: string;
+  recruitersTitle?: string;
   placedStudents: PlacedStudent[];
   recruiters: Recruiter[];
 }
@@ -2129,15 +2137,15 @@ export const INITIAL_CALENDAR_DATA: MonthCalendarData[] = [
 ];
 
 export const DEFAULT_INDUSTRIES: IndustryCaterItem[] = [
-  { name: "Software Development", img: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&fit=crop" },
-  { name: "Core Engineering", img: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&fit=crop" },
-  { name: "AI & Data Science", img: "https://images.unsplash.com/photo-1527474305487-b87b222841cc?w=400&fit=crop" },
-  { name: "Cyber Security", img: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=400&fit=crop" },
-  { name: "Embedded Systems", img: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&fit=crop" },
-  { name: "Mechanical & Civil", img: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&fit=crop" },
-  { name: "Business & Management", img: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&fit=crop" },
-  { name: "Research & Higher Ed", img: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=400&fit=crop" },
-  { name: "Startups & Ventures", img: "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?w=400&fit=crop" }
+  { name: "SOFTWARE DEVELOPMENT", img: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=500&fit=crop" },
+  { name: "CORE ENGINEERING", img: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=500&fit=crop" },
+  { name: "AI & DATA SCIENCE", img: "https://images.unsplash.com/photo-1527474305487-b87b222841cc?w=500&fit=crop" },
+  { name: "CYBER SECURITY", img: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=500&fit=crop" },
+  { name: "EMBEDDED SYSTEMS", img: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=500&fit=crop" },
+  { name: "MECHANICAL & CIVIL", img: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=500&fit=crop" },
+  { name: "BUSINESS & MANAGEMENT", img: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=500&fit=crop" },
+  { name: "RESEARCH & HIGHER ED", img: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=500&fit=crop" },
+  { name: "STARTUPS & VENTURES", img: "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?w=500&fit=crop" }
 ];
 
 export const INITIAL_PLACEMENTS_CONTENT: PlacementsContent = {
@@ -2153,14 +2161,19 @@ export const INITIAL_PLACEMENTS_CONTENT: PlacementsContent = {
   corporatePartnersCount: "116+",
   placementAssistance: "100%",
   stats: [
-    { value: "92%", label: "Students Placed", icon: "Users" },
     { value: "30 LPA", label: "Highest Package", icon: "Trophy" },
+    { value: "₹5.5 LPA", label: "Average Package", icon: "TrendingUp" },
+    { value: "92%", label: "Placement Record", icon: "CheckCircle2" },
     { value: "116+", label: "Corporate Partners", icon: "Handshake" },
     { value: "100%", label: "Placement Assistance", icon: "GraduationCap" }
   ],
+  philosophyTitle: "Our Placement Philosophy",
   philosophyText: "We focus on developing industry-ready professionals through a holistic approach that combines academic excellence, technical expertise, professional skills, and real-world exposure. Students receive continuous support throughout their academic journey, enabling them to confidently transition from campus to career.",
-  industriesTitle: "Industries We Cater",
+  recentPlacementsBadge: "OUR PLACED STARS",
+  recentPlacementsTitle: "RECENT PLACEMENTS",
+  industriesTitle: "INDUSTRIES WE CATER",
   industries: DEFAULT_INDUSTRIES,
+  careerProgramsTitle: "CAREER DEVELOPMENT PROGRAMS",
   careerPrograms: [
     "Industry-oriented technical training",
     "Aptitude and logical reasoning development",
@@ -2172,6 +2185,7 @@ export const INITIAL_PLACEMENTS_CONTENT: PlacementsContent = {
     "Personality development workshops",
     "Internship guidance and career mentoring"
   ],
+  industryConnectTitle: "INDUSTRY CONNECT",
   industryConnectDesc: "The institute actively collaborates with leading organizations to provide students with meaningful industry exposure through:",
   industryConnectItems: [
     "Campus recruitment drives",
@@ -2182,6 +2196,7 @@ export const INITIAL_PLACEMENTS_CONTENT: PlacementsContent = {
     "Industrial visits and experiential learning",
     "Live projects and collaborative initiatives"
   ],
+  placementCellTitle: "DEDICATED TRAINING & PLACEMENT CELL",
   placementCellDesc: "Our Placement Cell works closely with students and recruiters to ensure a seamless recruitment process.",
   placementCellItems: [
     { t: "Mentorship", d: "Career counseling and mentoring" },
@@ -2193,17 +2208,25 @@ export const INITIAL_PLACEMENTS_CONTENT: PlacementsContent = {
     { t: "Career Pathing", d: "Higher education guidance" },
     { t: "Alumni Network", d: "Interaction and alumni links" }
   ],
+  recruitersBadge: "GLOBAL COLLABORATORS",
+  recruitersTitle: "TOP RECRUITERS VISITED",
   placedStudents: [
-    { name: "P. Vinay Kumar", branch: "Computer Science", company: "Amazon", ctc: "₹18.0 LPA", img: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&h=500&fit=crop&crop=face" },
-    { name: "K. Hari Priya", branch: "Artificial Intelligence", company: "Microsoft", ctc: "₹15.5 LPA", img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=500&fit=crop&crop=face" },
     { name: "Ch. Sandeep", branch: "Information Technology", company: "Adobe", ctc: "₹14.0 LPA", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=500&fit=crop&crop=face" },
     { name: "M. Sneha Reddy", branch: "Electronics & Comm", company: "Cognizant", ctc: "₹12.0 LPA", img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=500&fit=crop&crop=face" },
     { name: "V. Sai Teja", branch: "Computer Science", company: "TCS Digital", ctc: "₹9.0 LPA", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=500&fit=crop&crop=face" },
     { name: "A. Lakshmi Prasanna", branch: "Data Science", company: "Infosys", ctc: "₹9.5 LPA", img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=500&fit=crop&crop=face" },
     { name: "G. Rajesh Babu", branch: "Mechanical Eng", company: "L&T Core", ctc: "₹8.0 LPA", img: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=500&fit=crop&crop=face" },
-    { name: "S. Niharika", branch: "Civil Engineering", company: "JMC Projects", ctc: "₹7.5 LPA", img: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&h=500&fit=crop&crop=face" }
+    { name: "S. Niharika", branch: "Civil Engineering", company: "JMC Projects", ctc: "₹7.5 LPA", img: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&h=500&fit=crop&crop=face" },
+    { name: "P. Vinay Kumar", branch: "Computer Science", company: "Amazon", ctc: "₹18.0 LPA", img: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&h=500&fit=crop&crop=face" },
+    { name: "K. Hari Priya", branch: "Artificial Intelligence", company: "Microsoft", ctc: "₹15.5 LPA", img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=500&fit=crop&crop=face" }
   ],
   recruiters: [
+    { name: "Microsoft", logo: "/logos/microsoft.svg" },
+    { name: "Amazon", logo: "/logos/amazon.svg" },
+    { name: "Adobe", logo: "/logos/adobe.svg" },
+    { name: "Intel", logo: "/logos/intel.svg" },
+    { name: "Qualcomm", logo: "/logos/qualcomm.svg" },
+    { name: "Zoho", logo: "/logos/zoho.svg" },
     { name: "Wipro", logo: "/logos/wipro.svg" },
     { name: "Oracle", logo: "/logos/oracle.svg" },
     { name: "Tech Mahindra", logo: "/logos/techmahindra.svg" },
@@ -2217,13 +2240,7 @@ export const INITIAL_PLACEMENTS_CONTENT: PlacementsContent = {
     { name: "Deloitte", logo: "/logos/deloitte.svg" },
     { name: "IBM", logo: "/logos/ibm.svg" },
     { name: "HCLTech", logo: "/logos/hcltech.svg" },
-    { name: "Google", logo: "/logos/google.svg" },
-    { name: "Microsoft", logo: "/logos/microsoft.svg" },
-    { name: "Amazon", logo: "/logos/amazon.svg" },
-    { name: "Adobe", logo: "/logos/adobe.svg" },
-    { name: "Intel", logo: "/logos/intel.svg" },
-    { name: "Qualcomm", logo: "/logos/qualcomm.svg" },
-    { name: "Zoho", logo: "/logos/zoho.svg" }
+    { name: "Google", logo: "/logos/google.svg" }
   ]
 };
 
