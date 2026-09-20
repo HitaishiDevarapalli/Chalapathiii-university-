@@ -11,6 +11,7 @@ import GlobalCertifications from "../components/sections/GlobalCertifications";
 import { AdmissionsPortalView } from "../components/admissions/AdmissionsPortalView";
 import { ApplyOnlineView } from "../components/admissions/ApplyOnlineView";
 import ProgramDetailPage from "../components/academics/ProgramDetailPage";
+import { ResearchView } from "../components/research/ResearchView";
 
 
 const getProgramTimeline = (title: string) => {
@@ -764,11 +765,8 @@ const getPageContent = (path: string, programs: any[], newsPageConfig?: any) => 
       title: "Research & Innovation",
       category: "Research",
       desc: "Driving patent submissions, research sponsorships, and scientific breakthroughs.",
-      body: (
-        <div className="space-y-6 text-gray-600 text-sm">
-          <p>We support active research communities. Faculty members are currently guiding projects funded by DST, AICTE, and local government departments.</p>
-        </div>
-      )
+      body: <ResearchView path={cleanPath} />,
+      hideHeader: true
     };
   }
 

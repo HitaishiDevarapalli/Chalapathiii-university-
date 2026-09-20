@@ -40,7 +40,7 @@ export interface ResearchCMSData {
   publications: ResearchPublicationItem[];
 }
 
-const DEFAULT_RESEARCH_DATA: ResearchCMSData = {
+export const DEFAULT_RESEARCH_DATA: ResearchCMSData = {
   heroTitle: "Research & Innovation Ecosystem",
   heroSubtitle: "Fostering cutting-edge research, sponsored projects, and global scientific breakthroughs.",
   heroDesc: "Chalapathi University actively supports doctoral scholars, faculty innovators, and student research teams. Our research centers drive high-impact publications, patent filings, and multidisciplinary technology development in collaboration with national agencies (DST, AICTE, DRDO) and industry leaders.",
@@ -87,6 +87,7 @@ export const ResearchCMS: React.FC<ResearchCMSProps> = ({ notifySave }) => {
 
   const saveResearch = () => {
     localStorage.setItem("chalapathi_research_cms_data", JSON.stringify(researchData));
+    window.dispatchEvent(new Event("chalapathi_cms_updated"));
     notifySave("Research & Innovation CMS updated and published live!");
   };
 
@@ -101,6 +102,7 @@ export const ResearchCMS: React.FC<ResearchCMSProps> = ({ notifySave }) => {
         onReset={() => {
           setResearchData(DEFAULT_RESEARCH_DATA);
           localStorage.setItem("chalapathi_research_cms_data", JSON.stringify(DEFAULT_RESEARCH_DATA));
+          window.dispatchEvent(new Event("chalapathi_cms_updated"));
           notifySave("Research data reset to default!");
         }}
         resetLabel="Reset Research"
