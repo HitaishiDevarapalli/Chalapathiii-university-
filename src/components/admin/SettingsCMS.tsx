@@ -3,16 +3,48 @@ import {
   Settings, Palette, Sparkles, Eye, RotateCcw, Save, Check, 
   Globe, Shield, Sliders, Layout, Monitor, Smartphone, Moon, 
   Sun, CheckCircle2, ArrowRight, ExternalLink, Image as ImageIcon,
-  Lock, Bell, Layers, Phone, Mail, MapPin, Building
+  Lock, Bell, Layers, Phone, Mail, MapPin, Building,
+  Search, Rocket, FileText, TrendingUp, Home, GraduationCap,
+  BookOpen, Award, Briefcase, Users, Trash2, Plus, Edit3, X, Lightbulb, Star, Laptop
 } from "lucide-react";
 import { 
   useData, 
   ThemeColors, 
   SiteSettings, 
+  SearchBarConfig,
+  QuickNavItem,
   DEFAULT_THEME_COLORS, 
-  DEFAULT_SITE_SETTINGS 
+  DEFAULT_SITE_SETTINGS,
+  DEFAULT_SEARCH_CONFIG
 } from "../../context/DataContext";
 import { SectionHeader, ImageField, ColorField } from "./AdminComponents";
+
+export const QUICK_NAV_AVAILABLE_ICONS = [
+  { name: "Laptop", icon: Laptop },
+  { name: "Rocket", icon: Rocket },
+  { name: "FileText", icon: FileText },
+  { name: "TrendingUp", icon: TrendingUp },
+  { name: "Home", icon: Home },
+  { name: "Phone", icon: Phone },
+  { name: "GraduationCap", icon: GraduationCap },
+  { name: "BookOpen", icon: BookOpen },
+  { name: "Award", icon: Award },
+  { name: "Building", icon: Building },
+  { name: "Shield", icon: Shield },
+  { name: "Briefcase", icon: Briefcase },
+  { name: "Users", icon: Users },
+  { name: "Globe", icon: Globe },
+  { name: "MapPin", icon: MapPin },
+  { name: "Sparkles", icon: Sparkles },
+  { name: "Lightbulb", icon: Lightbulb },
+  { name: "Star", icon: Star }
+];
+
+const QUICK_NAV_ICON_MAP: Record<string, React.ElementType> = {
+  Laptop, Rocket, FileText, TrendingUp, Home, Phone, GraduationCap,
+  BookOpen, Award, Building, Shield, Briefcase, Users, Globe, MapPin,
+  Sparkles, Lightbulb, Star
+};
 
 export interface ThemePreset {
   id: string;
@@ -148,15 +180,18 @@ export function SettingsCMS({
     siteSettings, 
     updateSiteSettings, 
     themeColors, 
-    updateThemeColors 
+    updateThemeColors,
+    searchConfig,
+    updateSearchConfig
   } = useData();
 
-  const [settingsSubTab, setSettingsSubTab] = useState<"appearance" | "preview" | "branding" | "controls">("appearance");
+  const [settingsSubTab, setSettingsSubTab] = useState<"appearance" | "preview" | "branding" | "controls" | "search">("appearance");
   
   // Local Theme Form State
   const [selectedPresetId, setSelectedPresetId] = useState<string>("classic");
   const [colorsForm, setColorsForm] = useState<ThemeColors>(themeColors || DEFAULT_THEME_COLORS);
   const [settingsForm, setSettingsForm] = useState<SiteSettings>(siteSettings || DEFAULT_SITE_SETTINGS);
+  const [searchForm, setSearchForm] = useState<SearchBarConfig>(searchConfig || DEFAULT_SEARCH_CONFIG);
 
   // Sync state if context changes externally
   React.useEffect(() => {
@@ -166,6 +201,10 @@ export function SettingsCMS({
   React.useEffect(() => {
     if (siteSettings) setSettingsForm(siteSettings);
   }, [siteSettings]);
+
+  React.useEffect(() => {
+    if (searchConfig) setSearchForm(searchConfig);
+  }, [searchConfig]);
 
   // Apply Theme Preset
   const handleApplyPreset = (preset: ThemePreset) => {
@@ -198,7 +237,23 @@ export function SettingsCMS({
   const handleSaveSettings = () => {
     updateThemeColors(colorsForm);
     updateSiteSettings(settingsForm);
-    notifySave("Website settings & appearance published live!");
+    updateSearchConfig(searchForm);
+    notifySave("Website settings & search bar config published live!");
+  };
+
+  // Save Search Config specifically
+  const handleSaveSearchConfig = () => {
+    updateSearchConfig(searchForm);
+    notifySave("Search bar, search icon & quick navigations published live!");
+  };
+
+  // Reset Search Config to Defaults
+  const handleResetSearchConfig = () => {
+    if (window.confirm("Reset search bar and search icon styles to university defaults?")) {
+      setSearchForm(DEFAULT_SEARCH_CONFIG);
+      updateSearchConfig(DEFAULT_SEARCH_CONFIG);
+      notifySave("Search bar styles reset to default!");
+    }
   };
 
   // Reset Theme to Classic
@@ -235,7 +290,8 @@ export function SettingsCMS({
           { id: "appearance", label: "🎨 1. Main Website Appearance & Theme Presets" },
           { id: "preview", label: "📱 2. Live Website Theme Preview" },
           { id: "branding", label: "🏛️ 3. Global Branding & Identity" },
-          { id: "controls", label: "⚙️ 4. Global Website Controls" }
+          { id: "controls", label: "⚙️ 4. Global Website Controls" },
+          { id: "search", label: "🔍 5. Search Bar & Search Icon CMS" }
         ].map((st) => (
           <button
             key={st.id}
@@ -825,6 +881,526 @@ export function SettingsCMS({
                   />
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ────────────────────────────────────────────────────────── */}
+      {/* SUBTAB 5: SEARCH BAR & SEARCH ICON CMS                     */}
+      {/* ────────────────────────────────────────────────────────── */}
+      {settingsSubTab === "search" && (
+        <div className="space-y-6">
+          {/* Header Action Bar */}
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono font-black text-[#072A6C] uppercase tracking-wider bg-blue-50 px-2.5 py-1 rounded-md border border-blue-200">
+                    SEARCH ENGINE & MODAL CMS
+                  </span>
+                </div>
+                <h3 className="text-base font-black text-[#072A6C] mt-1">
+                  Search Bar, Icon Colors & Quick Navigation Controls
+                </h3>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Customize the search trigger icon, input placeholder, modal styling, and configure the top quick navigation links.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={handleResetSearchConfig}
+                  className="px-3 py-1.5 text-xs font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
+                >
+                  <RotateCcw size={13} /> Reset Defaults
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveSearchConfig}
+                  className="px-4 py-1.5 text-xs font-bold text-white bg-[#072A6C] hover:bg-[#051C4A] rounded-lg shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Save size={13} /> Save Search Config
+                </button>
+              </div>
+            </div>
+
+            {/* Quick Palette Presets */}
+            <div className="space-y-2">
+              <label className="text-[11px] font-bold text-gray-700 uppercase tracking-wider block">
+                ⚡ Quick Harmonious Color Presets
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                {[
+                  {
+                    id: "preset-navy",
+                    title: "University Royal Navy",
+                    iconColor: "#072A6C",
+                    hoverColor: "#051C4A",
+                    cardBg: "#F8FAFC",
+                    desc: "Prestigious clean Navy Blue"
+                  },
+                  {
+                    id: "preset-gold",
+                    title: "Royal Gold Accent",
+                    iconColor: "#D4AF37",
+                    hoverColor: "#B59328",
+                    cardBg: "#FFFDF5",
+                    desc: "Warm ceremonial gold"
+                  },
+                  {
+                    id: "preset-cobalt",
+                    title: "Executive Cobalt Blue",
+                    iconColor: "#2563EB",
+                    hoverColor: "#1D4ED8",
+                    cardBg: "#F1F5F9",
+                    desc: "Vibrant modern tech blue"
+                  },
+                  {
+                    id: "preset-emerald",
+                    title: "Botanical Emerald",
+                    iconColor: "#176B5B",
+                    hoverColor: "#0F483D",
+                    cardBg: "#F0FDF4",
+                    desc: "Sophisticated deep green"
+                  }
+                ].map((preset) => (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => {
+                      setSearchForm({
+                        ...searchForm,
+                        searchIconColor: preset.iconColor,
+                        headerSearchBtnIconColor: preset.iconColor,
+                        quickNavHeadingIconColor: preset.iconColor,
+                        quickNavCardIconColor: preset.iconColor,
+                        quickNavCardHoverText: preset.iconColor
+                      });
+                      notifySave(`Applied ${preset.title} search colors!`);
+                    }}
+                    className="p-3 rounded-xl border border-gray-200 hover:border-[#072A6C] hover:shadow-xs bg-slate-50/70 hover:bg-white text-left transition-all group cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <div 
+                        className="w-4 h-4 rounded-full border border-black/10 shadow-xs group-hover:scale-110 transition-transform" 
+                        style={{ backgroundColor: preset.iconColor }} 
+                      />
+                      <span className="text-xs font-bold text-gray-800 group-hover:text-[#072A6C]">
+                        {preset.title}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-gray-500">{preset.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Section 1: Search Button & Icon Color Controls */}
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+            <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider flex items-center gap-2 pb-2 border-b border-gray-100">
+              <Search size={15} /> 1. Search Icon & Header Button Styling
+            </h4>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <ColorField
+                label="Modal Search Icon Color"
+                value={searchForm.searchIconColor}
+                onChange={(color) => setSearchForm({ ...searchForm, searchIconColor: color })}
+                defaultValue="#072A6C"
+                presetColors={["#072A6C", "#D4AF37", "#2563EB", "#176B5B", "#D71920", "#1E293B", "#64748B", "#0F172A"]}
+              />
+              <ColorField
+                label="Header Search Button Icon Color"
+                value={searchForm.headerSearchBtnIconColor}
+                onChange={(color) => setSearchForm({ ...searchForm, headerSearchBtnIconColor: color })}
+                defaultValue="#072A6C"
+                presetColors={["#072A6C", "#D4AF37", "#2563EB", "#176B5B", "#D71920", "#1E293B", "#64748B", "#0F172A"]}
+              />
+              <ColorField
+                label="Header Search Button Background"
+                value={searchForm.headerSearchBtnBg}
+                onChange={(color) => setSearchForm({ ...searchForm, headerSearchBtnBg: color })}
+                defaultValue="#FFFFFF"
+                presetColors={["#FFFFFF", "#F8FAFC", "#F1F5F9", "#072A6C", "#0B2A5B", "#1E293B"]}
+              />
+              <ColorField
+                label="Header Search Button Border"
+                value={searchForm.headerSearchBtnBorder}
+                onChange={(color) => setSearchForm({ ...searchForm, headerSearchBtnBorder: color })}
+                defaultValue="#E2E8F0"
+                presetColors={["#E2E8F0", "#CBD5E1", "#072A6C", "#D4AF37", "#94A3B8", "transparent"]}
+              />
+              <ColorField
+                label="Modal Header Background"
+                value={searchForm.modalHeaderBg}
+                onChange={(color) => setSearchForm({ ...searchForm, modalHeaderBg: color })}
+                defaultValue="#FFFFFF"
+                presetColors={["#FFFFFF", "#F8FAFC", "#F1F5F9", "#F3F4F6", "#072A6C"]}
+              />
+              <ColorField
+                label="Modal Text & Input Color"
+                value={searchForm.modalTextColor}
+                onChange={(color) => setSearchForm({ ...searchForm, modalTextColor: color })}
+                defaultValue="#1E293B"
+                presetColors={["#1E293B", "#072A6C", "#0F172A", "#334155", "#000000"]}
+              />
+            </div>
+
+            {/* Placeholder Text */}
+            <div className="space-y-1.5 pt-2">
+              <label className="text-[10.5px] font-bold text-gray-700 uppercase tracking-wider block">
+                Search Bar Placeholder Text
+              </label>
+              <input
+                type="text"
+                value={searchForm.searchPlaceholder}
+                onChange={(e) => setSearchForm({ ...searchForm, searchPlaceholder: e.target.value })}
+                placeholder="Type any program, department, facility, admissions, fees..."
+                className="w-full h-10 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-slate-800 focus:outline-none focus:border-[#072A6C] focus:bg-white transition-all font-medium"
+              />
+              <p className="text-[11px] text-gray-400">
+                Shown inside the input before user types. Recommended: mention popular categories like programs, fees, admissions.
+              </p>
+            </div>
+          </div>
+
+          {/* Section 2: Top Quick Navigations Heading & Card Colors */}
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+            <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider flex items-center gap-2 pb-2 border-b border-gray-100">
+              <Sparkles size={15} /> 2. Top Quick Navigations Colors & Styling
+            </h4>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-[10.5px] font-bold text-gray-700 uppercase tracking-wider block">
+                  Quick Nav Section Title
+                </label>
+                <input
+                  type="text"
+                  value={searchForm.quickNavHeading}
+                  onChange={(e) => setSearchForm({ ...searchForm, quickNavHeading: e.target.value })}
+                  placeholder="Top Quick Navigations"
+                  className="w-full h-10 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-slate-800 focus:outline-none focus:border-[#072A6C] focus:bg-white transition-all font-medium"
+                />
+              </div>
+              <ColorField
+                label="Quick Nav Heading Text Color"
+                value={searchForm.quickNavHeadingColor}
+                onChange={(color) => setSearchForm({ ...searchForm, quickNavHeadingColor: color })}
+                defaultValue="#64748B"
+                presetColors={["#64748B", "#94A3B8", "#072A6C", "#334155", "#D4AF37"]}
+              />
+              <ColorField
+                label="Heading Sparkles Icon Color"
+                value={searchForm.quickNavHeadingIconColor}
+                onChange={(color) => setSearchForm({ ...searchForm, quickNavHeadingIconColor: color })}
+                defaultValue="#072A6C"
+                presetColors={["#072A6C", "#D4AF37", "#2563EB", "#176B5B", "#F59E0B"]}
+              />
+              <ColorField
+                label="Quick Nav Card Background"
+                value={searchForm.quickNavCardBg}
+                onChange={(color) => setSearchForm({ ...searchForm, quickNavCardBg: color })}
+                defaultValue="#F8FAFC"
+                presetColors={["#F8FAFC", "#FFFFFF", "#F1F5F9", "#EEF2F6", "#FDFCF7"]}
+              />
+              <ColorField
+                label="Quick Nav Card Text Color"
+                value={searchForm.quickNavCardText}
+                onChange={(color) => setSearchForm({ ...searchForm, quickNavCardText: color })}
+                defaultValue="#1E293B"
+                presetColors={["#1E293B", "#072A6C", "#334155", "#0F172A"]}
+              />
+              <ColorField
+                label="Quick Nav Card Icon Color"
+                value={searchForm.quickNavCardIconColor}
+                onChange={(color) => setSearchForm({ ...searchForm, quickNavCardIconColor: color })}
+                defaultValue="#072A6C"
+                presetColors={["#072A6C", "#D4AF37", "#2563EB", "#176B5B", "#64748B"]}
+              />
+            </div>
+          </div>
+
+          {/* Section 3: Manage Quick Navigation Shortcuts List */}
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+              <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider flex items-center gap-2">
+                <Layout size={15} /> 3. Manage Quick Navigation Shortcuts ({searchForm.quickNavItems?.length || 0})
+              </h4>
+              <button
+                type="button"
+                onClick={() => {
+                  const newItem: QuickNavItem = {
+                    id: `nav-${Date.now()}`,
+                    label: "New Shortcut",
+                    route: "/academics",
+                    iconName: "BookOpen",
+                    enabled: true
+                  };
+                  setSearchForm({
+                    ...searchForm,
+                    quickNavItems: [...(searchForm.quickNavItems || []), newItem]
+                  });
+                }}
+                className="px-3 py-1.5 text-xs font-bold text-[#072A6C] bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <Plus size={13} /> Add Shortcut Link
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {(searchForm.quickNavItems || []).map((item, idx) => {
+                const IconComp = QUICK_NAV_ICON_MAP[item.iconName] || BookOpen;
+                return (
+                  <div 
+                    key={item.id || idx}
+                    className={`p-3.5 rounded-xl border transition-all ${
+                      item.enabled !== false 
+                        ? "bg-slate-50/70 border-gray-200 hover:border-gray-300" 
+                        : "bg-gray-100/60 border-dashed border-gray-300 opacity-60"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-gray-200/60">
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="w-7 h-7 rounded-lg bg-white shadow-2xs flex items-center justify-center shrink-0 border border-gray-100"
+                          style={{ color: searchForm.quickNavCardIconColor || "#072A6C" }}
+                        >
+                          <IconComp size={14} />
+                        </div>
+                        <span className="text-xs font-bold text-gray-800">
+                          #{idx + 1} {item.label}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const updated = [...searchForm.quickNavItems];
+                            updated[idx] = { ...updated[idx], enabled: item.enabled === false ? true : false };
+                            setSearchForm({ ...searchForm, quickNavItems: updated });
+                          }}
+                          className={`px-2 py-0.5 text-[10px] font-black rounded-md transition-colors cursor-pointer ${
+                            item.enabled !== false 
+                              ? "bg-emerald-100 text-emerald-800" 
+                              : "bg-gray-200 text-gray-600"
+                          }`}
+                        >
+                          {item.enabled !== false ? "ACTIVE" : "HIDDEN"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (window.confirm(`Delete shortcut "${item.label}"?`)) {
+                              const updated = searchForm.quickNavItems.filter((_, i) => i !== idx);
+                              setSearchForm({ ...searchForm, quickNavItems: updated });
+                            }
+                          }}
+                          className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors cursor-pointer"
+                          title="Delete shortcut"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-500 uppercase block mb-1">
+                          Button Label
+                        </label>
+                        <input
+                          type="text"
+                          value={item.label}
+                          onChange={(e) => {
+                            const updated = [...searchForm.quickNavItems];
+                            updated[idx] = { ...updated[idx], label: e.target.value };
+                            setSearchForm({ ...searchForm, quickNavItems: updated });
+                          }}
+                          className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-slate-800 font-semibold"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-500 uppercase block mb-1">
+                          Destination Route URL
+                        </label>
+                        <input
+                          type="text"
+                          value={item.route}
+                          onChange={(e) => {
+                            const updated = [...searchForm.quickNavItems];
+                            updated[idx] = { ...updated[idx], route: e.target.value };
+                            setSearchForm({ ...searchForm, quickNavItems: updated });
+                          }}
+                          placeholder="/academics/btech-cse"
+                          className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-slate-800 font-mono text-[11px]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-500 uppercase block mb-1">
+                          Icon
+                        </label>
+                        <select
+                          value={item.iconName}
+                          onChange={(e) => {
+                            const updated = [...searchForm.quickNavItems];
+                            updated[idx] = { ...updated[idx], iconName: e.target.value };
+                            setSearchForm({ ...searchForm, quickNavItems: updated });
+                          }}
+                          className="w-full h-8 px-2 text-xs bg-white border border-gray-200 rounded-lg text-slate-800"
+                        >
+                          {QUICK_NAV_AVAILABLE_ICONS.map((opt) => (
+                            <option key={opt.name} value={opt.name}>
+                              {opt.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Section 4: Live Real-Time Interactive Preview */}
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+              <div>
+                <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider flex items-center gap-2">
+                  <Eye size={15} /> 4. Live Visual Preview (How Students & Visitors See It)
+                </h4>
+                <p className="text-[11px] text-gray-500">
+                  Interactive real-time preview reflecting your chosen search icon colors, button styling, and quick nav buttons.
+                </p>
+              </div>
+              <span className="text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md border border-emerald-200">
+                LIVE INTERACTIVE PREVIEW
+              </span>
+            </div>
+
+            {/* Header Trigger Button Preview */}
+            <div className="p-4 bg-slate-900 rounded-xl flex items-center justify-between">
+              <div className="text-left">
+                <span className="text-[10px] font-bold text-white/50 uppercase tracking-wider block">
+                  Public Website Header Navigation Bar Preview
+                </span>
+                <span className="text-xs font-medium text-white/80">
+                  Header Search Trigger Button:
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  style={{
+                    backgroundColor: searchForm.headerSearchBtnBg || "#FFFFFF",
+                    borderColor: searchForm.headerSearchBtnBorder || "#E2E8F0",
+                    color: searchForm.headerSearchBtnIconColor || "#072A6C"
+                  }}
+                  className="w-10 h-10 rounded-full border flex items-center justify-center transition-transform hover:scale-105 shadow-xs cursor-pointer"
+                  title="Search Preview"
+                >
+                  <Search size={17} style={{ color: searchForm.headerSearchBtnIconColor || "#072A6C" }} />
+                </button>
+                <div className="h-6 w-px bg-white/20" />
+                <span className="text-xs text-white/60 font-mono">Click opens modal below ↓</span>
+              </div>
+            </div>
+
+            {/* Modal Box Preview Container */}
+            <div className="p-4 sm:p-6 bg-slate-900/80 rounded-2xl border border-slate-700/50 flex items-center justify-center">
+              <div 
+                className="w-full max-w-xl bg-white rounded-2xl shadow-2xl border overflow-hidden transition-all"
+                style={{ borderColor: searchForm.modalBorderColor || "#E2E8F0" }}
+              >
+                {/* Search Input Bar */}
+                <div 
+                  className="relative flex items-center px-4 py-3.5 border-b"
+                  style={{ 
+                    backgroundColor: searchForm.modalHeaderBg || "#FFFFFF",
+                    borderColor: searchForm.modalBorderColor || "#F1F5F9"
+                  }}
+                >
+                  <Search 
+                    size={20} 
+                    className="shrink-0 mr-3 transition-colors"
+                    style={{ color: searchForm.searchIconColor || "#072A6C" }}
+                  />
+                  <input
+                    type="text"
+                    readOnly
+                    placeholder={searchForm.searchPlaceholder || "Type any program, department, facility, admissions, fees..."}
+                    style={{ color: searchForm.modalTextColor || "#072A6C" }}
+                    className="w-full bg-transparent placeholder-gray-400 font-semibold text-sm outline-none border-none cursor-default"
+                  />
+                  <div className="flex items-center gap-1 shrink-0">
+                    <span className="px-1.5 py-0.5 bg-gray-100 text-gray-500 text-[10px] font-mono rounded font-bold">
+                      ESC
+                    </span>
+                    <button
+                      type="button"
+                      className="p-1 text-gray-400 hover:text-gray-700 rounded-full cursor-default"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Top Quick Navigations */}
+                <div className="p-4 sm:p-5 bg-white space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Sparkles 
+                      size={15} 
+                      style={{ color: searchForm.quickNavHeadingIconColor || searchForm.searchIconColor || "#072A6C" }} 
+                    />
+                    <span 
+                      className="text-xs font-bold uppercase tracking-wider"
+                      style={{ color: searchForm.quickNavHeadingColor || "#64748B" }}
+                    >
+                      {searchForm.quickNavHeading || "Top Quick Navigations"}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {(searchForm.quickNavItems || []).filter(item => item.enabled !== false).map((item) => {
+                      const Icon = QUICK_NAV_ICON_MAP[item.iconName] || BookOpen;
+                      return (
+                        <div
+                          key={item.id || item.label}
+                          style={{
+                            backgroundColor: searchForm.quickNavCardBg || "#F8FAFC",
+                            color: searchForm.quickNavCardText || "#072A6C"
+                          }}
+                          className="flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-100 shadow-2xs group transition-all"
+                        >
+                          <div 
+                            className="w-7 h-7 rounded-lg bg-white flex items-center justify-center shrink-0 shadow-xs group-hover:scale-110 transition-transform"
+                            style={{ color: searchForm.quickNavCardIconColor || searchForm.searchIconColor || "#072A6C" }}
+                          >
+                            <Icon size={14} />
+                          </div>
+                          <span className="text-xs font-bold truncate">{item.label}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Save Bar */}
+            <div className="flex justify-end pt-3 border-t border-gray-100">
+              <button
+                type="button"
+                onClick={handleSaveSearchConfig}
+                className="px-6 py-2.5 text-xs font-bold text-white bg-[#072A6C] hover:bg-[#051C4A] rounded-xl shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
+              >
+                <Save size={14} /> Save & Publish Search Configuration
+              </button>
             </div>
           </div>
         </div>

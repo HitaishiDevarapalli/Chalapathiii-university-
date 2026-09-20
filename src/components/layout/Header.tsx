@@ -108,7 +108,7 @@ const CATEGORY_INFO: Record<string, { desc: string; linkText: string; to: string
 };
 
 export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {}) {
-  const { announcements, showAnnouncementsDrawer, setShowAnnouncementsDrawer, programs, siteSettings, themeColors } = useData();
+  const { announcements, showAnnouncementsDrawer, setShowAnnouncementsDrawer, programs, siteSettings, themeColors, searchConfig } = useData();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -673,10 +673,15 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
             </Link>
             <button
               onClick={() => setIsGlobalSearchOpen(true)}
-              className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-[#072A6C] hover:text-[#D4AF37] hover:border-[#D4AF37] transition-colors cursor-pointer relative shrink-0"
+              style={{
+                backgroundColor: searchConfig?.headerSearchBtnBg || "#FFFFFF",
+                borderColor: searchConfig?.headerSearchBtnBorder || "#E2E8F0",
+                color: searchConfig?.headerSearchBtnIconColor || "#072A6C"
+              }}
+              className="w-10 h-10 rounded-full border flex items-center justify-center transition-all cursor-pointer relative shrink-0 hover:shadow-xs"
               title="Search University (Ctrl+K)"
             >
-              <Search size={17} />
+              <Search size={17} style={{ color: searchConfig?.headerSearchBtnIconColor || "#072A6C" }} />
             </button>
             <button
               onClick={() => setShowAnnouncementsDrawer(!showAnnouncementsDrawer)}
@@ -694,10 +699,13 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
           <div className="flex min-[1024px]:hidden items-center gap-1">
             <button
               onClick={() => setIsGlobalSearchOpen(true)}
-              className="p-2 text-[#222222] hover:text-[#D4AF37] transition-colors cursor-pointer"
+              style={{
+                color: searchConfig?.headerSearchBtnIconColor || "#222222"
+              }}
+              className="p-2 transition-colors cursor-pointer"
               title="Search"
             >
-              <Search size={18} />
+              <Search size={18} style={{ color: searchConfig?.headerSearchBtnIconColor || "#222222" }} />
             </button>
             <button 
               onClick={() => setShowAnnouncementsDrawer(!showAnnouncementsDrawer)} 

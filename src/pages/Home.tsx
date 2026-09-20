@@ -133,6 +133,18 @@ export default function Home() {
   const [isPaused, setIsPaused] = useState(false);
   const [progress, setProgress] = useState(0);
 
+  // Real-time synchronization when CMS updates
+  const [, setCmsTick] = useState(0);
+  useEffect(() => {
+    const handleCmsUpdate = () => setCmsTick((t) => t + 1);
+    window.addEventListener("storage", handleCmsUpdate);
+    window.addEventListener("chalapathi_cms_updated", handleCmsUpdate);
+    return () => {
+      window.removeEventListener("storage", handleCmsUpdate);
+      window.removeEventListener("chalapathi_cms_updated", handleCmsUpdate);
+    };
+  }, []);
+
   // Active tab state for Schools & Programs
   const structure = academicStructure && Object.keys(academicStructure).length > 0
     ? academicStructure
@@ -1364,8 +1376,8 @@ export default function Home() {
               <div className="relative w-full max-w-[380px] rounded-[32px] overflow-hidden shadow-2xl group border-4 border-white bg-white transition-all duration-500 hover:shadow-3xl">
                 {/* Chairman Portrait */}
                 <img 
-                  src="/chairman_portrait.png" 
-                  alt="Chairman Dr. Y. V Anjaneyulu" 
+                  src={localStorage.getItem("chalapathi_chairman_image") || "/chairman_portrait.png"} 
+                  alt={localStorage.getItem("chalapathi_chairman_name") || "Chairman Dr. Y. V Anjaneyulu"} 
                   className="w-full h-auto object-cover aspect-[4/5] transition-transform duration-700 group-hover:scale-103"
                   style={{ objectPosition: "50% 0%" }}
                 />
@@ -1378,7 +1390,9 @@ export default function Home() {
 
                 {/* Floating Glass Information Card */}
                 <div className="absolute bottom-5 left-5 right-5 bg-[#072A6C]/75 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-white text-left transition-transform duration-300 group-hover:scale-102">
-                  <span className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-wider block mb-0.5">Chairman</span>
+                  <span className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-wider block mb-0.5">
+                    {localStorage.getItem("chalapathi_chairman_designation") || "Chairman"}
+                  </span>
                   <h4 className="text-base font-extrabold mb-0.5">{localStorage.getItem("chalapathi_chairman_name") || "Dr. Y. V Anjaneyulu"}</h4>
                   <p className="text-[10px] text-gray-200 font-light leading-snug">
                     {localStorage.getItem("chalapathi_chairman_group") || "Chalapathi Educational Society"}
@@ -1416,15 +1430,31 @@ export default function Home() {
                 {/* Signature, Name, Designation & Action Button */}
                 <div className="mt-8 pt-6 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 z-10">
                   <div className="space-y-2">
-                    {/* Cursive Signature */}
+                    {/* Cursive Signature or Uploaded Signature Image */}
                     <div className="h-12 flex items-center select-none">
-                      <svg className="h-9 text-[#072A6C]" viewBox="0 0 160 50" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                        <path d="M15 28c12-6 22-14 26-1s-8 12-4 4 12-16 16-4-4 12 0 4 10-14 12-2-4 10 4 2 10-12 12 0-4 10 4 2 10-12 12 4-4 8 4 2c10 2 15-4 18-9" />
-                      </svg>
+                      {localStorage.getItem("chalapathi_chairman_signature") ? (
+                        <img 
+                          src={localStorage.getItem("chalapathi_chairman_signature")!} 
+                          alt="Chairman Signature" 
+                          className="h-10 max-w-[180px] object-contain" 
+                        />
+                      ) : (
+                        <svg 
+                          className="h-9 text-[#072A6C]" 
+                          style={{ color: localStorage.getItem("chalapathi_chairman_signature_color") || "#072A6C" }}
+                          viewBox="0 0 160 50" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          strokeWidth="2.5" 
+                          strokeLinecap="round"
+                        >
+                          <path d="M15 28c12-6 22-14 26-1s-8 12-4 4 12-16 16-4-4 12 0 4 10-14 12-2-4 10 4 2 10-12 12 0-4 10 4 2 10-12 12 4-4 8 4 2c10 2 15-4 18-9" />
+                        </svg>
+                      )}
                     </div>
                     <div>
                       <h5 className="text-xs font-extrabold text-[#072A6C]">{localStorage.getItem("chalapathi_chairman_name") || "Dr. Y. V Anjaneyulu"}</h5>
-                      <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{localStorage.getItem("chalapathi_chairman_designation") || "Chairman"}</span>
+                      <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{localStorage.getItem("chalapathi_chairman_designation") || "CHAIRMAN"}</span>
                     </div>
                   </div>
                 </div>

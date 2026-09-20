@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useData, DEFAULT_SEARCH_CONFIG } from "../../context/DataContext";
 import {
   Search, X, ArrowRight, Sparkles, BookOpen, GraduationCap, Building, Briefcase,
   Shield, Award, FileText, CheckSquare, TrendingUp, Home, Bus, Library, Trophy,
@@ -8,6 +9,30 @@ import {
   Lightbulb, Rocket, TestTube, UserCheck, Layers, Calendar, Newspaper, Image, Medal,
   FileCheck, FileEdit, BarChart2, CalendarDays, Eye, ChevronRight, Landmark
 } from "lucide-react";
+
+export const QUICK_NAV_ICON_MAP: Record<string, React.ElementType> = {
+  Laptop,
+  Rocket,
+  FileText,
+  TrendingUp,
+  Home,
+  Phone,
+  GraduationCap,
+  BookOpen,
+  Award,
+  Building,
+  Shield,
+  Briefcase,
+  Users,
+  Globe,
+  MapPin,
+  Sparkles,
+  Lightbulb,
+  Star,
+  Microscope,
+  Cpu,
+  Database
+};
 
 export interface SearchItem {
   id: string;
@@ -615,6 +640,9 @@ interface GlobalSearchModalProps {
 }
 
 export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose }) => {
+  const { searchConfig } = useData();
+  const config = searchConfig || DEFAULT_SEARCH_CONFIG;
+
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const navigate = useNavigate();
@@ -696,31 +724,43 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
   return (
     <div className="fixed inset-0 z-[99999] bg-black/70 backdrop-blur-md flex items-start justify-center pt-12 md:pt-20 px-3 select-none animate-fade-in font-[var(--font-poppins)]">
       <div 
-        className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col max-h-[80vh] transition-all transform animate-scale-up"
+        className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border overflow-hidden flex flex-col max-h-[80vh] transition-all transform animate-scale-up"
+        style={{ borderColor: config.modalBorderColor || "#E2E8F0" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Header Input */}
-        <div className="relative flex items-center px-4 py-3.5 border-b border-gray-100 bg-gray-50/50">
-          <Search size={20} className="text-[#072A6C] shrink-0 mr-3" />
+        <div 
+          className="relative flex items-center px-4 py-3.5 border-b"
+          style={{ 
+            backgroundColor: config.modalHeaderBg || "#FFFFFF",
+            borderColor: config.modalBorderColor || "#F1F5F9"
+          }}
+        >
+          <Search 
+            size={20} 
+            className="shrink-0 mr-3 transition-colors"
+            style={{ color: config.searchIconColor || "#072A6C" }}
+          />
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Type any program, department, facility, admissions, fees..."
-            className="w-full bg-transparent text-[#072A6C] placeholder-gray-400 font-semibold text-sm md:text-base outline-none border-none"
+            placeholder={config.searchPlaceholder || "Type any program, department, facility, admissions, fees..."}
+            style={{ color: config.modalTextColor || "#072A6C" }}
+            className="w-full bg-transparent placeholder-gray-400 font-semibold text-sm md:text-base outline-none border-none"
           />
           {query && (
             <button
               onClick={() => setQuery("")}
-              className="p-1 hover:bg-gray-200 rounded-full text-gray-400 hover:text-gray-600 transition-colors mr-2 border-none outline-none cursor-pointer"
+              className="p-1 hover:bg-gray-200/70 rounded-full text-gray-400 hover:text-gray-600 transition-colors mr-2 border-none outline-none cursor-pointer"
             >
               <X size={16} />
             </button>
           )}
           <button
             onClick={onClose}
-            className="p-1.5 hover:bg-gray-200 rounded-full text-gray-500 hover:text-[#072A6C] transition-colors border-none outline-none cursor-pointer"
+            className="p-1.5 hover:bg-gray-200/70 rounded-full text-gray-500 hover:text-[#072A6C] transition-colors border-none outline-none cursor-pointer"
             title="Close"
           >
             <X size={18} />
@@ -732,26 +772,31 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
           {query.trim() === "" ? (
             <div className="py-6 px-4">
               <div className="flex items-center gap-2 mb-3">
-                <Sparkles size={16} className="text-[#D4AF37]" />
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Top Quick Navigations</span>
+                <Sparkles size={16} style={{ color: config.quickNavHeadingIconColor || config.searchIconColor || "#072A6C" }} />
+                <span 
+                  className="text-xs font-bold uppercase tracking-wider"
+                  style={{ color: config.quickNavHeadingColor || "#64748B" }}
+                >
+                  {config.quickNavHeading || "Top Quick Navigations"}
+                </span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {[
-                  { label: "B.Tech CSE", route: "/academics/btech-cse", icon: Laptop },
-                  { label: "Apply Now", route: "/admissions/apply", icon: Rocket },
-                  { label: "Fee Structure", route: "/academics/fee-structure", icon: FileText },
-                  { label: "Placements", route: "/academics/placements", icon: TrendingUp },
-                  { label: "Hostels", route: "/campus-life/hostels", icon: Home },
-                  { label: "Contact Us", route: "/contact", icon: Phone }
-                ].map((item) => {
-                  const Icon = item.icon;
+                {(config.quickNavItems || []).filter(item => item.enabled !== false).map((item) => {
+                  const Icon = QUICK_NAV_ICON_MAP[item.iconName] || BookOpen;
                   return (
                     <button
-                      key={item.label}
+                      key={item.id || item.label}
                       onClick={() => handleSelectRoute(item.route)}
-                      className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-50 hover:bg-[#072A6C] text-[#072A6C] hover:text-white transition-all text-left group border border-slate-100 cursor-pointer outline-none"
+                      style={{
+                        backgroundColor: config.quickNavCardBg || "#F8FAFC",
+                        color: config.quickNavCardText || "#072A6C"
+                      }}
+                      className="flex items-center gap-2.5 p-2.5 rounded-xl transition-all text-left group border border-slate-100 hover:border-slate-300 hover:shadow-xs hover:scale-[1.02] cursor-pointer outline-none"
                     >
-                      <div className="w-7 h-7 rounded-lg bg-white group-hover:bg-white/20 flex items-center justify-center text-[#D4AF37] shrink-0 shadow-xs">
+                      <div 
+                        className="w-7 h-7 rounded-lg bg-white flex items-center justify-center shrink-0 shadow-xs group-hover:scale-110 transition-transform"
+                        style={{ color: config.quickNavCardIconColor || config.searchIconColor || "#072A6C" }}
+                      >
                         <Icon size={14} />
                       </div>
                       <span className="text-xs font-bold truncate">{item.label}</span>

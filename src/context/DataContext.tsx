@@ -498,6 +498,35 @@ export interface CampusVideoItem {
   sizeMb?: string;
 }
 
+export interface QuickNavItem {
+  id: string;
+  label: string;
+  route: string;
+  iconName: string;
+  enabled?: boolean;
+}
+
+export interface SearchBarConfig {
+  searchPlaceholder: string;
+  searchIconColor: string;
+  searchIconHoverColor: string;
+  headerSearchBtnBg: string;
+  headerSearchBtnBorder: string;
+  headerSearchBtnIconColor: string;
+  modalHeaderBg: string;
+  modalBorderColor: string;
+  modalTextColor: string;
+  quickNavHeading: string;
+  quickNavHeadingColor: string;
+  quickNavHeadingIconColor: string;
+  quickNavCardBg: string;
+  quickNavCardText: string;
+  quickNavCardHoverBg: string;
+  quickNavCardHoverText: string;
+  quickNavCardIconColor: string;
+  quickNavItems: QuickNavItem[];
+}
+
 export interface CampusTourConfig {
   badge: string;
   quote: string;
@@ -821,6 +850,9 @@ interface DataContextType {
 
   showAnnouncementsDrawer: boolean;
   setShowAnnouncementsDrawer: (show: boolean) => void;
+
+  searchConfig: SearchBarConfig;
+  updateSearchConfig: (config: SearchBarConfig) => void;
 
   resetToDefaults: () => void;
   lastSavedTime: string | null;
@@ -1809,6 +1841,34 @@ export const DEFAULT_CAMPUS_BANNERS: CampusBannersConfig = {
     buttonText: "View All Events →",
     url: "/news"
   }
+};
+
+export const DEFAULT_SEARCH_CONFIG: SearchBarConfig = {
+  searchPlaceholder: "Type any program, department, facility, admissions, fees...",
+  searchIconColor: "#072A6C",
+  searchIconHoverColor: "#051C4A",
+  headerSearchBtnBg: "#FFFFFF",
+  headerSearchBtnBorder: "#E2E8F0",
+  headerSearchBtnIconColor: "#072A6C",
+  modalHeaderBg: "#FFFFFF",
+  modalBorderColor: "#E2E8F0",
+  modalTextColor: "#1E293B",
+  quickNavHeading: "Top Quick Navigations",
+  quickNavHeadingColor: "#64748B",
+  quickNavHeadingIconColor: "#072A6C",
+  quickNavCardBg: "#F8FAFC",
+  quickNavCardText: "#1E293B",
+  quickNavCardHoverBg: "#F1F5F9",
+  quickNavCardHoverText: "#072A6C",
+  quickNavCardIconColor: "#072A6C",
+  quickNavItems: [
+    { id: "nav-cse", label: "B.Tech CSE", route: "/academics/btech-cse", iconName: "Laptop", enabled: true },
+    { id: "nav-apply", label: "Apply Now", route: "/admissions/apply", iconName: "Rocket", enabled: true },
+    { id: "nav-fees", label: "Fee Structure", route: "/academics/fee-structure", iconName: "FileText", enabled: true },
+    { id: "nav-placements", label: "Placements", route: "/academics/placements", iconName: "TrendingUp", enabled: true },
+    { id: "nav-hostels", label: "Hostels", route: "/campus-life/hostels", iconName: "Home", enabled: true },
+    { id: "nav-contact", label: "Contact Us", route: "/contact", iconName: "Phone", enabled: true }
+  ]
 };
 
 export const DEFAULT_CAMPUS_LIFE_CONTENT: CampusLifeContent = {
@@ -3288,6 +3348,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const localCampusLife = localStorage.getItem("chalapathi_campus_life_content");
         if (localCampusLife) setCampusLifeContent(JSON.parse(localCampusLife));
 
+        const localSearch = localStorage.getItem("chalapathi_search_config");
+        if (localSearch) setSearchConfig({ ...DEFAULT_SEARCH_CONFIG, ...JSON.parse(localSearch) });
+
         const lastSaved = localStorage.getItem("chalapathi_last_saved");
         if (lastSaved) setLastSavedTime(lastSaved);
       } catch (err) {
@@ -3600,6 +3663,25 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     recordSave();
   };
 
+  // Search Bar & Search Icon CMS Config
+  const [searchConfig, setSearchConfig] = useState<SearchBarConfig>(() => {
+    try {
+      const local = localStorage.getItem("chalapathi_search_config");
+      if (local) {
+        return { ...DEFAULT_SEARCH_CONFIG, ...JSON.parse(local) };
+      }
+    } catch (e) {
+      console.error("Failed to parse search config", e);
+    }
+    return DEFAULT_SEARCH_CONFIG;
+  });
+
+  const updateSearchConfig = (config: SearchBarConfig) => {
+    setSearchConfig(config);
+    localStorage.setItem("chalapathi_search_config", JSON.stringify(config));
+    recordSave();
+  };
+
   const resetToDefaults = () => {
     if (window.confirm("Are you sure you want to reset all CMS content to original university defaults? This will restore original website content.")) {
       localStorage.clear();
@@ -3619,6 +3701,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setCampusGallery(DEFAULT_CAMPUS_GALLERY);
       setCampusBanners(DEFAULT_CAMPUS_BANNERS);
       setCampusLifeContent(DEFAULT_CAMPUS_LIFE_CONTENT);
+      setSearchConfig(DEFAULT_SEARCH_CONFIG);
       setAboutContent(INITIAL_ABOUT_CONTENT);
       setCalendarData(INITIAL_CALENDAR_DATA);
       setFacultyData(INITIAL_FACULTY_DATA);
@@ -3678,6 +3761,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       updateCampusGallery,
       campusBanners,
       updateCampusBanners,
+      searchConfig,
+      updateSearchConfig,
       aboutContent,
       calendarData,
       facultyData,

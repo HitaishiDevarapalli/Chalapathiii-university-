@@ -217,7 +217,7 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
     setSelectedModuleId(null);
     setSearchParams({}, { replace: true });
     setTimeout(() => {
-      const target = document.getElementById("academic-blueprint-matrix") || document.getElementById("academic-command-viewport");
+      const target = document.getElementById("academic-modules-overview") || document.getElementById("academic-command-viewport");
       if (target) {
         target.scrollIntoView({ behavior: "smooth", block: "start" });
       } else {
@@ -298,191 +298,88 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans selection:bg-[#D4AF37] selection:text-[#072A6C] relative overflow-x-hidden">
       
       {/* ═══════════════════════════════════════════════════════════════════
-          FUTURISTIC BACKGROUND MESH & LUXURY AMBIENCE
+          1. ACADEMIC PROGRAM HERO (CLEAN, PRESTIGIOUS UNIVERSITY THEME)
       ═══════════════════════════════════════════════════════════════════ */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        {/* Subtle Background Pattern */}
+      <section className="relative z-10 bg-[#072A6C] text-white py-12 px-4 sm:px-6 lg:px-8 border-b border-slate-200/20 shadow-md">
+        {/* Clean university subtle watermark pattern */}
         <div 
-          className="absolute inset-0 opacity-[0.03]"
+          className="absolute inset-0 opacity-5 pointer-events-none"
           style={{
-            backgroundImage: `radial-gradient(#072A6C 1px, transparent 1px)`,
-            backgroundSize: "32px 32px"
+            backgroundImage: `radial-gradient(circle, #ffffff 1px, transparent 1px)`,
+            backgroundSize: "24px 24px"
           }}
         />
-        {/* Soft Glowing Ambient Orbs - Clean Sapphire & Slate Tones */}
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-[#072A6C]/8 rounded-full blur-[120px]" />
-        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-blue-500/5 rounded-full blur-[140px]" />
-        <div className="absolute bottom-20 left-1/3 w-[30rem] h-[30rem] bg-indigo-500/5 rounded-full blur-[160px]" />
-      </div>
-
-      {/* ═══════════════════════════════════════════════════════════════════
-          1. ATTENTION-GRABBING EXECUTIVE 3D HOLOGRAPHIC HERO COCKPIT
-      ═══════════════════════════════════════════════════════════════════ */}
-      <section className="relative z-10 bg-gradient-to-br from-[#031538] via-[#072A6C] to-[#0A3A94] text-white pt-8 pb-16 px-4 sm:px-6 lg:px-8 border-b border-white/10 shadow-2xl overflow-hidden">
-        
-        {/* Animated Aurora Glow Beams */}
-        <div className="absolute -top-32 -left-32 w-[550px] h-[550px] bg-gradient-to-br from-[#D4AF37]/25 via-cyan-500/15 to-transparent rounded-full blur-[130px] animate-pulse pointer-events-none" />
-        <div className="absolute top-1/4 -right-32 w-[600px] h-[600px] bg-gradient-to-bl from-cyan-400/20 via-[#00F0FF]/10 to-transparent rounded-full blur-[140px] pointer-events-none" />
-        <div className="absolute inset-0 opacity-[0.12] bg-[radial-gradient(#00F0FF_1px,transparent_1px)] [background-size:28px_28px] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto space-y-6 relative z-10">
           
-          {/* Top Breadcrumb & Live Hologram Radar Status */}
-          <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
-            <nav className="flex items-center gap-1.5 text-white/75 font-medium overflow-x-auto scrollbar-none py-1">
-              <Link to="/" className="hover:text-white transition-colors">Home</Link>
-              <ChevronRight size={13} className="text-white/40 shrink-0" />
-              <Link to="/academics" className="hover:text-white transition-colors">Academics</Link>
-              <ChevronRight size={13} className="text-white/40 shrink-0" />
-              <Link to="/academics/programmes" className="hover:text-white transition-colors">{programData.department}</Link>
-              <ChevronRight size={13} className="text-[#D4AF37] shrink-0" />
-              <span className="text-[#D4AF37] font-bold truncate">{programData.shortName}</span>
-            </nav>
+          {/* Clean Breadcrumb Navigation */}
+          <nav className="flex items-center gap-2 text-xs text-white/75 font-medium overflow-x-auto scrollbar-none">
+            <Link to="/" className="hover:text-white transition-colors">Home</Link>
+            <ChevronRight size={13} className="text-white/40 shrink-0" />
+            <Link to="/academics" className="hover:text-white transition-colors">Academics</Link>
+            <ChevronRight size={13} className="text-white/40 shrink-0" />
+            <Link to="/academics/programmes" className="hover:text-white transition-colors">{programData.department}</Link>
+            <ChevronRight size={13} className="text-[#D4AF37] shrink-0" />
+            <span className="text-[#D4AF37] font-semibold truncate">{programData.shortName}</span>
+          </nav>
 
-            {/* Glowing Live Radar Pill */}
-            <motion.div 
-              whileHover={{ scale: 1.03 }}
-              className="inline-flex items-center gap-2.5 bg-gradient-to-r from-emerald-500/20 via-emerald-500/10 to-transparent border border-emerald-400/40 text-emerald-300 px-3.5 py-1.5 rounded-full text-[11px] font-mono font-semibold backdrop-blur-xl shadow-[0_0_15px_rgba(16,185,129,0.2)]"
-            >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
-              </span>
-              <span className="tracking-wide">ADMISSIONS 2026-27 ACTIVE</span>
-              <span className="text-emerald-400 font-black">● FAST TRACK OPEN</span>
-            </motion.div>
-          </div>
-
-          {/* Main Hero Header */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center pt-2">
+          {/* Main Hero Content */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center pt-1">
             
             <div className="lg:col-span-8 space-y-5 text-left">
               
-              {/* Program Badges & Accreditations Pill Ribbon */}
-              <div className="flex flex-wrap items-center gap-2">
-                <motion.span 
-                  whileHover={{ scale: 1.05 }}
-                  className="bg-gradient-to-r from-[#D4AF37] via-[#E6C86E] to-[#D4AF37] text-[#072A6C] text-xs font-black uppercase px-3.5 py-1.5 rounded-xl tracking-wider shadow-md flex items-center gap-1.5 cursor-default"
-                >
-                  <GraduationCap size={15} /> {programData.level} Degree
-                </motion.span>
-                <span className="bg-white/15 backdrop-blur-xl border border-white/25 text-white text-xs font-bold px-3.5 py-1.5 rounded-xl shadow-xs">
-                  🏛️ {programData.school}
-                </span>
-                <span className="bg-cyan-400/15 backdrop-blur-xl border border-cyan-400/35 text-cyan-200 text-xs font-mono font-bold px-3.5 py-1.5 rounded-xl shadow-xs">
-                  ⚡ CODE: {slug.toUpperCase()}
-                </span>
-                <span className="hidden sm:inline-flex items-center gap-1 bg-amber-400/15 border border-amber-400/30 text-amber-200 text-xs font-bold px-3 py-1.5 rounded-xl">
-                  ⭐ NBA & NAAC A+ Tier
-                </span>
+              {/* Clean Minimalist Badges: Department Name & Duration ONLY */}
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="inline-flex items-center gap-2 bg-white/10 text-white text-xs font-semibold px-3.5 py-1.5 rounded-lg border border-white/20 shadow-xs">
+                  <Building size={14} className="text-[#D4AF37]" />
+                  <span>{programData.department}</span>
+                </div>
+                <div className="inline-flex items-center gap-2 bg-white/10 text-white text-xs font-semibold px-3.5 py-1.5 rounded-lg border border-white/20 shadow-xs">
+                  <Clock size={14} className="text-[#D4AF37]" />
+                  <span>Duration: {programData.duration}</span>
+                </div>
               </div>
 
-              {/* Title with Shimmering Gradient Polish */}
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-[1.14] text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-amber-200/95 drop-shadow-sm">
+              {/* Program Title */}
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white leading-tight">
                 {programData.title}
               </h1>
 
-              {/* Summary */}
-              <p className="text-white/85 text-xs sm:text-sm lg:text-base leading-relaxed max-w-3xl font-light">
+              {/* Program Overview Summary */}
+              <p className="text-slate-200 text-sm sm:text-base leading-relaxed max-w-3xl font-normal">
                 {programData.about.summary}
               </p>
 
-              {/* 4 Attention-Grabbing 3D Holographic Stat Cards with Glow & Badges */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 pt-3">
-                
-                {/* Duration Card */}
-                <motion.div 
-                  whileHover={{ y: -5, scale: 1.02 }}
-                  className="bg-gradient-to-b from-white/15 via-white/10 to-white/5 backdrop-blur-2xl border border-white/20 hover:border-[#D4AF37]/80 p-4 rounded-2xl shadow-xl hover:shadow-[0_10px_30px_rgba(212,175,55,0.25)] transition-all relative overflow-hidden group cursor-default"
-                >
-                  <div className="absolute -top-4 -right-4 w-14 h-14 bg-cyan-400/15 rounded-full blur-xl group-hover:bg-cyan-400/30 transition-all" />
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] text-[#D4AF37] font-mono font-black uppercase tracking-wider block">Duration</span>
-                    <Clock size={13} className="text-[#D4AF37]/70" />
-                  </div>
-                  <span className="text-xs sm:text-sm font-black text-white block truncate">{programData.duration}</span>
-                  <span className="text-[9px] font-bold text-cyan-300/80 uppercase tracking-widest mt-1 block">Full-Time Mode</span>
-                </motion.div>
-
-                {/* Annual Intake Card */}
-                <motion.div 
-                  whileHover={{ y: -5, scale: 1.02 }}
-                  className="bg-gradient-to-b from-white/15 via-white/10 to-white/5 backdrop-blur-2xl border border-white/20 hover:border-[#D4AF37]/80 p-4 rounded-2xl shadow-xl hover:shadow-[0_10px_30px_rgba(212,175,55,0.25)] transition-all relative overflow-hidden group cursor-default"
-                >
-                  <div className="absolute -top-4 -right-4 w-14 h-14 bg-[#D4AF37]/15 rounded-full blur-xl group-hover:bg-[#D4AF37]/35 transition-all" />
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] text-[#D4AF37] font-mono font-black uppercase tracking-wider block">Intake</span>
-                    <Users size={13} className="text-[#D4AF37]/70" />
-                  </div>
-                  <span className="text-xs sm:text-sm font-black text-white block truncate">{programData.intake}</span>
-                  <span className="text-[9px] font-bold text-amber-300/80 uppercase tracking-widest mt-1 block">Merit + Entrance</span>
-                </motion.div>
-
-                {/* Highest CTC Card */}
-                <motion.div 
-                  whileHover={{ y: -5, scale: 1.02 }}
-                  className="bg-gradient-to-b from-white/15 via-white/10 to-white/5 backdrop-blur-2xl border border-white/20 hover:border-emerald-400/80 p-4 rounded-2xl shadow-xl hover:shadow-[0_10px_30px_rgba(52,211,153,0.3)] transition-all relative overflow-hidden group cursor-default"
-                >
-                  <div className="absolute -top-4 -right-4 w-14 h-14 bg-emerald-400/20 rounded-full blur-xl group-hover:bg-emerald-400/40 transition-all" />
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] text-emerald-300 font-mono font-black uppercase tracking-wider block">Highest CTC</span>
-                    <Flame size={13} className="text-emerald-400 animate-pulse" />
-                  </div>
-                  <span className="text-sm sm:text-base font-black text-emerald-300 block truncate">{programData.placements.highestPackage}</span>
-                  <span className="text-[9px] font-bold text-emerald-400/90 uppercase tracking-widest mt-1 block">Top Placement</span>
-                </motion.div>
-
-                {/* Placement Rate Card */}
-                <motion.div 
-                  whileHover={{ y: -5, scale: 1.02 }}
-                  className="bg-gradient-to-b from-white/15 via-white/10 to-white/5 backdrop-blur-2xl border border-white/20 hover:border-cyan-400/80 p-4 rounded-2xl shadow-xl hover:shadow-[0_10px_30px_rgba(6,182,212,0.3)] transition-all relative overflow-hidden group cursor-default"
-                >
-                  <div className="absolute -top-4 -right-4 w-14 h-14 bg-cyan-400/20 rounded-full blur-xl group-hover:bg-cyan-400/40 transition-all" />
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] text-cyan-300 font-mono font-black uppercase tracking-wider block">Placement</span>
-                    <TrendingUp size={13} className="text-cyan-400" />
-                  </div>
-                  <span className="text-sm sm:text-base font-black text-cyan-300 block truncate">{programData.placements.placementRate}</span>
-                  <span className="text-[9px] font-bold text-cyan-400/90 uppercase tracking-widest mt-1 block">Placement Track</span>
-                </motion.div>
-
-              </div>
-
             </div>
 
-            {/* Right Admission Enrolment Pass */}
+            {/* Right Admission Enrolment Card (Prestigious White Card) */}
             <div className="lg:col-span-4">
-              <motion.div 
-                whileHover={{ y: -4 }}
-                transition={{ duration: 0.2 }}
-                className="bg-gradient-to-b from-white/20 via-white/12 to-white/5 backdrop-blur-2xl border-2 border-white/30 hover:border-[#D4AF37]/60 p-7 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] space-y-4 text-left relative overflow-hidden group"
-              >
-                {/* Dynamic Shimmer Light Sweep on Hover */}
-                <div className="absolute -top-16 -right-16 w-48 h-48 bg-gradient-to-bl from-[#D4AF37]/35 via-cyan-400/20 to-transparent rounded-full blur-3xl pointer-events-none group-hover:scale-125 transition-transform duration-500" />
-                
-                <div className="space-y-1.5 relative z-10">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono font-black uppercase tracking-widest text-[#D4AF37] flex items-center gap-1.5">
-                      <Zap size={13} className="text-[#D4AF37] animate-bounce" /> ENROLMENT PORTAL
-                    </span>
-                    <span className="text-[9px] font-mono font-bold bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-0.5 rounded-full border border-[#D4AF37]/30">
-                      SESSION 2026-27
-                    </span>
-                  </div>
-                  <h3 className="text-xl font-black text-white leading-snug">Enroll in {programData.shortName}</h3>
-                  <p className="text-xs text-white/80 font-light leading-relaxed">
+              <div className="bg-white text-slate-900 rounded-2xl p-6 sm:p-7 shadow-xl border border-slate-100 space-y-4 text-left">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#072A6C] uppercase tracking-wider">
+                    Admissions 2026–27
+                  </span>
+                  <span className="text-[11px] font-semibold bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                    Open Now
+                  </span>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-extrabold text-[#072A6C] leading-snug">
+                    Apply for {programData.shortName}
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                     Direct merit seats, state counselling & scholarship pathways active for eligible applicants.
                   </p>
                 </div>
 
-                <div className="space-y-3 pt-2 relative z-10">
+                <div className="space-y-2.5 pt-1">
                   <Link
                     to="/admissions/apply"
-                    className="w-full h-12 bg-gradient-to-r from-[#D4AF37] via-[#F3DA89] to-[#D4AF37] hover:from-[#E6C86E] hover:to-[#D4AF37] text-[#072A6C] text-xs font-black uppercase tracking-wider rounded-2xl flex items-center justify-center gap-2 transition-all shadow-xl hover:shadow-[0_0_25px_rgba(212,175,55,0.45)] active:scale-98 cursor-pointer relative overflow-hidden group/btn"
+                    className="w-full h-11 bg-[#072A6C] hover:bg-[#051C4A] text-white text-xs font-bold uppercase tracking-wider rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-98 cursor-pointer"
                   >
-                    <span className="relative z-10 flex items-center gap-2 font-black text-sm">
-                      🚀 Launch Application <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
-                    </span>
+                    <span>Apply for Admission</span>
+                    <ArrowRight size={15} />
                   </Link>
                   
                   <a
@@ -493,16 +390,16 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
                         alert(`Downloading Syllabus & Curriculum PDF for ${programData.title}.`);
                       }
                     }}
-                    className="w-full h-10 bg-white/15 hover:bg-white/25 text-white text-xs font-bold rounded-2xl flex items-center justify-center gap-2 transition-colors border border-white/25 cursor-pointer shadow-sm backdrop-blur-md"
+                    className="w-full h-10 bg-slate-100 hover:bg-slate-200/80 text-slate-700 text-xs font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors border border-slate-200 cursor-pointer"
                   >
-                    <Download size={14} /> Download Curriculum PDF
+                    <Download size={14} /> Download Syllabus (PDF)
                   </a>
                 </div>
 
-                <div className="pt-3 border-t border-white/15 flex items-center justify-between text-[11px] text-white/80 relative z-10 font-mono">
-                  <span>ELIGIBILITY: {programData.eligibility}</span>
+                <div className="pt-3 border-t border-slate-100 text-[11px] text-slate-600">
+                  <span className="font-semibold text-slate-800">Eligibility:</span> {programData.eligibility}
                 </div>
-              </motion.div>
+              </div>
             </div>
 
           </div>
@@ -642,25 +539,25 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
             VIEW A: PROGRAM CURRICULUM & MODULES GRID (DEFAULT VIEW)
         ───────────────────────────────────────────────────────────── */}
         {!selectedModuleId ? (
-          <div id="academic-blueprint-matrix" className="space-y-8 scroll-mt-24">
+          <div id="academic-modules-overview" className="space-y-8 scroll-mt-24">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-2 border-b border-slate-200/80">
               <div className="space-y-1.5 text-left">
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-mono font-black text-[#072A6C] uppercase tracking-wider bg-blue-50 px-3 py-1 rounded-lg border border-blue-200/80">
-                    PROGRAM CURRICULUM & MODULES
+                    ACADEMIC PROGRAM STRUCTURE
                   </span>
                   <span className="text-slate-300">•</span>
                   <span className="text-xs text-slate-500 font-semibold">
-                    {matrixSections.length} {matrixSections.length === 1 ? "Module" : "Modules"} Available
+                    {matrixSections.length} {matrixSections.length === 1 ? "Academic Module" : "Academic Modules"}
                   </span>
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-black text-[#072A6C]">
                   {activeSectorId === "sector-all" 
-                    ? "Curriculum & Program Modules" 
-                    : CYBER_SECTORS.find(s => s.id === activeSectorId)?.title || "Program Modules"}
+                    ? "Curriculum & Degree Modules" 
+                    : CYBER_SECTORS.find(s => s.id === activeSectorId)?.title || "Degree Modules"}
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-600 font-light">
-                  Explore comprehensive course curriculum, laboratories, faculty mentorship, and career pathways for {programData.shortName}. Click any module to view details.
+                  Comprehensive overview of undergraduate engineering coursework, laboratory practicals, academic faculty, and industry career pathways for {programData.title}. Select any module below to view detailed syllabi and learning outcomes.
                 </p>
               </div>
 
@@ -890,17 +787,17 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
             JOIN CHALAPATHI UNIVERSITY ACADEMIC COMMUNITY
           </span>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black">
-            Begin Your Futuristic Career in {programData.shortName}
+            Begin Your Academic Journey in {programData.shortName}
           </h2>
           <p className="text-xs sm:text-sm text-white/80 max-w-xl mx-auto font-light leading-relaxed">
-            Empowering next-generation engineers, creators, and business leaders with world-class curriculum and guaranteed placement mentorship.
+            Empowering next-generation engineers, creators, and business leaders with world-class curriculum and comprehensive career mentorship.
           </p>
           <div className="pt-4 flex flex-wrap justify-center gap-3.5">
             <Link
               to="/admissions/apply"
               className="h-11 px-8 bg-gradient-to-r from-[#D4AF37] to-[#E5C158] hover:from-[#C9A84C] hover:to-[#D4AF37] text-[#072A6C] text-xs font-black uppercase tracking-wider rounded-2xl inline-flex items-center gap-2 shadow-lg transition-all active:scale-98 cursor-pointer"
             >
-              🚀 Apply Online Now <ArrowRight size={14} />
+              Apply Online Now <ArrowRight size={14} />
             </Link>
             <Link
               to="/admissions"
@@ -943,7 +840,7 @@ function renderModuleContent(
         <div className="space-y-7">
           <div className="p-6 bg-gradient-to-r from-slate-50 to-blue-50/30 rounded-2xl border border-slate-200/80 space-y-2">
             <span className="text-[10px] font-mono font-bold text-[#072A6C] uppercase tracking-wider block">
-              BLUEPRINT OVERVIEW
+              PROGRAM OVERVIEW & OBJECTIVES
             </span>
             <p className="text-sm sm:text-base text-slate-700 leading-relaxed font-light">
               {programData.about.summary}

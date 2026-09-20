@@ -275,14 +275,29 @@ export default function AdminPortal() {
   // 3. CHAIRMAN FORM
   // ----------------------------------------------------
   const chairmanSection = sectionsList.find((s) => s.id === "chairman");
-  const [chairmanData, setChairmanData] = useState(() => chairmanSection?.extraData || {
-    name: "Dr. Y. V Anjaneyulu",
-    designation: "Chairman",
-    group: "Chalapathi Group of Institutions",
-    message: "At Chalapathi University, we believe education is the most powerful transformer of lives and the key to building a better society.",
-    videoUrl: "/chalapathi_logo_intro.mp4",
-    image: "/chairman_v4.png",
-    buttonText: "Watch Chairman's Message"
+  const [chairmanData, setChairmanData] = useState(() => {
+    const localName = typeof window !== "undefined" ? localStorage.getItem("chalapathi_chairman_name") : null;
+    const localDesig = typeof window !== "undefined" ? localStorage.getItem("chalapathi_chairman_designation") : null;
+    const localGroup = typeof window !== "undefined" ? localStorage.getItem("chalapathi_chairman_group") : null;
+    const localMsg = typeof window !== "undefined" ? localStorage.getItem("chalapathi_chairman_message") : null;
+    const localVid = typeof window !== "undefined" ? localStorage.getItem("chalapathi_chairman_video") : null;
+    const localImg = typeof window !== "undefined" ? localStorage.getItem("chalapathi_chairman_image") : null;
+    const localSig = typeof window !== "undefined" ? localStorage.getItem("chalapathi_chairman_signature") : null;
+    const localSigCol = typeof window !== "undefined" ? localStorage.getItem("chalapathi_chairman_signature_color") : null;
+
+    const extra = chairmanSection?.extraData || {};
+    return {
+      name: localName || extra.name || "Dr. Y. V Anjaneyulu",
+      designation: localDesig || extra.designation || "Chairman",
+      group: localGroup || extra.group || "Chalapathi Educational Society",
+      message: localMsg || extra.message || "At Chalapathi University, we believe education is the most powerful transformer of lives and the key to building a better society. Our mission is to empower young minds with knowledge, values, and innovation to help them lead with purpose and create a lasting impact on the world.\n\nWe are committed to providing a nurturing environment, world-class infrastructure, and industry-oriented education to shape future leaders and responsible citizens.",
+      quote: extra.quote || "Empowering minds, inspiring innovation, and building leaders for tomorrow.",
+      videoUrl: localVid || extra.videoUrl || "/chalapathi_logo_intro.mp4",
+      image: localImg || extra.image || "/chairman_portrait.png",
+      signature: localSig || extra.signature || "",
+      signatureColor: localSigCol || extra.signatureColor || "#072A6C",
+      buttonText: extra.buttonText || "Watch Chairman's Message"
+    };
   });
 
   const saveChairman = () => {
@@ -294,7 +309,26 @@ export default function AdminPortal() {
     });
     setSectionsList(updatedSections);
     updateHomepageSections(updatedSections);
-    notifySave("Chairman's message published!");
+
+    if (typeof window !== "undefined") {
+      localStorage.setItem("chalapathi_chairman_name", chairmanData.name || "Dr. Y. V Anjaneyulu");
+      localStorage.setItem("chalapathi_chairman_designation", chairmanData.designation || "Chairman");
+      localStorage.setItem("chalapathi_chairman_group", chairmanData.group || "Chalapathi Educational Society");
+      localStorage.setItem("chalapathi_chairman_message", chairmanData.message || "");
+      localStorage.setItem("chalapathi_chairman_video", chairmanData.videoUrl || "/chalapathi_logo_intro.mp4");
+      localStorage.setItem("chalapathi_chairman_image", chairmanData.image || "/chairman_portrait.png");
+      if (chairmanData.signature) {
+        localStorage.setItem("chalapathi_chairman_signature", chairmanData.signature);
+      } else {
+        localStorage.removeItem("chalapathi_chairman_signature");
+      }
+      if (chairmanData.signatureColor) {
+        localStorage.setItem("chalapathi_chairman_signature_color", chairmanData.signatureColor);
+      }
+      window.dispatchEvent(new Event("chalapathi_cms_updated"));
+    }
+
+    notifySave("Chairman's signature, title & message published live!");
   };
 
   // ----------------------------------------------------
@@ -2573,11 +2607,14 @@ export default function AdminPortal() {
                         onClick={() => {
                           const defL = INITIAL_ABOUT_CONTENT.leadership;
                           setChairmanData({
+                            ...chairmanData,
                             name: defL.chairmanName,
                             designation: defL.designation,
                             image: defL.chairmanImage,
                             videoUrl: "/chalapathi_logo_intro.mp4",
-                            message: defL.messageParagraphs.join("\n\n")
+                            message: defL.messageParagraphs.join("\n\n"),
+                            signature: "",
+                            signatureColor: "#072A6C"
                           });
                           notifySave("Chairman section reset to default!");
                         }}
@@ -2594,14 +2631,15 @@ export default function AdminPortal() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="space-y-1">
                       <label className="text-[10px] font-bold text-gray-600 uppercase">Chairman Full Name</label>
                       <input
                         type="text"
                         value={chairmanData.name || ""}
                         onChange={(e) => setChairmanData({ ...chairmanData, name: e.target.value })}
-                        className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold"
+                        placeholder="Dr. Y. V Anjaneyulu"
+                        className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold text-[#072A6C]"
                       />
                     </div>
                     <div className="space-y-1">
@@ -2610,8 +2648,107 @@ export default function AdminPortal() {
                         type="text"
                         value={chairmanData.designation || ""}
                         onChange={(e) => setChairmanData({ ...chairmanData, designation: e.target.value })}
-                        className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-semibold"
+                        placeholder="CHAIRMAN"
+                        className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-semibold text-[#072A6C]"
                       />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-600 uppercase">Educational Society / Group</label>
+                      <input
+                        type="text"
+                        value={chairmanData.group || ""}
+                        onChange={(e) => setChairmanData({ ...chairmanData, group: e.target.value })}
+                        placeholder="Chalapathi Educational Society"
+                        className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-medium"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Chairman Signature Management & Live Badge Preview */}
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-gray-200/80 space-y-4">
+                    <div className="flex items-center justify-between pb-2 border-b border-gray-200/60">
+                      <div>
+                        <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-1.5">
+                          ✍️ Chairman Official Signature & Identity Block
+                        </h4>
+                        <p className="text-[11px] text-gray-500">
+                          Upload custom signature image (transparent PNG/SVG) or use the classic cursive SVG signature with custom ink color.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+                      <div className="lg:col-span-2 space-y-3">
+                        <ImageField
+                          label="Chairman Signature Image (Transparent PNG / SVG)"
+                          value={chairmanData.signature || ""}
+                          defaultValue=""
+                          placeholder="Upload PNG signature or enter image URL"
+                          onReset={() => {
+                            setChairmanData({ ...chairmanData, signature: "" });
+                            notifySave("Reset to default cursive SVG signature!");
+                          }}
+                          onChange={(val) => setChairmanData({ ...chairmanData, signature: val })}
+                          aspectRatio="wide"
+                          recommendedSize="300 × 100 px (Transparent PNG/SVG)"
+                        />
+                        <div className="flex flex-wrap items-center gap-2 pt-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">
+                            Default Cursive SVG Ink Color:
+                          </label>
+                          {["#072A6C", "#0A2D6D", "#000000", "#1E293B", "#D4AF37", "#176B5B"].map((col) => (
+                            <button
+                              key={col}
+                              type="button"
+                              onClick={() => setChairmanData({ ...chairmanData, signatureColor: col })}
+                              className={`w-6 h-6 rounded-full border border-black/20 cursor-pointer transition-transform hover:scale-110 ${
+                                (chairmanData.signatureColor || "#072A6C") === col ? "ring-2 ring-blue-500 ring-offset-1" : ""
+                              }`}
+                              style={{ backgroundColor: col }}
+                              title={col}
+                            />
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Live Visual Preview corresponding to media_1789906099100.png */}
+                      <div className="p-4 bg-white rounded-2xl border border-gray-200 shadow-xs space-y-3 text-left">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
+                          Live Website Card Preview:
+                        </span>
+                        <div className="p-4 rounded-xl border border-slate-100 bg-slate-50/50 space-y-2.5">
+                          {/* Signature Graphic */}
+                          <div className="h-10 flex items-center select-none">
+                            {chairmanData.signature ? (
+                              <img 
+                                src={chairmanData.signature} 
+                                alt="Signature" 
+                                className="h-9 max-w-[160px] object-contain" 
+                              />
+                            ) : (
+                              <svg 
+                                className="h-9 text-[#072A6C]" 
+                                style={{ color: chairmanData.signatureColor || "#072A6C" }}
+                                viewBox="0 0 160 50" 
+                                fill="none" 
+                                stroke="currentColor" 
+                                strokeWidth="2.5" 
+                                strokeLinecap="round"
+                              >
+                                <path d="M15 28c12-6 22-14 26-1s-8 12-4 4 12-16 16-4-4 12 0 4 10-14 12-2-4 10 4 2 10-12 12 4-4 8 4 2c10 2 15-4 18-9" />
+                              </svg>
+                            )}
+                          </div>
+                          <div>
+                            <h5 className="text-sm font-extrabold text-[#072A6C] leading-snug">
+                              {chairmanData.name || "Dr. Y. V Anjaneyulu"}
+                            </h5>
+                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block mt-0.5">
+                              {chairmanData.designation || "CHAIRMAN"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -6252,12 +6389,12 @@ export default function AdminPortal() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div className="space-y-1">
                         <label className="text-[10px] font-bold text-gray-600 uppercase">Chairman Name</label>
                         <input
                           type="text"
-                          value={chairmanData.name || "Sri Y.V. Anjaneyulu"}
+                          value={chairmanData.name || "Dr. Y. V Anjaneyulu"}
                           onChange={(e) => setChairmanData({ ...chairmanData, name: e.target.value })}
                           className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
                         />
@@ -6266,10 +6403,76 @@ export default function AdminPortal() {
                         <label className="text-[10px] font-bold text-gray-600 uppercase">Designation</label>
                         <input
                           type="text"
-                          value={chairmanData.designation || "Chairman, Chalapathi Educational Society"}
+                          value={chairmanData.designation || "CHAIRMAN"}
                           onChange={(e) => setChairmanData({ ...chairmanData, designation: e.target.value })}
-                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#D4AF37]"
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
                         />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Organization / Group</label>
+                        <input
+                          type="text"
+                          value={chairmanData.group || "Chalapathi Educational Society"}
+                          onChange={(e) => setChairmanData({ ...chairmanData, group: e.target.value })}
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-medium text-slate-700"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start pt-2">
+                      <div className="lg:col-span-2 space-y-3">
+                        <ImageField
+                          label="Chairman Signature Image (Transparent PNG / SVG)"
+                          value={chairmanData.signature || ""}
+                          defaultValue=""
+                          placeholder="Upload PNG signature or enter image URL"
+                          onReset={() => {
+                            setChairmanData({ ...chairmanData, signature: "" });
+                            notifySave("Reset to default cursive SVG signature!");
+                          }}
+                          onChange={(val) => setChairmanData({ ...chairmanData, signature: val })}
+                          aspectRatio="wide"
+                          recommendedSize="300 × 100 px (Transparent PNG/SVG)"
+                        />
+                        <div className="flex flex-wrap items-center gap-2 pt-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">
+                            Default Cursive SVG Ink Color:
+                          </label>
+                          {["#072A6C", "#0A2D6D", "#000000", "#1E293B", "#D4AF37", "#176B5B"].map((col) => (
+                            <button
+                              key={col}
+                              type="button"
+                              onClick={() => setChairmanData({ ...chairmanData, signatureColor: col })}
+                              className={`w-6 h-6 rounded-full border border-black/20 cursor-pointer transition-transform hover:scale-110 ${
+                                (chairmanData.signatureColor || "#072A6C") === col ? "ring-2 ring-blue-500 ring-offset-1" : ""
+                              }`}
+                              style={{ backgroundColor: col }}
+                              title={col}
+                            />
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Live Card Preview */}
+                      <div className="p-4 bg-slate-50 rounded-2xl border border-gray-200 text-left space-y-2">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
+                          Website Card Preview:
+                        </span>
+                        <div className="p-3 bg-white rounded-xl border border-slate-200/80 shadow-2xs space-y-2">
+                          <div className="h-9 flex items-center select-none">
+                            {chairmanData.signature ? (
+                              <img src={chairmanData.signature} alt="Signature" className="h-8 max-w-[150px] object-contain" />
+                            ) : (
+                              <svg className="h-8" style={{ color: chairmanData.signatureColor || "#072A6C" }} viewBox="0 0 160 50" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                                <path d="M15 28c12-6 22-14 26-1s-8 12-4 4 12-16 16-4-4 12 0 4 10-14 12-2-4 10 4 2 10-12 12 0-4 10 4 2 10-12 12 4-4 8 4 2c10 2 15-4 18-9" />
+                              </svg>
+                            )}
+                          </div>
+                          <div>
+                            <h5 className="text-xs font-extrabold text-[#072A6C]">{chairmanData.name || "Dr. Y. V Anjaneyulu"}</h5>
+                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block mt-0.5">{chairmanData.designation || "CHAIRMAN"}</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
