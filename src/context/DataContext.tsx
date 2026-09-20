@@ -513,10 +513,48 @@ export interface AdmissionsScholarshipsConfig {
   excellenceFooterText: string;
 }
 
+export interface EnquiryCourseItem {
+  level: string; // "UG" | "PG" | "Ph.D" | "Diploma"
+  name: string;
+}
+
+export interface EnquiryGroupItem {
+  name: string;
+  courses: EnquiryCourseItem[];
+}
+
+export interface EnquirySchoolItem {
+  id: string;
+  title: string;
+  subtitle: string;
+  icon?: string;
+  groups: EnquiryGroupItem[];
+}
+
+export interface EnquiryPopupConfig {
+  enabled: boolean;
+  tabLabel: string;
+  tabBgColor?: string;
+  tabTextColor?: string;
+  modalTitle: string;
+  modalSubtitle: string;
+  formBadgeTitle: string;
+  formBadgeDesc: string;
+  ctaButtonText: string;
+  privacyText: string;
+  successTitle: string;
+  successDesc: string;
+  leftPanelTitle: string;
+  leftPanelSubtitle: string;
+  schools: EnquirySchoolItem[];
+  allPrograms: string[];
+}
+
 export interface AdmissionsContent {
   portal: AdmissionsPortalConfig;
   feeStructure: AdmissionsFeeItem[];
   scholarships: AdmissionsScholarshipsConfig;
+  enquiryPopup: EnquiryPopupConfig;
 }
 
 interface DataContextType {
@@ -909,6 +947,125 @@ export const DEFAULT_ADMISSIONS_CONTENT: AdmissionsContent = {
       { title: "Performance-Based Incentives", subtitle: "Project grants and waivers" }
     ],
     excellenceFooterText: "★ Special Recognition for Outstanding Achievements in a Unique Way! ★"
+  },
+  enquiryPopup: {
+    enabled: true,
+    tabLabel: "Admission Enquiry",
+    tabBgColor: "#072A6C",
+    tabTextColor: "#FFFFFF",
+    modalTitle: "ADMISSIONS OPEN 2026-27",
+    modalSubtitle: "Build Your Future. Lead with Innovation.",
+    formBadgeTitle: "ENQUIRY FORM",
+    formBadgeDesc: "Fill in your details. Our admission team will contact you soon.",
+    ctaButtonText: "APPLY ENQUIRY",
+    privacyText: "Your information is safe with us. We respect your privacy.",
+    successTitle: "Enquiry Submitted Successfully!",
+    successDesc: "Our admissions helpdesk representative will contact you on your registered mobile number shortly.",
+    leftPanelTitle: "EXPLORE OUR SCHOOLS & PROGRAMS",
+    leftPanelSubtitle: "Select a school to view its programs",
+    schools: [
+      {
+        id: "computing",
+        title: "SCHOOL OF COMPUTING SCIENCES",
+        subtitle: "Engineering Minds for the Digital Future",
+        icon: "User",
+        groups: [
+          {
+            name: "Computer Science & Engineering",
+            courses: [
+              { level: "UG", name: "B.Tech - Computer Science and Engineering" },
+              { level: "PG", name: "M.Tech - Computer Science and Engineering" },
+              { level: "PG", name: "MCA" },
+              { level: "Ph.D", name: "Ph.D - Computer Science and Engineering" }
+            ]
+          },
+          {
+            name: "Data Science",
+            courses: [
+              { level: "UG", name: "B.Tech - CSE (Data Science)" }
+            ]
+          },
+          {
+            name: "Artificial Intelligence",
+            courses: [
+              { level: "UG", name: "B.Tech - CSE (Artificial Intelligence)" },
+              { level: "UG", name: "B.Tech - Artificial Intelligence & Machine Learning" },
+              { level: "PG", name: "M.Tech - CSE (AI & ML)" }
+            ]
+          },
+          {
+            name: "Cyber Security",
+            courses: [
+              { level: "UG", name: "B.Tech - CSE (Cyber Security)" }
+            ]
+          }
+        ]
+      },
+      {
+        id: "engineering",
+        title: "SCHOOL OF ENGINEERING",
+        subtitle: "Engineering Solutions for a Smarter, Stronger Tomorrow",
+        icon: "GraduationCap",
+        groups: [
+          {
+            name: "Electronics and Communication Engineering",
+            courses: [
+              { level: "UG", name: "B.Tech - Electronics and Communication Engineering" },
+              { level: "PG", name: "M.Tech - VLSI and Embedded Systems Design" },
+              { level: "Ph.D", name: "Ph.D - Electronics and Communication Engineering" }
+            ]
+          },
+          {
+            name: "Civil Engineering",
+            courses: [
+              { level: "UG", name: "B.Tech - Civil Engineering" },
+              { level: "PG", name: "M.Tech - Structural Engineering" },
+              { level: "Ph.D", name: "Ph.D - Structural Engineering" }
+            ]
+          },
+          {
+            name: "Basic Science & Humanities",
+            courses: []
+          }
+        ]
+      },
+      {
+        id: "business",
+        title: "SCHOOL OF BUSINESS & MANAGEMENT",
+        subtitle: "Shaping Visionary Leaders for Tomorrow's Business World",
+        icon: "Landmark",
+        groups: [
+          {
+            name: "Business and Management",
+            courses: [
+              { level: "PG", name: "MBA" }
+            ]
+          }
+        ]
+      }
+    ],
+    allPrograms: [
+      "B.Tech - Computer Science and Engineering",
+      "B.Tech - CSE (Data Science)",
+      "B.Tech - CSE (Artificial Intelligence)",
+      "B.Tech - Artificial Intelligence & Machine Learning",
+      "B.Tech - CSE (Cyber Security)",
+      "M.Tech - Computer Science and Engineering",
+      "M.Tech - CSE (AI & ML)",
+      "MCA",
+      "Ph.D - Computer Science and Engineering",
+      "B.Tech - Electronics and Communication Engineering",
+      "M.Tech - VLSI and Embedded Systems Design",
+      "Ph.D - Electronics and Communication Engineering",
+      "B.Tech - Civil Engineering",
+      "M.Tech - Structural Engineering",
+      "Ph.D - Structural Engineering",
+      "Applied Mathematics & Computational Sciences",
+      "Engineering Physics & Material Sciences",
+      "Engineering Chemistry & Environmental Science",
+      "English & Professional Communication",
+      "MBA"
+    ]
   }
 };
 

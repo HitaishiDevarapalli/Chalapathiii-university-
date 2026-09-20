@@ -14,7 +14,7 @@ import EventDetails from "./pages/EventDetails";
 import AnnouncementDetails from "./pages/AnnouncementDetails";
 import AllEvents from "./pages/AllEvents";
 import AdminPortal from "./pages/AdminPortal";
-import { DataProvider, useData } from "./context/DataContext";
+import { DataProvider, useData, DEFAULT_ADMISSIONS_CONTENT } from "./context/DataContext";
 
 // Scroll to top helper on route change
 function ScrollToTop() {
@@ -152,7 +152,16 @@ const ENQUIRY_SCHOOLS_DATA = [
 function AppContent() {
   const location = useLocation();
   const isAdminPage = location.pathname.startsWith("/admin");
-  const { announcements, showAnnouncementsDrawer, setShowAnnouncementsDrawer, siteSettings, addEnquiry } = useData();
+  const { 
+    announcements, 
+    showAnnouncementsDrawer, 
+    setShowAnnouncementsDrawer, 
+    siteSettings, 
+    addEnquiry,
+    admissionsContent
+  } = useData();
+
+  const enquiryPopupConfig = admissionsContent?.enquiryPopup || DEFAULT_ADMISSIONS_CONTENT.enquiryPopup;
 
   const [showSplash, setShowSplash] = useState(siteSettings?.enableSplash !== false);
 
@@ -476,14 +485,21 @@ function AppContent() {
       {/* ======================================================== */}
       {/* 🌟 SLIMMED NON-OVERLAPPING STACKED RIGHT-SIDE TABS       */}
       {/* ======================================================== */}
-      {!isAdminPage && (
+      {/* ======================================================== */}
+      {/* 🌟 SLIMMED NON-OVERLAPPING STACKED RIGHT-SIDE TABS       */}
+      {/* ======================================================== */}
+      {!isAdminPage && enquiryPopupConfig.enabled !== false && (
         <div className="fixed right-0 top-[40%] -translate-y-1/2 z-40 flex flex-col gap-3 items-end font-[var(--font-poppins)]">
           {/* Admission Enquiry Tab (Navy Blue/White Text) */}
           <button
             onClick={() => setShowEnquiryModal(true)}
-            className="w-[48px] h-[220px] bg-[#072A6C] hover:bg-[#051c4a] text-white font-bold text-[10px] tracking-[1.5px] rounded-l-xl shadow-md transition-all duration-300 hover:-translate-x-1 flex items-center justify-center [writing-mode:vertical-lr] rotate-180 whitespace-nowrap cursor-pointer select-none uppercase border border-r-0 border-white/10 outline-none"
+            style={{
+              backgroundColor: enquiryPopupConfig.tabBgColor || "#072A6C",
+              color: enquiryPopupConfig.tabTextColor || "#FFFFFF"
+            }}
+            className="w-[48px] h-[220px] hover:brightness-110 font-bold text-[10px] tracking-[1.5px] rounded-l-xl shadow-md transition-all duration-300 hover:-translate-x-1 flex items-center justify-center [writing-mode:vertical-lr] rotate-180 whitespace-nowrap cursor-pointer select-none uppercase border border-r-0 border-white/10 outline-none"
           >
-            Admission Enquiry
+            {enquiryPopupConfig.tabLabel || "Admission Enquiry"}
           </button>
         </div>
       )}
@@ -597,15 +613,15 @@ function AppContent() {
               </div>
 
               <h3 className="text-[12px] font-black uppercase text-[#072A6C] tracking-wide mb-0.5">
-                EXPLORE OUR SCHOOLS & PROGRAMS
+                {enquiryPopupConfig.leftPanelTitle || "EXPLORE OUR SCHOOLS & PROGRAMS"}
               </h3>
               <p className="text-[10px] text-gray-400 font-medium mb-4">
-                Select a school to view its programs
+                {enquiryPopupConfig.leftPanelSubtitle || "Select a school to view its programs"}
               </p>
 
               {/* Accordions */}
               <div className="space-y-2.5">
-                {ENQUIRY_SCHOOLS_DATA.map((school) => {
+                {(enquiryPopupConfig.schools && enquiryPopupConfig.schools.length > 0 ? enquiryPopupConfig.schools : ENQUIRY_SCHOOLS_DATA).map((school) => {
                   const isOpen = activeAccordion === school.id;
                   return (
                     <div key={school.id} className="border border-gray-150 rounded-[12px] bg-white overflow-hidden shadow-sm transition-all duration-300">
@@ -621,6 +637,7 @@ function AppContent() {
                           {school.id === "computing" && <User size={16} />}
                           {school.id === "engineering" && <GraduationCap size={16} />}
                           {school.id === "business" && <Landmark size={16} />}
+                          {!["computing", "engineering", "business"].includes(school.id) && <GraduationCap size={16} />}
                           <div className="flex flex-col">
                             <span className="text-[10.5px] md:text-[11.5px] font-extrabold uppercase tracking-wider">{school.title}</span>
                             <span className={`text-[8.5px] md:text-[9.5px] ${isOpen ? "text-blue-100" : "text-gray-400"} mt-0.5`}>{school.subtitle}</span>
@@ -632,14 +649,15 @@ function AppContent() {
                       {/* Accordion Body */}
                       {isOpen && (
                         <div className="p-3.5 bg-white border-t border-gray-100 grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fade-in">
-                          {school.groups.map((group, groupIdx) => (
+                          {(school.groups || []).map((group, groupIdx) => (
                             <div key={groupIdx} className="space-y-2.5">
                               <h4 className="text-[10.5px] font-extrabold text-[#072A6C] border-b border-gray-100 pb-1">{group.name}</h4>
                               <div className="flex flex-col gap-1.5">
-                                {group.courses.map((course, courseIdx) => {
+                                {(group.courses || []).map((course, courseIdx) => {
                                   let badgeColor = "bg-blue-50 text-blue-600 border-blue-100/50";
                                   if (course.level === "PG") badgeColor = "bg-emerald-50 text-emerald-600 border-emerald-100/50";
                                   if (course.level === "Ph.D") badgeColor = "bg-amber-50 text-amber-600 border-amber-100/50";
+                                  if (course.level === "Diploma") badgeColor = "bg-purple-50 text-purple-600 border-purple-100/50";
                                   return (
                                     <button
                                       key={courseIdx}
@@ -681,10 +699,10 @@ function AppContent() {
 
               <div className="mb-3.5">
                 <h2 className="text-[18px] font-black text-[#072A6C] tracking-tight uppercase leading-none">
-                  ADMISSIONS OPEN 2026-27
+                  {enquiryPopupConfig.modalTitle || "ADMISSIONS OPEN 2026-27"}
                 </h2>
                 <p className="text-[10.5px] text-gray-500 font-medium mt-1">
-                  Build Your Future. Lead with Innovation.
+                  {enquiryPopupConfig.modalSubtitle || "Build Your Future. Lead with Innovation."}
                 </p>
               </div>
 
@@ -694,16 +712,24 @@ function AppContent() {
                   <FileText size={16} />
                 </div>
                 <div className="text-left">
-                  <h4 className="text-[10.5px] font-black text-[#072A6C] uppercase tracking-wider leading-none mb-1">ENQUIRY FORM</h4>
-                  <p className="text-[9.5px] text-gray-500 font-medium leading-none">Fill in your details. Our admission team will contact you soon.</p>
+                  <h4 className="text-[10.5px] font-black text-[#072A6C] uppercase tracking-wider leading-none mb-1">
+                    {enquiryPopupConfig.formBadgeTitle || "ENQUIRY FORM"}
+                  </h4>
+                  <p className="text-[9.5px] text-gray-500 font-medium leading-none">
+                    {enquiryPopupConfig.formBadgeDesc || "Fill in your details. Our admission team will contact you soon."}
+                  </p>
                 </div>
               </div>
 
               {formSubmitted ? (
                 <div className="flex flex-col items-center justify-center py-12 space-y-4 my-auto">
                   <CheckCircle2 size={56} className="text-emerald-500 animate-bounce" />
-                  <h4 className="text-base font-extrabold text-[#072A6C]">Enquiry Submitted Successfully!</h4>
-                  <p className="text-xs text-gray-500 text-center max-w-[340px]">Our admissions helpdesk representative will contact you on your registered mobile number shortly.</p>
+                  <h4 className="text-base font-extrabold text-[#072A6C]">
+                    {enquiryPopupConfig.successTitle || "Enquiry Submitted Successfully!"}
+                  </h4>
+                  <p className="text-xs text-gray-500 text-center max-w-[340px]">
+                    {enquiryPopupConfig.successDesc || "Our admissions helpdesk representative will contact you on your registered mobile number shortly."}
+                  </p>
                   <button 
                     onClick={() => setShowEnquiryModal(false)}
                     className="h-10 px-6 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer"
@@ -851,7 +877,7 @@ function AppContent() {
                           className="w-full h-10 pl-10 pr-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-semibold text-[#222222] bg-white appearance-none cursor-pointer"
                         >
                           <option value="">Select a program (Auto-filled)</option>
-                          {ALL_PROGRAMS.map((prog) => (
+                          {(enquiryPopupConfig.allPrograms && enquiryPopupConfig.allPrograms.length > 0 ? enquiryPopupConfig.allPrograms : ALL_PROGRAMS).map((prog) => (
                             <option key={prog} value={prog}>{prog}</option>
                           ))}
                         </select>
@@ -881,13 +907,13 @@ function AppContent() {
                       className="w-full h-11 bg-[#FAB005] hover:bg-[#e09e00] text-gray-900 font-extrabold text-[12px] uppercase tracking-wider rounded-xl flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer outline-none"
                     >
                       <Send size={13} className="rotate-45 -translate-y-0.5" />
-                      <span>APPLY ENQUIRY</span>
+                      <span>{enquiryPopupConfig.ctaButtonText || "APPLY ENQUIRY"}</span>
                     </button>
 
                     {/* Privacy */}
                     <div className="flex items-center justify-center gap-1.5 text-[9px] text-gray-400 font-semibold">
                       <ShieldCheck size={12} className="text-gray-400" />
-                      <span>Your information is safe with us. We respect your <Link to="/privacy-policy" onClick={() => setShowEnquiryModal(false)} className="text-blue-500 hover:underline">privacy</Link>.</span>
+                      <span>{enquiryPopupConfig.privacyText || "Your information is safe with us. We respect your"} <Link to="/privacy-policy" onClick={() => setShowEnquiryModal(false)} className="text-blue-500 hover:underline">privacy</Link>.</span>
                     </div>
                   </div>
                 </form>
