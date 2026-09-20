@@ -45,9 +45,32 @@ export interface NewsArticle {
   excerpt: string;
   bodyText: string;
   image: string;
+  images?: string[];
   slug: string;
   sourceUrl?: string;
   featured?: boolean;
+}
+
+// News Page Hero & Header Configuration interface
+export interface NewsPageConfig {
+  headerTitle: string;
+  headerSubtitle: string;
+  featuredBadgeText: string;
+  featuredArticleId?: number;
+  featuredCarouselImages: string[];
+  readStoryButtonText: string;
+  highlightsTitle: string;
+  highlightsViewAllText: string;
+  highlightsViewAllUrl: string;
+  eventsStripTitle: string;
+  eventsStripViewAllText: string;
+  eventsStripCount: number;
+  latestNewsTitle: string;
+  latestNewsViewAllText: string;
+  latestNewsViewAllUrl: string;
+  latestNewsCount: number;
+  newsDirectoryTitle?: string;
+  newsDirectorySubtitle?: string;
 }
 
 // Event interface
@@ -60,7 +83,10 @@ export interface EventItem {
   location: string;
   category: string;
   image: string;
+  images?: string[];
   bodyText: string;
+  registrationUrl?: string;
+  registrationOpen?: boolean;
 }
 
 export interface SuccessStory {
@@ -223,10 +249,18 @@ export interface PlacementStatCard {
   icon?: string;
 }
 
+export interface IndustryCaterItem {
+  name: string;
+  img: string;
+}
+
 export interface PlacementsContent {
+  badgeText?: string;
   heroTitle: string;
   heroSubtitle: string;
   heroDescription: string;
+  heroImage?: string;
+  enquireButtonText?: string;
   highestPackage: string;
   averagePackage: string;
   placementPercent: string;
@@ -234,6 +268,8 @@ export interface PlacementsContent {
   placementAssistance?: string;
   stats?: PlacementStatCard[];
   philosophyText: string;
+  industriesTitle?: string;
+  industries?: IndustryCaterItem[];
   careerPrograms: string[];
   industryConnectDesc: string;
   industryConnectItems: string[];
@@ -379,9 +415,47 @@ export interface CampusBannersConfig {
   };
 }
 
+export interface CampusLifeHighlight {
+  title: string;
+  desc: string;
+}
+
+export interface CampusLifeStat {
+  label: string;
+  value: string;
+}
+
+export interface CampusLifeSectionItem {
+  title: string;
+  desc: string;
+  image: string;
+  items?: string[];
+}
+
+export interface CampusLifePageData {
+  title: string;
+  desc: string;
+  heroImage: string;
+  hasVideo?: boolean;
+  videoTitle?: string;
+  videoDesc?: string;
+  videoThumbnail?: string;
+  videoUrl?: string;
+  stats?: CampusLifeStat[];
+  highlights?: CampusLifeHighlight[];
+  sections?: CampusLifeSectionItem[];
+  gallery: string[];
+}
+
+export type CampusLifeContent = Record<string, CampusLifePageData>;
+
 interface DataContextType {
   siteSettings: SiteSettings;
   updateSiteSettings: (settings: SiteSettings) => void;
+
+  campusLifeContent: CampusLifeContent;
+  updateCampusLifeContent: (content: CampusLifeContent) => void;
+  updateCampusLifePage: (path: string, pageData: CampusLifePageData) => void;
 
   themeColors: ThemeColors;
   updateThemeColors: (colors: ThemeColors) => void;
@@ -410,6 +484,9 @@ interface DataContextType {
 
   news: NewsArticle[];
   updateNews: (list: NewsArticle[]) => void;
+
+  newsPageConfig: NewsPageConfig;
+  updateNewsPageConfig: (config: NewsPageConfig) => void;
 
   events: EventItem[];
   updateEvents: (list: EventItem[]) => void;
@@ -897,6 +974,317 @@ export const DEFAULT_CAMPUS_BANNERS: CampusBannersConfig = {
   }
 };
 
+export const DEFAULT_CAMPUS_LIFE_CONTENT: CampusLifeContent = {
+  "/campus-life": {
+    title: "Campus Overview",
+    desc: "Experience the vibrant, modern, and green academic ecosystem of Chalapathi University.",
+    heroImage: "/campus_hero.png",
+    hasVideo: true,
+    videoTitle: "EXPERIENCE CHALAPATHI",
+    videoDesc: "Take a virtual guided tour of our green campus corridors, advanced pharmacy laboratories, academic buildings, and standard sporting environments that empower ambitious student minds.",
+    videoThumbnail: "/campus_life_bg.png",
+    videoUrl: "/chalapathi_logo_intro.mp4",
+    highlights: [
+      { title: "Green Campus", desc: "Eco-friendly infrastructure, solar power grids, and plastic-free zones." },
+      { title: "Modern Infrastructure", desc: "State-of-the-art academic wings, research centers, and sports fields." },
+      { title: "Digital Learning", desc: "Gigabit fiber internet, smart boards, and virtual computer environments." },
+      { title: "Student Experience", desc: "Diverse student-led associations, cultural meets, and development clubs." }
+    ],
+    gallery: [
+      "/gallery_annual_fest.png",
+      "/gallery_sports_meet.png",
+      "/gallery_tech_events.png",
+      "/gallery_nss_activities.png",
+      "/gallery_cultural_events.png",
+      "/gallery_workshops.png",
+      "/campus_hero.png",
+      "/campus_placement.png"
+    ]
+  },
+  "/campus-life/library": {
+    title: "Central Library",
+    desc: "Our Central Library is a sanctuary of knowledge equipped with physical books and digital learning spaces.",
+    heroImage: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1600&q=80",
+    stats: [
+      { label: "Physical Books", value: "75,000+" },
+      { label: "Journals", value: "350+" },
+      { label: "E-Resources", value: "8,500+" },
+      { label: "Reading Capacity", value: "1,500+" }
+    ],
+    sections: [
+      { title: "Digital Library & E-Learning", desc: "Access high-speed research databases, IEEE publications, and academic resources through modern terminal workstations.", image: "https://images.unsplash.com/photo-1568667256549-094345857637?auto=format&fit=crop&w=800&q=80" },
+      { title: "Discussion & Collaborative Areas", desc: "Dedicated spaces where student groups brainstorm research designs and collaborate on projects.", image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80" }
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1495446815901-a7297e63b58d?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  "/campus-life/smart-classrooms": {
+    title: "Smart Classrooms",
+    desc: "Our interactive classrooms are designed to maximize engagement and digital content access.",
+    heroImage: "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?auto=format&fit=crop&w=1600&q=80",
+    sections: [
+      { title: "Interactive Smart Boards", desc: "Multi-touch collaborative screens enabling digital ink, real-time annotations, and cloud content synchronization.", image: "https://images.unsplash.com/photo-1571844307880-751c6d86f3f3?auto=format&fit=crop&w=800&q=80" },
+      { title: "Digital Teaching & Webcasting", desc: "Integrated digital cameras and recording nodes to capture lectures and deliver virtual learning feeds.", image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80" },
+      { title: "Audio Visual Systems", desc: "Acoustically treated halls containing professional sound networks and high-definition projections.", image: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=800&q=80" },
+      { title: "Student Collaboration Hubs", desc: "Configurable seating structures allowing teams to interface project modules with personal smart devices.", image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80" }
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1544535830-9df3f5687760?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  "/campus-life/laboratories": {
+    title: "Laboratories",
+    desc: "Advanced research laboratories for Computer Science, AI, Electronics, and Mechanical Engineering.",
+    heroImage: "https://images.unsplash.com/photo-1576086213369-97a306d36557?auto=format&fit=crop&w=1600&q=80",
+    sections: [
+      { title: "Computer & Software Labs", desc: "Equipped with modern client workstations, enterprise database servers, and industry-standard design tools.", image: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80" },
+      { title: "AI & Deep Learning Labs", desc: "High-compute GPU setups optimized for artificial intelligence frameworks and machine learning training tasks.", image: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=800&q=80" },
+      { title: "IoT & Embedded Systems", desc: "Equipped with sensors, development boards, and communication nodes to prototype smart grids.", image: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80" },
+      { title: "Mechanical & Civil Labs", desc: "Featuring heavy industrial testing setups, material characterization machinery, and fluid dynamics chambers.", image: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80" },
+      { title: "Electronics & VLSI Labs", desc: "Equipped with high-frequency oscilloscopes, signal generators, and software setups for integrated circuit layout designs.", image: "https://images.unsplash.com/photo-1517059224940-d4af9eec41b7?auto=format&fit=crop&w=800&q=80" }
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1576086213369-97a306d36557?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1532187643603-ba119ca4109e?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518152006812-edab29b069ac?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1554475901-4538ddfbccc2?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1507668077129-56e32842fceb?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  "/campus-life/hostels": {
+    title: "Hostel Facilities",
+    desc: "A secure, cozy, and home-like atmosphere for our boys and girls campus residents.",
+    heroImage: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=1600&q=80",
+    sections: [
+      { title: "Residential Dining", desc: "Hygienic multi-cuisine dining serving fresh meals, catering to diverse dietary choices.", image: "https://images.unsplash.com/photo-1567529854338-fc097b962123?auto=format&fit=crop&w=800&q=80" },
+      { title: "Recreation & Lounges", desc: "Common rooms with table tennis, TVs, indoor gym setups, and secure laundry zones.", image: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=800&q=80" }
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1567529854338-fc097b962123?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1540518614846-7ede433c4ef0?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  "/campus-life/sports": {
+    title: "Sports & Fitness",
+    desc: "Developing physical fitness and team spirit through modern sports infrastructure.",
+    heroImage: "https://images.unsplash.com/photo-1541252260730-0412e8e2108e?auto=format&fit=crop&w=1600&q=80",
+    sections: [
+      { title: "Outdoor Ground Facilities", desc: "A full-sized football pitch, cricket grounds, athletic tracks, and standard basketball fields.", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80" },
+      { title: "Indoor Sports Complex", desc: "High-quality badminton courts, table tennis spaces, chess corners, and a fully-equipped gym.", image: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80" }
+    ],
+    gallery: [
+      "/gallery_sports_meet.png",
+      "https://images.unsplash.com/photo-1541252260730-0412e8e2108e?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1530541930197-ff16ac917b0e?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1543326727-cf6c39e8f84c?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  "/campus-life/cafeteria": {
+    title: "Cafeteria & Dining",
+    desc: "Our food courts offer diverse dining choices under strict quality and cleanliness guidelines.",
+    heroImage: "https://images.unsplash.com/photo-1567529854338-fc097b962123?auto=format&fit=crop&w=1600&q=80",
+    sections: [
+      { title: "Multi-Cuisine Food Court", desc: "A spacious dining zone offering freshly cooked regional and continental dishes under strict hygiene controls.", image: "https://images.unsplash.com/photo-1567529854338-fc097b962123?auto=format&fit=crop&w=800&q=80" },
+      { title: "Healthy Meals & Salads", desc: "Fresh organic salads, juices, and low-calorie options preparing students with active physical energy.", image: "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=800&q=80" },
+      { title: "Coffee & Lounge Corner", desc: "A warm community space to enjoy specialty coffee, tea, and quick snacks with project partners.", image: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=800&q=80" }
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1567529854338-fc097b962123?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1498654896293-37aacf113fd9?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1559925393-8be0ec4767c8?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1508215885880-4e7d4801a9e0?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  "/campus-life/transportation": {
+    title: "Transportation",
+    desc: "Our GPS-enabled bus network connects the campus to Guntur, Vijayawada, and adjoining communities.",
+    heroImage: "https://images.unsplash.com/photo-1557223562-6c77ef16210f?auto=format&fit=crop&w=1600&q=80",
+    sections: [
+      { title: "University Bus Fleet", desc: "A large collection of modern buses carrying standard safety measures and comfortable seating arrangements.", image: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=800&q=80" },
+      { title: "GPS Tracking & Safety", desc: "Real-time satellite GPS updates, Speed controllers, and emergency contact systems inside all transit networks.", image: "https://images.unsplash.com/photo-1557223562-6c77ef16210f?auto=format&fit=crop&w=800&q=80" },
+      { title: "Multiple City Routes", desc: "Connecting students across all major points in Guntur, Tenali, Vijayawada, and surrounding towns.", image: "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=800&q=80" }
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1557223562-6c77ef16210f?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1494515426402-f1980ae7a018?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1485738422979-f5c462d49f74?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1492664738948-2ec93a547e6d?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  "/campus-life/wifi": {
+    title: "Wi-Fi Campus Network",
+    desc: "Gigabit-speed wireless connectivity covering all academic corridors and hostels.",
+    heroImage: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1600&q=80",
+    sections: [
+      { title: "High-Speed Fiber Backbone", desc: "Gigabit fiber internet linking computing systems, servers, and visual classrooms seamlessly.", image: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=800&q=80" },
+      { title: "Wireless Coverage Spots", desc: "High-density access points located across academic corridors, hostels, auditoriums, and open gardens.", image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80" }
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  "/campus-life/health-centre": {
+    title: "Health Centre",
+    desc: "Our campus clinic is prepared for student medical consults, first aid, and basic healthcare support.",
+    heroImage: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1600&q=80",
+    sections: [
+      { title: "24/7 First Aid & Ambulance", desc: "A qualified healthcare team and dedicated emergency transport ready on standby.", image: "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=800&q=80" }
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1584515901367-f134706efc3c?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1530026405186-ed1ea0ac7a63?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  "/campus-life/clubs": {
+    title: "Student Clubs & Societies",
+    desc: "Coding challenges, musical events, creative art, and technical clubs to build student leadership.",
+    heroImage: "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=1600&q=80",
+    sections: [
+      { title: "Coding, Music & Performing Arts", desc: "Student-run activities spanning technical hackathons, coding tasks, classical music nights, and traditional plays.", image: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80" }
+    ],
+    gallery: [
+      "/gallery_cultural_events.png",
+      "/gallery_annual_fest.png",
+      "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1522158673370-3c1466178877?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  "/campus-life/events": {
+    title: "Events & Festivals",
+    desc: "Highlights from our annual technological symposiums, sporting events, and cultural meets.",
+    heroImage: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1600&q=80",
+    gallery: [
+      "/gallery_annual_fest.png",
+      "/gallery_cultural_events.png",
+      "/gallery_tech_events.png",
+      "/gallery_sports_meet.png",
+      "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  "/campus-life/innovation-hub": {
+    title: "Innovation Hub & Incubation",
+    desc: "Nurturing student startups and technological solutions with workspaces and seed funding.",
+    heroImage: "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1600&q=80",
+    gallery: [
+      "/gallery_tech_events.png",
+      "/gallery_workshops.png",
+      "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-152202176988-66273c2fd55f?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  "/campus-life/safety": {
+    title: "Campus Safety & Security",
+    desc: "Ensuring student safety with 24/7 CCTV surveillance, gate controls, and safety protocols.",
+    heroImage: "https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=1600&q=80",
+    sections: [
+      { title: "Continuous Patrol & Cameras", desc: "Our campus is mapped with CCTV cameras and has emergency rapid assistance setups.", image: "https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=800&q=80" }
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1508847154043-be12aee6f22d?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  "/campus-life/nss-ncc": {
+    title: "NSS & NCC Wings",
+    desc: "Cultivating discipline, community service, and volunteer leadership among our students.",
+    heroImage: "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&w=1600&q=80",
+    gallery: [
+      "/gallery_nss_activities.png",
+      "/gallery_annual_fest.png",
+      "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1464979681340-1261d70b083c?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1489710437720-ebb67ec84dd2?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1509099836639-18ba1795216d?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  "/campus-life/grievance-cell": {
+    title: "Student Grievance Cell",
+    desc: "Dedicated mechanism for responding to queries, academic appeals, and support requests.",
+    heroImage: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=1600&q=80",
+    sections: [
+      { title: "Transparent Grievance Resolution", desc: "Submit and follow academic, facility, or administrative queries directly through online and offline modules.", image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80" }
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=600&q=80"
+    ]
+  }
+};
+
 export const INITIAL_ANNOUNCEMENTS: Announcement[] = [
   { title: "Admissions 2026 Applications Open", desc: "Apply online for all undergraduate and postgraduate engineering, management, and pharmacy streams.", date: "12 May 2026", iconName: "GraduationCap" },
   { title: "Orientation Program 2026 Schedule", desc: "Schedule and venue details released for the incoming freshers orientation week starting next month.", date: "08 May 2026", iconName: "Calendar" },
@@ -1049,6 +1437,32 @@ export const INITIAL_EVENTS: EventItem[] = [
     bodyText: "Over 50 universities face off in the annual athletic championship, featuring track events, field sports, inter-college football, cricket leagues, and indoor badminton tournaments with cash prizes." 
   }
 ];
+
+export const DEFAULT_NEWS_PAGE_CONFIG: NewsPageConfig = {
+  headerTitle: "News @ City Chalapathi",
+  headerSubtitle: "Stay updated with the latest happenings, milestones, and achievements from across the university.",
+  featuredBadgeText: "Featured News",
+  featuredArticleId: 1,
+  featuredCarouselImages: [
+    "/prog_computer.png",
+    "/prog_engineering.png",
+    "/prog_management.png",
+    "/prog_pharmacy.png"
+  ],
+  readStoryButtonText: "Read Full Story",
+  highlightsTitle: "University Highlights",
+  highlightsViewAllText: "View All",
+  highlightsViewAllUrl: "/news/latest",
+  eventsStripTitle: "Upcoming Events",
+  eventsStripViewAllText: "View All",
+  eventsStripCount: 3,
+  latestNewsTitle: "Latest News",
+  latestNewsViewAllText: "View All News",
+  latestNewsViewAllUrl: "/news/latest",
+  latestNewsCount: 4,
+  newsDirectoryTitle: "University Highlights",
+  newsDirectorySubtitle: "Stay updated with the latest achievements, innovations, and stories from Chalapathi University."
+};
 
 export const INITIAL_ABOUT_CONTENT: AboutUsContent = {
   history: {
@@ -1204,10 +1618,25 @@ export const INITIAL_CALENDAR_DATA: MonthCalendarData[] = [
   { name: "January", yearOffset: 1, startDay: 4, totalDays: 31, events: { 5: "Commencement of Next Semester" } }
 ];
 
+export const DEFAULT_INDUSTRIES: IndustryCaterItem[] = [
+  { name: "Software Development", img: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&fit=crop" },
+  { name: "Core Engineering", img: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&fit=crop" },
+  { name: "AI & Data Science", img: "https://images.unsplash.com/photo-1527474305487-b87b222841cc?w=400&fit=crop" },
+  { name: "Cyber Security", img: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=400&fit=crop" },
+  { name: "Embedded Systems", img: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&fit=crop" },
+  { name: "Mechanical & Civil", img: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&fit=crop" },
+  { name: "Business & Management", img: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&fit=crop" },
+  { name: "Research & Higher Ed", img: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=400&fit=crop" },
+  { name: "Startups & Ventures", img: "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?w=400&fit=crop" }
+];
+
 export const INITIAL_PLACEMENTS_CONTENT: PlacementsContent = {
+  badgeText: "Placements & Career Development",
   heroTitle: "A Step Towards Success!",
   heroSubtitle: "Building Careers. Creating Leaders.",
   heroDescription: "At Chalapathi University, placements are more than securing a job—they are about preparing students for lifelong professional success. Our dedicated Training & Placement Cell bridges the gap between academic learning and industry expectations by equipping students with the knowledge, skills, and confidence to excel in today's competitive global workforce.",
+  heroImage: "/campus_placement.png",
+  enquireButtonText: "Enquire Now",
   highestPackage: "30 LPA",
   averagePackage: "₹5.5 LPA",
   placementPercent: "92%",
@@ -1220,6 +1649,8 @@ export const INITIAL_PLACEMENTS_CONTENT: PlacementsContent = {
     { value: "100%", label: "Placement Assistance", icon: "GraduationCap" }
   ],
   philosophyText: "We focus on developing industry-ready professionals through a holistic approach that combines academic excellence, technical expertise, professional skills, and real-world exposure. Students receive continuous support throughout their academic journey, enabling them to confidently transition from campus to career.",
+  industriesTitle: "Industries We Cater",
+  industries: DEFAULT_INDUSTRIES,
   careerPrograms: [
     "Industry-oriented technical training",
     "Aptitude and logical reasoning development",
@@ -1383,10 +1814,32 @@ export const INITIAL_FACULTY_DATA: Record<string, DirectoryData> = {
       { name: "Smt. T. Kavitha", title: "Assistant Professor", edu: "M.Tech - JNTU Kakinada", interests: "Statistical Analytics, R programming, data warehousing", phone: "0863 2345451", email: "kavitha.ds@city.ac.in", avatar: "TK", age: "35 Years", experience: "9 Years", idNo: "CCIT-DS-002", department: "Data Science" }
     ]
   },
+  "Cyber Security": {
+    hod: { name: "Dr. B. Rajesh Kumar", title: "HOD & Professor", edu: "Ph.D - IIT Kharagpur", interests: "Cryptography, Network Security, Cyber Forensics", phone: "0863 2345455", email: "hod.cyber@city.ac.in", avatar: "BRK", age: "47 Years", experience: "18 Years", idNo: "CCIT-CS-001", department: "Cyber Security" },
+    others: [
+      { name: "Mr. K. V. Satish", title: "Assistant Professor", edu: "M.Tech - JNTU Hyderabad", interests: "Ethical Hacking, Cloud Security, Blockchain", phone: "0863 2345456", email: "satish.cyber@city.ac.in", avatar: "KVS", age: "33 Years", experience: "7 Years", idNo: "CCIT-CS-002", department: "Cyber Security" }
+    ]
+  },
   "Electronics & Communication Engineering": {
     hod: { name: "Dr. V. Radha Krishna", title: "HOD & Professor", edu: "Ph.D - JNTU Hyderabad", interests: "VLSI Design, Embedded Systems, IoT", phone: "0863 2345460", email: "hod.ece@city.ac.in", avatar: "VRK", age: "48 Years", experience: "20 Years", idNo: "CCIT-ECE-001", department: "Electronics & Communication Engineering" },
     others: [
-      { name: "Mr. B. Naveen", title: "Assistant Professor", edu: "M.Tech - NIT Trichy", interests: "Signal Processing, Wireless Communications", phone: "0863 2345461", email: "naveen.ece@city.ac.in", avatar: "BN", age: "35 Years", experience: "10 Years", idNo: "CCIT-ECE-002", department: "Electronics & Communication Engineering" }
+      { name: "Mr. B. Naveen", title: "Assistant Professor", edu: "M.Tech - NIT Trichy", interests: "Signal Processing, Wireless Communications", phone: "0863 2345461", email: "naveen.ece@city.ac.in", avatar: "BN", age: "35 Years", experience: "10 Years", idNo: "CCIT-ECE-002", department: "Electronics & Communication Engineering" },
+      { name: "Dr. P. S. Rao", title: "Associate Professor", edu: "Ph.D - IIT Madras", interests: "Microstrip Antennas, Microwave Circuitry", phone: "0863 2345462", email: "psrao.ece@city.ac.in", avatar: "PSR", age: "42 Years", experience: "14 Years", idNo: "CCIT-ECE-003", department: "Electronics & Communication Engineering" }
+    ]
+  },
+  "Civil Engineering": {
+    hod: { name: "Dr. K. Venkateswara Rao", title: "HOD & Professor", edu: "Ph.D - IIT Madras", interests: "Structural Dynamics, Earthquake Resistance, Advanced Concrete Tech", phone: "0863 2345465", email: "hod.civil@city.ac.in", avatar: "KVR", age: "51 Years", experience: "22 Years", idNo: "CCIT-CIVIL-001", department: "Civil Engineering" },
+    others: [
+      { name: "Dr. M. Ramesh", title: "Associate Professor", edu: "Ph.D - NIT Warangal", interests: "Geotechnical Engineering, Soil Mechanics, Foundation Design", phone: "0863 2345466", email: "ramesh.civil@city.ac.in", avatar: "MR", age: "43 Years", experience: "15 Years", idNo: "CCIT-CIVIL-002", department: "Civil Engineering" },
+      { name: "Mr. P. Suresh", title: "Assistant Professor", edu: "M.Tech - JNTU Kakinada", interests: "Transportation Engineering, Structural CAD Modeling", phone: "0863 2345467", email: "suresh.civil@city.ac.in", avatar: "PS", age: "34 Years", experience: "8 Years", idNo: "CCIT-CIVIL-003", department: "Civil Engineering" }
+    ]
+  },
+  "Basic Science & Humanities": {
+    hod: { name: "Dr. T. V. Subba Rao", title: "HOD & Professor", edu: "Ph.D - Andhra University", interests: "Applied Mathematics, Fluid Dynamics, Differential Equations", phone: "0863 2345468", email: "hod.bsh@city.ac.in", avatar: "TVS", age: "53 Years", experience: "24 Years", idNo: "CCIT-BSH-001", department: "Basic Science & Humanities" },
+    others: [
+      { name: "Dr. S. Lakshmi", title: "Professor of English", edu: "Ph.D - Osmania University", interests: "Professional Communication, ELT, Phonetics", phone: "0863 2345469", email: "lakshmi.english@city.ac.in", avatar: "SL", age: "46 Years", experience: "17 Years", idNo: "CCIT-BSH-002", department: "Basic Science & Humanities" },
+      { name: "Dr. N. V. Prasad", title: "Associate Professor of Physics", edu: "Ph.D - University of Hyderabad", interests: "Materials Science, Solid State Physics, Nanomaterials", phone: "0863 2345473", email: "prasad.physics@city.ac.in", avatar: "NVP", age: "41 Years", experience: "13 Years", idNo: "CCIT-BSH-003", department: "Basic Science & Humanities" },
+      { name: "Dr. Ch. Radhika", title: "Assistant Professor of Chemistry", edu: "Ph.D - Acharya Nagarjuna University", interests: "Polymer Chemistry, Environmental Analysis", phone: "0863 2345474", email: "radhika.chem@city.ac.in", avatar: "CR", age: "36 Years", experience: "10 Years", idNo: "CCIT-BSH-004", department: "Basic Science & Humanities" }
     ]
   },
   "School of Pharmacy": {
@@ -1625,6 +2078,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return local ? JSON.parse(local) : INITIAL_NEWS;
   });
 
+  // News Page Configuration
+  const [newsPageConfig, setNewsPageConfig] = useState<NewsPageConfig>(() => {
+    const local = localStorage.getItem("chalapathi_news_page_config");
+    return local ? { ...DEFAULT_NEWS_PAGE_CONFIG, ...JSON.parse(local) } : DEFAULT_NEWS_PAGE_CONFIG;
+  });
+
   // Events
   const [events, setEvents] = useState<EventItem[]>(() => {
     const local = localStorage.getItem("chalapathi_events");
@@ -1702,7 +2161,120 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const timeStr = new Date().toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
     setLastSavedTime(timeStr);
     localStorage.setItem("chalapathi_last_saved", timeStr);
+
+    // Notify same-window components
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("chalapathi_cms_updated", { detail: { timestamp: Date.now() } }));
+      try {
+        if ("BroadcastChannel" in window) {
+          const ch = new BroadcastChannel("chalapathi_sync_channel");
+          ch.postMessage({ type: "SYNC", timestamp: Date.now() });
+          ch.close();
+        }
+      } catch (e) {}
+    }
   };
+
+  // Real-time synchronization listener across all open tabs and windows
+  React.useEffect(() => {
+    const handleSync = () => {
+      try {
+        const localSettings = localStorage.getItem("chalapathi_site_settings");
+        if (localSettings) setSiteSettings({ ...DEFAULT_SITE_SETTINGS, ...JSON.parse(localSettings) });
+
+        const localColors = localStorage.getItem("chalapathi_theme_colors");
+        if (localColors) setThemeColors({ ...DEFAULT_THEME_COLORS, ...JSON.parse(localColors) });
+
+        const localSections = localStorage.getItem("chalapathi_homepage_sections_v2");
+        if (localSections) setHomepageSections(JSON.parse(localSections));
+
+        const localNav = localStorage.getItem("chalapathi_navigation_menu");
+        if (localNav) setNavigationMenu(JSON.parse(localNav));
+
+        const localFooter = localStorage.getItem("chalapathi_footer_content");
+        if (localFooter) setFooterContent(JSON.parse(localFooter));
+
+        const localEnquiries = localStorage.getItem("chalapathi_enquiries");
+        if (localEnquiries) setEnquiries(JSON.parse(localEnquiries));
+
+        const localAnnounce = localStorage.getItem("chalapathi_announcements");
+        if (localAnnounce) setAnnouncements(JSON.parse(localAnnounce));
+
+        const localPrograms = localStorage.getItem("chalapathi_programs");
+        if (localPrograms) setPrograms(JSON.parse(localPrograms));
+
+        const localNews = localStorage.getItem("chalapathi_news");
+        if (localNews) setNews(JSON.parse(localNews));
+
+        const localNewsConfig = localStorage.getItem("chalapathi_news_page_config");
+        if (localNewsConfig) setNewsPageConfig(JSON.parse(localNewsConfig));
+
+        const localEvents = localStorage.getItem("chalapathi_events");
+        if (localEvents) setEvents(JSON.parse(localEvents));
+
+        const localAbout = localStorage.getItem("chalapathi_about_v2");
+        if (localAbout) setAboutContent(JSON.parse(localAbout));
+
+        const localCalendar = localStorage.getItem("chalapathi_calendar");
+        if (localCalendar) setCalendarData(JSON.parse(localCalendar));
+
+        const localFaculty = localStorage.getItem("chalapathi_faculty_data_v2");
+        if (localFaculty) setFacultyData(JSON.parse(localFaculty));
+
+        const localBoard = localStorage.getItem("chalapathi_board_data");
+        if (localBoard) setBoardData(JSON.parse(localBoard));
+
+        const localStaff = localStorage.getItem("chalapathi_staff_data");
+        if (localStaff) setStaffData(JSON.parse(localStaff));
+
+        const localPlacements = localStorage.getItem("chalapathi_placements");
+        if (localPlacements) setPlacementsContent(JSON.parse(localPlacements));
+
+        const localStories = localStorage.getItem("chalapathi_success_stories");
+        if (localStories) setSuccessStories(JSON.parse(localStories));
+
+        const localSlides = localStorage.getItem("chalapathi_hero_slides");
+        if (localSlides) setHeroSlides(JSON.parse(localSlides));
+
+        const localAcademic = localStorage.getItem("chalapathi_academic_structure");
+        if (localAcademic) setAcademicStructure(JSON.parse(localAcademic));
+
+        const localVideos = localStorage.getItem("chalapathi_campus_videos");
+        if (localVideos) setCampusVideos(JSON.parse(localVideos));
+
+        const localGallery = localStorage.getItem("chalapathi_campus_gallery");
+        if (localGallery) setCampusGallery(JSON.parse(localGallery));
+
+        const localBanners = localStorage.getItem("chalapathi_campus_banners");
+        if (localBanners) setCampusBanners(JSON.parse(localBanners));
+
+        const localCampusLife = localStorage.getItem("chalapathi_campus_life_content");
+        if (localCampusLife) setCampusLifeContent(JSON.parse(localCampusLife));
+
+        const lastSaved = localStorage.getItem("chalapathi_last_saved");
+        if (lastSaved) setLastSavedTime(lastSaved);
+      } catch (err) {
+        console.error("Error syncing CMS state:", err);
+      }
+    };
+
+    window.addEventListener("storage", handleSync);
+    window.addEventListener("chalapathi_cms_updated", handleSync);
+
+    let channel: BroadcastChannel | null = null;
+    try {
+      if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+        channel = new BroadcastChannel("chalapathi_sync_channel");
+        channel.onmessage = () => handleSync();
+      }
+    } catch (e) {}
+
+    return () => {
+      window.removeEventListener("storage", handleSync);
+      window.removeEventListener("chalapathi_cms_updated", handleSync);
+      if (channel) channel.close();
+    };
+  }, []);
 
   const updateSiteSettings = (settings: SiteSettings) => {
     setSiteSettings(settings);
@@ -1767,6 +2339,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateNews = (list: NewsArticle[]) => {
     setNews(list);
     localStorage.setItem("chalapathi_news", JSON.stringify(list));
+    recordSave();
+  };
+
+  const updateNewsPageConfig = (config: NewsPageConfig) => {
+    setNewsPageConfig(config);
+    localStorage.setItem("chalapathi_news_page_config", JSON.stringify(config));
     recordSave();
   };
 
@@ -1913,6 +2491,34 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     recordSave();
   };
 
+  // Campus Life Pages Content
+  const [campusLifeContent, setCampusLifeContent] = useState<CampusLifeContent>(() => {
+    try {
+      const local = localStorage.getItem("chalapathi_campus_life_content");
+      if (local) {
+        return { ...DEFAULT_CAMPUS_LIFE_CONTENT, ...JSON.parse(local) };
+      }
+    } catch (e) {
+      console.error("Failed to parse campus life content", e);
+    }
+    return DEFAULT_CAMPUS_LIFE_CONTENT;
+  });
+
+  const updateCampusLifeContent = (content: CampusLifeContent) => {
+    setCampusLifeContent(content);
+    localStorage.setItem("chalapathi_campus_life_content", JSON.stringify(content));
+    recordSave();
+  };
+
+  const updateCampusLifePage = (path: string, pageData: CampusLifePageData) => {
+    setCampusLifeContent((prev) => {
+      const updated = { ...prev, [path]: pageData };
+      localStorage.setItem("chalapathi_campus_life_content", JSON.stringify(updated));
+      return updated;
+    });
+    recordSave();
+  };
+
   const updateHeroSlides = (list: HeroSlide[]) => {
     setHeroSlides(list);
     localStorage.setItem("chalapathi_hero_slides", JSON.stringify(list));
@@ -1931,11 +2537,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setPrograms(PROGRAMS_DATA);
       setAcademicStructure(DEFAULT_ACADEMIC_STRUCTURE);
       setNews(INITIAL_NEWS);
+      setNewsPageConfig(DEFAULT_NEWS_PAGE_CONFIG);
       setEvents(INITIAL_EVENTS);
       setCampusVideos(DEFAULT_CAMPUS_VIDEOS);
       setCampusTour(DEFAULT_CAMPUS_TOUR);
       setCampusGallery(DEFAULT_CAMPUS_GALLERY);
       setCampusBanners(DEFAULT_CAMPUS_BANNERS);
+      setCampusLifeContent(DEFAULT_CAMPUS_LIFE_CONTENT);
       setAboutContent(INITIAL_ABOUT_CONTENT);
       setCalendarData(INITIAL_CALENDAR_DATA);
       setFacultyData(INITIAL_FACULTY_DATA);
@@ -1953,6 +2561,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <DataContext.Provider value={{
       siteSettings,
       updateSiteSettings,
+      campusLifeContent,
+      updateCampusLifeContent,
+      updateCampusLifePage,
       themeColors,
       updateThemeColors,
       homepageSections,
@@ -1969,6 +2580,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       academicStructure,
       updateAcademicStructure,
       news,
+      newsPageConfig,
+      updateNewsPageConfig,
       events,
       campusVideos,
       updateCampusVideos,

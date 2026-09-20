@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useData } from "../context/DataContext";
 import { Calendar, Clock, MapPin, Share2, ArrowLeft, X, Link2, Check } from "lucide-react";
@@ -282,8 +282,10 @@ export default function NewsDetails() {
 
   const shareLinks = getShareLinks();
 
-  // Load slider images (default to single image if slug not mapped)
-  const sliderImages = NEWS_IMAGES_MAP[article.slug] || [article.image || "/prog_computer.png"];
+  // Load slider images (prioritizing custom configured images, then preset map, then cover image)
+  const sliderImages = (article.images && article.images.length > 0)
+    ? article.images
+    : (NEWS_IMAGES_MAP[article.slug] || [article.image || "/prog_computer.png"]);
 
   return (
     <div className="min-h-screen bg-[#F7F9FC] py-10 font-[var(--font-poppins)] relative text-left">

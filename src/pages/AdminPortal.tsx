@@ -36,17 +36,24 @@ import {
   CampusTourConfig,
   CampusGalleryItem,
   CampusBannersConfig,
+  CampusLifeContent,
+  CampusLifePageData,
+  CampusLifeHighlight,
+  CampusLifeStat,
+  CampusLifeSectionItem,
   getFallbackCourseImage,
   DEFAULT_ACADEMIC_STRUCTURE,
   DEFAULT_CAMPUS_VIDEOS,
   DEFAULT_CAMPUS_TOUR,
   DEFAULT_CAMPUS_GALLERY,
   DEFAULT_CAMPUS_BANNERS,
+  DEFAULT_CAMPUS_LIFE_CONTENT,
   INITIAL_HERO_SLIDES,
   INITIAL_NEWS,
   INITIAL_EVENTS,
   INITIAL_ANNOUNCEMENTS,
   INITIAL_PLACEMENTS_CONTENT,
+  DEFAULT_INDUSTRIES,
   INITIAL_SUCCESS_STORIES,
   INITIAL_ABOUT_CONTENT,
   INITIAL_CALENDAR_DATA,
@@ -59,9 +66,14 @@ import {
   DEFAULT_HOMEPAGE_SECTIONS,
   DEFAULT_NAV_MENU,
   DEFAULT_FOOTER_CONTENT,
+  DEFAULT_NEWS_PAGE_CONFIG,
+  NewsPageConfig,
   PROGRAMS_DATA
 } from "../context/DataContext";
 import { ImageField, ColorField, SectionHeader, VideoField } from "../components/admin/AdminComponents";
+import { PlacementsCMS } from "../components/admin/PlacementsCMS";
+import { ResearchCMS } from "../components/admin/ResearchCMS";
+import { FacultyCMS } from "../components/admin/FacultyCMS";
 import { 
   DEFAULT_PROGRAM_SECTIONS, 
   SectionMeta, 
@@ -91,6 +103,8 @@ export default function AdminPortal() {
     updateAcademicStructure,
     news,
     updateNews,
+    newsPageConfig,
+    updateNewsPageConfig,
     events,
     updateEvents,
     campusVideos,
@@ -101,6 +115,9 @@ export default function AdminPortal() {
     updateCampusGallery,
     campusBanners,
     updateCampusBanners,
+    campusLifeContent,
+    updateCampusLifeContent,
+    updateCampusLifePage,
     aboutContent,
     updateAboutContent,
     calendarData,
@@ -135,8 +152,8 @@ export default function AdminPortal() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<
     "dashboard" | "homepage" | "about" | "academics" | "admissions" | 
-    "campus-life" | "news-events" | "placements" | "directories" | 
-    "gallery" | "contact" | "footer" | "settings"
+    "research" | "directories" | "campus-life" | "placements" | "news-events" | 
+    "contact" | "gallery" | "footer" | "settings"
   >("dashboard");
 
   // Notification / Save feedback
@@ -298,8 +315,33 @@ export default function AdminPortal() {
   };
 
   // ----------------------------------------------------
-  // 5. CAMPUS LIFE & TOUR MEDIA STATE
+  // 5. CAMPUS LIFE CMS STATE
   // ----------------------------------------------------
+  const campusLifeSubpages = [
+    { path: "/campus-life", label: "Campus Overview", icon: Compass, badge: "Main" },
+    { path: "/campus-life/library", label: "Central Library", icon: Library },
+    { path: "/campus-life/smart-classrooms", label: "Smart Classrooms", icon: BookOpen },
+    { path: "/campus-life/laboratories", label: "Laboratories", icon: Layers },
+    { path: "/campus-life/hostels", label: "Hostel Facilities", icon: Building },
+    { path: "/campus-life/sports", label: "Sports & Fitness", icon: Trophy },
+    { path: "/campus-life/cafeteria", label: "Cafeteria & Dining", icon: Palette },
+    { path: "/campus-life/transportation", label: "Transportation", icon: Globe },
+    { path: "/campus-life/wifi", label: "Wi-Fi Campus", icon: Sliders },
+    { path: "/campus-life/health-centre", label: "Health Centre", icon: ShieldCheck },
+    { path: "/campus-life/clubs", label: "Student Clubs", icon: Users },
+    { path: "/campus-life/events", label: "Events & Festivals", icon: Calendar },
+    { path: "/campus-life/innovation-hub", label: "Innovation Hub", icon: Sparkles },
+    { path: "/campus-life/safety", label: "Campus Safety", icon: Shield },
+    { path: "/campus-life/nss-ncc", label: "NSS & NCC", icon: Award },
+    { path: "/campus-life/grievance-cell", label: "Grievance Cell", icon: MessageSquare }
+  ];
+
+  const [selectedCampusSlug, setSelectedCampusSlug] = useState<string>("/campus-life");
+  const [campusLifeSubTab, setCampusLifeSubTab] = useState<"subpages" | "homepage-tour">("subpages");
+  const [campusLifeForm, setCampusLifeForm] = useState<CampusLifeContent>(() => {
+    return campusLifeContent || DEFAULT_CAMPUS_LIFE_CONTENT;
+  });
+  const [newGalleryInput, setNewGalleryInput] = useState("");
   const [campusTourData, setCampusTourData] = useState<CampusTourConfig>(campusTour);
   const [campusVideosList, setCampusVideosList] = useState<CampusVideoItem[]>(campusVideos);
   const [campusGalleryList, setCampusGalleryList] = useState<CampusGalleryItem[]>(campusGallery);
@@ -321,18 +363,35 @@ export default function AdminPortal() {
     ];
   });
 
+  React.useEffect(() => {
+    if (campusLifeContent) setCampusLifeForm(campusLifeContent);
+  }, [campusLifeContent]);
   React.useEffect(() => setCampusTourData(campusTour), [campusTour]);
   React.useEffect(() => setCampusVideosList(campusVideos), [campusVideos]);
   React.useEffect(() => setCampusGalleryList(campusGallery), [campusGallery]);
   React.useEffect(() => setCampusBannersData(campusBanners), [campusBanners]);
 
+  const currentCampusPage: CampusLifePageData = campusLifeForm[selectedCampusSlug] || DEFAULT_CAMPUS_LIFE_CONTENT[selectedCampusSlug] || DEFAULT_CAMPUS_LIFE_CONTENT["/campus-life"];
+
+  const updateSelectedPage = (updates: Partial<CampusLifePageData>) => {
+    const updated = {
+      ...campusLifeForm,
+      [selectedCampusSlug]: {
+        ...currentCampusPage,
+        ...updates
+      }
+    };
+    setCampusLifeForm(updated);
+  };
+
   const saveFullCampusCMS = () => {
+    updateCampusLifeContent(campusLifeForm);
     updateCampusTour(campusTourData);
     updateCampusVideos(campusVideosList);
     updateCampusGallery(campusGalleryList);
     updateCampusBanners(campusBannersData);
     localStorage.setItem("chalapathi_campus_cards", JSON.stringify(campusCardsList));
-    notifySave("Campus life cards, videos, gallery & banners published live!");
+    notifySave(`Campus Life: "${currentCampusPage.title}" & all bottom photos published live!`);
   };
 
   // ----------------------------------------------------
@@ -589,17 +648,27 @@ export default function AdminPortal() {
   const [newsList, setNewsList] = useState<NewsArticle[]>(news);
   const [eventsList, setEventsList] = useState<EventItem[]>(events);
   const [announcementsList, setAnnouncementsList] = useState<Announcement[]>(announcements);
+  const [newsPageForm, setNewsPageForm] = useState<NewsPageConfig>(newsPageConfig || DEFAULT_NEWS_PAGE_CONFIG);
   const [editingNews, setEditingNews] = useState<NewsArticle | null>(null);
   const [editingEvent, setEditingEvent] = useState<EventItem | null>(null);
   const [editingAnn, setEditingAnn] = useState<Announcement | null>(null);
+  const [newsEventsSubTab, setNewsEventsSubTab] = useState<"pageSettings" | "news" | "events" | "announcements">("pageSettings");
 
   React.useEffect(() => setNewsList(news), [news]);
   React.useEffect(() => setEventsList(events), [events]);
   React.useEffect(() => setAnnouncementsList(announcements), [announcements]);
+  React.useEffect(() => {
+    if (newsPageConfig) setNewsPageForm(newsPageConfig);
+  }, [newsPageConfig]);
 
   const saveNewsList = () => {
     updateNews(newsList);
     notifySave("News articles published!");
+  };
+
+  const saveNewsPageForm = () => {
+    updateNewsPageConfig(newsPageForm);
+    notifySave("News Page Header, Hero Slider & Sections saved!");
   };
 
   const saveEventsList = () => {
@@ -616,6 +685,7 @@ export default function AdminPortal() {
   // 10. PLACEMENTS & RECRUITERS
   // ----------------------------------------------------
   const [placementsForm, setPlacementsForm] = useState<PlacementsContent>(placementsContent);
+  const [placementsSubTab, setPlacementsSubTab] = useState<"pageOverview" | "placedStudents" | "industries" | "programsCell" | "recruiters" | "homepage">("pageOverview");
 
   React.useEffect(() => setPlacementsForm(placementsContent), [placementsContent]);
 
@@ -869,22 +939,31 @@ export default function AdminPortal() {
     );
   }
 
-  // ====================================================
-  // MAIN ADMIN CMS DASHBOARD
-  // ====================================================
-  const navItems = [
+  const navItems: {
+    id: "dashboard" | "homepage" | "about" | "academics" | "admissions" | "research" | "directories" | "campus-life" | "placements" | "news-events" | "contact" | "gallery" | "footer" | "settings";
+    label: string;
+    icon: any;
+    badge?: string;
+    section?: string;
+  }[] = [
+    // Administrative Top
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, badge: `${enquiries.length}` },
-    { id: "homepage", label: "Homepage CMS", icon: Sparkles },
-    { id: "about", label: "About Us", icon: Building },
+    { id: "homepage", label: "Home (Homepage CMS)", icon: Sparkles },
+
+    // Main Website Navigation Order (Matches Website Navbar 1:1)
+    { id: "about", label: "Genesis & About Us", icon: Building, section: "MAIN WEBSITE PAGES" },
     { id: "academics", label: "Academics", icon: GraduationCap },
     { id: "admissions", label: "Admissions & Leads", icon: UserPlus, badge: `${enquiries.filter(e => e.status === "New").length || ""}` },
-    { id: "campus-life", label: "Campus & Facilities", icon: Library },
+    { id: "research", label: "Research & Innovation", icon: Award },
+    { id: "directories", label: "Faculty & Directories", icon: Users },
+    { id: "campus-life", label: "Campus Life", icon: Library },
+    { id: "placements", label: "Placements", icon: Briefcase },
     { id: "news-events", label: "News & Events", icon: Newspaper },
-    { id: "placements", label: "Placements & Careers", icon: Briefcase },
-    { id: "directories", label: "Directories (Faculty)", icon: Users },
-    { id: "gallery", label: "Gallery & Media", icon: ImageIcon },
     { id: "contact", label: "Contact Us", icon: Phone },
-    { id: "footer", label: "Footer CMS", icon: Layers },
+
+    // Remaining Extra Sections in the Bottom
+    { id: "gallery", label: "Gallery & Media", icon: ImageIcon, section: "REMAINING EXTRA SECTIONS" },
+    { id: "footer", label: "Footer", icon: Layers },
     { id: "settings", label: "Website Settings", icon: Settings },
   ];
 
@@ -972,28 +1051,39 @@ export default function AdminPortal() {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
               return (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id as any)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all text-left cursor-pointer ${
-                    isActive
-                      ? "bg-[#D4AF37] text-slate-900 shadow-md"
-                      : "text-blue-100 hover:bg-white/10 hover:text-white"
-                  }`}
-                  title={item.label}
-                >
-                  <Icon size={18} className="shrink-0" />
-                  {sidebarOpen && <span className="flex-1 truncate">{item.label}</span>}
-                  {sidebarOpen && item.badge && (
-                    <span
-                      className={`text-[9px] px-1.5 py-0.5 rounded-full font-extrabold ${
-                        isActive ? "bg-slate-900 text-white" : "bg-blue-600 text-white"
-                      }`}
-                    >
-                      {item.badge}
-                    </span>
+                <React.Fragment key={item.id}>
+                  {item.section && sidebarOpen && (
+                    <div className="pt-3 pb-1 px-3">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-blue-300/80">
+                        {item.section}
+                      </span>
+                    </div>
                   )}
-                </button>
+                  {item.section && !sidebarOpen && (
+                    <div className="my-2 border-t border-white/10" />
+                  )}
+                  <button
+                    onClick={() => setActiveTab(item.id as any)}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all text-left cursor-pointer ${
+                      isActive
+                        ? "bg-[#D4AF37] text-slate-900 shadow-md"
+                        : "text-blue-100 hover:bg-white/10 hover:text-white"
+                    }`}
+                    title={item.label}
+                  >
+                    <Icon size={18} className="shrink-0" />
+                    {sidebarOpen && <span className="flex-1 truncate">{item.label}</span>}
+                    {sidebarOpen && item.badge && (
+                      <span
+                        className={`text-[9px] px-1.5 py-0.5 rounded-full font-extrabold ${
+                          isActive ? "bg-slate-900 text-white" : "bg-blue-600 text-white"
+                        }`}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                  </button>
+                </React.Fragment>
               );
             })}
           </div>
@@ -1029,19 +1119,27 @@ export default function AdminPortal() {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;
                 return (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      setActiveTab(item.id as any);
-                      setMobileSidebarOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all text-left cursor-pointer ${
-                      isActive ? "bg-[#D4AF37] text-slate-900 shadow-md" : "text-blue-100 hover:bg-white/10"
-                    }`}
-                  >
-                    <Icon size={18} />
-                    <span className="flex-1 truncate">{item.label}</span>
-                  </button>
+                  <React.Fragment key={item.id}>
+                    {item.section && (
+                      <div className="pt-3 pb-1 px-3">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-blue-300/80">
+                          {item.section}
+                        </span>
+                      </div>
+                    )}
+                    <button
+                      onClick={() => {
+                        setActiveTab(item.id as any);
+                        setMobileSidebarOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all text-left cursor-pointer ${
+                        isActive ? "bg-[#D4AF37] text-slate-900 shadow-md" : "text-blue-100 hover:bg-white/10"
+                      }`}
+                    >
+                      <Icon size={18} />
+                      <span className="flex-1 truncate">{item.label}</span>
+                    </button>
+                  </React.Fragment>
                 );
               })}
             </div>
@@ -1266,6 +1364,22 @@ export default function AdminPortal() {
 
                   <div className="space-y-2.5">
                     {sectionsList.map((sec, idx) => {
+                      const sectionFriendlyNames: Record<string, string> = {
+                        hero: "1. Hero Carousel",
+                        ticker: "2. Admission Ticker",
+                        stats: "3. Key Statistics",
+                        whyChooseUs: "4. Why Choose Us",
+                        whyChoose: "4. Why Choose Us",
+                        programs: "5. Schools & Programs",
+                        newsEvents: "6. News & Events",
+                        campusLife: "7. Campus Life & Videos",
+                        chairman: "8. Chairman's Message",
+                        placements: "9. Placements & Corporate Partners",
+                        certifications: "9. Placements & Corporate Partners",
+                        virtualTour: "10. Admissions Strip & Visit Us",
+                        admissionsStrip: "10. Admissions Strip & Visit Us"
+                      };
+
                       const tabMapping: Record<string, string> = {
                         hero: "hero",
                         ticker: "ticker",
@@ -1289,10 +1403,10 @@ export default function AdminPortal() {
                         >
                           <div className="flex items-center gap-3">
                             <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-700 text-xs font-black flex items-center justify-center">
-                              {sec.order}
+                              {idx + 1}
                             </span>
                             <div>
-                              <h4 className="text-xs font-bold text-slate-800">{sec.name}</h4>
+                              <h4 className="text-xs font-bold text-slate-800">{sectionFriendlyNames[sec.id] || sec.name}</h4>
                               <span className="text-[10px] text-gray-400 font-mono">ID: {sec.id}</span>
                             </div>
                           </div>
@@ -1354,6 +1468,13 @@ export default function AdminPortal() {
                       <p className="text-xs text-gray-500">Add or replace full-width banner slides displayed at top of homepage</p>
                     </div>
                     <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setActiveHomeSubTab("ordering")}
+                        className="h-9 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        ← Back to Ordering
+                      </button>
                       <button
                         type="button"
                         onClick={() => {
@@ -1447,6 +1568,13 @@ export default function AdminPortal() {
                     <div className="flex gap-2">
                       <button
                         type="button"
+                        onClick={() => setActiveHomeSubTab("ordering")}
+                        className="h-9 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        ← Back to Ordering
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => {
                           const defTicker = DEFAULT_HOMEPAGE_SECTIONS.find((s) => s.id === "ticker");
                           if (defTicker) {
@@ -1527,6 +1655,13 @@ export default function AdminPortal() {
                     <div className="flex gap-2">
                       <button
                         type="button"
+                        onClick={() => setActiveHomeSubTab("ordering")}
+                        className="h-9 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        ← Back to Ordering
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => {
                           const defStats = DEFAULT_HOMEPAGE_SECTIONS.find((s) => s.id === "stats")?.extraData || [];
                           setStatsData(defStats);
@@ -1593,6 +1728,13 @@ export default function AdminPortal() {
                       <p className="text-xs text-gray-500">Edit heading, subtext and the 6 key differentiator cards</p>
                     </div>
                     <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setActiveHomeSubTab("ordering")}
+                        className="h-9 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        ← Back to Ordering
+                      </button>
                       <button
                         type="button"
                         onClick={() => {
@@ -1664,6 +1806,13 @@ export default function AdminPortal() {
                       <p className="text-xs text-gray-500">Configure schools, category/department tabs, and individual degree course cards with photos & target sizes</p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setActiveHomeSubTab("ordering")}
+                        className="h-9 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        ← Back to Ordering
+                      </button>
                       <button
                         type="button"
                         onClick={() => {
@@ -2032,6 +2181,13 @@ export default function AdminPortal() {
                     <div className="flex gap-2">
                       <button
                         type="button"
+                        onClick={() => setActiveHomeSubTab("ordering")}
+                        className="h-9 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        ← Back to Ordering
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => {
                           setNewsList(INITIAL_NEWS);
                           setEventsList(INITIAL_EVENTS);
@@ -2359,6 +2515,13 @@ export default function AdminPortal() {
                     <div className="flex gap-2">
                       <button
                         type="button"
+                        onClick={() => setActiveHomeSubTab("ordering")}
+                        className="h-9 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        ← Back to Ordering
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => {
                           const defL = INITIAL_ABOUT_CONTENT.leadership;
                           setChairmanData({
@@ -2452,6 +2615,13 @@ export default function AdminPortal() {
                       <p className="text-xs text-gray-500">Edit 8 campus highlight cards, campus tour video player (with file size MB limits), and quotes</p>
                     </div>
                     <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setActiveHomeSubTab("ordering")}
+                        className="h-9 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        ← Back to Ordering
+                      </button>
                       <button
                         type="button"
                         onClick={() => {
@@ -2676,6 +2846,13 @@ export default function AdminPortal() {
                         <p className="text-xs text-gray-500">Configure homepage placement stats, full student success story testimonials with 4-step milestones, and corporate partner logos</p>
                       </div>
                       <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setActiveHomeSubTab("ordering")}
+                          className="h-9 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                        >
+                          ← Back to Ordering
+                        </button>
                         <button
                           type="button"
                           onClick={() => {
@@ -3625,6 +3802,13 @@ export default function AdminPortal() {
                     <div className="flex gap-2 shrink-0">
                       <button
                         type="button"
+                        onClick={() => setActiveHomeSubTab("ordering")}
+                        className="h-9 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        ← Back to Ordering
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => {
                           const defVT = DEFAULT_HOMEPAGE_SECTIONS.find((s) => s.id === "virtualTour");
                           if (defVT && defVT.extraData) {
@@ -3948,12 +4132,21 @@ export default function AdminPortal() {
                         </div>
                         <p className="text-xs text-gray-500 mt-0.5">Choose a curated university color scheme or customize individual values below</p>
                       </div>
-                      <button
-                        onClick={saveStyling}
-                        className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs self-start sm:self-auto"
-                      >
-                        <Save size={13} /> Save Colors & Style
-                      </button>
+                      <div className="flex gap-2 self-start sm:self-auto">
+                        <button
+                          type="button"
+                          onClick={() => setActiveHomeSubTab("ordering")}
+                          className="h-9 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                        >
+                          ← Back to Ordering
+                        </button>
+                        <button
+                          onClick={saveStyling}
+                          className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+                        >
+                          <Save size={13} /> Save Colors & Style
+                        </button>
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -6147,180 +6340,856 @@ export default function AdminPortal() {
           )}
 
           {/* ════════════════════════════════════════════════════ */}
-          {/* TAB 5b: CAMPUS LIFE & FACILITIES                     */}
+          {/* TAB 4: RESEARCH & INNOVATION CMS                     */}
+          {/* ════════════════════════════════════════════════════ */}
+          {activeTab === "research" && (
+            <ResearchCMS notifySave={notifySave} />
+          )}
+
+          {/* ════════════════════════════════════════════════════ */}
+          {/* TAB 5b: CAMPUS LIFE & FACILITIES CMS                 */}
           {/* ════════════════════════════════════════════════════ */}
           {activeTab === "campus-life" && (
             <div className="space-y-6 animate-fade-in text-left">
               <SectionHeader
-                title="Campus Life, Facilities & Video Player CMS"
-                subtitle="Manage 8 campus highlight cards, campus tour video player (with file size MB limits), and quotes"
+                title="Campus Life & Facilities CMS"
+                subtitle="Manage all 16 Campus Life pages, hero banners, feature cards, video tour player, and bottom photo galleries"
                 icon={Library}
                 onSave={saveFullCampusCMS}
                 saveSuccess={saveSuccess}
                 onReset={() => {
-                  setCampusTourData(DEFAULT_CAMPUS_TOUR);
-                  updateCampusTour(DEFAULT_CAMPUS_TOUR);
-                  setCampusCardsList([
-                    { title: "Vibrant Community", desc: "A diverse and inclusive campus with students from across India and the world.", icon: "Users" },
-                    { title: "Clubs & Activities", desc: "50+ student clubs to explore passions and build leadership skills.", icon: "GraduationCap" },
-                    { title: "Sports & Fitness", desc: "World-class sports facilities to keep you active, healthy and motivated.", icon: "Trophy" },
-                    { title: "Arts & Culture", desc: "Celebrate creativity with events, fests, and cultural extravaganzas.", icon: "Sparkles" },
-                    { title: "Smart Learning Spaces", desc: "Modern classrooms, advanced labs, and digital resources for future-ready learning.", icon: "Building2" },
-                    { title: "Hostel Life", desc: "Safe, comfortable and modern hostels that feel like a second home.", icon: "Landmark" },
-                    { title: "Food & Cafeteria", desc: "Hygienic, affordable and variety-rich meals for every taste.", icon: "Coffee" },
-                    { title: "Transport Facility", desc: "Convenient and reliable transportation across city routes.", icon: "Bus" }
-                  ]);
-                  setCampusVideosList(DEFAULT_CAMPUS_VIDEOS);
-                  updateCampusVideos(DEFAULT_CAMPUS_VIDEOS);
-                  notifySave("Campus life content reset to default!");
+                  setCampusLifeForm(DEFAULT_CAMPUS_LIFE_CONTENT);
+                  updateCampusLifeContent(DEFAULT_CAMPUS_LIFE_CONTENT);
+                  notifySave("Campus life pages reset to defaults!");
                 }}
-                resetLabel="Reset Campus Life"
+                resetLabel="Reset All Pages"
               />
 
-              {/* Section Headings */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-2xl bg-white border border-gray-200 shadow-xs">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-gray-600 uppercase">Section Main Heading</label>
-                  <input
-                    type="text"
-                    value={campusTourData.heading || "CAMPUS LIFE"}
-                    onChange={(e) => setCampusTourData({ ...campusTourData, heading: e.target.value })}
-                    className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold text-gray-800"
-                  />
+              {/* Main Subtabs: 1. Subpages CMS | 2. Homepage Tour Video */}
+              <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-gray-200 shadow-xs">
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setCampusLifeSubTab("subpages")}
+                    className={`px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-2 ${
+                      campusLifeSubTab === "subpages"
+                        ? "bg-[#072A6C] text-white shadow-sm"
+                        : "bg-slate-100 text-gray-700 hover:bg-slate-200"
+                    }`}
+                  >
+                    <BookOpen size={14} /> 1. Campus Life Subpages CMS ({Object.keys(DEFAULT_CAMPUS_LIFE_CONTENT).length} Pages)
+                  </button>
+                  <button
+                    onClick={() => setCampusLifeSubTab("homepage-tour")}
+                    className={`px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-2 ${
+                      campusLifeSubTab === "homepage-tour"
+                        ? "bg-[#072A6C] text-white shadow-sm"
+                        : "bg-slate-100 text-gray-700 hover:bg-slate-200"
+                    }`}
+                  >
+                    <Sparkles size={14} /> 2. Homepage Campus Tour & 8 Highlight Cards
+                  </button>
                 </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-gray-600 uppercase">Section Subtitle / Description</label>
-                  <input
-                    type="text"
-                    value={campusTourData.subtitle || ""}
-                    onChange={(e) => setCampusTourData({ ...campusTourData, subtitle: e.target.value })}
-                    className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg text-gray-700"
-                  />
-                </div>
+
+                <button
+                  onClick={saveFullCampusCMS}
+                  className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                >
+                  <Save size={14} /> Save All Campus Life
+                </button>
               </div>
 
-              {/* 8 Feature Cards Grid */}
-              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
-                <div className="flex items-center justify-between pb-2 border-b border-gray-100">
-                  <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider">
-                    1. Campus Life 8 Highlight Cards
-                  </h4>
-                </div>
+              {campusLifeSubTab === "subpages" && (
+                <div className="space-y-6">
+                  {/* Subpage Pill Selector */}
+                  <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-black uppercase text-[#072A6C] tracking-wider">
+                        Select Campus Life Section to Edit:
+                      </span>
+                      <span className="text-[11px] font-bold text-gray-400">
+                        {campusLifeSubpages.findIndex(p => p.path === selectedCampusSlug) + 1} of {campusLifeSubpages.length} sections
+                      </span>
+                    </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                  {campusCardsList.map((card, idx) => (
-                    <div key={idx} className="p-3.5 rounded-xl border border-gray-200 bg-slate-50/60 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black text-gray-400">Card #{idx + 1}</span>
-                        <select
-                          value={card.icon || "Users"}
-                          onChange={(e) => {
-                            const updated = [...campusCardsList];
-                            updated[idx] = { ...updated[idx], icon: e.target.value };
-                            setCampusCardsList(updated);
-                          }}
-                          className="h-6 px-1 text-[10px] font-bold bg-white border border-gray-200 rounded cursor-pointer"
-                        >
-                          <option value="Users">Users Icon</option>
-                          <option value="GraduationCap">GraduationCap</option>
-                          <option value="Trophy">Trophy</option>
-                          <option value="Sparkles">Sparkles</option>
-                          <option value="Building2">Building2</option>
-                          <option value="Landmark">Landmark</option>
-                          <option value="Coffee">Coffee</option>
-                          <option value="Bus">Bus</option>
-                        </select>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
+                      {campusLifeSubpages.map((p) => {
+                        const Icon = p.icon;
+                        const isSelected = selectedCampusSlug === p.path;
+                        return (
+                          <button
+                            key={p.path}
+                            onClick={() => setSelectedCampusSlug(p.path)}
+                            className={`p-2.5 rounded-xl border text-left transition-all flex flex-col items-start gap-1 cursor-pointer ${
+                              isSelected
+                                ? "bg-[#072A6C] text-white border-[#072A6C] shadow-md ring-2 ring-[#D4AF37]/50"
+                                : "bg-slate-50 text-gray-700 border-gray-200 hover:bg-blue-50/60 hover:border-blue-200"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between w-full">
+                              <Icon size={14} className={isSelected ? "text-[#D4AF37]" : "text-blue-600"} />
+                              {p.badge && (
+                                <span className={`text-[8px] px-1 py-0.2 rounded font-extrabold ${isSelected ? 'bg-[#D4AF37] text-slate-900' : 'bg-blue-100 text-blue-700'}`}>
+                                  {p.badge}
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[11px] font-bold truncate w-full">{p.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Section Top Header & Direct Live Link */}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white p-5 rounded-2xl border border-gray-200 shadow-xs">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-black px-2.5 py-0.5 rounded-md bg-[#072A6C] text-white">
+                          Route: {selectedCampusSlug}
+                        </span>
+                        <h3 className="text-base font-black text-[#072A6C] tracking-tight">
+                          Editing: {currentCampusPage.title}
+                        </h3>
                       </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        All edits below are saved to backend and instantly displayed on the live website.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Link
+                        to={selectedCampusSlug}
+                        target="_blank"
+                        className="h-9 px-3.5 bg-blue-50 hover:bg-blue-100 text-[#072A6C] text-xs font-bold rounded-xl flex items-center gap-1.5 border border-blue-200 transition-colors"
+                      >
+                        <ExternalLink size={13} /> View Live Page
+                      </Link>
+                      <button
+                        onClick={saveFullCampusCMS}
+                        className="h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                      >
+                        <Save size={14} /> Save This Page
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 1. Hero Banner Editor */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+                      <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider flex items-center gap-2">
+                        <span>🖼️ 1. Hero Banner Header & Background</span>
+                      </h4>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Page Title / Heading</label>
+                        <input
+                          type="text"
+                          value={currentCampusPage.title || ""}
+                          onChange={(e) => updateSelectedPage({ title: e.target.value })}
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold text-gray-800 focus:bg-white"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Description / Subtitle</label>
+                        <input
+                          type="text"
+                          value={currentCampusPage.desc || ""}
+                          onChange={(e) => updateSelectedPage({ desc: e.target.value })}
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg text-gray-700 focus:bg-white"
+                        />
+                      </div>
+                    </div>
+
+                    <ImageField
+                      label="Hero Background Image"
+                      value={currentCampusPage.heroImage || "/campus_hero.png"}
+                      defaultValue="/campus_hero.png"
+                      recommendedSize="1920 × 600 px (Wide Banner)"
+                      aspectRatio="banner"
+                      onChange={(heroImage) => updateSelectedPage({ heroImage })}
+                      onReset={() => updateSelectedPage({ heroImage: "/campus_hero.png" })}
+                    />
+                  </div>
+
+                  {/* 2. Video Tour Section (if enabled / overview) */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+                      <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider flex items-center gap-2">
+                        <span>🎬 2. Campus Guided Tour Video Player</span>
+                      </h4>
+                      <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-gray-700">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(currentCampusPage.hasVideo)}
+                          onChange={(e) => updateSelectedPage({ hasVideo: e.target.checked })}
+                          className="rounded text-[#072A6C]"
+                        />
+                        Enable Video Section on this page
+                      </label>
+                    </div>
+
+                    {currentCampusPage.hasVideo ? (
+                      <div className="space-y-4 animate-fade-in">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Video Heading</label>
+                            <input
+                              type="text"
+                              value={currentCampusPage.videoTitle || "EXPERIENCE CHALAPATHI"}
+                              onChange={(e) => updateSelectedPage({ videoTitle: e.target.value })}
+                              className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold text-gray-800"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Video Description</label>
+                            <textarea
+                              rows={2}
+                              value={currentCampusPage.videoDesc || ""}
+                              onChange={(e) => updateSelectedPage({ videoDesc: e.target.value })}
+                              className="w-full p-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg text-gray-700"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Video Source URL (MP4 / WebM / Link)</label>
+                          <input
+                            type="text"
+                            value={currentCampusPage.videoUrl || "/chalapathi_logo_intro.mp4"}
+                            onChange={(e) => updateSelectedPage({ videoUrl: e.target.value })}
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg text-gray-700"
+                            placeholder="e.g. /chalapathi_logo_intro.mp4"
+                          />
+                        </div>
+
+                        <ImageField
+                          label="Video Thumbnail / Poster Image"
+                          value={currentCampusPage.videoThumbnail || "/campus_life_bg.png"}
+                          defaultValue="/campus_life_bg.png"
+                          recommendedSize="1280 × 720 px (16:9 HD)"
+                          aspectRatio="video"
+                          onChange={(videoThumbnail) => updateSelectedPage({ videoThumbnail })}
+                          onReset={() => updateSelectedPage({ videoThumbnail: "/campus_life_bg.png" })}
+                        />
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-400 italic">Video section is currently hidden on this page. Check the box above to enable it.</p>
+                    )}
+                  </div>
+
+                  {/* 3. Highlight Cards Editor */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+                      <div>
+                        <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider">
+                          ✨ 3. Campus Highlight Cards ({currentCampusPage.highlights?.length || 0})
+                        </h4>
+                        <p className="text-[11px] text-gray-400">Cards shown at the top of the page with gold accent trim</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          const current = currentCampusPage.highlights || [];
+                          updateSelectedPage({
+                            highlights: [...current, { title: "New Feature", desc: "Description of the facility or feature." }]
+                          });
+                        }}
+                        className="h-7 px-3 bg-blue-50 hover:bg-blue-100 text-blue-700 text-[11px] font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        <Plus size={12} /> Add Highlight Card
+                      </button>
+                    </div>
+
+                    {currentCampusPage.highlights && currentCampusPage.highlights.length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        {currentCampusPage.highlights.map((h, hIdx) => (
+                          <div key={hIdx} className="p-3.5 rounded-xl border border-gray-200 bg-slate-50/70 space-y-2 relative group">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-black text-gray-400">Card #{hIdx + 1}</span>
+                              <button
+                                onClick={() => {
+                                  const updated = (currentCampusPage.highlights || []).filter((_, i) => i !== hIdx);
+                                  updateSelectedPage({ highlights: updated });
+                                }}
+                                className="text-red-400 hover:text-red-600 p-1 cursor-pointer"
+                                title="Delete Card"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
+                            <input
+                              type="text"
+                              value={h.title}
+                              onChange={(e) => {
+                                const updated = [...(currentCampusPage.highlights || [])];
+                                updated[hIdx] = { ...updated[hIdx], title: e.target.value };
+                                updateSelectedPage({ highlights: updated });
+                              }}
+                              className="w-full h-7 px-2 text-xs font-bold bg-white border border-gray-200 rounded"
+                              placeholder="Title"
+                            />
+                            <textarea
+                              rows={2}
+                              value={h.desc}
+                              onChange={(e) => {
+                                const updated = [...(currentCampusPage.highlights || [])];
+                                updated[hIdx] = { ...updated[hIdx], desc: e.target.value };
+                                updateSelectedPage({ highlights: updated });
+                              }}
+                              className="w-full p-2 text-[11px] bg-white border border-gray-200 rounded leading-relaxed"
+                              placeholder="Description"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-6 text-center text-gray-400 text-xs font-medium border border-dashed border-gray-200 rounded-xl">
+                        No highlight cards on this page. Click "Add Highlight Card" to create one.
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 4. Stats Counter Bar Editor */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+                      <div>
+                        <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider">
+                          📊 4. Numerical Stats Counters ({currentCampusPage.stats?.length || 0})
+                        </h4>
+                        <p className="text-[11px] text-gray-400">Prominent blue numbers bar with key metrics</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          const current = currentCampusPage.stats || [];
+                          updateSelectedPage({
+                            stats: [...current, { label: "Metric Name", value: "100+" }]
+                          });
+                        }}
+                        className="h-7 px-3 bg-blue-50 hover:bg-blue-100 text-blue-700 text-[11px] font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        <Plus size={12} /> Add Stat Counter
+                      </button>
+                    </div>
+
+                    {currentCampusPage.stats && currentCampusPage.stats.length > 0 ? (
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        {currentCampusPage.stats.map((s, sIdx) => (
+                          <div key={sIdx} className="p-3.5 rounded-xl border border-blue-100 bg-blue-50/40 space-y-2 relative">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-black text-blue-600">Stat #{sIdx + 1}</span>
+                              <button
+                                onClick={() => {
+                                  const updated = (currentCampusPage.stats || []).filter((_, i) => i !== sIdx);
+                                  updateSelectedPage({ stats: updated });
+                                }}
+                                className="text-red-400 hover:text-red-600 p-1 cursor-pointer"
+                                title="Delete Stat"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
+                            <input
+                              type="text"
+                              value={s.value}
+                              onChange={(e) => {
+                                const updated = [...(currentCampusPage.stats || [])];
+                                updated[sIdx] = { ...updated[sIdx], value: e.target.value };
+                                updateSelectedPage({ stats: updated });
+                              }}
+                              className="w-full h-8 px-2 text-sm font-black text-[#D4AF37] bg-white border border-gray-200 rounded"
+                              placeholder="Value (e.g. 75,000+)"
+                            />
+                            <input
+                              type="text"
+                              value={s.label}
+                              onChange={(e) => {
+                                const updated = [...(currentCampusPage.stats || [])];
+                                updated[sIdx] = { ...updated[sIdx], label: e.target.value };
+                                updateSelectedPage({ stats: updated });
+                              }}
+                              className="w-full h-7 px-2 text-[11px] font-bold text-gray-700 bg-white border border-gray-200 rounded"
+                              placeholder="Label (e.g. Physical Books)"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-6 text-center text-gray-400 text-xs font-medium border border-dashed border-gray-200 rounded-xl">
+                        No stats counters configured on this page. Click "Add Stat Counter" if needed.
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 5. Detailed Feature Sections Editor */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+                      <div>
+                        <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider">
+                          🏛️ 5. Detailed Facility Sections ({currentCampusPage.sections?.length || 0})
+                        </h4>
+                        <p className="text-[11px] text-gray-400">Large content rows with photography and in-depth descriptions</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          const current = currentCampusPage.sections || [];
+                          updateSelectedPage({
+                            sections: [
+                              ...current,
+                              {
+                                title: "New Facility Wing",
+                                desc: "Detailed information regarding equipment, technology, and learning capabilities.",
+                                image: "/campus_hero.png"
+                              }
+                            ]
+                          });
+                        }}
+                        className="h-7 px-3 bg-blue-50 hover:bg-blue-100 text-blue-700 text-[11px] font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        <Plus size={12} /> Add Content Section
+                      </button>
+                    </div>
+
+                    {currentCampusPage.sections && currentCampusPage.sections.length > 0 ? (
+                      <div className="space-y-4">
+                        {currentCampusPage.sections.map((sec, secIdx) => (
+                          <div key={secIdx} className="p-4 rounded-xl border border-gray-200 bg-slate-50/60 space-y-3">
+                            <div className="flex items-center justify-between pb-2 border-b border-gray-200">
+                              <span className="text-xs font-black text-[#072A6C]">Section #{secIdx + 1}: {sec.title || "Untitled"}</span>
+                              <button
+                                onClick={() => {
+                                  const updated = (currentCampusPage.sections || []).filter((_, i) => i !== secIdx);
+                                  updateSelectedPage({ sections: updated });
+                                }}
+                                className="text-xs text-red-500 hover:text-red-700 font-bold flex items-center gap-1 cursor-pointer"
+                              >
+                                <Trash2 size={12} /> Delete Section
+                              </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <div className="space-y-1">
+                                  <label className="text-[10px] font-bold text-gray-600 uppercase">Section Title</label>
+                                  <input
+                                    type="text"
+                                    value={sec.title}
+                                    onChange={(e) => {
+                                      const updated = [...(currentCampusPage.sections || [])];
+                                      updated[secIdx] = { ...updated[secIdx], title: e.target.value };
+                                      updateSelectedPage({ sections: updated });
+                                    }}
+                                    className="w-full h-8 px-2.5 text-xs font-bold bg-white border border-gray-200 rounded-lg"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[10px] font-bold text-gray-600 uppercase">Description</label>
+                                  <textarea
+                                    rows={4}
+                                    value={sec.desc}
+                                    onChange={(e) => {
+                                      const updated = [...(currentCampusPage.sections || [])];
+                                      updated[secIdx] = { ...updated[secIdx], desc: e.target.value };
+                                      updateSelectedPage({ sections: updated });
+                                    }}
+                                    className="w-full p-2.5 text-xs bg-white border border-gray-200 rounded-lg leading-relaxed text-gray-700"
+                                  />
+                                </div>
+                              </div>
+
+                              <div>
+                                <ImageField
+                                  label={`Section #${secIdx + 1} Photography`}
+                                  value={sec.image || "/campus_hero.png"}
+                                  defaultValue="/campus_hero.png"
+                                  recommendedSize="800 × 500 px (3:2 Landscape)"
+                                  aspectRatio="wide"
+                                  onChange={(img) => {
+                                    const updated = [...(currentCampusPage.sections || [])];
+                                    updated[secIdx] = { ...updated[secIdx], image: img };
+                                    updateSelectedPage({ sections: updated });
+                                  }}
+                                  onReset={() => {
+                                    const updated = [...(currentCampusPage.sections || [])];
+                                    updated[secIdx] = { ...updated[secIdx], image: "/campus_hero.png" };
+                                    updateSelectedPage({ sections: updated });
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-6 text-center text-gray-400 text-xs font-medium border border-dashed border-gray-200 rounded-xl">
+                        No detailed feature sections on this page. Click "Add Content Section" to create one.
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 6. BOTTOM PHOTO GALLERY CMS */}
+                  <div className="bg-white p-6 rounded-2xl border-2 border-[#072A6C]/20 shadow-sm space-y-6">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-gray-200">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-sm font-black text-[#072A6C] uppercase tracking-wider">
+                            📸 6. Bottom Photo Gallery ({currentCampusPage.gallery?.length || 0} Photos)
+                          </h4>
+                          <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                            Synced Live to Website
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          Edit, add, replace, and remove photos displayed in the bottom "{currentCampusPage.title.toUpperCase()} GALLERY" grid.
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={saveFullCampusCMS}
+                        className="h-8 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-sm transition-all"
+                      >
+                        <Save size={13} /> Save Gallery
+                      </button>
+                    </div>
+
+                    {/* Add Photo Tools */}
+                    <div className="p-4 rounded-xl bg-slate-50 border border-gray-200 space-y-3">
+                      <span className="text-xs font-bold text-gray-700 block">Add New Photo to This Page Gallery:</span>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <input
+                          type="text"
+                          value={newGalleryInput}
+                          onChange={(e) => setNewGalleryInput(e.target.value)}
+                          placeholder="Paste image URL (e.g. /gallery_tech_events.png or https://...)"
+                          className="flex-1 h-9 px-3 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                        />
+                        <button
+                          onClick={() => {
+                            if (!newGalleryInput.trim()) return;
+                            const current = currentCampusPage.gallery || [];
+                            updateSelectedPage({ gallery: [...current, newGalleryInput.trim()] });
+                            setNewGalleryInput("");
+                          }}
+                          className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                        >
+                          <Plus size={14} /> Add by URL
+                        </button>
+                        <label className="h-9 px-4 bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 cursor-pointer transition-colors">
+                          <UploadCloud size={14} className="text-blue-600" />
+                          <span>Upload File</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (ev) => {
+                                  if (ev.target?.result) {
+                                    const current = currentCampusPage.gallery || [];
+                                    updateSelectedPage({ gallery: [...current, ev.target.result as string] });
+                                  }
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                          />
+                        </label>
+                      </div>
+
+                      {/* Quick Presets for University Campus Photos */}
+                      <div className="pt-2 border-t border-gray-200/60">
+                        <span className="text-[10px] font-bold text-gray-500 uppercase block mb-1.5">
+                          Quick Presets (Click to Add):
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {[
+                            { label: "+ Annual Fest", url: "/gallery_annual_fest.png" },
+                            { label: "+ Sports Meet", url: "/gallery_sports_meet.png" },
+                            { label: "+ Tech Events", url: "/gallery_tech_events.png" },
+                            { label: "+ NSS Activities", url: "/gallery_nss_activities.png" },
+                            { label: "+ Cultural Events", url: "/gallery_cultural_events.png" },
+                            { label: "+ Workshops", url: "/gallery_workshops.png" },
+                            { label: "+ Campus Hero", url: "/campus_hero.png" },
+                            { label: "+ Campus Life BG", url: "/campus_life_bg.png" },
+                            { label: "+ Main Building", url: "/Chalapathimain.png" },
+                            { label: "+ Placements", url: "/campus_placement.png" }
+                          ].map((pre) => (
+                            <button
+                              key={pre.label}
+                              onClick={() => {
+                                const current = currentCampusPage.gallery || [];
+                                updateSelectedPage({ gallery: [...current, pre.url] });
+                              }}
+                              className="px-2 py-1 bg-white hover:bg-blue-50 text-blue-800 text-[10px] font-bold rounded border border-gray-200 hover:border-blue-300 transition-colors cursor-pointer"
+                            >
+                              {pre.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Photos Visual Grid */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                      {(currentCampusPage.gallery || []).map((imgUrl, gIdx) => (
+                        <div key={gIdx} className="bg-slate-50 p-2.5 rounded-xl border border-gray-200 space-y-2 relative group hover:border-blue-300 transition-all">
+                          <div className="relative h-32 rounded-lg overflow-hidden bg-gray-200 border border-gray-100">
+                            <img
+                              src={imgUrl}
+                              alt={`Gallery ${gIdx}`}
+                              onError={(e) => { e.currentTarget.src = "/gallery_tech_events.png"; }}
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute top-1.5 left-1.5 bg-black/60 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded">
+                              #{gIdx + 1}
+                            </div>
+                            <button
+                              onClick={() => {
+                                const updated = (currentCampusPage.gallery || []).filter((_, i) => i !== gIdx);
+                                updateSelectedPage({ gallery: updated });
+                              }}
+                              className="absolute top-1.5 right-1.5 bg-red-600 hover:bg-red-700 text-white p-1 rounded-md cursor-pointer transition-colors shadow-sm"
+                              title="Delete Photo"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+
+                          <div className="space-y-1">
+                            <input
+                              type="text"
+                              value={imgUrl}
+                              onChange={(e) => {
+                                const updated = [...(currentCampusPage.gallery || [])];
+                                updated[gIdx] = e.target.value;
+                                updateSelectedPage({ gallery: updated });
+                              }}
+                              className="w-full h-7 px-2 text-[10px] font-mono bg-white border border-gray-200 rounded text-gray-700"
+                              placeholder="Image URL"
+                            />
+                            <div className="flex items-center justify-between text-[10px] text-gray-500">
+                              <label className="text-blue-600 hover:underline font-bold cursor-pointer flex items-center gap-1">
+                                <UploadCloud size={11} /> Replace File
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      const reader = new FileReader();
+                                      reader.onload = (ev) => {
+                                        if (ev.target?.result) {
+                                          const updated = [...(currentCampusPage.gallery || [])];
+                                          updated[gIdx] = ev.target.result as string;
+                                          updateSelectedPage({ gallery: updated });
+                                        }
+                                      };
+                                      reader.readAsDataURL(file);
+                                    }
+                                  }}
+                                />
+                              </label>
+
+                              <div className="flex items-center gap-1">
+                                {gIdx > 0 && (
+                                  <button
+                                    onClick={() => {
+                                      const updated = [...(currentCampusPage.gallery || [])];
+                                      const temp = updated[gIdx - 1];
+                                      updated[gIdx - 1] = updated[gIdx];
+                                      updated[gIdx] = temp;
+                                      updateSelectedPage({ gallery: updated });
+                                    }}
+                                    className="p-1 hover:bg-gray-200 rounded text-gray-600"
+                                    title="Move Left"
+                                  >
+                                    ←
+                                  </button>
+                                )}
+                                {gIdx < (currentCampusPage.gallery || []).length - 1 && (
+                                  <button
+                                    onClick={() => {
+                                      const updated = [...(currentCampusPage.gallery || [])];
+                                      const temp = updated[gIdx + 1];
+                                      updated[gIdx + 1] = updated[gIdx];
+                                      updated[gIdx] = temp;
+                                      updateSelectedPage({ gallery: updated });
+                                    }}
+                                    className="p-1 hover:bg-gray-200 rounded text-gray-600"
+                                    title="Move Right"
+                                  >
+                                    →
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {(currentCampusPage.gallery || []).length === 0 && (
+                      <div className="p-8 text-center text-gray-400 text-xs font-medium border border-dashed border-gray-200 rounded-xl">
+                        No photos added to this gallery yet. Use the tools above to add photos.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Homepage Campus Tour Subtab */}
+              {campusLifeSubTab === "homepage-tour" && (
+                <div className="space-y-6">
+                  {/* Section Headings */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-2xl bg-white border border-gray-200 shadow-xs">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-600 uppercase">Section Main Heading</label>
                       <input
                         type="text"
-                        value={card.title}
-                        onChange={(e) => {
-                          const updated = [...campusCardsList];
-                          updated[idx] = { ...updated[idx], title: e.target.value };
-                          setCampusCardsList(updated);
-                        }}
-                        className="w-full h-7 px-2 text-xs font-bold bg-white border border-gray-200 rounded"
-                      />
-                      <textarea
-                        rows={2}
-                        value={card.desc}
-                        onChange={(e) => {
-                          const updated = [...campusCardsList];
-                          updated[idx] = { ...updated[idx], desc: e.target.value };
-                          setCampusCardsList(updated);
-                        }}
-                        className="w-full p-2 text-[11px] bg-white border border-gray-200 rounded leading-relaxed"
+                        value={campusTourData.heading || "CAMPUS LIFE"}
+                        onChange={(e) => setCampusTourData({ ...campusTourData, heading: e.target.value })}
+                        className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold text-gray-800"
                       />
                     </div>
-                  ))}
-                </div>
-              </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-600 uppercase">Section Subtitle / Description</label>
+                      <input
+                        type="text"
+                        value={campusTourData.subtitle || ""}
+                        onChange={(e) => setCampusTourData({ ...campusTourData, subtitle: e.target.value })}
+                        className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg text-gray-700"
+                      />
+                    </div>
+                  </div>
 
-              {/* Campus Tour Video Player & Media CMS */}
-              <div className="p-6 rounded-2xl border border-blue-200 bg-blue-50/40 shadow-xs space-y-4">
-                <div className="flex items-center justify-between pb-2 border-b border-blue-100">
-                  <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider flex items-center gap-2">
-                    🎬 2. Campus Tour Video Player & Media
-                  </h4>
-                  <span className="text-[10.5px] font-bold text-[#072A6C] bg-white px-2.5 py-0.5 rounded-md border border-blue-200">
-                    Max Recommended Limit: 50.0 MB
-                  </span>
-                </div>
+                  {/* 8 Feature Cards Grid */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+                      <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider">
+                        1. Homepage Campus 8 Highlight Cards
+                      </h4>
+                    </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-gray-600 uppercase">Top Badge Text</label>
-                    <input
-                      type="text"
-                      value={campusTourData.badge || "WATCH CAMPUS TOUR"}
-                      onChange={(e) => setCampusTourData({ ...campusTourData, badge: e.target.value })}
-                      className="w-full h-9 px-3 text-xs bg-white border border-gray-200 rounded-lg font-bold text-[#D4AF37]"
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                      {campusCardsList.map((card, idx) => (
+                        <div key={idx} className="p-3.5 rounded-xl border border-gray-200 bg-slate-50/60 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-black text-gray-400">Card #{idx + 1}</span>
+                            <select
+                              value={card.icon || "Users"}
+                              onChange={(e) => {
+                                const updated = [...campusCardsList];
+                                updated[idx] = { ...updated[idx], icon: e.target.value };
+                                setCampusCardsList(updated);
+                              }}
+                              className="h-6 px-1 text-[10px] font-bold bg-white border border-gray-200 rounded cursor-pointer"
+                            >
+                              <option value="Users">Users Icon</option>
+                              <option value="GraduationCap">GraduationCap</option>
+                              <option value="Trophy">Trophy</option>
+                              <option value="Sparkles">Sparkles</option>
+                              <option value="Building2">Building2</option>
+                              <option value="Landmark">Landmark</option>
+                              <option value="Coffee">Coffee</option>
+                              <option value="Bus">Bus</option>
+                            </select>
+                          </div>
+                          <input
+                            type="text"
+                            value={card.title}
+                            onChange={(e) => {
+                              const updated = [...campusCardsList];
+                              updated[idx] = { ...updated[idx], title: e.target.value };
+                              setCampusCardsList(updated);
+                            }}
+                            className="w-full h-7 px-2 text-xs font-bold bg-white border border-gray-200 rounded"
+                          />
+                          <textarea
+                            rows={2}
+                            value={card.desc}
+                            onChange={(e) => {
+                              const updated = [...campusCardsList];
+                              updated[idx] = { ...updated[idx], desc: e.target.value };
+                              setCampusCardsList(updated);
+                            }}
+                            className="w-full p-2 text-[11px] bg-white border border-gray-200 rounded leading-relaxed"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Campus Tour Video Player & Media CMS */}
+                  <div className="p-6 rounded-2xl border border-blue-200 bg-blue-50/40 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between pb-2 border-b border-blue-100">
+                      <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider flex items-center gap-2">
+                        🎬 2. Campus Tour Video Player & Media
+                      </h4>
+                      <span className="text-[10.5px] font-bold text-[#072A6C] bg-white px-2.5 py-0.5 rounded-md border border-blue-200">
+                        Max Recommended Limit: 50.0 MB
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Top Badge Text</label>
+                        <input
+                          type="text"
+                          value={campusTourData.badge || "WATCH CAMPUS TOUR"}
+                          onChange={(e) => setCampusTourData({ ...campusTourData, badge: e.target.value })}
+                          className="w-full h-9 px-3 text-xs bg-white border border-gray-200 rounded-lg font-bold text-[#D4AF37]"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Video Quote Text</label>
+                        <input
+                          type="text"
+                          value={campusTourData.quote || ""}
+                          onChange={(e) => setCampusTourData({ ...campusTourData, quote: e.target.value })}
+                          className="w-full h-9 px-3 text-xs bg-white border border-gray-200 rounded-lg italic text-gray-700"
+                        />
+                      </div>
+                    </div>
+
+                    {/* VideoField with validation, MB calculation, player preview */}
+                    <VideoField
+                      label="Main Campus Tour Video"
+                      value={campusVideosList[0]?.url || "/chalapathi_logo_intro.mp4"}
+                      sizeMb={campusVideosList[0]?.sizeMb || "12.4 MB"}
+                      maxSizeMb={50}
+                      recommendedLimit="Max 50.0 MB (MP4 / WebM)"
+                      poster={campusTourData.poster || "/Chalapathimain.png"}
+                      onChange={(url, sizeMb) => {
+                        const updated = [...campusVideosList];
+                        updated[0] = { ...updated[0], url, sizeMb: sizeMb || updated[0]?.sizeMb };
+                        setCampusVideosList(updated);
+                      }}
+                      onSizeChange={(sizeMb) => {
+                        const updated = [...campusVideosList];
+                        updated[0] = { ...updated[0], sizeMb };
+                        setCampusVideosList(updated);
+                      }}
+                    />
+
+                    <ImageField
+                      label="Video Poster Image (When Video Not Playing)"
+                      value={campusTourData.poster || "/Chalapathimain.png"}
+                      defaultValue="/Chalapathimain.png"
+                      recommendedSize="1280 × 720 px (16:9 Landscape)"
+                      aspectRatio="video"
+                      onChange={(poster) => setCampusTourData({ ...campusTourData, poster })}
+                      onReset={() => setCampusTourData({ ...campusTourData, poster: "/Chalapathimain.png" })}
                     />
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-gray-600 uppercase">Video Quote Text</label>
-                    <input
-                      type="text"
-                      value={campusTourData.quote || ""}
-                      onChange={(e) => setCampusTourData({ ...campusTourData, quote: e.target.value })}
-                      className="w-full h-9 px-3 text-xs bg-white border border-gray-200 rounded-lg italic text-gray-700"
-                    />
-                  </div>
                 </div>
-
-                {/* VideoField with validation, MB calculation, player preview */}
-                <VideoField
-                  label="Main Campus Tour Video"
-                  value={campusVideosList[0]?.url || "/chalapathi_logo_intro.mp4"}
-                  sizeMb={campusVideosList[0]?.sizeMb || "12.4 MB"}
-                  maxSizeMb={50}
-                  recommendedLimit="Max 50.0 MB (MP4 / WebM)"
-                  poster={campusTourData.poster || "/Chalapathimain.png"}
-                  onChange={(url, sizeMb) => {
-                    const updated = [...campusVideosList];
-                    updated[0] = { ...updated[0], url, sizeMb: sizeMb || updated[0]?.sizeMb };
-                    setCampusVideosList(updated);
-                  }}
-                  onSizeChange={(sizeMb) => {
-                    const updated = [...campusVideosList];
-                    updated[0] = { ...updated[0], sizeMb };
-                    setCampusVideosList(updated);
-                  }}
-                />
-
-                <ImageField
-                  label="Video Poster Image (When Video Not Playing)"
-                  value={campusTourData.poster || "/Chalapathimain.png"}
-                  defaultValue="/Chalapathimain.png"
-                  recommendedSize="1280 × 720 px (16:9 Landscape)"
-                  aspectRatio="video"
-                  onChange={(poster) => setCampusTourData({ ...campusTourData, poster })}
-                  onReset={() => setCampusTourData({ ...campusTourData, poster: "/Chalapathimain.png" })}
-                />
-              </div>
+              )}
             </div>
           )}
 
+          {/* ════════════════════════════════════════════════════ */}
           {/* ════════════════════════════════════════════════════ */}
           {/* TAB 6: NEWS, EVENTS & ANNOUNCEMENTS                  */}
           {/* ════════════════════════════════════════════════════ */}
@@ -6330,11 +7199,19 @@ export default function AdminPortal() {
                 title="News, Events & Announcements CMS"
                 subtitle="Publish articles, schedule campus events, and manage the drawer announcements"
                 icon={Newspaper}
-                onSave={saveNewsList}
+                onSave={() => {
+                  updateNews(newsList);
+                  updateNewsPageConfig(newsPageForm);
+                  updateEvents(eventsList);
+                  updateAnnouncements(announcementsList);
+                  notifySave("All News, Events & Announcements saved!");
+                }}
                 saveSuccess={saveSuccess}
                 onReset={() => {
                   setNewsList(INITIAL_NEWS);
                   updateNews(INITIAL_NEWS);
+                  setNewsPageForm(DEFAULT_NEWS_PAGE_CONFIG);
+                  updateNewsPageConfig(DEFAULT_NEWS_PAGE_CONFIG);
                   setEventsList(INITIAL_EVENTS);
                   updateEvents(INITIAL_EVENTS);
                   setAnnouncementsList(INITIAL_ANNOUNCEMENTS);
@@ -6344,147 +7221,1219 @@ export default function AdminPortal() {
                 resetLabel="Reset News & Events"
               />
 
-              {/* News Articles Manager */}
-              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-black text-[#072A6C] uppercase">News Articles ({newsList.length})</h3>
+              {/* Subtabs Selector for News, Events, and Announcements */}
+              <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3">
+                {[
+                  { id: "pageSettings", label: "🌟 1. News Intro & Homepage (Photos 1 & 2)" },
+                  { id: "news", label: `📰 2. News Articles Directory & Details (${newsList.length})` },
+                  { id: "events", label: `📅 3. Campus Events & Details (${eventsList.length})` },
+                  { id: "announcements", label: `📢 4. Announcements Drawer (${announcementsList.length})` }
+                ].map((st) => (
                   <button
-                    type="button"
-                    onClick={() => {
-                      const newArticle: NewsArticle = {
-                        id: Date.now(),
-                        title: "New University Highlight",
-                        date: new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
-                        time: "10:00 AM",
-                        location: "Campus Main Auditorium",
-                        category: "Achievement",
-                        excerpt: "Short summary of the story.",
-                        bodyText: "Full article body text goes here.",
-                        image: "/prog_computer.png",
-                        slug: "news-" + Date.now(),
-                        featured: true
-                      };
-                      setNewsList([newArticle, ...newsList]);
-                      updateNews([newArticle, ...newsList]);
-                      notifySave("Added new news draft!");
-                    }}
-                    className="h-8 px-3 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer shadow-xs"
+                    key={st.id}
+                    onClick={() => setNewsEventsSubTab(st.id as any)}
+                    className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      newsEventsSubTab === st.id
+                        ? "bg-[#072A6C] text-white shadow-xs"
+                        : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
+                    }`}
                   >
-                    <Plus size={13} /> Add News Article
+                    {st.label}
                   </button>
-                </div>
+                ))}
+              </div>
 
-                <div className="space-y-4">
-                  {newsList.map((article, idx) => (
-                    <div key={article.id} className="p-4 rounded-xl border border-gray-200 bg-slate-50/50 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-black text-[#072A6C]">Article #{idx + 1}</span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const updated = newsList.filter((n) => n.id !== article.id);
-                            setNewsList(updated);
-                            updateNews(updated);
-                            notifySave("Article deleted.");
-                          }}
-                          className="text-red-500 hover:text-red-700 text-xs font-bold flex items-center gap-1 cursor-pointer"
-                        >
-                          <Trash2 size={13} /> Delete
-                        </button>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold text-gray-600 uppercase">Article Title</label>
-                          <input
-                            type="text"
-                            value={article.title}
-                            onChange={(e) => {
-                              const updated = [...newsList];
-                              updated[idx] = { ...updated[idx], title: e.target.value };
-                              setNewsList(updated);
-                            }}
-                            className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded font-bold text-slate-800"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold text-gray-600 uppercase">Category</label>
-                          <input
-                            type="text"
-                            value={article.category}
-                            onChange={(e) => {
-                              const updated = [...newsList];
-                              updated[idx] = { ...updated[idx], category: e.target.value };
-                              setNewsList(updated);
-                            }}
-                            className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded font-semibold text-slate-700"
-                          />
-                        </div>
-                      </div>
-
-                      <ImageField
-                        label="Article Thumbnail Photo"
-                        value={article.image || INITIAL_NEWS[idx]?.image || "/prog_computer.png"}
-                        defaultValue={INITIAL_NEWS[idx]?.image || "/prog_computer.png"}
-                        onChange={(val) => {
-                          const updated = [...newsList];
-                          updated[idx] = { ...updated[idx], image: val };
-                          setNewsList(updated);
+              {/* ────────────────────────────────────────────────────────── */}
+              {/* SUBTAB 1: NEWS INTRO & HOMEPAGE (PHOTOS 1 & 2)             */}
+              {/* ────────────────────────────────────────────────────────── */}
+              {newsEventsSubTab === "pageSettings" && (
+                <div className="space-y-6">
+                  {/* Top Bar */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-sm font-black text-[#072A6C] uppercase flex items-center gap-2">
+                        <Sparkles size={16} className="text-amber-500" />
+                        1. News Intro & Homepage Hero CMS (Photos 1 & 2)
+                      </h3>
+                      <p className="text-xs text-gray-500">
+                        Customize the top page banner title/subtitle, featured news spotlight card & carousel slider, university highlights sidebar, upcoming events strip, and latest news grid.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNewsPageForm(DEFAULT_NEWS_PAGE_CONFIG);
+                          updateNewsPageConfig(DEFAULT_NEWS_PAGE_CONFIG);
+                          notifySave("News page settings reset to default!");
                         }}
-                        onReset={() => {
-                          const updated = [...newsList];
-                          updated[idx] = { ...updated[idx], image: INITIAL_NEWS[idx]?.image || "/prog_computer.png" };
-                          setNewsList(updated);
-                        }}
-                        aspectRatio="video"
-                      />
+                        className="h-8 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        <RotateCcw size={12} /> Reset Settings
+                      </button>
+                      <button
+                        type="button"
+                        onClick={saveNewsPageForm}
+                        className="h-8 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      >
+                        <Save size={13} /> Save Page Settings
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 1. Page Header (Top Banner) */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
+                      <span className="w-6 h-6 rounded-full bg-blue-100 text-[#072A6C] text-xs font-black flex items-center justify-center">1</span>
+                      <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wide">Top Page Header & Intro (/news)</h4>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Page Main Title</label>
+                        <input
+                          type="text"
+                          value={newsPageForm.headerTitle}
+                          onChange={(e) => setNewsPageForm({ ...newsPageForm, headerTitle: e.target.value })}
+                          placeholder="e.g. News @ City Chalapathi"
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold text-slate-800"
+                        />
+                      </div>
 
                       <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-gray-600 uppercase">Full Story Text</label>
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Page Subtitle / Tagline</label>
                         <textarea
-                          rows={4}
-                          value={article.bodyText}
-                          onChange={(e) => {
-                            const updated = [...newsList];
-                            updated[idx] = { ...updated[idx], bodyText: e.target.value };
-                            setNewsList(updated);
-                          }}
-                          className="w-full p-2.5 text-xs bg-white border border-gray-200 rounded-lg leading-relaxed"
+                          rows={2}
+                          value={newsPageForm.headerSubtitle}
+                          onChange={(e) => setNewsPageForm({ ...newsPageForm, headerSubtitle: e.target.value })}
+                          placeholder="e.g. Stay updated with the latest happenings, milestones, and achievements from across the university."
+                          className="w-full p-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg font-medium"
                         />
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
+                  </div>
 
-              {/* Announcements Drawer Manager */}
-              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-black text-[#072A6C] uppercase">Announcements Drawer ({announcementsList.length})</h3>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const newAnn: Announcement = {
-                        title: "New Announcement",
-                        desc: "Details about this notification.",
-                        date: new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
-                        iconName: "GraduationCap"
-                      };
-                      const updated = [newAnn, ...announcementsList];
-                      setAnnouncementsList(updated);
-                      updateAnnouncements(updated);
-                      notifySave("Added announcement!");
-                    }}
-                    className="h-8 px-3 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer shadow-xs"
-                  >
-                    <Plus size={13} /> Add Announcement
-                  </button>
-                </div>
+                  {/* 2. Featured News Hero Card & Carousel */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-5">
+                    <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+                      <div className="flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-full bg-amber-100 text-amber-800 text-xs font-black flex items-center justify-center">2</span>
+                        <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wide">Featured News Big Hero Card & Slider (Photo 1)</h4>
+                      </div>
+                      <span className="text-[10px] text-gray-400 font-mono">Displayed as large spotlight on /news</span>
+                    </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {announcementsList.map((ann, idx) => (
-                    <div key={idx} className="p-3.5 rounded-xl border border-gray-200 bg-slate-50/50 space-y-2">
-                      <div className="flex justify-between items-center">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Featured Badge Label</label>
+                        <input
+                          type="text"
+                          value={newsPageForm.featuredBadgeText}
+                          onChange={(e) => setNewsPageForm({ ...newsPageForm, featuredBadgeText: e.target.value })}
+                          placeholder="Featured News"
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Select Featured Article</label>
+                        <select
+                          value={newsPageForm.featuredArticleId || newsList[0]?.id || 1}
+                          onChange={(e) => setNewsPageForm({ ...newsPageForm, featuredArticleId: Number(e.target.value) })}
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold text-slate-800"
+                        >
+                          {newsList.map((article) => (
+                            <option key={article.id} value={article.id}>
+                              {article.title} ({article.category} • {article.date})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Action Button Text</label>
+                        <input
+                          type="text"
+                          value={newsPageForm.readStoryButtonText}
+                          onChange={(e) => setNewsPageForm({ ...newsPageForm, readStoryButtonText: e.target.value })}
+                          placeholder="Read Full Story"
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Featured Carousel Slides Manager */}
+                    <div className="p-4 rounded-xl border border-amber-200/70 bg-amber-50/30 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h5 className="text-xs font-black text-amber-900 uppercase tracking-wide">
+                            Featured Hero Carousel Slides ({newsPageForm.featuredCarouselImages?.length || 0})
+                          </h5>
+                          <p className="text-[11px] text-amber-800/80">These images rotate automatically in the left half of the featured hero card</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setNewsPageForm({
+                              ...newsPageForm,
+                              featuredCarouselImages: [
+                                ...(newsPageForm.featuredCarouselImages || []),
+                                "/prog_computer.png"
+                              ]
+                            });
+                          }}
+                          className="h-7 px-2.5 bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold rounded-md flex items-center gap-1 cursor-pointer shadow-2xs"
+                        >
+                          <Plus size={12} /> Add Slide Image
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        {(newsPageForm.featuredCarouselImages || []).map((imgUrl, sIdx) => (
+                          <div key={sIdx} className="p-3 bg-white rounded-xl border border-gray-200 shadow-2xs space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-black text-gray-400">Slide #{sIdx + 1}</span>
+                              {(newsPageForm.featuredCarouselImages || []).length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const updated = (newsPageForm.featuredCarouselImages || []).filter((_, i) => i !== sIdx);
+                                    setNewsPageForm({ ...newsPageForm, featuredCarouselImages: updated });
+                                  }}
+                                  className="text-[10px] text-red-500 hover:text-red-700 font-bold flex items-center gap-0.5 cursor-pointer"
+                                >
+                                  <Trash2 size={11} /> Remove
+                                </button>
+                              )}
+                            </div>
+
+                            <ImageField
+                              label={`Slide Photo`}
+                              value={imgUrl}
+                              defaultValue="/prog_computer.png"
+                              onReset={() => {
+                                const updated = [...(newsPageForm.featuredCarouselImages || [])];
+                                updated[sIdx] = "/prog_computer.png";
+                                setNewsPageForm({ ...newsPageForm, featuredCarouselImages: updated });
+                              }}
+                              onChange={(val) => {
+                                const updated = [...(newsPageForm.featuredCarouselImages || [])];
+                                updated[sIdx] = val;
+                                setNewsPageForm({ ...newsPageForm, featuredCarouselImages: updated });
+                              }}
+                              aspectRatio="video"
+                              recommendedSize="800 × 500 px (Landscape 16:9 / 16:10)"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. University Highlights Right Sidebar */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
+                      <span className="w-6 h-6 rounded-full bg-red-100 text-red-700 text-xs font-black flex items-center justify-center">3</span>
+                      <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wide">University Highlights (Right Sidebar - Photo 1)</h4>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Section Heading</label>
+                        <input
+                          type="text"
+                          value={newsPageForm.highlightsTitle}
+                          onChange={(e) => setNewsPageForm({ ...newsPageForm, highlightsTitle: e.target.value })}
+                          placeholder="University Highlights"
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">View All Link Label</label>
+                        <input
+                          type="text"
+                          value={newsPageForm.highlightsViewAllText}
+                          onChange={(e) => setNewsPageForm({ ...newsPageForm, highlightsViewAllText: e.target.value })}
+                          placeholder="View All"
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-semibold"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">View All Target URL</label>
+                        <input
+                          type="text"
+                          value={newsPageForm.highlightsViewAllUrl}
+                          onChange={(e) => setNewsPageForm({ ...newsPageForm, highlightsViewAllUrl: e.target.value })}
+                          placeholder="/news/latest"
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-mono text-gray-700"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 4. Upcoming Events Full Width Strip */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
+                      <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black flex items-center justify-center">4</span>
+                      <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wide">Upcoming Events Full-Width Bar Strip (Photo 2)</h4>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Strip Title</label>
+                        <input
+                          type="text"
+                          value={newsPageForm.eventsStripTitle}
+                          onChange={(e) => setNewsPageForm({ ...newsPageForm, eventsStripTitle: e.target.value })}
+                          placeholder="Upcoming Events"
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">View All Button Label</label>
+                        <input
+                          type="text"
+                          value={newsPageForm.eventsStripViewAllText}
+                          onChange={(e) => setNewsPageForm({ ...newsPageForm, eventsStripViewAllText: e.target.value })}
+                          placeholder="View All"
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-semibold"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Number of Events Shown (1-6)</label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={6}
+                          value={newsPageForm.eventsStripCount || 3}
+                          onChange={(e) => setNewsPageForm({ ...newsPageForm, eventsStripCount: Number(e.target.value) || 3 })}
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 5. Latest News Section */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
+                      <span className="w-6 h-6 rounded-full bg-purple-100 text-purple-800 text-xs font-black flex items-center justify-center">5</span>
+                      <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wide">Latest News Grid Section (Photo 2)</h4>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Section Title</label>
+                        <input
+                          type="text"
+                          value={newsPageForm.latestNewsTitle}
+                          onChange={(e) => setNewsPageForm({ ...newsPageForm, latestNewsTitle: e.target.value })}
+                          placeholder="Latest News"
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">View All Label</label>
+                        <input
+                          type="text"
+                          value={newsPageForm.latestNewsViewAllText}
+                          onChange={(e) => setNewsPageForm({ ...newsPageForm, latestNewsViewAllText: e.target.value })}
+                          placeholder="View All News"
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-semibold"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">View All URL</label>
+                        <input
+                          type="text"
+                          value={newsPageForm.latestNewsViewAllUrl}
+                          onChange={(e) => setNewsPageForm({ ...newsPageForm, latestNewsViewAllUrl: e.target.value })}
+                          placeholder="/news/latest"
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-mono text-gray-700"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Cards Shown in Grid</label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={12}
+                          value={newsPageForm.latestNewsCount || 4}
+                          onChange={(e) => setNewsPageForm({ ...newsPageForm, latestNewsCount: Number(e.target.value) || 4 })}
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ────────────────────────────────────────────────────────── */}
+              {/* SUBTAB 2: NEWS ARTICLES DIRECTORY & DETAILS (PHOTOS 3 & 4) */}
+              {/* ────────────────────────────────────────────────────────── */}
+              {newsEventsSubTab === "news" && (
+                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+                  {/* Top Header Controls */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
+                    <div>
+                      <h3 className="text-sm font-black text-[#072A6C] uppercase">
+                        2. News Articles Directory & Detail Articles CMS (Photos 3 & 4)
+                      </h3>
+                      <p className="text-xs text-gray-500">
+                        Manage all news items, directory header, article stories, dates, categories, covers, and multi-slide photo galleries.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNewsList(INITIAL_NEWS);
+                          updateNews(INITIAL_NEWS);
+                          notifySave("News reset to defaults!");
+                        }}
+                        className="h-8 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        <RotateCcw size={12} /> Reset News
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newArticle: NewsArticle = {
+                            id: Date.now(),
+                            title: "New Campus Milestone & Achievement",
+                            date: new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+                            time: "10:00 AM",
+                            location: "Main University Campus",
+                            category: "Achievement",
+                            excerpt: "Brief overview of the recent achievement, milestone, or student event.",
+                            bodyText: "Full article story text and comprehensive details regarding the event or announcement.",
+                            image: "/prog_computer.png",
+                            images: ["/prog_computer.png", "/prog_engineering.png"],
+                            slug: "news-" + Date.now(),
+                            featured: false
+                          };
+                          const updated = [newArticle, ...newsList];
+                          setNewsList(updated);
+                          updateNews(updated);
+                          notifySave("New article added!");
+                        }}
+                        className="h-8 px-3.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      >
+                        <Plus size={13} /> Add News Article
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          updateNews(newsList);
+                          updateNewsPageConfig(newsPageForm);
+                          notifySave("News articles & directory settings published!");
+                        }}
+                        className="h-8 px-3.5 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      >
+                        <Save size={13} /> Save All News
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Directory Page Header Customizer (Photo 3) */}
+                  <div className="p-4 rounded-xl border border-blue-200/70 bg-blue-50/40 space-y-3">
+                    <div>
+                      <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wide">
+                        All News Directory Page Header (/news/latest - Photo 3)
+                      </h4>
+                      <p className="text-[11px] text-gray-500">
+                        Banner title & subtitle shown when visitors click "View All" or browse the full news list.
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Directory Banner Title</label>
+                        <input
+                          type="text"
+                          value={newsPageForm.newsDirectoryTitle || ""}
+                          onChange={(e) => setNewsPageForm({ ...newsPageForm, newsDirectoryTitle: e.target.value })}
+                          placeholder="University Highlights"
+                          className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold text-slate-800"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Directory Banner Subtitle</label>
+                        <input
+                          type="text"
+                          value={newsPageForm.newsDirectorySubtitle || ""}
+                          onChange={(e) => setNewsPageForm({ ...newsPageForm, newsDirectorySubtitle: e.target.value })}
+                          placeholder="Stay updated with the latest achievements, innovations, and stories from Chalapathi University."
+                          className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-slate-700 font-medium"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* News Articles List */}
+                  <div className="space-y-6">
+                    {newsList.map((article, idx) => (
+                      <div key={article.id} className="p-5 rounded-2xl border border-gray-200 bg-slate-50/50 space-y-4">
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-200/80 pb-3">
+                          <div className="flex items-center gap-2">
+                            <span className="w-6 h-6 rounded-full bg-[#072A6C] text-white text-xs font-black flex items-center justify-center">
+                              {idx + 1}
+                            </span>
+                            <span className="text-xs font-black text-[#072A6C]">{article.title || "Untitled Article"}</span>
+                            {article.featured && (
+                              <span className="text-[10px] font-extrabold uppercase bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md">
+                                Featured
+                              </span>
+                            )}
+                          </div>
+                          
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              disabled={idx === 0}
+                              onClick={() => {
+                                if (idx === 0) return;
+                                const updated = [...newsList];
+                                const temp = updated[idx];
+                                updated[idx] = updated[idx - 1];
+                                updated[idx - 1] = temp;
+                                setNewsList(updated);
+                                updateNews(updated);
+                              }}
+                              className="p-1.5 bg-white hover:bg-gray-100 border border-gray-200 rounded-md text-gray-600 disabled:opacity-30 cursor-pointer"
+                              title="Move Up"
+                            >
+                              <ArrowUp size={13} />
+                            </button>
+                            <button
+                              type="button"
+                              disabled={idx === newsList.length - 1}
+                              onClick={() => {
+                                if (idx === newsList.length - 1) return;
+                                const updated = [...newsList];
+                                const temp = updated[idx];
+                                updated[idx] = updated[idx + 1];
+                                updated[idx + 1] = temp;
+                                setNewsList(updated);
+                                updateNews(updated);
+                              }}
+                              className="p-1.5 bg-white hover:bg-gray-100 border border-gray-200 rounded-md text-gray-600 disabled:opacity-30 cursor-pointer"
+                              title="Move Down"
+                            >
+                              <ArrowDown size={13} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (window.confirm(`Delete article "${article.title}"?`)) {
+                                  const updated = newsList.filter((n) => n.id !== article.id);
+                                  setNewsList(updated);
+                                  updateNews(updated);
+                                  notifySave("Article deleted.");
+                                }
+                              }}
+                              className="h-7 px-2.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-bold rounded-md flex items-center gap-1 cursor-pointer ml-2"
+                            >
+                              <Trash2 size={12} /> Delete
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Title, Category */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          <div className="space-y-1 md:col-span-2">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Article Title</label>
+                            <input
+                              type="text"
+                              value={article.title}
+                              onChange={(e) => {
+                                const updated = [...newsList];
+                                updated[idx] = { ...updated[idx], title: e.target.value };
+                                setNewsList(updated);
+                              }}
+                              className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold text-slate-800"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Category</label>
+                            <input
+                              type="text"
+                              value={article.category}
+                              onChange={(e) => {
+                                const updated = [...newsList];
+                                updated[idx] = { ...updated[idx], category: e.target.value };
+                                setNewsList(updated);
+                              }}
+                              placeholder="e.g. Innovation, Achievement, Research"
+                              className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-semibold text-slate-700"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Date, Time, Location, Slug */}
+                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Publication Date</label>
+                            <input
+                              type="text"
+                              value={article.date}
+                              onChange={(e) => {
+                                const updated = [...newsList];
+                                updated[idx] = { ...updated[idx], date: e.target.value };
+                                setNewsList(updated);
+                              }}
+                              placeholder="e.g. 18 May 2025"
+                              className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-slate-700"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Event / Release Time</label>
+                            <input
+                              type="text"
+                              value={article.time || ""}
+                              onChange={(e) => {
+                                const updated = [...newsList];
+                                updated[idx] = { ...updated[idx], time: e.target.value };
+                                setNewsList(updated);
+                              }}
+                              placeholder="e.g. 10:30 AM"
+                              className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-slate-700"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Location / Venue</label>
+                            <input
+                              type="text"
+                              value={article.location || ""}
+                              onChange={(e) => {
+                                const updated = [...newsList];
+                                updated[idx] = { ...updated[idx], location: e.target.value };
+                                setNewsList(updated);
+                              }}
+                              placeholder="e.g. Science Block Room 302"
+                              className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-slate-700"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">URL Slug</label>
+                            <input
+                              type="text"
+                              value={article.slug}
+                              onChange={(e) => {
+                                const updated = [...newsList];
+                                updated[idx] = { ...updated[idx], slug: e.target.value };
+                                setNewsList(updated);
+                              }}
+                              placeholder="e.g. ai-research-lab"
+                              className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-mono text-slate-700"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Article Excerpt & Full Body */}
+                        <div className="space-y-3">
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Article Excerpt (Short Card Summary - Photo 3)</label>
+                            <input
+                              type="text"
+                              value={article.excerpt || ""}
+                              onChange={(e) => {
+                                const updated = [...newsList];
+                                updated[idx] = { ...updated[idx], excerpt: e.target.value };
+                                setNewsList(updated);
+                              }}
+                              placeholder="1-2 sentences summarizing the story on cards"
+                              className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-slate-700 font-medium"
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Full Story Text (Detailed Article Page - Photo 4)</label>
+                            <textarea
+                              rows={4}
+                              value={article.bodyText}
+                              onChange={(e) => {
+                                const updated = [...newsList];
+                                updated[idx] = { ...updated[idx], bodyText: e.target.value };
+                                setNewsList(updated);
+                              }}
+                              placeholder="Full comprehensive article content..."
+                              className="w-full p-2.5 text-xs bg-white border border-gray-200 rounded-lg leading-relaxed text-slate-800"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Thumbnail Image */}
+                        <ImageField
+                          label="Article Cover & Primary Thumbnail Photo"
+                          value={article.image || INITIAL_NEWS[idx]?.image || "/prog_computer.png"}
+                          defaultValue={INITIAL_NEWS[idx]?.image || "/prog_computer.png"}
+                          onChange={(val) => {
+                            const updated = [...newsList];
+                            updated[idx] = { ...updated[idx], image: val };
+                            setNewsList(updated);
+                          }}
+                          onReset={() => {
+                            const updated = [...newsList];
+                            updated[idx] = { ...updated[idx], image: INITIAL_NEWS[idx]?.image || "/prog_computer.png" };
+                            setNewsList(updated);
+                          }}
+                          aspectRatio="video"
+                        />
+
+                        {/* Multi-Image Carousel Slider / Gallery (for News Detail Article Page - Photo 4) */}
+                        <div className="p-4 rounded-xl border border-indigo-200/70 bg-indigo-50/30 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h5 className="text-xs font-black text-indigo-950 uppercase tracking-wide">
+                                Article Multi-Image Gallery Slider (Photo 4) ({article.images?.length || (article.image ? 1 : 0)})
+                              </h5>
+                              <p className="text-[11px] text-indigo-900/80">
+                                Multi-slide carousel shown inside the article page with left/right arrows & dot indicators.
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const currentImgs = article.images && article.images.length > 0 ? [...article.images] : [article.image || "/prog_computer.png"];
+                                const updated = [...newsList];
+                                updated[idx] = { ...updated[idx], images: [...currentImgs, "/prog_computer.png"] };
+                                setNewsList(updated);
+                              }}
+                              className="h-7 px-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold rounded-md flex items-center gap-1 cursor-pointer shadow-2xs"
+                            >
+                              <Plus size={12} /> Add Gallery Slide
+                            </button>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {(article.images && article.images.length > 0 ? article.images : [article.image || "/prog_computer.png"]).map((imgUrl, sIdx) => (
+                              <div key={sIdx} className="p-3 bg-white rounded-xl border border-gray-200 shadow-2xs space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-[10px] font-black text-gray-400">Slide #{sIdx + 1}</span>
+                                  {(article.images?.length || 1) > 1 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const currentImgs = article.images && article.images.length > 0 ? [...article.images] : [article.image || "/prog_computer.png"];
+                                        const filtered = currentImgs.filter((_, i) => i !== sIdx);
+                                        const updated = [...newsList];
+                                        updated[idx] = { ...updated[idx], images: filtered };
+                                        setNewsList(updated);
+                                      }}
+                                      className="text-[10px] text-red-500 hover:text-red-700 font-bold flex items-center gap-0.5 cursor-pointer"
+                                    >
+                                      <Trash2 size={11} /> Remove
+                                    </button>
+                                  )}
+                                </div>
+                                <ImageField
+                                  label="Gallery Slide Photo"
+                                  value={imgUrl}
+                                  defaultValue="/prog_computer.png"
+                                  onChange={(val) => {
+                                    const currentImgs = article.images && article.images.length > 0 ? [...article.images] : [article.image || "/prog_computer.png"];
+                                    currentImgs[sIdx] = val;
+                                    const updated = [...newsList];
+                                    updated[idx] = { ...updated[idx], images: currentImgs };
+                                    setNewsList(updated);
+                                  }}
+                                  onReset={() => {
+                                    const currentImgs = article.images && article.images.length > 0 ? [...article.images] : [article.image || "/prog_computer.png"];
+                                    currentImgs[sIdx] = "/prog_computer.png";
+                                    const updated = [...newsList];
+                                    updated[idx] = { ...updated[idx], images: currentImgs };
+                                    setNewsList(updated);
+                                  }}
+                                  aspectRatio="video"
+                                  recommendedSize="1200 × 700 px"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Options: Featured flag & Source URL */}
+                        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-gray-200/60">
+                          <label className="flex items-center gap-2 cursor-pointer select-none">
+                            <input
+                              type="checkbox"
+                              checked={!!article.featured}
+                              onChange={(e) => {
+                                const updated = [...newsList];
+                                updated[idx] = { ...updated[idx], featured: e.target.checked };
+                                setNewsList(updated);
+                              }}
+                              className="w-4 h-4 rounded text-[#072A6C] focus:ring-[#072A6C]"
+                            />
+                            <span className="text-xs font-bold text-gray-700">Display in Featured Carousel / Top Highlights</span>
+                          </label>
+
+                          <div className="flex items-center gap-2 text-xs">
+                            <span className="text-gray-400 font-bold text-[10px] uppercase">External Source:</span>
+                            <input
+                              type="text"
+                              value={article.sourceUrl || ""}
+                              onChange={(e) => {
+                                const updated = [...newsList];
+                                updated[idx] = { ...updated[idx], sourceUrl: e.target.value };
+                                setNewsList(updated);
+                              }}
+                              placeholder="https://..."
+                              className="h-7 px-2 text-xs bg-white border border-gray-200 rounded font-mono w-60"
+                            />
+                          </div>
+                        </div>
+
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ────────────────────────────────────────────────────────── */}
+              {/* SUBTAB 3: CAMPUS EVENTS CMS (PHOTOS 3 & 4)                 */}
+              {/* ────────────────────────────────────────────────────────── */}
+              {newsEventsSubTab === "events" && (
+                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
+                    <div>
+                      <h3 className="text-sm font-black text-[#072A6C] uppercase">
+                        3. Campus Events & Event Details CMS (Photos 3 & 4)
+                      </h3>
+                      <p className="text-xs text-gray-500">
+                        Add, edit, or schedule seminars, hackathons, conferences, multi-photo sliders, and online registrations.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEventsList(INITIAL_EVENTS);
+                          updateEvents(INITIAL_EVENTS);
+                          notifySave("Events reset to defaults!");
+                        }}
+                        className="h-8 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        <RotateCcw size={12} /> Reset Events
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newEvent: EventItem = {
+                            id: Date.now(),
+                            slug: "event-" + Date.now(),
+                            title: "New Campus Summit 2026",
+                            date: "15 Oct 2026",
+                            time: "10:00 AM",
+                            location: "Main Auditorium Hall",
+                            category: "Technology",
+                            image: "/prog_engineering.png",
+                            images: ["/prog_engineering.png", "/prog_computer.png"],
+                            registrationUrl: "/admissions",
+                            registrationOpen: true,
+                            bodyText: "Comprehensive overview and schedule of the upcoming campus event."
+                          };
+                          const updated = [newEvent, ...eventsList];
+                          setEventsList(updated);
+                          updateEvents(updated);
+                          notifySave("New event added!");
+                        }}
+                        className="h-8 px-3.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      >
+                        <Plus size={13} /> Add Campus Event
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          updateEvents(eventsList);
+                          notifySave("Events list published!");
+                        }}
+                        className="h-8 px-3.5 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      >
+                        <Save size={13} /> Save Events
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    {eventsList.map((event, idx) => (
+                      <div key={event.id} className="p-5 rounded-2xl border border-gray-200 bg-slate-50/50 space-y-4">
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-200/80 pb-3">
+                          <div className="flex items-center gap-2">
+                            <span className="w-6 h-6 rounded-full bg-[#072A6C] text-white text-xs font-black flex items-center justify-center">
+                              {idx + 1}
+                            </span>
+                            <span className="text-xs font-black text-[#072A6C]">{event.title || "Untitled Event"}</span>
+                            <span className="text-[10px] font-extrabold uppercase bg-blue-100 text-[#072A6C] px-2 py-0.5 rounded-md">
+                              {event.category || "General"}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              disabled={idx === 0}
+                              onClick={() => {
+                                if (idx === 0) return;
+                                const updated = [...eventsList];
+                                const temp = updated[idx];
+                                updated[idx] = updated[idx - 1];
+                                updated[idx - 1] = temp;
+                                setEventsList(updated);
+                                updateEvents(updated);
+                              }}
+                              className="p-1.5 bg-white hover:bg-gray-100 border border-gray-200 rounded-md text-gray-600 disabled:opacity-30 cursor-pointer"
+                              title="Move Up"
+                            >
+                              <ArrowUp size={13} />
+                            </button>
+                            <button
+                              type="button"
+                              disabled={idx === eventsList.length - 1}
+                              onClick={() => {
+                                if (idx === eventsList.length - 1) return;
+                                const updated = [...eventsList];
+                                const temp = updated[idx];
+                                updated[idx] = updated[idx + 1];
+                                updated[idx + 1] = temp;
+                                setEventsList(updated);
+                                updateEvents(updated);
+                              }}
+                              className="p-1.5 bg-white hover:bg-gray-100 border border-gray-200 rounded-md text-gray-600 disabled:opacity-30 cursor-pointer"
+                              title="Move Down"
+                            >
+                              <ArrowDown size={13} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (window.confirm(`Delete event "${event.title}"?`)) {
+                                  const updated = eventsList.filter((e) => e.id !== event.id);
+                                  setEventsList(updated);
+                                  updateEvents(updated);
+                                  notifySave("Event deleted.");
+                                }
+                              }}
+                              className="h-7 px-2.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-bold rounded-md flex items-center gap-1 cursor-pointer ml-2"
+                            >
+                              <Trash2 size={12} /> Delete
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Title, Category */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          <div className="space-y-1 md:col-span-2">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Event Title</label>
+                            <input
+                              type="text"
+                              value={event.title}
+                              onChange={(e) => {
+                                const updated = [...eventsList];
+                                updated[idx] = { ...updated[idx], title: e.target.value };
+                                setEventsList(updated);
+                              }}
+                              className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold text-slate-800"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Category</label>
+                            <input
+                              type="text"
+                              value={event.category}
+                              onChange={(e) => {
+                                const updated = [...eventsList];
+                                updated[idx] = { ...updated[idx], category: e.target.value };
+                                setEventsList(updated);
+                              }}
+                              placeholder="e.g. Aerospace, Technology, Sports"
+                              className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-semibold text-slate-700"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Date, Time, Location */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Event Date</label>
+                            <input
+                              type="text"
+                              value={event.date}
+                              onChange={(e) => {
+                                const updated = [...eventsList];
+                                updated[idx] = { ...updated[idx], date: e.target.value };
+                                setEventsList(updated);
+                              }}
+                              placeholder="e.g. 17 Jul 2026"
+                              className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-slate-700"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Event Time</label>
+                            <input
+                              type="text"
+                              value={event.time || ""}
+                              onChange={(e) => {
+                                const updated = [...eventsList];
+                                updated[idx] = { ...updated[idx], time: e.target.value };
+                                setEventsList(updated);
+                              }}
+                              placeholder="e.g. 09:30 AM"
+                              className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-slate-700"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Location / Venue</label>
+                            <input
+                              type="text"
+                              value={event.location || ""}
+                              onChange={(e) => {
+                                const updated = [...eventsList];
+                                updated[idx] = { ...updated[idx], location: e.target.value };
+                                setEventsList(updated);
+                              }}
+                              placeholder="e.g. Aeronautics Hangar & Airfield"
+                              className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-slate-700"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Slug, Registration URL & Registration Status */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Event URL Slug</label>
+                            <input
+                              type="text"
+                              value={event.slug || `event-${event.id}`}
+                              onChange={(e) => {
+                                const updated = [...eventsList];
+                                updated[idx] = { ...updated[idx], slug: e.target.value };
+                                setEventsList(updated);
+                              }}
+                              placeholder="e.g. campus-summit-2026"
+                              className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-mono text-slate-700"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Registration Link / Form URL</label>
+                            <input
+                              type="text"
+                              value={event.registrationUrl || ""}
+                              onChange={(e) => {
+                                const updated = [...eventsList];
+                                updated[idx] = { ...updated[idx], registrationUrl: e.target.value };
+                                setEventsList(updated);
+                              }}
+                              placeholder="e.g. https://forms.gle/... or /admissions"
+                              className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-mono text-slate-700"
+                            />
+                          </div>
+                          <div className="flex items-end pb-1.5">
+                            <label className="flex items-center gap-2 cursor-pointer select-none">
+                              <input
+                                type="checkbox"
+                                checked={event.registrationOpen !== false}
+                                onChange={(e) => {
+                                  const updated = [...eventsList];
+                                  updated[idx] = { ...updated[idx], registrationOpen: e.target.checked };
+                                  setEventsList(updated);
+                                }}
+                                className="w-4 h-4 rounded text-[#072A6C] focus:ring-[#072A6C]"
+                              />
+                              <span className="text-xs font-bold text-gray-700">Registration Is Open</span>
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* Full Description / Agenda */}
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Event Highlights & Full Agenda (Photo 4)</label>
+                          <textarea
+                            rows={3}
+                            value={event.bodyText}
+                            onChange={(e) => {
+                              const updated = [...eventsList];
+                              updated[idx] = { ...updated[idx], bodyText: e.target.value };
+                              setEventsList(updated);
+                            }}
+                            placeholder="Detailed event description, keynote speakers, and schedule..."
+                            className="w-full p-2.5 text-xs bg-white border border-gray-200 rounded-lg leading-relaxed text-slate-800"
+                          />
+                        </div>
+
+                        {/* Event Poster / Banner */}
+                        <ImageField
+                          label="Event Primary Poster & Banner Image"
+                          value={event.image || INITIAL_EVENTS[idx]?.image || "/prog_engineering.png"}
+                          defaultValue={INITIAL_EVENTS[idx]?.image || "/prog_engineering.png"}
+                          onChange={(val) => {
+                            const updated = [...eventsList];
+                            updated[idx] = { ...updated[idx], image: val };
+                            setEventsList(updated);
+                          }}
+                          onReset={() => {
+                            const updated = [...eventsList];
+                            updated[idx] = { ...updated[idx], image: INITIAL_EVENTS[idx]?.image || "/prog_engineering.png" };
+                            setEventsList(updated);
+                          }}
+                          aspectRatio="video"
+                        />
+
+                        {/* Multi-Image Carousel Slider / Gallery (for Event Details Page - Photo 4) */}
+                        <div className="p-4 rounded-xl border border-orange-200/70 bg-orange-50/30 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h5 className="text-xs font-black text-orange-950 uppercase tracking-wide">
+                                Event Multi-Image Gallery Slider (Photo 4) ({event.images?.length || (event.image ? 1 : 0)})
+                              </h5>
+                              <p className="text-[11px] text-orange-900/80">
+                                Multi-slide carousel shown inside the event detail page with left/right arrows & dot indicators.
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const currentImgs = event.images && event.images.length > 0 ? [...event.images] : [event.image || "/prog_engineering.png"];
+                                const updated = [...eventsList];
+                                updated[idx] = { ...updated[idx], images: [...currentImgs, "/prog_engineering.png"] };
+                                setEventsList(updated);
+                              }}
+                              className="h-7 px-2.5 bg-orange-600 hover:bg-orange-700 text-white text-[11px] font-bold rounded-md flex items-center gap-1 cursor-pointer shadow-2xs"
+                            >
+                              <Plus size={12} /> Add Event Slide
+                            </button>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {(event.images && event.images.length > 0 ? event.images : [event.image || "/prog_engineering.png"]).map((imgUrl, sIdx) => (
+                              <div key={sIdx} className="p-3 bg-white rounded-xl border border-gray-200 shadow-2xs space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-[10px] font-black text-gray-400">Slide #{sIdx + 1}</span>
+                                  {(event.images?.length || 1) > 1 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const currentImgs = event.images && event.images.length > 0 ? [...event.images] : [event.image || "/prog_engineering.png"];
+                                        const filtered = currentImgs.filter((_, i) => i !== sIdx);
+                                        const updated = [...eventsList];
+                                        updated[idx] = { ...updated[idx], images: filtered };
+                                        setEventsList(updated);
+                                      }}
+                                      className="text-[10px] text-red-500 hover:text-red-700 font-bold flex items-center gap-0.5 cursor-pointer"
+                                    >
+                                      <Trash2 size={11} /> Remove
+                                    </button>
+                                  )}
+                                </div>
+                                <ImageField
+                                  label="Event Slide Photo"
+                                  value={imgUrl}
+                                  defaultValue="/prog_engineering.png"
+                                  onChange={(val) => {
+                                    const currentImgs = event.images && event.images.length > 0 ? [...event.images] : [event.image || "/prog_engineering.png"];
+                                    currentImgs[sIdx] = val;
+                                    const updated = [...eventsList];
+                                    updated[idx] = { ...updated[idx], images: currentImgs };
+                                    setEventsList(updated);
+                                  }}
+                                  onReset={() => {
+                                    const currentImgs = event.images && event.images.length > 0 ? [...event.images] : [event.image || "/prog_engineering.png"];
+                                    currentImgs[sIdx] = "/prog_engineering.png";
+                                    const updated = [...eventsList];
+                                    updated[idx] = { ...updated[idx], images: currentImgs };
+                                    setEventsList(updated);
+                                  }}
+                                  aspectRatio="video"
+                                  recommendedSize="1200 × 700 px"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ────────────────────────────────────────────────────────── */}
+              {/* SUBTAB 3: ANNOUNCEMENTS DRAWER CMS                         */}
+              {/* ────────────────────────────────────────────────────────── */}
+              {newsEventsSubTab === "announcements" && (
+                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
+                    <div>
+                      <h3 className="text-sm font-black text-[#072A6C] uppercase">Announcements Drawer Management ({announcementsList.length})</h3>
+                      <p className="text-xs text-gray-500">Manage pop-out side drawer notices and critical campus alerts</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAnnouncementsList(INITIAL_ANNOUNCEMENTS);
+                          updateAnnouncements(INITIAL_ANNOUNCEMENTS);
+                          notifySave("Announcements reset!");
+                        }}
+                        className="h-8 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        <RotateCcw size={12} /> Reset
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newAnn: Announcement = {
+                            title: "New Academic Notification",
+                            desc: "Details and instructions regarding this notification.",
+                            date: new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+                            iconName: "GraduationCap"
+                          };
+                          const updated = [newAnn, ...announcementsList];
+                          setAnnouncementsList(updated);
+                          updateAnnouncements(updated);
+                          notifySave("Added announcement!");
+                        }}
+                        className="h-8 px-3.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      >
+                        <Plus size={13} /> Add Announcement
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          updateAnnouncements(announcementsList);
+                          notifySave("Announcements updated!");
+                        }}
+                        className="h-8 px-3.5 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      >
+                        <Save size={13} /> Save Announcements
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {announcementsList.map((ann, idx) => (
+                      <div key={idx} className="p-4 rounded-xl border border-gray-200 bg-slate-50/50 space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] font-black text-[#072A6C] uppercase">Notice #{idx + 1}</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = announcementsList.filter((_, i) => i !== idx);
+                              setAnnouncementsList(updated);
+                              updateAnnouncements(updated);
+                              notifySave("Announcement removed.");
+                            }}
+                            className="text-red-500 hover:text-red-700 text-xs font-bold flex items-center gap-1 cursor-pointer"
+                          >
+                            <Trash2 size={12} /> Delete
+                          </button>
+                        </div>
                         <input
                           type="text"
                           value={ann.title}
@@ -6493,35 +8442,50 @@ export default function AdminPortal() {
                             updated[idx] = { ...updated[idx], title: e.target.value };
                             setAnnouncementsList(updated);
                           }}
-                          className="w-full h-7 px-2 text-xs font-bold text-[#072A6C] bg-white border border-gray-200 rounded mr-2"
+                          placeholder="Notice Title"
+                          className="w-full h-8 px-2.5 text-xs font-bold text-[#072A6C] bg-white border border-gray-200 rounded-lg"
                         />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const updated = announcementsList.filter((_, i) => i !== idx);
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={ann.date}
+                            onChange={(e) => {
+                              const updated = [...announcementsList];
+                              updated[idx] = { ...updated[idx], date: e.target.value };
+                              setAnnouncementsList(updated);
+                            }}
+                            placeholder="Date (e.g. 19 Sep 2026)"
+                            className="w-1/2 h-7 px-2 text-[11px] bg-white border border-gray-200 rounded"
+                          />
+                          <input
+                            type="text"
+                            value={ann.iconName || "GraduationCap"}
+                            onChange={(e) => {
+                              const updated = [...announcementsList];
+                              updated[idx] = { ...updated[idx], iconName: e.target.value };
+                              setAnnouncementsList(updated);
+                            }}
+                            placeholder="Icon Name (e.g. Bell, Award)"
+                            className="w-1/2 h-7 px-2 text-[11px] bg-white border border-gray-200 rounded"
+                          />
+                        </div>
+                        <textarea
+                          rows={2}
+                          value={ann.desc}
+                          onChange={(e) => {
+                            const updated = [...announcementsList];
+                            updated[idx] = { ...updated[idx], desc: e.target.value };
                             setAnnouncementsList(updated);
-                            updateAnnouncements(updated);
-                            notifySave("Announcement removed.");
                           }}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <Trash2 size={13} />
-                        </button>
+                          placeholder="Notice description..."
+                          className="w-full p-2 text-[11px] bg-white border border-gray-200 rounded-lg leading-relaxed text-slate-700"
+                        />
                       </div>
-                      <textarea
-                        rows={2}
-                        value={ann.desc}
-                        onChange={(e) => {
-                          const updated = [...announcementsList];
-                          updated[idx] = { ...updated[idx], desc: e.target.value };
-                          setAnnouncementsList(updated);
-                        }}
-                        className="w-full p-2 text-[11px] bg-white border border-gray-200 rounded"
-                      />
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
+
             </div>
           )}
 
@@ -6529,898 +8493,31 @@ export default function AdminPortal() {
           {/* TAB 7: PLACEMENTS & RECRUITERS                      */}
           {/* ════════════════════════════════════════════════════ */}
           {activeTab === "placements" && (
-            <div className="space-y-6 animate-fade-in text-left">
-              <SectionHeader
-                title="Placements & Recruiters CMS"
-                subtitle="Manage placement statistics, top recruiter logos, placed students, and success stories"
-                icon={Briefcase}
-                onSave={savePlacements}
-                saveSuccess={saveSuccess}
-                onReset={() => {
-                  setPlacementsForm(INITIAL_PLACEMENTS_CONTENT);
-                  updatePlacementsContent(INITIAL_PLACEMENTS_CONTENT);
-                  notifySave("Placements content reset to default!");
-                }}
-                resetLabel="Reset Placements"
-              />
-
-              {/* Placement Stats (4 Highlights matching website) */}
-              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
-                <div className="flex items-center justify-between pb-2 border-b border-gray-100">
-                  <h3 className="text-sm font-black text-[#072A6C] uppercase flex items-center gap-1.5">
-                    <BarChart3 size={15} /> Placement Key Statistics (4 Highlights)
-                  </h3>
-                  <span className="text-xs text-gray-400">Live website metric cards</span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                  <div className="p-3.5 bg-slate-50 rounded-xl border border-gray-200 space-y-1.5">
-                    <label className="text-[10px] font-bold text-[#072A6C] uppercase flex items-center gap-1">
-                      <Users size={12} /> #1 Students Placed
-                    </label>
-                    <input
-                      type="text"
-                      value={placementsForm.stats?.[0]?.value ?? placementsForm.placementPercent ?? "92%"}
-                      onChange={(e) => {
-                        const currentStats = placementsForm.stats || [
-                          { value: "92%", label: "Students Placed", icon: "Users" },
-                          { value: "30 LPA", label: "Highest Package", icon: "Trophy" },
-                          { value: "116+", label: "Corporate Partners", icon: "Handshake" },
-                          { value: "100%", label: "Placement Assistance", icon: "GraduationCap" }
-                        ];
-                        const updated = [...currentStats];
-                        updated[0] = { ...updated[0], value: e.target.value };
-                        setPlacementsForm({ ...placementsForm, stats: updated, placementPercent: e.target.value });
-                      }}
-                      className="w-full h-9 px-3 text-xs bg-white border border-gray-200 rounded-lg font-black text-[#072A6C]"
-                      placeholder="92%"
-                    />
-                  </div>
-
-                  <div className="p-3.5 bg-slate-50 rounded-xl border border-gray-200 space-y-1.5">
-                    <label className="text-[10px] font-bold text-[#D4AF37] uppercase flex items-center gap-1">
-                      <Trophy size={12} /> #2 Highest Package
-                    </label>
-                    <input
-                      type="text"
-                      value={placementsForm.stats?.[1]?.value ?? placementsForm.highestPackage ?? "30 LPA"}
-                      onChange={(e) => {
-                        const currentStats = placementsForm.stats || [
-                          { value: "92%", label: "Students Placed", icon: "Users" },
-                          { value: "30 LPA", label: "Highest Package", icon: "Trophy" },
-                          { value: "116+", label: "Corporate Partners", icon: "Handshake" },
-                          { value: "100%", label: "Placement Assistance", icon: "GraduationCap" }
-                        ];
-                        const updated = [...currentStats];
-                        updated[1] = { ...updated[1], value: e.target.value };
-                        setPlacementsForm({ ...placementsForm, stats: updated, highestPackage: e.target.value });
-                      }}
-                      className="w-full h-9 px-3 text-xs bg-white border border-gray-200 rounded-lg font-black text-[#D4AF37]"
-                      placeholder="30 LPA"
-                    />
-                  </div>
-
-                  <div className="p-3.5 bg-slate-50 rounded-xl border border-gray-200 space-y-1.5">
-                    <label className="text-[10px] font-bold text-amber-600 uppercase flex items-center gap-1">
-                      <Handshake size={12} /> #3 Corporate Partners
-                    </label>
-                    <input
-                      type="text"
-                      value={placementsForm.stats?.[2]?.value ?? placementsForm.corporatePartnersCount ?? "116+"}
-                      onChange={(e) => {
-                        const currentStats = placementsForm.stats || [
-                          { value: "92%", label: "Students Placed", icon: "Users" },
-                          { value: "30 LPA", label: "Highest Package", icon: "Trophy" },
-                          { value: "116+", label: "Corporate Partners", icon: "Handshake" },
-                          { value: "100%", label: "Placement Assistance", icon: "GraduationCap" }
-                        ];
-                        const updated = [...currentStats];
-                        updated[2] = { ...updated[2], value: e.target.value };
-                        setPlacementsForm({ ...placementsForm, stats: updated, corporatePartnersCount: e.target.value });
-                      }}
-                      className="w-full h-9 px-3 text-xs bg-white border border-gray-200 rounded-lg font-black text-amber-600"
-                      placeholder="116+"
-                    />
-                  </div>
-
-                  <div className="p-3.5 bg-slate-50 rounded-xl border border-gray-200 space-y-1.5">
-                    <label className="text-[10px] font-bold text-emerald-600 uppercase flex items-center gap-1">
-                      <GraduationCap size={12} /> #4 Placement Assistance
-                    </label>
-                    <input
-                      type="text"
-                      value={placementsForm.stats?.[3]?.value ?? placementsForm.placementAssistance ?? "100%"}
-                      onChange={(e) => {
-                        const currentStats = placementsForm.stats || [
-                          { value: "92%", label: "Students Placed", icon: "Users" },
-                          { value: "30 LPA", label: "Highest Package", icon: "Trophy" },
-                          { value: "116+", label: "Corporate Partners", icon: "Handshake" },
-                          { value: "100%", label: "Placement Assistance", icon: "GraduationCap" }
-                        ];
-                        const updated = [...currentStats];
-                        updated[3] = { ...updated[3], value: e.target.value };
-                        setPlacementsForm({ ...placementsForm, stats: updated, placementAssistance: e.target.value });
-                      }}
-                      className="w-full h-9 px-3 text-xs bg-white border border-gray-200 rounded-lg font-black text-emerald-600"
-                      placeholder="100%"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* ══════════════════════════════════════════════════════════ */}
-              {/* PLACEMENT SUCCESS STORIES SHOWCASE CMS                     */}
-              {/* ══════════════════════════════════════════════════════════ */}
-              {(() => {
-                const currentStorySafeIdx = (activeStoryIdx >= 0 && activeStoryIdx < storiesList.length) ? activeStoryIdx : 0;
-                const currStory = storiesList[currentStorySafeIdx] || INITIAL_SUCCESS_STORIES[0];
-
-                const updateCurrentStory = (fieldUpdates: Partial<SuccessStory>) => {
-                  const updated = [...storiesList];
-                  updated[currentStorySafeIdx] = { ...updated[currentStorySafeIdx], ...fieldUpdates };
-                  setStoriesList(updated);
-                };
-
-                const updateMilestone = (milestoneField: string, val: string) => {
-                  const updated = [...storiesList];
-                  const current = updated[currentStorySafeIdx];
-                  updated[currentStorySafeIdx] = {
-                    ...current,
-                    milestones: {
-                      ...current.milestones,
-                      [milestoneField]: val
-                    }
-                  };
-                  setStoriesList(updated);
-                };
-
-                const handleAddSkill = () => {
-                  if (!newSkillText.trim()) return;
-                  const currentSkills = currStory.skills || [];
-                  if (!currentSkills.includes(newSkillText.trim())) {
-                    updateCurrentStory({ skills: [...currentSkills, newSkillText.trim()] });
-                  }
-                  setNewSkillText("");
-                };
-
-                const handleRemoveSkill = (sIdx: number) => {
-                  const currentSkills = currStory.skills || [];
-                  updateCurrentStory({ skills: currentSkills.filter((_, i) => i !== sIdx) });
-                };
-
-                return (
-                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
-                      <div>
-                        <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-1.5">
-                          <Sparkles size={14} className="text-[#D4AF37]" />
-                          Placement Success Stories Showcase ({storiesList.length} Stories)
-                        </h4>
-                        <p className="text-[11px] text-gray-500">Edit student testimonials, photos, 4-step milestone journeys, skills acquired, and dream packages</p>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const newStory: SuccessStory = {
-                              id: Date.now(),
-                              studentName: "New Student Name",
-                              studentImage: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&h=600&fit=crop&crop=face",
-                              department: "B.Tech - Computer Science & Engineering",
-                              batch: "2024 Batch",
-                              companyName: "Google",
-                              companyLogo: "/logos/google.svg",
-                              packageOffered: "14.5 LPA",
-                              description: "The holistic training, expert faculty, and placement bootcamps at Chalapathi University gave me the exact skills and confidence required to crack competitive campus recruitment rounds.",
-                              skills: ["React", "TypeScript", "Python", "Data Structures", "System Design"],
-                              internshipExp: "6 Months Technology Intern",
-                              achievement: "Smart India Hackathon Finalist & Top Performer",
-                              milestones: {
-                                learningTitle: "Strong Academic Foundation",
-                                learningDesc: "Conceptual clarity through innovative teaching",
-                                internshipTitle: "Skill Development",
-                                internshipDesc: "Live projects and industry-relevant skills",
-                                placementTitle: "Internship",
-                                placementDesc: "Internship experience boosted my practical knowledge",
-                                careerTitle: "Dream Career",
-                                careerDesc: "Campus placement opportunity secured"
-                              }
-                            };
-                            const updated = [...storiesList, newStory];
-                            setStoriesList(updated);
-                            setActiveStoryIdx(updated.length - 1);
-                            notifySave("New success story added! Customize fields below.");
-                          }}
-                          className="h-8 px-3 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
-                        >
-                          <Plus size={13} /> Add Success Story
-                        </button>
-                        {storiesList.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (window.confirm(`Are you sure you want to remove ${currStory.studentName}'s success story?`)) {
-                                const updated = storiesList.filter((_, i) => i !== currentStorySafeIdx);
-                                setStoriesList(updated);
-                                setActiveStoryIdx(Math.max(0, currentStorySafeIdx - 1));
-                                notifySave("Success story removed.");
-                              }
-                            }}
-                            className="h-8 px-2.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
-                          >
-                            <Trash2 size={12} /> Delete Story
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setStoriesList(INITIAL_SUCCESS_STORIES);
-                            setActiveStoryIdx(0);
-                            updateSuccessStories(INITIAL_SUCCESS_STORIES);
-                            notifySave("Success stories reset to 3 default students!");
-                          }}
-                          className="h-8 px-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer"
-                        >
-                          <RotateCcw size={12} /> Reset Stories
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Story Switcher Tabs */}
-                    <div className="flex flex-wrap gap-2 pb-2 border-b border-gray-100">
-                      {storiesList.map((st, sIdx) => {
-                        const isCurrent = sIdx === currentStorySafeIdx;
-                        return (
-                          <button
-                            key={st.id || sIdx}
-                            type="button"
-                            onClick={() => setActiveStoryIdx(sIdx)}
-                            className={`h-9 px-3.5 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer transition-all ${
-                              isCurrent
-                                ? "bg-[#072A6C] text-white shadow-sm ring-2 ring-[#072A6C]/20"
-                                : "bg-slate-100 hover:bg-slate-200 text-slate-700"
-                            }`}
-                          >
-                            <span className={`w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center ${isCurrent ? "bg-[#D4AF37] text-slate-900" : "bg-gray-300 text-gray-700"}`}>
-                              {sIdx + 1}
-                            </span>
-                            <span>{st.studentName || `Story ${sIdx + 1}`}</span>
-                            <span className={`text-[10px] font-semibold opacity-80 ${isCurrent ? "text-amber-200" : "text-gray-500"}`}>
-                              ({st.companyName || "Partner"})
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {/* LIVE VISUAL PREVIEW CARD (Matches media_1789817710723.png) */}
-                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-4">
-                      <div className="flex items-center justify-between pb-2 border-b border-slate-200">
-                        <span className="text-[11px] font-black uppercase tracking-widest text-[#072A6C] flex items-center gap-1.5">
-                          <Eye size={13} className="text-[#D4AF37]" /> Live Student Success Story Preview (Website Template Layout)
-                        </span>
-                        <span className="text-[10px] bg-amber-100 text-amber-900 font-bold px-2 py-0.5 rounded-full">
-                          Story #{currentStorySafeIdx + 1} of {storiesList.length}
-                        </span>
-                      </div>
-
-                      {/* Interactive Template Card */}
-                      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-                          {/* Left Column: Photo + Badges */}
-                          <div className="lg:col-span-5 flex justify-center relative">
-                            <div className="relative w-full max-w-[280px] h-[330px] rounded-[22px] overflow-hidden shadow-xl border border-gray-100 bg-gray-50">
-                              <img 
-                                src={currStory.studentImage || "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=500&h=600&fit=crop&crop=face"} 
-                                alt={currStory.studentName} 
-                                className="w-full h-full object-cover"
-                              />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
-                            </div>
-
-                            {/* Floating Placed At badge */}
-                            <div className="absolute left-3 top-4 bg-white/90 backdrop-blur-md border border-white/60 rounded-xl p-2 flex items-center gap-2 shadow-md max-w-[150px]">
-                              <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center p-1 shadow-xs shrink-0">
-                                <img 
-                                  src={currStory.companyLogo || "/logos/tcs.svg"} 
-                                  alt={currStory.companyName} 
-                                  className="w-full h-full object-contain"
-                                  onError={(e) => { (e.target as HTMLImageElement).src = "/logos/tcs.svg"; }}
-                                />
-                              </div>
-                              <div className="text-left min-w-0">
-                                <span className="text-[7.5px] text-gray-400 font-bold block uppercase tracking-wider">Placed at</span>
-                                <span className="text-[10px] font-black text-[#072A6C] block truncate">{currStory.companyName || "Company"}</span>
-                              </div>
-                            </div>
-
-                            {/* Floating Package Offered badge */}
-                            <div className="absolute right-3 bottom-4 bg-white/90 backdrop-blur-md border border-white/60 rounded-xl p-2.5 shadow-md min-w-[110px] text-left">
-                              <span className="text-[7.5px] text-gray-400 font-bold block uppercase tracking-wider">Package Offered</span>
-                              <span className="text-base font-black text-[#D4AF37] block leading-none mt-0.5">{currStory.packageOffered || "₹12 LPA"}</span>
-                              <span className="text-[7.5px] text-gray-400 font-medium tracking-wide">PER ANNUM</span>
-                            </div>
-                          </div>
-
-                          {/* Right Column: Meta, Testimonial, Timeline, Skills & Achievements */}
-                          <div className="lg:col-span-7 space-y-4 text-left">
-                            <div className="space-y-0.5">
-                              <span className="text-[9px] font-extrabold uppercase tracking-widest text-[#D4AF37]">Success Story</span>
-                              <h3 className="text-xl font-[900] text-[#072A6C]">{currStory.studentName || "Student Name"}</h3>
-                              <p className="text-[11px] text-gray-500 font-medium">
-                                {currStory.department || "Department"} <span className="mx-1 text-gray-300">•</span> {currStory.batch || "2024 Batch"}
-                              </p>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                              {/* Testimonial & 4-Step Timeline */}
-                              <div className="md:col-span-7 space-y-3">
-                                <div className="pl-3 border-l-4 border-[#D4AF37]">
-                                  <p className="text-[11px] text-gray-600 italic leading-relaxed">
-                                    "{currStory.description || "Student testimonial goes here..."}"
-                                  </p>
-                                </div>
-
-                                <div className="space-y-1.5">
-                                  <span className="text-[8.5px] font-bold text-gray-400 uppercase tracking-wider block">Journey Timeline</span>
-                                  <div className="space-y-1.5">
-                                    <div className="flex gap-2 bg-gray-50/70 p-2 rounded-xl border border-gray-100">
-                                      <div className="w-4 h-4 rounded-full bg-blue-50 text-[#072A6C] flex items-center justify-center text-[8px] font-bold shrink-0">1</div>
-                                      <div>
-                                        <span className="text-[10px] font-bold text-[#072A6C] block leading-tight">{currStory.milestones?.learningTitle || "Strong Academic Foundation"}</span>
-                                        <span className="text-[8.5px] text-gray-500 block">{currStory.milestones?.learningDesc || "Conceptual clarity through innovative teaching"}</span>
-                                      </div>
-                                    </div>
-                                    <div className="flex gap-2 bg-gray-50/70 p-2 rounded-xl border border-gray-100">
-                                      <div className="w-4 h-4 rounded-full bg-blue-50 text-[#072A6C] flex items-center justify-center text-[8px] font-bold shrink-0">2</div>
-                                      <div>
-                                        <span className="text-[10px] font-bold text-[#072A6C] block leading-tight">{currStory.milestones?.internshipTitle || "Skill Development"}</span>
-                                        <span className="text-[8.5px] text-gray-500 block">{currStory.milestones?.internshipDesc || "Live projects and industry-relevant skills"}</span>
-                                      </div>
-                                    </div>
-                                    <div className="flex gap-2 bg-gray-50/70 p-2 rounded-xl border border-gray-100">
-                                      <div className="w-4 h-4 rounded-full bg-blue-50 text-[#072A6C] flex items-center justify-center text-[8px] font-bold shrink-0">3</div>
-                                      <div>
-                                        <span className="text-[10px] font-bold text-[#072A6C] block leading-tight">{currStory.milestones?.placementTitle || "Internship"}</span>
-                                        <span className="text-[8.5px] text-gray-500 block">{currStory.milestones?.placementDesc || "Internship experience boosted my practical knowledge"}</span>
-                                      </div>
-                                    </div>
-                                    <div className="flex gap-2 bg-gray-50/70 p-2 rounded-xl border border-gray-100">
-                                      <div className="w-4 h-4 rounded-full bg-blue-50 text-[#072A6C] flex items-center justify-center text-[8px] font-bold shrink-0">4</div>
-                                      <div>
-                                        <span className="text-[10px] font-bold text-[#072A6C] block leading-tight">{currStory.milestones?.careerTitle || "Dream Career"}</span>
-                                        <span className="text-[8.5px] text-gray-500 block">{currStory.milestones?.careerDesc || "Campus placement opportunity"}</span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Skills, Internship & Achievement */}
-                              <div className="md:col-span-5 space-y-3 bg-gray-50/80 border border-gray-100 rounded-xl p-3 h-fit">
-                                <div className="space-y-1">
-                                  <span className="text-[8.5px] font-bold text-gray-400 uppercase tracking-wider block">Skills Acquired</span>
-                                  <div className="flex flex-wrap gap-1">
-                                    {currStory.skills && currStory.skills.length > 0 ? (
-                                      currStory.skills.map((skill, sIdx) => (
-                                        <span key={sIdx} className="text-[8px] font-semibold bg-white text-[#072A6C] px-1.5 py-0.5 border border-gray-200 rounded">
-                                          {skill}
-                                        </span>
-                                      ))
-                                    ) : (
-                                      <span className="text-[8px] text-gray-400 italic">No skills listed</span>
-                                    )}
-                                  </div>
-                                </div>
-
-                                <div className="space-y-0.5 pt-2 border-t border-gray-200/70">
-                                  <span className="text-[8.5px] font-bold text-gray-400 uppercase tracking-wider block">Internship Term</span>
-                                  <span className="text-[10px] font-bold text-[#072A6C] block">{currStory.internshipExp || "6 Months Internship"}</span>
-                                </div>
-
-                                <div className="space-y-0.5 pt-2 border-t border-gray-200/70">
-                                  <span className="text-[8.5px] font-bold text-gray-400 uppercase tracking-wider block">Top Achievement</span>
-                                  <span className="text-[10px] font-bold text-emerald-600 block">{currStory.achievement || "Top Contest Performer"}</span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* EDIT ACTIVE STORY FORM FIELDS */}
-                    <div className="p-5 rounded-2xl border border-gray-200 bg-slate-50/40 space-y-5">
-                      <h5 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-1.5">
-                        <Edit3 size={13} className="text-[#072A6C]" />
-                        Edit Story #{currentStorySafeIdx + 1}: {currStory.studentName}
-                      </h5>
-
-                      {/* Student Meta Grid */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold text-gray-600 uppercase">Student Full Name</label>
-                          <input
-                            type="text"
-                            value={currStory.studentName}
-                            onChange={(e) => updateCurrentStory({ studentName: e.target.value })}
-                            className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold"
-                            placeholder="e.g. Hitaishi Reddy"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold text-gray-600 uppercase">Department / Program</label>
-                          <input
-                            type="text"
-                            value={currStory.department}
-                            onChange={(e) => updateCurrentStory({ department: e.target.value })}
-                            className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg"
-                            placeholder="e.g. B.Tech - Computer Science & Engineering"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold text-gray-600 uppercase">Batch Year</label>
-                          <input
-                            type="text"
-                            value={currStory.batch}
-                            onChange={(e) => updateCurrentStory({ batch: e.target.value })}
-                            className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg"
-                            placeholder="e.g. 2024 Batch"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold text-gray-600 uppercase">Package Offered (CTC)</label>
-                          <input
-                            type="text"
-                            value={currStory.packageOffered}
-                            onChange={(e) => updateCurrentStory({ packageOffered: e.target.value })}
-                            className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-black text-amber-600"
-                            placeholder="e.g. 12 LPA"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Student Photo & Company Logo with ImageField */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="p-3.5 rounded-xl border border-gray-200 bg-white space-y-2">
-                          <ImageField
-                            label="Student Profile Photo"
-                            value={currStory.studentImage}
-                            defaultValue={INITIAL_SUCCESS_STORIES[currentStorySafeIdx]?.studentImage || "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=500&h=600&fit=crop&crop=face"}
-                            aspectRatio="portrait"
-                            recommendedSize="500 × 600 px (Portrait)"
-                            onChange={(val) => updateCurrentStory({ studentImage: val })}
-                            onReset={() => {
-                              const defImg = INITIAL_SUCCESS_STORIES[currentStorySafeIdx]?.studentImage || "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=500&h=600&fit=crop&crop=face";
-                              updateCurrentStory({ studentImage: defImg });
-                              notifySave("Student photo reset to default!");
-                            }}
-                          />
-                        </div>
-                        <div className="p-3.5 rounded-xl border border-gray-200 bg-white space-y-3">
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-gray-600 uppercase">Hiring Company Name</label>
-                            <input
-                              type="text"
-                              value={currStory.companyName}
-                              onChange={(e) => updateCurrentStory({ companyName: e.target.value })}
-                              className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold"
-                              placeholder="e.g. TCS / Google / Deloitte"
-                            />
-                          </div>
-                          <ImageField
-                            label="Company Logo"
-                            value={currStory.companyLogo}
-                            defaultValue={INITIAL_SUCCESS_STORIES[currentStorySafeIdx]?.companyLogo || "/logos/tcs.svg"}
-                            aspectRatio="square"
-                            recommendedSize="200 × 200 px (SVG / PNG)"
-                            onChange={(val) => updateCurrentStory({ companyLogo: val })}
-                            onReset={() => {
-                              const defLogo = INITIAL_SUCCESS_STORIES[currentStorySafeIdx]?.companyLogo || "/logos/tcs.svg";
-                              updateCurrentStory({ companyLogo: defLogo });
-                              notifySave("Company logo reset to default!");
-                            }}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Testimonial Quote */}
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-gray-600 uppercase">Student Testimonial / Experience Quote</label>
-                        <textarea
-                          value={currStory.description}
-                          onChange={(e) => updateCurrentStory({ description: e.target.value })}
-                          rows={3}
-                          className="w-full p-2.5 text-xs bg-white border border-gray-200 rounded-lg"
-                          placeholder="Write the student's testimonial quote about their college experience, faculty support, and placement journey..."
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* ══════════════════════════════════════════════════════════ */}
-              {/* OUR TOP CORPORATE PARTNERS / RECRUITERS MARQUEE CMS        */}
-              {/* ══════════════════════════════════════════════════════════ */}
-              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
-                  <div>
-                    <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-1.5">
-                      <Building size={14} className="text-[#072A6C]" />
-                      Our Top Corporate Partners Marquee ({(placementsForm.recruiters || []).length} Companies)
-                    </h4>
-                    <p className="text-[11px] text-gray-500">Manage all hiring partner logos shown in the homepage auto-scrolling recruiter marquee strip</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPlacementsForm({ ...placementsForm, recruiters: INITIAL_PLACEMENTS_CONTENT.recruiters });
-                        notifySave("All 20 corporate partner logos reset to defaults!");
-                      }}
-                      className="h-8 px-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer"
-                    >
-                      <RotateCcw size={12} /> Reset 20 Default Partners
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const newPartner: Recruiter = { name: "New Partner", logo: "/logos/ibm.svg" };
-                        const updated = [...(placementsForm.recruiters || []), newPartner];
-                        setPlacementsForm({ ...placementsForm, recruiters: updated });
-                        notifySave("New corporate partner added!");
-                      }}
-                      className="h-8 px-3 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer"
-                    >
-                      <Plus size={13} /> Add Company Partner
-                    </button>
-                  </div>
-                </div>
-
-                {/* LIVE MARQUEE STRIP PREVIEW (Matches media_1789817622000.png) */}
-                <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800 space-y-3">
-                  <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-                    <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest flex items-center gap-1.5">
-                      <Eye size={12} /> Website Live Marquee Strip Preview
-                    </span>
-                    <span className="text-[9.5px] bg-blue-950 text-blue-300 border border-blue-800 px-2 py-0.5 rounded-md font-semibold">
-                      {(placementsForm.recruiters || []).length} Logos in Carousel
-                    </span>
-                  </div>
-                  <div className="relative overflow-hidden bg-slate-950/80 p-4 rounded-xl border border-slate-800">
-                    <div className="flex gap-4 overflow-x-auto py-2 no-scrollbar">
-                      {(placementsForm.recruiters || []).map((r, i) => (
-                        <div key={i} className="h-11 px-5 bg-white border border-gray-200 rounded-xl flex items-center justify-center shadow-xs shrink-0 min-w-[100px] hover:border-[#072A6C] transition-all">
-                          <img src={r.logo} alt={r.name} className="h-6 w-auto object-contain max-w-[85px]" onError={(e) => { (e.target as HTMLImageElement).src = "/logos/wipro.svg"; }} />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* PARTNER LOGOS DIRECTORY GRID */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <label className="text-[10px] font-bold text-gray-600 uppercase">Partner Logos Directory (Edit Logos & Names)</label>
-                      <p className="text-[10px] text-gray-400">All corporate hiring partners (upload custom logos or use SVG paths)</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setPlacementsForm({ ...placementsForm, recruiters: [...INITIAL_PLACEMENTS_CONTENT.recruiters] });
-                          notifySave("Reset all 20 partners to defaults!");
-                        }}
-                        className="px-2.5 py-1 text-xs font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
-                        title="Reset all partners to default 20 companies"
-                      >
-                        <RotateCcw size={12} /> Reset All
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const updated = [...(placementsForm.recruiters || []), { name: "New Company", logo: "/logos/wipro.svg" }];
-                          setPlacementsForm({ ...placementsForm, recruiters: updated });
-                          notifySave("Added new partner company");
-                        }}
-                        className="px-2.5 py-1 text-xs font-bold text-[#072A6C] bg-blue-50 hover:bg-blue-100 rounded-lg flex items-center gap-1 border border-blue-200 transition-colors cursor-pointer"
-                      >
-                        <Plus size={13} /> Add Company
-                      </button>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                    {(placementsForm.recruiters || []).map((partner, pIdx) => (
-                      <div key={pIdx} className="p-3 rounded-xl border border-gray-200 bg-white shadow-xs space-y-2.5 relative group hover:border-[#072A6C]/40 hover:shadow-sm transition-all flex flex-col justify-between">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">#{pIdx + 1} Partner</span>
-                          <div className="flex items-center gap-1">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const updated = [...(placementsForm.recruiters || [])];
-                                const defLogo = INITIAL_PLACEMENTS_CONTENT.recruiters[pIdx]?.logo || "/logos/wipro.svg";
-                                const defName = INITIAL_PLACEMENTS_CONTENT.recruiters[pIdx]?.name || partner.name;
-                                updated[pIdx] = { ...updated[pIdx], logo: defLogo, name: defName };
-                                setPlacementsForm({ ...placementsForm, recruiters: updated });
-                                notifySave(`${partner.name} reset to default!`);
-                              }}
-                              className="p-1 rounded text-gray-400 hover:text-[#072A6C] hover:bg-gray-100 cursor-pointer transition-colors"
-                              title="Reset logo & name to default"
-                            >
-                              <RotateCcw size={12} />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const updated = (placementsForm.recruiters || []).filter((_, i) => i !== pIdx);
-                                setPlacementsForm({ ...placementsForm, recruiters: updated });
-                                notifySave(`Removed ${partner.name}`);
-                              }}
-                              className="text-red-400 hover:text-red-600 p-1 rounded hover:bg-red-50 cursor-pointer transition-colors"
-                              title="Delete partner"
-                            >
-                              <Trash2 size={12} />
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="relative group/logo h-14 w-full bg-slate-50 rounded-lg border border-dashed border-gray-200 flex items-center justify-center p-2 overflow-hidden">
-                          <img
-                            src={partner.logo}
-                            alt={partner.name}
-                            className="h-7 max-h-7 w-auto max-w-[100px] object-contain transition-transform group-hover/logo:scale-105"
-                            onError={(e) => { (e.target as HTMLImageElement).src = "/logos/wipro.svg"; }}
-                          />
-                          <label className="absolute inset-0 bg-[#072A6C]/85 opacity-0 group-hover/logo:opacity-100 transition-opacity flex items-center justify-center text-white text-[10.5px] font-semibold gap-1.5 cursor-pointer shadow-inner">
-                            <UploadCloud size={13} />
-                            <span>Upload Logo</span>
-                            <input
-                              type="file"
-                              accept="image/*,.svg"
-                              className="hidden"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  const reader = new FileReader();
-                                  reader.onload = (re) => {
-                                    const url = re.target?.result as string;
-                                    const updated = [...(placementsForm.recruiters || [])];
-                                    updated[pIdx] = { ...updated[pIdx], logo: url };
-                                    setPlacementsForm({ ...placementsForm, recruiters: updated });
-                                    notifySave(`Updated ${partner.name} logo`);
-                                  };
-                                  reader.readAsDataURL(file);
-                                }
-                              }}
-                            />
-                          </label>
-                        </div>
-
-                        <div className="space-y-1.5">
-                          <div>
-                            <label className="text-[9px] font-bold text-gray-500 uppercase tracking-wide">Company Name</label>
-                            <input
-                              type="text"
-                              value={partner.name}
-                              onChange={(e) => {
-                                const updated = [...(placementsForm.recruiters || [])];
-                                updated[pIdx] = { ...updated[pIdx], name: e.target.value };
-                                setPlacementsForm({ ...placementsForm, recruiters: updated });
-                              }}
-                              className="w-full h-7 px-2 text-xs font-bold bg-white border border-gray-200 rounded-md text-gray-800 focus:border-[#072A6C] focus:outline-none"
-                              placeholder="e.g. Google"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-[9px] font-bold text-gray-500 uppercase tracking-wide">Logo URL / Path</label>
-                            <input
-                              type="text"
-                              value={partner.logo}
-                              onChange={(e) => {
-                                const updated = [...(placementsForm.recruiters || [])];
-                                updated[pIdx] = { ...updated[pIdx], logo: e.target.value };
-                                setPlacementsForm({ ...placementsForm, recruiters: updated });
-                              }}
-                              className="w-full h-7 px-2 text-[11px] font-mono text-gray-600 bg-white border border-gray-200 rounded-md focus:border-[#072A6C] focus:outline-none"
-                              placeholder="/logos/company.svg"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Placed Students Cards */}
-              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-black text-[#072A6C] uppercase">Placed Students Gallery ({placementsForm.placedStudents.length})</h3>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const newStudent: PlacedStudent = {
-                        name: "Student Name",
-                        branch: "Computer Science",
-                        company: "Amazon",
-                        ctc: "₹18.0 LPA",
-                        img: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&h=500&fit=crop"
-                      };
-                      setPlacementsForm({
-                        ...placementsForm,
-                        placedStudents: [newStudent, ...placementsForm.placedStudents]
-                      });
-                    }}
-                    className="h-8 px-3 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer"
-                  >
-                    <Plus size={13} /> Add Placed Student
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                  {placementsForm.placedStudents.map((st, idx) => (
-                    <div key={idx} className="p-3.5 rounded-xl border border-gray-200 bg-slate-50/50 space-y-2">
-                      <div className="flex justify-between items-center">
-                        <input
-                          type="text"
-                          value={st.name}
-                          onChange={(e) => {
-                            const updated = [...placementsForm.placedStudents];
-                            updated[idx] = { ...updated[idx], name: e.target.value };
-                            setPlacementsForm({ ...placementsForm, placedStudents: updated });
-                          }}
-                          className="w-full h-7 px-2 text-xs font-bold bg-white border border-gray-200 rounded mr-2"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const updated = placementsForm.placedStudents.filter((_, i) => i !== idx);
-                            setPlacementsForm({ ...placementsForm, placedStudents: updated });
-                          }}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                      <div className="grid grid-cols-2 gap-1.5">
-                        <input
-                          type="text"
-                          value={st.company}
-                          onChange={(e) => {
-                            const updated = [...placementsForm.placedStudents];
-                            updated[idx] = { ...updated[idx], company: e.target.value };
-                            setPlacementsForm({ ...placementsForm, placedStudents: updated });
-                          }}
-                          placeholder="Company"
-                          className="h-7 px-2 text-[11px] font-semibold bg-white border border-gray-200 rounded"
-                        />
-                        <input
-                          type="text"
-                          value={st.ctc}
-                          onChange={(e) => {
-                            const updated = [...placementsForm.placedStudents];
-                            updated[idx] = { ...updated[idx], ctc: e.target.value };
-                            setPlacementsForm({ ...placementsForm, placedStudents: updated });
-                          }}
-                          placeholder="CTC"
-                          className="h-7 px-2 text-[11px] font-bold text-[#D4AF37] bg-white border border-gray-200 rounded"
-                        />
-                      </div>
-                      <ImageField
-                        label="Student Photo"
-                        value={st.img || INITIAL_PLACEMENTS_CONTENT.placedStudents[idx]?.img || "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&h=500&fit=crop"}
-                        defaultValue={INITIAL_PLACEMENTS_CONTENT.placedStudents[idx]?.img || "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&h=500&fit=crop"}
-                        aspectRatio="portrait"
-                        recommendedSize="400 × 500 px (Portrait)"
-                        onChange={(img) => {
-                          const updated = [...placementsForm.placedStudents];
-                          updated[idx] = { ...updated[idx], img };
-                          setPlacementsForm({ ...placementsForm, placedStudents: updated });
-                        }}
-                        onReset={() => {
-                          const updated = [...placementsForm.placedStudents];
-                          updated[idx] = { ...updated[idx], img: INITIAL_PLACEMENTS_CONTENT.placedStudents[idx]?.img || "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&h=500&fit=crop" };
-                          setPlacementsForm({ ...placementsForm, placedStudents: updated });
-                        }}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <PlacementsCMS
+              placementsForm={placementsForm}
+              setPlacementsForm={setPlacementsForm}
+              placementsSubTab={placementsSubTab}
+              setPlacementsSubTab={setPlacementsSubTab}
+              placementsSectionData={placementsSectionData}
+              setPlacementsSectionData={setPlacementsSectionData}
+              storiesList={storiesList}
+              setStoriesList={setStoriesList}
+              activeStoryIdx={activeStoryIdx}
+              setActiveStoryIdx={setActiveStoryIdx}
+              newSkillText={newSkillText}
+              setNewSkillText={setNewSkillText}
+              savePlacements={savePlacements}
+              saveSuccess={saveSuccess}
+              notifySave={notifySave}
+              updatePlacementsContent={updatePlacementsContent}
+            />
           )}
 
           {/* ════════════════════════════════════════════════════ */}
-          {/* TAB 8: DIRECTORIES (Faculty & Board)                 */}
+          {/* TAB 8: DIRECTORIES (Faculty & Board CMS)            */}
           {/* ════════════════════════════════════════════════════ */}
           {activeTab === "directories" && (
-            <div className="space-y-6 animate-fade-in text-left">
-              <SectionHeader
-                title="Directories & Faculty CMS"
-                subtitle="Manage Board of Governance, Department HODs, and Teaching Staff"
-                icon={Users}
-                onSave={saveDirectories}
-                saveSuccess={saveSuccess}
-                onReset={() => {
-                  setFacultyForm(INITIAL_FACULTY_DATA);
-                  updateFacultyData(INITIAL_FACULTY_DATA);
-                  setBoardForm(INITIAL_BOARD_DATA);
-                  updateBoardData(INITIAL_BOARD_DATA);
-                  notifySave("Directories reset to default!");
-                }}
-                resetLabel="Reset Directories"
-              />
-
-              {/* Department Picker */}
-              <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs flex items-center gap-3">
-                <span className="text-xs font-bold text-gray-700 uppercase">Select Department:</span>
-                <select
-                  value={selectedDept}
-                  onChange={(e) => setSelectedDept(e.target.value)}
-                  className="h-9 px-3 text-xs font-bold bg-slate-50 border border-gray-200 rounded-xl text-[#072A6C]"
-                >
-                  {Object.keys(facultyForm).map((dept) => (
-                    <option key={dept} value={dept}>
-                      {dept}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* HOD Card */}
-              {facultyForm[selectedDept] && (
-                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
-                  <h3 className="text-sm font-black text-[#072A6C] uppercase">Head of Department (HOD)</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-gray-600 uppercase">Name</label>
-                      <input
-                        type="text"
-                        value={facultyForm[selectedDept].hod.name}
-                        onChange={(e) => {
-                          const updated = { ...facultyForm };
-                          updated[selectedDept].hod.name = e.target.value;
-                          setFacultyForm(updated);
-                        }}
-                        className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded font-bold"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-gray-600 uppercase">Qualifications</label>
-                      <input
-                        type="text"
-                        value={facultyForm[selectedDept].hod.edu}
-                        onChange={(e) => {
-                          const updated = { ...facultyForm };
-                          updated[selectedDept].hod.edu = e.target.value;
-                          setFacultyForm(updated);
-                        }}
-                        className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded font-medium"
-                      />
-                    </div>
-                  </div>
-                  <ImageField
-                    label="HOD Portrait Photo"
-                    value={facultyForm[selectedDept].hod.avatar || INITIAL_FACULTY_DATA[selectedDept]?.hod?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=500&fit=crop"}
-                    defaultValue={INITIAL_FACULTY_DATA[selectedDept]?.hod?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=500&fit=crop"}
-                    aspectRatio="portrait"
-                    recommendedSize="400 × 500 px (Portrait)"
-                    onChange={(avatar) => {
-                      const updated = { ...facultyForm };
-                      updated[selectedDept].hod.avatar = avatar;
-                      setFacultyForm(updated);
-                    }}
-                    onReset={() => {
-                      const updated = { ...facultyForm };
-                      updated[selectedDept].hod.avatar = INITIAL_FACULTY_DATA[selectedDept]?.hod?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=500&fit=crop";
-                      setFacultyForm(updated);
-                    }}
-                  />
-                </div>
-              )}
-            </div>
+            <FacultyCMS notifySave={notifySave} />
           )}
 
           {/* ════════════════════════════════════════════════════ */}

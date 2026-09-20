@@ -1,4 +1,4 @@
-﻿import React, { useEffect } from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Calendar, Clock, MapPin } from "lucide-react";
 import { useData } from "../context/DataContext";
@@ -77,6 +77,7 @@ export default function AllEvents() {
                     <img
                       src={item.image}
                       alt={item.title}
+                      onError={(e) => { (e.target as HTMLImageElement).src = "/prog_engineering.png"; }}
                       className="w-full h-full object-cover object-center"
                       draggable="false"
                     />

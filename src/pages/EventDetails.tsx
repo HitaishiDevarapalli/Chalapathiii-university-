@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useData } from "../context/DataContext";
 import { Calendar, Clock, MapPin, Share2, ArrowLeft, CheckCircle, X, Link2, Check } from "lucide-react";
@@ -310,8 +310,10 @@ export default function EventDetails() {
 
   const shareLinks = getShareLinks();
 
-  // Load slider images (default to single image if slug not mapped)
-  const sliderImages = EVENT_IMAGES_MAP[eventItem.slug] || [eventItem.image || "/prog_engineering.png"];
+  // Load slider images (prioritizing custom configured images, then preset map, then cover image)
+  const sliderImages = (eventItem.images && eventItem.images.length > 0)
+    ? eventItem.images
+    : (EVENT_IMAGES_MAP[eventItem.slug] || [eventItem.image || "/prog_engineering.png"]);
 
   return (
     <div className="min-h-screen bg-[#F7F9FC] py-10 font-[var(--font-poppins)] relative text-left">

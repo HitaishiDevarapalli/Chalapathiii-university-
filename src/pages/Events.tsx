@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, Calendar, Clock, MapPin } from "lucide-react";
 import { useData } from "../context/DataContext";
@@ -171,13 +171,14 @@ export default function Events() {
                   <div
                     key={idx}
                     onClick={() => navigate(`/news/events/${item.slug}`)}
-                    className="w-full md:w-[calc((100%-32px)/2)] lg:w-[calc((100%-64px)/3)] shrink-0 bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-2 transition-all duration-300 flex flex-col group text-left cursor-pointer outline-none pointer-events-auto"
+                    className="w-full md:w-[calc((100%-32px)/2)] lg:w-[calc((100%-64px)/3)] shrink-0 bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-lg hover:border-orange-200 transition-all duration-300 flex flex-col group text-left cursor-pointer outline-none pointer-events-auto"
                   >
                     {/* Image */}
                     <div className="h-56 overflow-hidden bg-slate-900 relative w-full">
                       <img
                         src={item.image}
                         alt={item.title}
+                        onError={(e) => { (e.target as HTMLImageElement).src = "/prog_engineering.png"; }}
                         className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
                         draggable="false"
                         loading="lazy"

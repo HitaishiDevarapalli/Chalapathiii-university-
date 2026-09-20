@@ -84,14 +84,14 @@ const getProgramTimeline = (title: string) => {
 };
 
 // Helper to generate dynamic, rich content based on current path
-const getPageContent = (path: string, programs: any[]) => {
+const getPageContent = (path: string, programs: any[], newsPageConfig?: any) => {
   const cleanPath = path.toLowerCase().replace(/\/$/, "");
 
   if (cleanPath === "/news/latest") {
     return {
-      title: "University Highlights",
+      title: newsPageConfig?.newsDirectoryTitle || "University Highlights",
       category: "News & Press",
-      desc: "Stay updated with the latest achievements, innovations, and stories from Chalapathi University.",
+      desc: newsPageConfig?.newsDirectorySubtitle || "Stay updated with the latest achievements, innovations, and stories from Chalapathi University.",
       body: <LatestNewsView />
     };
   }
@@ -605,15 +605,15 @@ const getPageContent = (path: string, programs: any[]) => {
         <div className="space-y-6">
           <p className="text-gray-600 text-sm">Choose from our specialized undergraduate and postgraduate branches of study designed to secure industry placement.</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
-            <Link to="/academics/computer-science" className="bg-white border border-gray-100 p-5 rounded-[16px] shadow-sm hover:-translate-y-1 transition-all block">
+            <Link to="/academics/computer-science" className="bg-white border border-gray-100 p-5 rounded-[16px] shadow-sm transition-all block">
               <h4 className="font-extrabold text-[#072A6C] text-sm">Computer Science & Engineering</h4>
               <p className="text-xs text-gray-500 mt-2">Explore algorithms, development, and network systems.</p>
             </Link>
-            <Link to="/academics/artificial-intelligence" className="bg-white border border-gray-100 p-5 rounded-[16px] shadow-sm hover:-translate-y-1 transition-all block">
+            <Link to="/academics/artificial-intelligence" className="bg-white border border-gray-100 p-5 rounded-[16px] shadow-sm transition-all block">
               <h4 className="font-extrabold text-[#072A6C] text-sm">AI & Machine Learning</h4>
               <p className="text-xs text-gray-500 mt-2">Train intelligent models and predictive automated systems.</p>
             </Link>
-            <Link to="/academics/data-science" className="bg-white border border-gray-100 p-5 rounded-[16px] shadow-sm hover:-translate-y-1 transition-all block">
+            <Link to="/academics/data-science" className="bg-white border border-gray-100 p-5 rounded-[16px] shadow-sm hover:shadow-md transition-all block">
               <h4 className="font-extrabold text-[#072A6C] text-sm">Data Science</h4>
               <p className="text-xs text-gray-500 mt-2">Mine data streams and generate critical business analytics.</p>
             </Link>
@@ -1402,7 +1402,7 @@ function InteractiveCalendarWidget({ year, courseKey }: { year: string; courseKe
                       const uniqueKey = `${selectedYear}-${course.key}`;
                       const isExpanded = activeCourse === uniqueKey;
                       return (
-                        <div key={course.key} className="border border-gray-100 rounded-xl overflow-hidden shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:border-blue-100 transition-all duration-300 col-span-1 md:col-span-full">
+                        <div key={course.key} className="border border-gray-100 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:border-blue-100 transition-all duration-300 col-span-1 md:col-span-full">
                           <button
                             onClick={() => setActiveCourse(isExpanded ? null : uniqueKey)}
                             className="w-full px-4 py-3 flex items-center justify-between text-xs font-bold text-gray-700 hover:text-[#D4AF37] bg-white transition-colors text-left outline-none cursor-pointer"
@@ -1501,7 +1501,7 @@ function AcademicFlexibilities() {
         {flexibilities.map((item) => {
           const isExpanded = activeItem === item.key;
           return (
-            <div key={item.key} className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:border-[#D4AF37]/20 transition-all duration-300">
+            <div key={item.key} className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:border-[#D4AF37]/20 transition-all duration-300">
               <button
                 onClick={() => setActiveItem(isExpanded ? null : item.key)}
                 className="w-full px-5 py-4 flex items-center justify-between text-xs font-bold text-gray-700 hover:text-[#D4AF37] bg-white transition-colors text-left outline-none cursor-pointer"
@@ -1802,7 +1802,7 @@ function AwardOfDegrees() {
           return (
             <div
               key={grade.class}
-              className={`p-5 rounded-2xl border-2 transition-all duration-300 select-none hover:-translate-y-1 hover:shadow-md ${grade.color} ${grade.glow} ${
+              className={`p-5 rounded-2xl border-2 transition-all duration-300 select-none hover:shadow-md ${grade.color} ${grade.glow} ${
                 isActive
                   ? "ring-4 ring-offset-2 ring-[#072A6C] border-[#072A6C] scale-[1.02] shadow-md"
                   : "scale-100 shadow-sm"
@@ -1918,7 +1918,7 @@ function AcademicRulesRegulations() {
           return (
             <div
               key={item.title}
-              className={`flex flex-col items-center p-6 text-center border border-gray-100 rounded-3xl transition-all duration-300 hover:-translate-y-2 hover:shadow-md hover:border-[#D4AF37]/30 group ${bgClass}`}
+              className={`flex flex-col items-center p-6 text-center border border-gray-100 rounded-3xl transition-all duration-300 hover:shadow-md hover:border-[#D4AF37]/30 group ${bgClass}`}
             >
               {/* Icon Container with subtle animation */}
               <div className="w-16 h-16 rounded-full bg-blue-50/80 text-[#072A6C] flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110 group-hover:bg-[#072A6C]/10">
@@ -1995,7 +1995,7 @@ function TeachingEvaluation() {
         {evaluations.map((item) => (
           <div
             key={item.title}
-            className={`bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300 flex flex-col justify-between ${item.glow}`}
+            className={`bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between ${item.glow}`}
           >
             <div>
               <div className="flex justify-between items-center mb-3">
@@ -2168,7 +2168,7 @@ function BOSMembers() {
             <Link 
               key={dept.name} 
               to={`/academics/bos/${slug}`}
-              className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm hover:-translate-y-1 hover:shadow-md hover:border-[#D4AF37]/20 transition-all duration-300 flex items-center justify-between text-xs font-bold text-gray-700 hover:text-[#D4AF37] cursor-pointer"
+              className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-[#D4AF37]/20 transition-all duration-300 flex items-center justify-between text-xs font-bold text-gray-700 hover:text-[#D4AF37] cursor-pointer"
             >
               <span>• Department of {dept.name}</span>
               <ChevronRight size={14} className="text-gray-400" />
@@ -2220,7 +2220,7 @@ function DepartmentFacultyView({ slug }: { slug: string }) {
         {dept.faculty.map((member, idx) => (
           <div 
             key={idx} 
-            className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm hover:-translate-y-1 hover:shadow-md hover:border-[#D4AF37]/25 transition-all duration-300 flex flex-col justify-between"
+            className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-[#D4AF37]/25 transition-all duration-300 flex flex-col justify-between"
           >
             <div>
               <div className="text-xs font-extrabold text-[#072A6C]">{member.name}</div>
@@ -2265,10 +2265,11 @@ function LatestNewsView() {
 
 export default function DynamicPage() {
   const { pathname } = useLocation();
-  const { programs } = useData();
-  const content = getPageContent(pathname, programs);
+  const { programs, campusLifeContent, newsPageConfig } = useData();
+  const content = getPageContent(pathname, programs, newsPageConfig);
   const isManagement = pathname.toLowerCase().startsWith("/management");
   const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
+  const [playingVideo, setPlayingVideo] = React.useState<string | null>(null);
 
   useEffect(() => {
     document.title = `${content.title} | Chalapathi University`;
@@ -2278,331 +2279,26 @@ export default function DynamicPage() {
   const cleanPath = pathname.toLowerCase().replace(/\/$/, "");
   const isCampusLife = cleanPath.startsWith("/campus-life");
 
-  const campusLifeData: Record<string, {
-    title: string;
-    desc: string;
-    heroImage: string;
-    hasVideo?: boolean;
-    stats?: Array<{ label: string; value: string }>;
-    highlights?: Array<{ title: string; desc: string }>;
-    sections?: Array<{ title: string; desc: string; items?: string[]; image: string }>;
-    gallery: string[];
-  }> = {
-    "/campus-life": {
-      title: "Campus Overview",
-      desc: "Experience the vibrant, modern, and green academic ecosystem of Chalapathi University.",
-      heroImage: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1600&q=80",
-      hasVideo: true,
-      highlights: [
-        { title: "Green Campus", desc: "Eco-friendly infrastructure, solar power grids, and plastic-free zones." },
-        { title: "Modern Infrastructure", desc: "State-of-the-art academic wings, research centers, and sports fields." },
-        { title: "Digital Learning", desc: "Gigabit fiber internet, smart boards, and virtual computer environments." },
-        { title: "Student Experience", desc: "Diverse student-led associations, cultural meets, and development clubs." }
-      ],
-      gallery: [
-        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1504817342591-1395b53b26f5?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1541252260730-0412e8e2108e?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1576086213369-97a306d36557?auto=format&fit=crop&w=600&q=80"
-      ]
-    },
-    "/campus-life/library": {
-      title: "Central Library",
-      desc: "Our Central Library is a sanctuary of knowledge equipped with physical books and digital learning spaces.",
-      heroImage: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1600&q=80",
-      stats: [
-        { label: "Physical Books", value: "75,000+" },
-        { label: "Journals", value: "350+" },
-        { label: "E-Resources", value: "8,500+" },
-        { label: "Reading Capacity", value: "1,500+" }
-      ],
-      sections: [
-        { title: "Digital Library & E-Learning", desc: "Access high-speed research databases, IEEE publications, and academic resources through modern terminal workstations.", image: "https://images.unsplash.com/photo-1568667256549-094345857637?auto=format&fit=crop&w=800&q=80" },
-        { title: "Discussion & Collaborative Areas", desc: "Dedicated spaces where student groups brainstorm research designs and collaborate on projects.", image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80" }
-      ],
-      gallery: [
-        "https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1495446815901-a7297e63b58d?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80"
-      ]
-    },
-    "/campus-life/smart-classrooms": {
-      title: "Smart Classrooms",
-      desc: "Our interactive classrooms are designed to maximize engagement and digital content access.",
-      heroImage: "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?auto=format&fit=crop&w=1600&q=80",
-      sections: [
-        { title: "Interactive Smart Boards", desc: "Multi-touch collaborative screens enabling digital ink, real-time annotations, and cloud content synchronization.", image: "https://images.unsplash.com/photo-1571844307880-751c6d86f3f3?auto=format&fit=crop&w=800&q=80" },
-        { title: "Digital Teaching & Webcasting", desc: "Integrated digital cameras and recording nodes to capture lectures and deliver virtual learning feeds.", image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80" },
-        { title: "Audio Visual Systems", desc: "Acoustically treated halls containing professional sound networks and high-definition projections.", image: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=800&q=80" },
-        { title: "Student Collaboration Hubs", desc: "Configurable seating structures allowing teams to interface project modules with personal smart devices.", image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80" }
-      ],
-      gallery: [
-        "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1544535830-9df3f5687760?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=600&q=80"
-      ]
-    },
-    "/campus-life/laboratories": {
-      title: "Laboratories",
-      desc: "Advanced research laboratories for Computer Science, AI, Electronics, and Mechanical Engineering.",
-      heroImage: "https://images.unsplash.com/photo-1576086213369-97a306d36557?auto=format&fit=crop&w=1600&q=80",
-      sections: [
-        { title: "Computer & Software Labs", desc: "Equipped with modern client workstations, enterprise database servers, and industry-standard design tools.", image: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80" },
-        { title: "AI & Deep Learning Labs", desc: "High-compute GPU setups optimized for artificial intelligence frameworks and machine learning training tasks.", image: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=800&q=80" },
-        { title: "IoT & Embedded Systems", desc: "Equipped with sensors, development boards, and communication nodes to prototype smart grids.", image: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80" },
-        { title: "Mechanical & Civil Labs", desc: "Featuring heavy industrial testing setups, material characterization machinery, and fluid dynamics chambers.", image: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80" },
-        { title: "Electronics & VLSI Labs", desc: "Equipped with high-frequency oscilloscopes, signal generators, and software setups for integrated circuit layout designs.", image: "https://images.unsplash.com/photo-1517059224940-d4af9eec41b7?auto=format&fit=crop&w=800&q=80" }
-      ],
-      gallery: [
-        "https://images.unsplash.com/photo-1576086213369-97a306d36557?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1532187643603-ba119ca4109e?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1518152006812-edab29b069ac?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1554475901-4538ddfbccc2?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1576086213369-97a306d36557?auto=format&fit=crop&w=600&q=80"
-      ]
-    },
-    "/campus-life/hostels": {
-      title: "Hostel Facilities",
-      desc: "A secure, cozy, and home-like atmosphere for our boys and girls campus residents.",
-      heroImage: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=1600&q=80",
-      sections: [
-        { title: "Residential Dining", desc: "Hygienic multi-cuisine dining serving fresh meals, catering to diverse dietary choices.", image: "https://images.unsplash.com/photo-1567529854338-fc097b962123?auto=format&fit=crop&w=800&q=80" },
-        { title: "Recreation & Lounges", desc: "Common rooms with table tennis, TVs, indoor gym setups, and secure laundry zones.", image: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=800&q=80" }
-      ],
-      gallery: [
-        "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1567529854338-fc097b962123?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=600&q=80"
-      ]
-    },
-    "/campus-life/sports": {
-      title: "Sports & Fitness",
-      desc: "Developing physical fitness and team spirit through modern sports infrastructure.",
-      heroImage: "https://images.unsplash.com/photo-1541252260730-0412e8e2108e?auto=format&fit=crop&w=1600&q=80",
-      sections: [
-        { title: "Outdoor Ground Facilities", desc: "A full-sized football pitch, cricket grounds, athletic tracks, and standard basketball fields.", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80" },
-        { title: "Indoor Sports Complex", desc: "High-quality badminton courts, table tennis spaces, chess corners, and a fully-equipped gym.", image: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80" }
-      ],
-      gallery: [
-        "https://images.unsplash.com/photo-1541252260730-0412e8e2108e?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1530541930197-ff16ac917b0e?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1543326727-cf6c39e8f84c?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?auto=format&fit=crop&w=600&q=80"
-      ]
-    },
-    "/campus-life/cafeteria": {
-      title: "Cafeteria & Dining",
-      desc: "Our food courts offer diverse dining choices under strict quality and cleanliness guidelines.",
-      heroImage: "https://images.unsplash.com/photo-1567529854338-fc097b962123?auto=format&fit=crop&w=1600&q=80",
-      sections: [
-        { title: "Multi-Cuisine Food Court", desc: "A spacious dining zone offering freshly cooked regional and continental dishes under strict hygiene controls.", image: "https://images.unsplash.com/photo-1567529854338-fc097b962123?auto=format&fit=crop&w=800&q=80" },
-        { title: "Healthy Meals & Salads", desc: "Fresh organic salads, juices, and low-calorie options preparing students with active physical energy.", image: "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=800&q=80" },
-        { title: "Coffee & Lounge Corner", desc: "A warm community space to enjoy specialty coffee, tea, and quick snacks with project partners.", image: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=800&q=80" }
-      ],
-      gallery: [
-        "https://images.unsplash.com/photo-1567529854338-fc097b962123?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1498654896293-37aacf113fd9?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1559925393-8be0ec4767c8?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1508215885880-4e7d4801a9e0?auto=format&fit=crop&w=600&q=80"
-      ]
-    },
-    "/campus-life/transportation": {
-      title: "Transportation",
-      desc: "Our GPS-enabled bus network connects the campus to Guntur, Vijayawada, and adjoining communities.",
-      heroImage: "https://images.unsplash.com/photo-1557223562-6c77ef16210f?auto=format&fit=crop&w=1600&q=80",
-      sections: [
-        { title: "University Bus Fleet", desc: "A large collection of modern buses carrying standard safety measures and comfortable seating arrangements.", image: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=800&q=80" },
-        { title: "GPS Tracking & Safety", desc: "Real-time satellite GPS updates, Speed controllers, and emergency contact systems inside all transit networks.", image: "https://images.unsplash.com/photo-1557223562-6c77ef16210f?auto=format&fit=crop&w=800&q=80" },
-        { title: "Multiple City Routes", desc: "Connecting students across all major points in Guntur, Tenali, Vijayawada, and surrounding towns.", image: "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=800&q=80" }
-      ],
-      gallery: [
-        "https://images.unsplash.com/photo-1557223562-6c77ef16210f?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1494515426402-f1980ae7a018?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1485738422979-f5c462d49f74?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1492664738948-2ec93a547e6d?auto=format&fit=crop&w=600&q=80"
-      ]
-    },
-    "/campus-life/wifi": {
-      title: "Wi-Fi Campus Network",
-      desc: "Gigabit-speed wireless connectivity covering all academic corridors and hostels.",
-      heroImage: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1600&q=80",
-      sections: [
-        { title: "High-Speed Fiber Backbone", desc: "Gigabit fiber internet linking computing systems, servers, and visual classrooms seamlessly.", image: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=800&q=80" },
-        { title: "Wireless Coverage Spots", desc: "High-density access points located across academic corridors, hostels, auditoriums, and open gardens.", image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80" }
-      ],
-      gallery: [
-        "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=600&q=80"
-      ]
-    },
-    "/campus-life/health-centre": {
-      title: "Health Centre",
-      desc: "Our campus clinic is prepared for student medical consults, first aid, and basic healthcare support.",
-      heroImage: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1600&q=80",
-      sections: [
-        { title: "24/7 First Aid & Ambulance", desc: "A qualified healthcare team and dedicated emergency transport ready on standby.", image: "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=800&q=80" }
-      ],
-      gallery: [
-        "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1584515901367-f134706efc3c?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1530026405186-ed1ea0ac7a63?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=600&q=80"
-      ]
-    },
-    "/campus-life/clubs": {
-      title: "Student Clubs & Societies",
-      desc: "Coding challenges, musical events, creative art, and technical clubs to build student leadership.",
-      heroImage: "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=1600&q=80",
-      sections: [
-        { title: "Coding, Music & Performing Arts", desc: "Student-run activities spanning technical hackathons, coding tasks, classical music nights, and traditional plays.", image: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80" }
-      ],
-      gallery: [
-        "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1522158673370-3c1466178877?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=600&q=80"
-      ]
-    },
-    "/campus-life/events": {
-      title: "Events & Festivals",
-      desc: "Highlights from our annual technological symposiums, sporting events, and cultural meets.",
-      heroImage: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1600&q=80",
-      gallery: [
-        "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1469488865564-c2de10f69f96?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=600&q=80"
-      ]
-    },
-    "/campus-life/innovation-hub": {
-      title: "Innovation Hub & Incubation",
-      desc: "Nurturing student startups and technological solutions with workspaces and seed funding.",
-      heroImage: "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1600&q=80",
-      gallery: [
-        "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-152202176988-66273c2fd55f?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1535303311164-664fc9ec6532?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=600&q=80"
-      ]
-    },
-    "/campus-life/safety": {
-      title: "Campus Safety & Security",
-      desc: "Ensuring student safety with 24/7 CCTV surveillance, gate controls, and safety protocols.",
-      heroImage: "https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=1600&q=80",
-      sections: [
-        { title: "Continuous Patrol & Cameras", desc: "Our campus is mapped with CCTV cameras and has emergency rapid assistance setups.", image: "https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=800&q=80" }
-      ],
-      gallery: [
-        "https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1508847154043-be12aee6f22d?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80"
-      ]
-    },
-    "/campus-life/nss-ncc": {
-      title: "NSS & NCC Wings",
-      desc: "Cultivating discipline, community service, and volunteer leadership among our students.",
-      heroImage: "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&w=1600&q=80",
-      gallery: [
-        "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1464979681340-1261d70b083c?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1489710437720-ebb67ec84dd2?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1509099836639-18ba1795216d?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&w=600&q=80"
-      ]
-    },
-    "/campus-life/grievance-cell": {
-      title: "Student Grievance Cell",
-      desc: "Dedicated mechanism for responding to queries, academic appeals, and support requests.",
-      heroImage: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=1600&q=80",
-      sections: [
-        { title: "Transparent Grievance Resolution", desc: "Submit and follow academic, facility, or administrative queries directly through online and offline modules.", image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80" }
-      ],
-      gallery: [
-        "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=600&q=80"
-      ]
-    }
-  };
-
-  const campusPage = campusLifeData[cleanPath];
+  const campusPage = campusLifeContent ? (campusLifeContent[cleanPath] || campusLifeContent["/campus-life"]) : undefined;
 
   if (isCampusLife && campusPage) {
+    const galleryItems = campusPage.gallery && campusPage.gallery.length > 0 ? campusPage.gallery : [
+      "/gallery_annual_fest.png",
+      "/gallery_sports_meet.png",
+      "/gallery_tech_events.png",
+      "/gallery_nss_activities.png",
+      "/gallery_cultural_events.png",
+      "/gallery_workshops.png",
+      "/campus_hero.png",
+      "/campus_placement.png"
+    ];
+
     return (
       <div className="flex-grow w-full bg-white font-[var(--font-poppins)] overflow-hidden">
         {/* Hero Banner with University Red Gradient Overlay */}
         <div 
           className="relative h-[360px] md:h-[480px] w-full flex items-center justify-start bg-cover bg-center"
-          style={{ backgroundImage: `url(${campusPage.heroImage})` }}
+          style={{ backgroundImage: `url(${campusPage.heroImage || "/campus_hero.png"})` }}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-[#D71920]/90 via-[#072A6C]/85 to-transparent z-10" />
           <div className="max-w-[1440px] mx-auto w-full px-5 relative z-20 text-white flex flex-col justify-center h-full">
@@ -2616,27 +2312,42 @@ export default function DynamicPage() {
           {/* Section 1: Campus Overview Video (if hasVideo is true) */}
           {campusPage.hasVideo && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              <div className="lg:col-span-7 relative group rounded-[20px] overflow-hidden shadow-xl aspect-video bg-gray-900 border border-gray-100">
+              <div 
+                onClick={() => setPlayingVideo(campusPage.videoUrl || "/chalapathi_logo_intro.mp4")}
+                className="lg:col-span-7 relative group rounded-[20px] overflow-hidden shadow-xl aspect-video bg-gray-900 border border-gray-100 cursor-pointer"
+              >
                 <img 
-                  src="https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?auto=format&fit=crop&w=1000&q=80" 
+                  src={campusPage.videoThumbnail || "/campus_life_bg.png"} 
                   alt="Video Thumbnail"
+                  onError={(e) => { e.currentTarget.src = "/campus_life_bg.png"; }}
                   className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500"
                 />
-                <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                  <button className="w-16 h-16 rounded-full bg-[#D4AF37] hover:bg-[#C9A84C] text-white flex items-center justify-center shadow-lg transition-transform duration-300 transform group-hover:scale-110 cursor-pointer">
+                <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
+                  <button 
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPlayingVideo(campusPage.videoUrl || "/chalapathi_logo_intro.mp4");
+                    }}
+                    className="w-16 h-16 rounded-full bg-[#D4AF37] hover:bg-[#C9A84C] text-white flex items-center justify-center shadow-lg transition-transform duration-300 transform group-hover:scale-110 cursor-pointer"
+                  >
                     <span className="ml-1 text-2xl">▶</span>
                   </button>
                 </div>
               </div>
               <div className="lg:col-span-5 space-y-4">
-                <h2 className="text-2xl md:text-3xl font-extrabold text-[#072A6C] tracking-tight uppercase">EXPERIENCE CHALAPATHI</h2>
-                <p className="text-sm text-gray-500 leading-relaxed font-medium">Take a virtual guided tour of our green campus corridors, advanced pharmacy laboratories, academic buildings, and standard sporting environments that empower ambitious student minds.</p>
+                <h2 className="text-2xl md:text-3xl font-extrabold text-[#072A6C] tracking-tight uppercase">
+                  {campusPage.videoTitle || "EXPERIENCE CHALAPATHI"}
+                </h2>
+                <p className="text-sm text-gray-500 leading-relaxed font-medium">
+                  {campusPage.videoDesc || "Take a virtual guided tour of our green campus corridors, advanced pharmacy laboratories, academic buildings, and standard sporting environments that empower ambitious student minds."}
+                </p>
               </div>
             </div>
           )}
 
           {/* Highlights Grid (if highlights are present) */}
-          {campusPage.highlights && (
+          {campusPage.highlights && campusPage.highlights.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {campusPage.highlights.map((h, i) => (
                 <div key={i} className="bg-white border border-gray-100 rounded-[20px] p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
@@ -2649,7 +2360,7 @@ export default function DynamicPage() {
           )}
 
           {/* Stats Bar (if statistics are present) */}
-          {campusPage.stats && (
+          {campusPage.stats && campusPage.stats.length > 0 && (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 bg-[#072A6C] text-white p-8 rounded-[20px] shadow-lg">
               {campusPage.stats.map((s, i) => (
                 <div key={i} className="text-center space-y-1">
@@ -2667,6 +2378,7 @@ export default function DynamicPage() {
                 <img 
                   src={sect.image} 
                   alt={sect.title}
+                  onError={(e) => { e.currentTarget.src = "/campus_hero.png"; }}
                   className="rounded-[20px] shadow-lg w-full h-[280px] md:h-[360px] object-cover hover:scale-105 transition-transform duration-500" 
                 />
               </div>
@@ -2684,7 +2396,7 @@ export default function DynamicPage() {
               <p className="text-xs text-gray-400 mt-2 font-medium">Hover to expand and click to view full screen imagery.</p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {campusPage.gallery.map((imgUrl, i) => (
+              {galleryItems.map((imgUrl, i) => (
                 <div 
                   key={i} 
                   onClick={(e) => {
@@ -2696,23 +2408,12 @@ export default function DynamicPage() {
                 >
                   <img 
                     src={imgUrl} 
-                    alt={`Gallery ${i}`} 
+                    alt={`${campusPage.title} Gallery Photo ${i + 1}`} 
+                    onError={(e) => { e.currentTarget.src = "/gallery_tech_events.png"; }}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     loading="lazy"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setSelectedImage(imgUrl);
-                    }}
                   />
-                  <div 
-                    className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-extrabold text-sm"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setSelectedImage(imgUrl);
-                    }}
-                  >
+                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-extrabold text-sm">
                     VIEW IMAGE
                   </div>
                 </div>
@@ -2721,21 +2422,49 @@ export default function DynamicPage() {
           </div>
         </div>
 
+        {/* Video Player Modal */}
+        {playingVideo && createPortal(
+          <div 
+            className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
+            onClick={() => setPlayingVideo(null)}
+          >
+            <div 
+              className="relative w-full max-w-4xl bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/20"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button 
+                onClick={() => setPlayingVideo(null)}
+                className="absolute top-4 right-4 text-white bg-[#D4AF37] hover:bg-[#C9A84C] w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm cursor-pointer z-10 shadow-lg"
+              >
+                ✕
+              </button>
+              <video 
+                src={playingVideo} 
+                controls 
+                autoPlay 
+                className="w-full h-auto max-h-[75vh] object-contain"
+              />
+            </div>
+          </div>,
+          document.body
+        )}
+
         {/* Lightbox Modal */}
         {selectedImage && createPortal(
           <div 
-            className="fixed inset-0 z-[9999] bg-black/20 backdrop-blur-md flex items-center justify-center p-4 cursor-zoom-out"
+            className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 cursor-zoom-out"
             onClick={() => setSelectedImage(null)}
           >
             <button 
               onClick={() => setSelectedImage(null)}
-              className="absolute top-6 right-6 text-white bg-[#D4AF37] hover:bg-[#C9A84C] w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg cursor-pointer z-10"
+              className="absolute top-6 right-6 text-white bg-[#D4AF37] hover:bg-[#C9A84C] w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg cursor-pointer z-10 shadow-lg"
             >
               ✕
             </button>
             <img 
               src={selectedImage} 
               alt="Expanded View" 
+              onError={(e) => { e.currentTarget.src = "/campus_hero.png"; }}
               className="max-w-full max-h-[85vh] rounded-[16px] object-contain shadow-2xl animate-fade-in cursor-default" 
               onClick={(e) => e.stopPropagation()}
             />
@@ -3237,7 +2966,7 @@ function StaffDirectory() {
             <h4 className="text-xs font-extrabold text-[#D4AF37] uppercase tracking-wider text-center">Unit Head</h4>
             <div 
               onClick={() => setSelectedFaculty(activeDept.hod)}
-              className="bg-white border-2 border-[#D4AF37] rounded-[16px] p-6 shadow-sm hover:shadow-lg hover:-translate-y-1.5 transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer relative group w-full max-w-[340px] min-h-[300px]"
+              className="bg-white border-2 border-[#D4AF37] rounded-[16px] p-6 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer relative group w-full max-w-[340px] min-h-[300px]"
             >
               <div className="absolute top-3 right-3 bg-[#D4AF37] text-gray-900 font-extrabold text-[8px] uppercase tracking-widest px-2.5 py-0.5 rounded-full shadow-sm">
                 Head
@@ -3266,7 +2995,7 @@ function StaffDirectory() {
                 <div 
                   key={fIdx}
                   onClick={() => setSelectedFaculty(faculty)}
-                  className="bg-white border border-gray-200/80 rounded-[16px] p-6 shadow-sm hover:border-[#D4AF37] hover:shadow-lg hover:-translate-y-1.5 transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer group min-h-[260px]"
+                  className="bg-white border border-gray-200/80 rounded-[16px] p-6 shadow-sm hover:border-[#D4AF37] hover:shadow-lg transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer group min-h-[260px]"
                 >
                   <div className="w-40 h-40 rounded-lg border-2 border-gray-100 bg-[#072A6C]/5 flex items-center justify-center font-black text-3xl text-[#072A6C] shadow-inner mb-4 group-hover:border-[#D4AF37] transition-all select-none overflow-hidden">
                     <img src={getAvatarUrl(faculty.avatar)} alt={faculty.name} className="w-full h-full object-cover" />
@@ -3375,24 +3104,69 @@ function FacultyDirectory() {
 
   if (path.includes("computing")) {
     schoolName = "School of Computing Sciences";
-    departmentsToShow = ["Computer Science & Engineering", "Artificial Intelligence & ML", "Data Science"];
+    departmentsToShow = [
+      "Computer Science & Engineering", 
+      "Artificial Intelligence", 
+      "Artificial Intelligence & ML",
+      "Data Science", 
+      "Cyber Security"
+    ];
   } else if (path.includes("engineering")) {
     schoolName = "School of Engineering";
-    departmentsToShow = ["Electronics & Communication Engineering"]; 
+    departmentsToShow = [
+      "Electronics and Communication Engineering", 
+      "Electronics & Communication Engineering", 
+      "Civil Engineering", 
+      "Basic Science & Humanities"
+    ]; 
   } else if (path.includes("business")) {
     schoolName = "School of Business & Management";
-    departmentsToShow = ["School of Management"];
+    departmentsToShow = [
+      "Business and Management",
+      "School of Management"
+    ];
   } else {
     schoolName = "Our Esteemed Faculty";
-    departmentsToShow = ["Computer Science & Engineering", "Artificial Intelligence & ML", "Data Science", "School of Pharmacy", "School of Management"];
+    departmentsToShow = [
+      "Computer Science & Engineering", 
+      "Artificial Intelligence", 
+      "Artificial Intelligence & ML",
+      "Data Science", 
+      "Cyber Security",
+      "Electronics and Communication Engineering", 
+      "Electronics & Communication Engineering", 
+      "Civil Engineering", 
+      "Basic Science & Humanities",
+      "Business and Management",
+      "School of Management"
+    ];
   }
 
   // Flatten the faculty lists for the selected departments
   const allFacultyMembers: FacultyMember[] = [];
+  const seenNames = new Set<string>();
+
   departmentsToShow.forEach(dept => {
-    if (facultyData[dept]) {
-      if (facultyData[dept].hod) allFacultyMembers.push(facultyData[dept].hod);
-      if (facultyData[dept].others) allFacultyMembers.push(...facultyData[dept].others);
+    const dData = facultyData[dept];
+    if (dData) {
+      if (dData.hod && dData.hod.name) {
+        const key = dData.hod.name.toLowerCase().trim();
+        if (!seenNames.has(key)) {
+          seenNames.add(key);
+          allFacultyMembers.push(dData.hod);
+        }
+      }
+      if (dData.others && Array.isArray(dData.others)) {
+        dData.others.forEach(mem => {
+          if (mem && mem.name) {
+            const key = mem.name.toLowerCase().trim();
+            if (!seenNames.has(key)) {
+              seenNames.add(key);
+              allFacultyMembers.push(mem);
+            }
+          }
+        });
+      }
     }
   });
 
@@ -4685,7 +4459,7 @@ function ScholarshipsView() {
 function RecruiterCard({ company }: { company: { name: string; logo: string } }) {
   const [hasError, setHasError] = React.useState(false);
   return (
-    <div className="flex flex-col items-center justify-center bg-white border border-gray-200/60 rounded-xl p-4 w-32 h-36 shrink-0 select-none shadow-sm hover:shadow-[0_8px_20px_rgba(37,99,235,0.12)] hover:-translate-y-1.5 transition-all duration-300 gap-2 group cursor-pointer">
+    <div className="flex flex-col items-center justify-center bg-white border border-gray-200/60 rounded-xl p-4 w-32 h-36 shrink-0 select-none shadow-sm hover:shadow-[0_8px_20px_rgba(37,99,235,0.12)] transition-all duration-300 gap-2 group cursor-pointer">
       {/* Real Corporate Logo */}
       <div className="w-20 h-16 flex items-center justify-center overflow-hidden bg-white p-1 shrink-0">
         {hasError ? (
@@ -4806,6 +4580,10 @@ function PlacementsView() {
     { name: "Startups & Ventures", img: "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?w=400&fit=crop" }
   ];
 
+  const displayIndustries = (placementsContent.industries && placementsContent.industries.length > 0) 
+    ? placementsContent.industries 
+    : INDUSTRIES;
+
   const RECRUITERS = placementsContent.recruiters;
 
   return (
@@ -4924,7 +4702,7 @@ function PlacementsView() {
         {/* Text Area */}
         <div className="flex-1 space-y-4 md:space-y-6 z-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#D4AF37]/10 text-[#D4AF37] rounded-lg font-bold text-xs uppercase tracking-wider">
-            Placements & Career Development
+            {placementsContent.badgeText || "Placements & Career Development"}
           </div>
           <h1 className="text-3xl md:text-4xl font-black text-[#072A6C] tracking-tight leading-tight uppercase">
             {placementsContent.heroTitle}
@@ -4939,7 +4717,7 @@ function PlacementsView() {
             onClick={() => setShowEnquiry(true)}
             className="px-8 py-3 bg-[#072A6C] hover:bg-[#0c409c] text-white text-xs font-bold rounded-full transition-all uppercase tracking-wider shadow-md hover:shadow-lg cursor-pointer outline-none border-none"
           >
-            Enquire Now
+            {placementsContent.enquireButtonText || "Enquire Now"}
           </button>
         </div>
 
@@ -4947,7 +4725,7 @@ function PlacementsView() {
         <div className="flex-1 w-full md:w-1/2 z-10">
           <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm bg-white p-2">
             <img 
-              src="/campus_placement.png" 
+              src={placementsContent.heroImage || "/campus_placement.png"} 
               alt="Campus Placement Drive Illustration" 
               className="w-full h-auto object-contain rounded-xl" 
             />
@@ -4982,12 +4760,14 @@ function PlacementsView() {
       {/* Industries We Cater (Card grid matching screen structure) */}
       <div className="space-y-6">
         <div className="text-center space-y-2">
-          <h2 className="text-2xl font-black text-[#072A6C] uppercase tracking-wide">Industries We Cater</h2>
+          <h2 className="text-2xl font-black text-[#072A6C] uppercase tracking-wide">
+            {placementsContent.industriesTitle || "Industries We Cater"}
+          </h2>
           <div className="w-16 h-1 bg-[#D4AF37] mx-auto rounded-full" />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {INDUSTRIES.map((ind, idx) => (
+          {displayIndustries.map((ind, idx) => (
             <div key={idx} className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all group cursor-default">
               <div className="h-40 overflow-hidden relative">
                 <img 

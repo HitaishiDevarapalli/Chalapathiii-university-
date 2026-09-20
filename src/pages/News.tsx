@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { 
   ArrowRight, 
@@ -73,7 +73,7 @@ const FEATURED_IMAGES = [
 
 export default function News() {
   const navigate = useNavigate();
-  const { news, events } = useData();
+  const { news, events, newsPageConfig } = useData();
 
   // Social sharing states
   const [showShare, setShowShare] = useState(false);
@@ -118,39 +118,59 @@ export default function News() {
   const [activeSlide, setActiveSlide] = useState(0);
 
   useEffect(() => {
-    document.title = "News @ City Chalapathi | Chalapathi University";
-  }, []);
+    document.title = (newsPageConfig?.headerTitle || "News @ City Chalapathi") + " | Chalapathi University";
+  }, [newsPageConfig?.headerTitle]);
+
+  // Dynamic carousel images from config or presets
+  const baseCarouselImages = (newsPageConfig?.featuredCarouselImages && newsPageConfig.featuredCarouselImages.length > 0)
+    ? newsPageConfig.featuredCarouselImages
+    : FEATURED_IMAGES;
 
   // Auto-slide effect for the Featured News image carousel
   useEffect(() => {
+    if (baseCarouselImages.length <= 1) return;
     const timer = setInterval(() => {
-      setActiveSlide((prev) => (prev + 1) % FEATURED_IMAGES.length);
+      setActiveSlide((prev) => (prev + 1) % baseCarouselImages.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [baseCarouselImages.length]);
+
+  // Find the Featured news article (via config ID, or featured flag, or ID 1, or first item)
+  const featuredArticle = 
+    news.find(item => item.id === newsPageConfig?.featuredArticleId) ||
+    news.find(item => item.featured) ||
+    news.find(item => item.id === 1) ||
+    news[0];
+
+  // Dynamic featured images prioritizing the article's own configured image
+  const featuredImages = featuredArticle?.image
+    ? [featuredArticle.image, ...baseCarouselImages.filter(img => img !== featuredArticle.image)]
+    : baseCarouselImages;
 
   // Handle active slide controls
   const handlePrevSlide = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setActiveSlide((prev) => (prev - 1 + FEATURED_IMAGES.length) % FEATURED_IMAGES.length);
+    setActiveSlide((prev) => (prev - 1 + featuredImages.length) % featuredImages.length);
   };
 
   const handleNextSlide = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setActiveSlide((prev) => (prev + 1) % FEATURED_IMAGES.length);
+    setActiveSlide((prev) => (prev + 1) % featuredImages.length);
   };
 
-  // Find the Featured news article (AI Research Lab Inaugurated on Campus, which is usually ID 1)
-  const featuredArticle = news.find(item => item.id === 1) || news[0];
-
-  // Find 5 Trending news articles
+  // Find 5 Trending news articles for University Highlights sidebar
   const trendingArticles = news.slice(0, 5);
 
-  // Filter 3 upcoming events
-  const upcomingEventsList = events.slice(0, 3);
+  // Filter upcoming events based on config
+  const eventsCount = newsPageConfig?.eventsStripCount || 3;
+  const upcomingEventsList = events.slice(0, eventsCount);
 
-  // Filter latest news list (excluding featured if wanted, or showing 4 cards as in mockup)
-  const latestNewsArticles = news.slice(1, 5);
+  // Filter latest news list based on config (excluding featured article)
+  const latestCount = newsPageConfig?.latestNewsCount || 4;
+  const filteredLatest = news.filter(item => item.id !== featuredArticle?.id);
+  const latestNewsArticles = filteredLatest.length >= latestCount 
+    ? filteredLatest.slice(0, latestCount) 
+    : news.slice(1, 1 + latestCount);
 
   // Share setup
   const handleShareTrigger = (type: "news" | "event", id: number, e: React.MouseEvent) => {
@@ -208,10 +228,10 @@ export default function News() {
       {/* 🌟 Header Section */}
       <section className="max-w-[1440px] mx-auto px-6 pt-10 pb-6">
         <h1 className="text-3xl md:text-4xl font-extrabold text-[#072A6C] tracking-tight">
-          News @ City Chalapathi
+          {newsPageConfig?.headerTitle || "News @ City Chalapathi"}
         </h1>
         <p className="text-[13px] text-gray-500 font-light mt-1 max-w-xl font-[var(--font-inter)]">
-          Stay updated with the latest happenings, milestones, and achievements from across the university.
+          {newsPageConfig?.headerSubtitle || "Stay updated with the latest happenings, milestones, and achievements from across the university."}
         </p>
       </section>
 
@@ -224,15 +244,16 @@ export default function News() {
           {/* Left half: Image slider carousel */}
           <div className="w-full md:w-1/2 relative bg-slate-900 group min-h-[320px] md:min-h-auto flex items-stretch">
             <img 
-              src={FEATURED_IMAGES[activeSlide]} 
+              src={featuredImages[activeSlide % featuredImages.length]} 
               alt={featuredArticle?.title} 
+              onError={(e) => { (e.target as HTMLImageElement).src = "/prog_computer.png"; }}
               className="absolute inset-0 w-full h-full object-cover transition-all duration-500"
             />
             <div className="absolute inset-0 bg-black/10" />
             
             {/* Featured Badge */}
             <span className="absolute top-4 left-4 bg-[#D4AF37] text-white text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-md shadow-sm">
-              Featured News
+              {newsPageConfig?.featuredBadgeText || "Featured News"}
             </span>
 
             {/* Slider arrows */}
@@ -279,7 +300,7 @@ export default function News() {
                   onClick={() => navigate(`/news/${featuredArticle?.slug}`)}
                   className="h-10 px-6 bg-[#072A6C] hover:bg-[#D4AF37] text-white text-[11px] font-bold rounded-xl inline-flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
                 >
-                  <span>Read Full Story</span>
+                  <span>{newsPageConfig?.readStoryButtonText || "Read Full Story"}</span>
                   <ArrowRight size={12} />
                 </button>
                 
@@ -293,12 +314,12 @@ export default function News() {
 
               {/* Slider Indicator Dots */}
               <div className="flex items-center gap-1.5 pt-2">
-                {FEATURED_IMAGES.map((_, idx) => (
+                {featuredImages.map((_, idx) => (
                   <button 
                     key={idx}
                     onClick={() => setActiveSlide(idx)}
                     className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                      activeSlide === idx ? "bg-[#D4AF37] w-6" : "bg-gray-300"
+                      (activeSlide % featuredImages.length) === idx ? "bg-[#D4AF37] w-6" : "bg-gray-300"
                     }`}
                   />
                 ))}
@@ -316,10 +337,15 @@ export default function News() {
           <div className="flex justify-between items-center pb-4 border-b border-gray-100 mb-4">
             <div className="flex items-center gap-1.5 text-[#072A6C]">
               <Flame size={16} className="text-[#D4AF37] fill-current animate-pulse" />
-              <h3 className="text-xs font-black uppercase tracking-wider">University Highlights</h3>
+              <h3 className="text-xs font-black uppercase tracking-wider">
+                {newsPageConfig?.highlightsTitle || "University Highlights"}
+              </h3>
             </div>
-            <Link to="/news/latest" className="text-[10px] font-bold text-[#072A6C] hover:text-[#D4AF37] transition-colors">
-              View All
+            <Link 
+              to={newsPageConfig?.highlightsViewAllUrl || "/news/latest"} 
+              className="text-[10px] font-bold text-[#072A6C] hover:text-[#D4AF37] transition-colors"
+            >
+              {newsPageConfig?.highlightsViewAllText || "View All"}
             </Link>
           </div>
 
@@ -338,7 +364,7 @@ export default function News() {
                   className={`w-full text-left flex items-start gap-4 group cursor-pointer transition-all duration-300 p-2 rounded-xl border ${
                     isActive 
                       ? "bg-[#EEF5FF] shadow-[0_0_15px_rgba(59,130,246,0.2)] border-l-4 border-l-[#E31E24] border-t-transparent border-b-transparent border-r-transparent" 
-                      : "hover:bg-gray-50 border-transparent hover:-translate-y-0.5 hover:shadow-sm"
+                      : "hover:bg-gray-50 border-transparent hover:shadow-xs"
                   }`}
                 >
                   {/* Big rank number */}
@@ -390,17 +416,19 @@ export default function News() {
               className="flex items-center gap-2 text-[#072A6C] hover:text-[#D4AF37] transition-colors cursor-pointer outline-none text-left"
             >
               <Calendar size={16} className="text-[#D4AF37]" />
-              <h3 className="text-xs font-black uppercase tracking-wider">Upcoming Events</h3>
+              <h3 className="text-xs font-black uppercase tracking-wider">
+                {newsPageConfig?.eventsStripTitle || "Upcoming Events"}
+              </h3>
             </button>
             <button 
               onClick={() => setShowEventsDrawer(true)}
               className="text-[10px] font-bold text-[#072A6C] hover:text-[#D4AF37] transition-colors cursor-pointer outline-none"
             >
-              View All
+              {newsPageConfig?.eventsStripViewAllText || "View All"}
             </button>
           </div>
 
-          {/* Grid layout containing 3 events */}
+          {/* Grid layout containing events */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 divide-y md:divide-y-0 md:divide-x divide-gray-100">
             {upcomingEventsList.map((item, idx) => {
               const dateParts = item.date.split(" ");
@@ -447,14 +475,19 @@ export default function News() {
         </div>
       </section>
 
-      {/* 🌟 Latest News (4 Card Grid) */}
+      {/* 🌟 Latest News (Grid) */}
       <section className="max-w-[1440px] mx-auto px-6 mt-10 space-y-6">
         
         {/* Header */}
         <div className="flex justify-between items-center pb-4 border-b border-gray-200">
-          <h3 className="text-sm font-black uppercase tracking-wider text-[#072A6C]">Latest News</h3>
-          <Link to="/news/latest" className="text-[11px] font-bold text-[#072A6C] hover:text-[#D4AF37] transition-colors inline-flex items-center gap-1">
-            <span>View All News</span>
+          <h3 className="text-sm font-black uppercase tracking-wider text-[#072A6C]">
+            {newsPageConfig?.latestNewsTitle || "Latest News"}
+          </h3>
+          <Link 
+            to={newsPageConfig?.latestNewsViewAllUrl || "/news/latest"} 
+            className="text-[11px] font-bold text-[#072A6C] hover:text-[#D4AF37] transition-colors inline-flex items-center gap-1"
+          >
+            <span>{newsPageConfig?.latestNewsViewAllText || "View All News"}</span>
             <ArrowRight size={11} />
           </Link>
         </div>
@@ -465,12 +498,17 @@ export default function News() {
             <div 
               key={item.id}
               onClick={() => navigate(`/news/${item.slug}`)}
-              className="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between text-left cursor-pointer outline-none group"
+              className="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-md hover:border-gray-200 transition-all duration-300 flex flex-col justify-between text-left cursor-pointer outline-none group"
             >
               <div>
                 {/* Image */}
                 <div className="h-44 overflow-hidden bg-gray-50 relative w-full border-b border-gray-100">
-                  <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300" />
+                  <img 
+                    src={item.image} 
+                    alt={item.title} 
+                    onError={(e) => { (e.target as HTMLImageElement).src = "/prog_computer.png"; }}
+                    className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300" 
+                  />
                 </div>
 
                 {/* Content */}

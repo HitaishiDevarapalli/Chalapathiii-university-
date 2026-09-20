@@ -579,7 +579,7 @@ export default function Home() {
             return (
               <motion.div
                 key={idx}
-                className="bg-white border border-[#E7ECF3] rounded-[16px] p-6 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col items-center text-center hover:-translate-y-2 group"
+                className="bg-white border border-[#E7ECF3] rounded-[16px] p-6 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col items-center text-center group"
                 variants={fadeUp}
               >
                 <div
@@ -1213,12 +1213,17 @@ export default function Home() {
 
           </div>
 
-          {/* CAMPUS GALLERY CAROUSEL */}
-          <div className="mb-20">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-4 mb-8">
-              <h3 className="text-lg md:text-xl font-[900] text-left text-[#072A6C]">
-                Moments that make <span className="text-[#D4AF37]">Memories</span>
-              </h3>
+          {/* ════ PHOTO MEMORIES GALLERY ROW ════ */}
+          <div className="space-y-4 mb-20">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-gray-100 pb-3">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-[#D4AF37] block">
+                  Campus Life Gallery
+                </span>
+                <h3 className="text-xl font-black text-[#072A6C] tracking-tight">
+                  Moments that make <span className="text-[#D4AF37]">Memories</span>
+                </h3>
+              </div>
             </div>
 
             {/* Horizontal infinite gallery grid */}
@@ -1235,7 +1240,7 @@ export default function Home() {
               ]).map((item, idx) => (
                 <div 
                   key={idx}
-                  className="bg-white border border-gray-150 rounded-xl overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 hover:-translate-y-1 group cursor-pointer"
+                  className="bg-white border border-gray-150 rounded-xl overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 group cursor-pointer"
                 >
                   <div className="relative aspect-square overflow-hidden bg-gray-50">
                     <img
@@ -1279,7 +1284,7 @@ export default function Home() {
               </div>
               <button
                 type="button"
-                className="h-10 px-5 bg-white hover:bg-[#D4AF37] text-[#072A6C] hover:text-white text-[9.5px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer outline-none border-none shrink-0"
+                className="h-10 px-5 bg-white hover:bg-[#D4AF37] text-[#072A6C] hover:text-white text-[9.5px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 cursor-pointer outline-none border-none shrink-0"
               >
                 {campusBanners?.community?.buttonText || "Explore Campus Life →"}
               </button>
@@ -1309,7 +1314,7 @@ export default function Home() {
               </div>
               <button
                 type="button"
-                className="h-10 px-5 bg-white hover:bg-[#072A6C] text-[#D4AF37] hover:text-white text-[9.5px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer outline-none border-none shrink-0"
+                className="h-10 px-5 bg-white hover:bg-[#072A6C] text-[#D4AF37] hover:text-white text-[9.5px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 cursor-pointer outline-none border-none shrink-0"
               >
                 {campusBanners?.events?.buttonText || "View All Events →"}
               </button>
@@ -1348,7 +1353,7 @@ export default function Home() {
               <div className="absolute -top-6 -left-6 w-16 h-16 bg-blue-500/10 rounded-full blur-lg animate-pulse" />
               <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-yellow-500/10 rounded-full blur-xl" />
               
-              <div className="relative w-full max-w-[380px] rounded-[32px] overflow-hidden shadow-2xl group border-4 border-white bg-white transition-all duration-500 hover:shadow-3xl hover:-translate-y-1">
+              <div className="relative w-full max-w-[380px] rounded-[32px] overflow-hidden shadow-2xl group border-4 border-white bg-white transition-all duration-500 hover:shadow-3xl">
                 {/* Chairman Portrait */}
                 <img 
                   src="/chairman_portrait.png" 
@@ -1801,7 +1806,7 @@ export default function Home() {
                     <div 
                       key={i} 
                       onClick={() => navigate("/placements")}
-                      className="h-10 px-6 bg-white border border-gray-100 rounded-xl flex items-center justify-center shadow-sm cursor-pointer hover:-translate-y-0.5 hover:shadow-md hover:border-[#072A6C]/20 transition-all duration-300"
+                      className="h-10 px-6 bg-white border border-gray-100 rounded-xl flex items-center justify-center shadow-sm cursor-pointer hover:shadow-md hover:border-[#072A6C]/20 transition-all duration-300"
                     >
                       <img src={r.logo} alt={r.name} className="h-6 w-auto object-contain max-w-[85px]" />
                     </div>
@@ -1811,7 +1816,7 @@ export default function Home() {
                     <div 
                       key={`dup-${i}`} 
                       onClick={() => navigate("/placements")}
-                      className="h-10 px-6 bg-white border border-gray-100 rounded-xl flex items-center justify-center shadow-sm cursor-pointer hover:-translate-y-0.5 hover:shadow-md hover:border-[#072A6C]/20 transition-all duration-300"
+                      className="h-10 px-6 bg-white border border-gray-100 rounded-xl flex items-center justify-center shadow-sm cursor-pointer hover:shadow-md hover:border-[#072A6C]/20 transition-all duration-300"
                     >
                       <img src={r.logo} alt={r.name} className="h-6 w-auto object-contain max-w-[85px]" />
                     </div>
@@ -1824,7 +1829,7 @@ export default function Home() {
           {/* BOTTOM STATISTICS (Dynamic from CMS) */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-16 pt-10 border-t border-gray-100/60">
             {/* Stat Card 1 */}
-            <div className="bg-white border border-gray-100 rounded-[20px] p-6 shadow-sm flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-md group">
+            <div className="bg-white border border-gray-100 rounded-[20px] p-6 shadow-sm flex flex-col items-center justify-center text-center transition-all duration-300 hover:shadow-md group">
               <div className="w-10 h-10 rounded-full bg-blue-50 text-[#072A6C] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                 <Users size={18} />
               </div>
@@ -1833,7 +1838,7 @@ export default function Home() {
             </div>
 
             {/* Stat Card 2 */}
-            <div className="bg-white border border-gray-100 rounded-[20px] p-6 shadow-sm flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-md group">
+            <div className="bg-white border border-gray-100 rounded-[20px] p-6 shadow-sm flex flex-col items-center justify-center text-center transition-all duration-300 hover:shadow-md group">
               <div className="w-10 h-10 rounded-full bg-amber-50 text-[#D4AF37] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                 <Trophy size={18} />
               </div>
@@ -1842,7 +1847,7 @@ export default function Home() {
             </div>
 
             {/* Stat Card 3 */}
-            <div className="bg-white border border-gray-100 rounded-[20px] p-6 shadow-sm flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-md group">
+            <div className="bg-white border border-gray-100 rounded-[20px] p-6 shadow-sm flex flex-col items-center justify-center text-center transition-all duration-300 hover:shadow-md group">
               <div className="w-10 h-10 rounded-full bg-yellow-50 text-[#EAB308] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                 <Handshake size={18} />
               </div>
@@ -1851,7 +1856,7 @@ export default function Home() {
             </div>
 
             {/* Stat Card 4 */}
-            <div className="bg-white border border-gray-100 rounded-[20px] p-6 shadow-sm flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-md group">
+            <div className="bg-white border border-gray-100 rounded-[20px] p-6 shadow-sm flex flex-col items-center justify-center text-center transition-all duration-300 hover:shadow-md group">
               <div className="w-10 h-10 rounded-full bg-green-50 text-[#10B981] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                 <GraduationCap size={18} />
               </div>

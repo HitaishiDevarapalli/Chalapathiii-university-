@@ -337,7 +337,6 @@ export default function Genesis() {
                 <motion.div
                   key={idx}
                   variants={fadeUp}
-                  whileHover={{ y: -8, scale: 1.02 }}
                   className="bg-gradient-to-b from-white to-[#f8fafc] border border-[#e2e8f0] p-8 rounded-3xl shadow-[0_10px_30px_rgba(0,0,0,0.02)] hover:shadow-[0_30px_60px_rgba(18,58,122,0.1)] hover:border-sky-200 transition-all duration-500 relative overflow-hidden group flex flex-col items-center text-center cursor-default"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-sky-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -587,7 +586,6 @@ export default function Genesis() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.2 }}
-                  whileHover={{ y: -15 }}
                   className="bg-white rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[#E7EDF4] relative overflow-hidden group cursor-pointer"
                 >
                   <div className={`absolute inset-0 bg-gradient-to-br ${colorGrad} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>

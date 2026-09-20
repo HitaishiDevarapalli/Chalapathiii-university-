@@ -14,6 +14,7 @@ interface ImageFieldProps {
   aspectRatio?: "square" | "video" | "portrait" | "banner" | "wide";
   recommendedSize?: string;
   placeholder?: string;
+  compact?: boolean;
 }
 
 export const ImageField: React.FC<ImageFieldProps> = ({
@@ -28,7 +29,8 @@ export const ImageField: React.FC<ImageFieldProps> = ({
   onPromptChange,
   aspectRatio = "wide",
   recommendedSize,
-  placeholder = "/logo.png"
+  placeholder = "/logo.png",
+  compact = false
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -47,7 +49,7 @@ export const ImageField: React.FC<ImageFieldProps> = ({
     switch (aspectRatio) {
       case "banner": return "1920 × 600 px (Banner)";
       case "video": return "1200 × 675 px (16:9 HD)";
-      case "portrait": return "600 × 800 px (3:4 Portrait)";
+      case "portrait": return "400 × 500 px (Portrait)";
       case "square": return "500 × 500 px (1:1 Square)";
       case "wide":
       default: return "1200 × 800 px (3:2 Landscape)";
@@ -78,6 +80,16 @@ export const ImageField: React.FC<ImageFieldProps> = ({
   useEffect(() => {
     if (!value) {
       setImageMeta({ isValid: true });
+      return;
+    }
+
+    // Check if value is short initials badge (e.g. "PVR", "KC", "SV")
+    if (value.length <= 4 && !value.includes("/") && !value.includes(".")) {
+      setImageMeta({
+        isValid: true,
+        format: "INITIALS",
+        size: "Avatar Badge"
+      });
       return;
     }
 
@@ -178,6 +190,15 @@ export const ImageField: React.FC<ImageFieldProps> = ({
   };
 
   const getAspectClass = () => {
+    if (compact) {
+      switch (aspectRatio) {
+        case "square": return "aspect-square w-full max-h-36";
+        case "portrait": return "aspect-[3/4] w-full max-h-40";
+        case "banner": return "aspect-[21/9] w-full max-h-24";
+        case "video": return "aspect-video w-full max-h-32";
+        default: return "aspect-[16/10] w-full max-h-32";
+      }
+    }
     switch (aspectRatio) {
       case "square": return "aspect-square w-28";
       case "portrait": return "aspect-[3/4] w-28";
@@ -187,12 +208,132 @@ export const ImageField: React.FC<ImageFieldProps> = ({
     }
   };
 
+  if (compact) {
+    return (
+      <div 
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        className={`space-y-2 p-2.5 rounded-xl border transition-all text-left w-full min-w-0 overflow-hidden ${
+          isDragging 
+            ? "bg-blue-50/90 border-blue-500 ring-2 ring-blue-400/30" 
+            : "bg-slate-50/70 border-gray-200/80"
+        }`}
+      >
+        <div className="flex items-center justify-between gap-1 pb-1 border-b border-gray-200/50">
+          <label className="text-[10px] font-black text-[#072A6C] uppercase tracking-wider truncate flex items-center gap-1">
+            <ImageIcon size={11} className="text-[#072A6C] shrink-0" />
+            <span className="truncate">{label}</span>
+          </label>
+          <div className="flex items-center gap-1 shrink-0">
+            {(defaultValue || onReset) && (
+              <button
+                type="button"
+                onClick={() => onReset ? onReset() : onChange(defaultValue || "")}
+                className="px-1.5 py-0.5 rounded bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-[9px] font-bold cursor-pointer"
+                title="Reset photo"
+              >
+                Reset
+              </button>
+            )}
+            {value && (
+              <button
+                type="button"
+                onClick={() => onChange("")}
+                className="text-[9px] text-red-500 hover:text-red-700 font-bold cursor-pointer"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Thumbnail preview */}
+        <div 
+          onClick={() => fileInputRef.current?.click()}
+          className={`${getAspectClass()} rounded-lg bg-white border ${
+            isDragging ? "border-dashed border-blue-500" : "border-gray-200"
+          } overflow-hidden relative shadow-xs flex items-center justify-center cursor-pointer group mx-auto`}
+          title="Click to replace photo"
+        >
+          {value ? (
+            value.length <= 4 && !value.includes("/") && !value.includes(".") ? (
+              <div className="w-full h-full bg-[#072A6C] text-[#D4AF37] font-black flex items-center justify-center text-xs tracking-wider">
+                {value}
+              </div>
+            ) : (
+              <>
+                <img
+                  src={value}
+                  alt={altText || label}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = placeholder || "/logo.png?v=3";
+                  }}
+                />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[10px] font-bold gap-0.5">
+                  <UploadCloud size={14} />
+                  <span>Upload</span>
+                </div>
+              </>
+            )
+          ) : (
+            <div className="flex flex-col items-center justify-center p-2 text-gray-400 text-center">
+              <UploadCloud size={16} className="mb-0.5 text-gray-400" />
+              <span className="text-[9px] font-bold text-gray-500">Click to upload</span>
+            </div>
+          )}
+          {isUploading && (
+            <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white text-[10px] font-bold">
+              Processing...
+            </div>
+          )}
+        </div>
+
+        {/* Input & Browse */}
+        <div className="space-y-1.5 w-full min-w-0">
+          <div className="flex gap-1 items-center w-full min-w-0">
+            <input
+              type="text"
+              placeholder="Image URL..."
+              value={value || ""}
+              onChange={(e) => onChange(e.target.value)}
+              className="flex-1 min-w-0 h-7 px-2 text-[10px] bg-white border border-gray-200 rounded-md focus:outline-none focus:border-blue-500 font-mono text-gray-700"
+            />
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+              accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif,image/avif"
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="h-7 px-2 bg-[#072A6C] hover:bg-[#051c4a] text-white text-[10px] font-bold rounded-md flex items-center gap-1 transition-colors cursor-pointer shrink-0 shadow-2xs"
+            >
+              <UploadCloud size={11} />
+              Browse
+            </button>
+          </div>
+
+          <div className="text-[9px] text-gray-500 flex items-center justify-between">
+            <span className="font-semibold truncate">Target: {targetSize}</span>
+            {imageMeta.isValid && value && (
+              <span className="text-emerald-700 font-bold shrink-0">✓ Valid</span>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div 
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className={`space-y-2 p-3.5 rounded-xl border transition-all text-left ${
+      className={`space-y-2 p-3.5 rounded-xl border transition-all text-left w-full min-w-0 overflow-hidden ${
         isDragging 
           ? "bg-blue-50/90 border-blue-500 ring-2 ring-blue-400/30 scale-[1.01]" 
           : "bg-slate-50/70 border-gray-200/80"
@@ -230,7 +371,7 @@ export const ImageField: React.FC<ImageFieldProps> = ({
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3.5 pt-1">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3.5 pt-1 w-full min-w-0">
         {/* Preview Container / Drop Zone */}
         <div 
           onClick={() => fileInputRef.current?.click()}
@@ -240,20 +381,26 @@ export const ImageField: React.FC<ImageFieldProps> = ({
           title="Click or drag & drop to replace photo"
         >
           {value ? (
-            <>
-              <img
-                src={value}
-                alt={altText || label}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = placeholder || "/logo.png?v=3";
-                }}
-              />
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[10px] font-bold gap-1">
-                <UploadCloud size={16} />
-                <span>Replace</span>
+            value.length <= 4 && !value.includes("/") && !value.includes(".") ? (
+              <div className="w-full h-full bg-[#072A6C] text-[#D4AF37] font-black flex items-center justify-center text-base tracking-wider shadow-inner">
+                {value}
               </div>
-            </>
+            ) : (
+              <>
+                <img
+                  src={value}
+                  alt={altText || label}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = placeholder || "/logo.png?v=3";
+                  }}
+                />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[10px] font-bold gap-1">
+                  <UploadCloud size={16} />
+                  <span>Replace</span>
+                </div>
+              </>
+            )
           ) : (
             <div className="flex flex-col items-center justify-center p-2 text-gray-400 text-center">
               <UploadCloud size={20} className="mb-1 text-gray-400 group-hover:text-blue-600 transition-colors" />
@@ -269,14 +416,14 @@ export const ImageField: React.FC<ImageFieldProps> = ({
         </div>
 
         {/* Input & Upload Controls & Validation Status */}
-        <div className="flex-1 space-y-2 w-full">
-          <div className="flex gap-2 items-center">
+        <div className="flex-1 space-y-2 w-full min-w-0">
+          <div className="flex gap-2 items-center w-full min-w-0">
             <input
               type="text"
               placeholder="Enter image URL or drag photo here..."
               value={value || ""}
               onChange={(e) => onChange(e.target.value)}
-              className="flex-1 h-9 px-3 text-xs bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-100 font-mono text-gray-700"
+              className="flex-1 min-w-0 h-9 px-3 text-xs bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-100 font-mono text-gray-700"
             />
             <input
               type="file"
@@ -297,24 +444,24 @@ export const ImageField: React.FC<ImageFieldProps> = ({
 
           {/* Validation & Size / Dimensions Badge */}
           {value ? (
-            <div className="flex flex-wrap items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-1.5 w-full min-w-0">
               {imageMeta.isValid ? (
-                <div className="inline-flex flex-wrap items-center gap-2 px-2.5 py-1 bg-emerald-50 border border-emerald-200/90 rounded-lg text-[10.5px] font-bold text-emerald-800 shadow-xs">
-                  <span className="flex items-center gap-1 text-emerald-700">
+                <div className="inline-flex flex-wrap items-center gap-2 px-2.5 py-1 bg-emerald-50 border border-emerald-200/90 rounded-lg text-[10.5px] font-bold text-emerald-800 shadow-xs max-w-full">
+                  <span className="flex items-center gap-1 text-emerald-700 truncate">
                     <CheckCircle2 size={12} className="text-emerald-600 shrink-0" />
                     ✓ Valid Photo {imageMeta.format ? `(${imageMeta.format})` : ""}
                   </span>
                   {imageMeta.width && imageMeta.height ? (
-                    <span className="text-emerald-900 bg-emerald-100/70 px-1.5 py-0.5 rounded font-mono font-bold">
+                    <span className="text-emerald-900 bg-emerald-100/70 px-1.5 py-0.5 rounded font-mono font-bold shrink-0">
                       {imageMeta.width} × {imageMeta.height} px
                     </span>
                   ) : null}
                   {imageMeta.size && (
-                    <span className="text-emerald-700 font-mono text-[10px]">
+                    <span className="text-emerald-700 font-mono text-[10px] shrink-0">
                       • {imageMeta.size}
                     </span>
                   )}
-                  <span className="text-emerald-700/80 font-medium text-[10px]">
+                  <span className="text-emerald-700/80 font-medium text-[10px] truncate">
                     (Target: {targetSize})
                   </span>
                 </div>
