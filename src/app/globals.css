@@ -205,6 +205,18 @@ input, select, textarea {
   font-size: 15px !important;
 }
 
+/* Hide number input spinner arrows (▲▼ symbol) across all browsers */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+}
+
+input[type=number] {
+  -moz-appearance: textfield !important;
+  appearance: textfield !important;
+}
+
 /* 1. Scale up standard Tailwind utility classes */
 .text-xs {
   font-size: 0.875rem !important; /* 12px -> 14px */

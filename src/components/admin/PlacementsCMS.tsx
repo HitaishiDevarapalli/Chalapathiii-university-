@@ -996,12 +996,19 @@ export const PlacementsCMS: React.FC<PlacementsCMSProps> = ({
                 {placementsForm.recruiters?.length || 0} Logos
               </span>
             </div>
-            <div className="overflow-hidden py-3 bg-slate-800/60 rounded-xl border border-slate-700/50">
-              <div className="flex items-center gap-6 animate-marquee whitespace-nowrap">
+            <div className="overflow-hidden py-4 bg-slate-950/80 rounded-xl border border-slate-800">
+              <div className="flex items-center gap-5 animate-marquee whitespace-nowrap w-max select-none">
                 {(placementsForm.recruiters || []).concat(placementsForm.recruiters || []).map((r, i) => (
-                  <div key={i} className="inline-flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10">
-                    <img src={r.logo} alt={r.name} className="h-6 w-auto max-w-[80px] object-contain rounded" />
-                    <span className="text-xs font-bold text-white">{r.name}</span>
+                  <div 
+                    key={i} 
+                    className="h-11 px-5 bg-white border border-gray-200 rounded-xl flex items-center justify-center shadow-xs shrink-0 min-w-[110px] hover:border-[#072A6C] transition-all"
+                  >
+                    <img 
+                      src={r.logo} 
+                      alt={r.name} 
+                      className="h-6 w-auto max-w-[85px] object-contain" 
+                      onError={(e) => { (e.target as HTMLImageElement).src = "/logos/wipro.svg"; }}
+                    />
                   </div>
                 ))}
               </div>

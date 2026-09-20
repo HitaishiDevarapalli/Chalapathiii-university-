@@ -9,6 +9,7 @@ import { ACADEMIC_PROGRAMS_STRUCTURE } from "../components/layout/Header";
 import { useData, DEFAULT_CONTACT_PAGE_CONTENT } from "../context/DataContext";
 import GlobalCertifications from "../components/sections/GlobalCertifications";
 import { AdmissionsPortalView } from "../components/admissions/AdmissionsPortalView";
+import { ApplyOnlineView } from "../components/admissions/ApplyOnlineView";
 import ProgramDetailPage from "../components/academics/ProgramDetailPage";
 
 
@@ -669,7 +670,8 @@ const getPageContent = (path: string, programs: any[], newsPageConfig?: any) => 
         title: "Apply Online",
         category: "Admissions",
         desc: "Start your journey today. Fill out our online application form to secure your seat.",
-        body: <AdmissionsApplyFlow />
+        hideHeader: true,
+        body: <ApplyOnlineView />
       };
     }
     if (cleanPath.includes("fees")) {

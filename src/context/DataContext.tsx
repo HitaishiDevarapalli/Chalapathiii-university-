@@ -49,6 +49,7 @@ export interface NewsArticle {
   slug: string;
   sourceUrl?: string;
   featured?: boolean;
+  readTime?: string;
 }
 
 // News Page Hero & Header Configuration interface
@@ -87,6 +88,37 @@ export interface EventItem {
   bodyText: string;
   registrationUrl?: string;
   registrationOpen?: boolean;
+}
+
+export interface EventRegistration {
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  eventId: number;
+  eventTitle: string;
+  registeredAt: string;
+  status?: "Confirmed" | "Attended" | "Cancelled";
+}
+
+export interface OnlineApplication {
+  id: string;
+  applicationNo: string;
+  fullName: string;
+  email: string;
+  mobile: string;
+  state: string;
+  city?: string;
+  program: string;
+  qualification: string;
+  yearOfPassing: string;
+  parentName?: string;
+  gender?: string;
+  dob?: string;
+  applicationFeePaid: boolean;
+  transactionId?: string;
+  submittedAt: string;
+  status?: "Submitted" | "Verified" | "Under Review" | "Admitted" | "Rejected";
 }
 
 export interface SuccessStory {
@@ -421,12 +453,33 @@ export interface NavMenuItem {
   children?: { label: string; to: string }[];
 }
 
+export interface FooterLinkItem {
+  label: string;
+  to: string;
+}
+
 export interface FooterContent {
   brandDescription: string;
-  quickLinks: { label: string; to: string }[];
-  academicsLinks: { label: string; to: string }[];
-  admissionsLinks: { label: string; to: string }[];
-  campusLifeLinks: { label: string; to: string }[];
+  brandSocials?: { icon: string; url: string; label: string }[];
+  quickLinksTitle?: string;
+  quickLinks: FooterLinkItem[];
+  academicsLinksTitle?: string;
+  academicsLinks: FooterLinkItem[];
+  admissionsLinksTitle?: string;
+  admissionsLinks: FooterLinkItem[];
+  campusLifeLinksTitle?: string;
+  campusLifeLinks: FooterLinkItem[];
+  contactTitle?: string;
+  contactAddress?: string;
+  contactPhones?: string;
+  contactEmail?: string;
+  socialLinks?: {
+    instagram?: string;
+    linkedin?: string;
+    facebook?: string;
+    twitter?: string;
+  };
+  bottomLinks?: FooterLinkItem[];
   copyrightText: string;
 }
 
@@ -608,11 +661,70 @@ export interface EnquiryPopupConfig {
   allPrograms: string[];
 }
 
+export interface ApplyOnlineDocumentItem {
+  id: string;
+  label: string;
+  description: string;
+  required: boolean;
+  allowedFormats: string;
+  maxSizeMb: number;
+}
+
+export interface ApplyOnlinePaymentModeItem {
+  id: string;
+  name: string;
+  badge: string;
+  desc: string;
+  enabled: boolean;
+}
+
+export interface ApplyOnlinePortalConfig {
+  headerBadge: string;
+  headerTitle: string;
+  headerSubtitle: string;
+  applicationFee: number;
+  sessionYear: string;
+  floatingEnquiryButtonText: string;
+  floatingEnquiryPhones: string[];
+  floatingEnquiryEmail: string;
+  floatingEnquiryTimings: string;
+  // Step 1: Register
+  step1Heading: string;
+  step1Subheading: string;
+  step1ButtonText: string;
+  statesList: string[];
+  // Step 2: Verify OTP
+  step2Heading: string;
+  step2Subheading: string;
+  step2HelperText: string;
+  step2ButtonText: string;
+  step2ResendSeconds: number;
+  // Step 3: Application Form
+  step3Heading: string;
+  step3Subheading: string;
+  step3ButtonText: string;
+  genderOptions: string[];
+  categoryOptions: string[];
+  // Step 4: Documents Upload
+  step4Heading: string;
+  step4Subheading: string;
+  step4ButtonText: string;
+  documentsList: ApplyOnlineDocumentItem[];
+  // Step 5: Fee Payment
+  step5Heading: string;
+  step5Subheading: string;
+  step5ButtonText: string;
+  successTitle: string;
+  successSubtitle: string;
+  paymentModes: ApplyOnlinePaymentModeItem[];
+}
+
 export interface AdmissionsContent {
   portal: AdmissionsPortalConfig;
   feeStructure: AdmissionsFeeItem[];
   scholarships: AdmissionsScholarshipsConfig;
   enquiryPopup: EnquiryPopupConfig;
+  applyOnline?: ApplyOnlinePortalConfig;
 }
 
 interface DataContextType {
@@ -698,6 +810,14 @@ interface DataContextType {
 
   heroSlides: HeroSlide[];
   updateHeroSlides: (list: HeroSlide[]) => void;
+
+  eventRegistrations: EventRegistration[];
+  updateEventRegistrations: (regs: EventRegistration[]) => void;
+  addEventRegistration: (reg: Omit<EventRegistration, "id" | "registeredAt">) => void;
+
+  onlineApplications: OnlineApplication[];
+  updateOnlineApplications: (apps: OnlineApplication[]) => void;
+  addOnlineApplication: (app: Omit<OnlineApplication, "id" | "applicationNo" | "submittedAt">) => string;
 
   showAnnouncementsDrawer: boolean;
   setShowAnnouncementsDrawer: (show: boolean) => void;
@@ -1127,6 +1247,132 @@ export const DEFAULT_ADMISSIONS_CONTENT: AdmissionsContent = {
       "English & Professional Communication",
       "MBA"
     ]
+  },
+  applyOnline: {
+    headerBadge: "ADMISSIONS",
+    headerTitle: "Apply Online",
+    headerSubtitle: "Start your journey today. Fill out our online application form to secure your seat.",
+    applicationFee: 1000,
+    sessionYear: "2026-27",
+    floatingEnquiryButtonText: "ADMISSION ENQUIRY",
+    floatingEnquiryPhones: ["+91 91773 24999", "+91 863 222 5555"],
+    floatingEnquiryEmail: "admissions@chalapathiengg.ac.in",
+    floatingEnquiryTimings: "Mon - Sat: 9:00 AM - 5:30 PM",
+    // Step 1: Register
+    step1Heading: "REGISTER YOURSELF",
+    step1Subheading: "Create your account to start the digital admission journey.",
+    step1ButtonText: "REGISTER & SEND VERIFICATION CODE",
+    statesList: [
+      "Andhra Pradesh",
+      "Telangana",
+      "Tamil Nadu",
+      "Karnataka",
+      "Kerala",
+      "Maharashtra",
+      "Delhi NCR",
+      "Odisha",
+      "Uttar Pradesh",
+      "Bihar",
+      "West Bengal",
+      "Madhya Pradesh",
+      "Rajasthan",
+      "Gujarat",
+      "Other State / Union Territory"
+    ],
+    // Step 2: Verify OTP
+    step2Heading: "VERIFY YOUR CONTACT",
+    step2Subheading: "Enter the 6-digit verification code sent to your registered mobile number & email address.",
+    step2HelperText: "Default sandbox OTP: 123456 (or any 6-digit code)",
+    step2ButtonText: "VERIFY CODE & PROCEED TO FORM",
+    step2ResendSeconds: 30,
+    // Step 3: Application Form
+    step3Heading: "STUDENT & ACADEMIC DETAILS",
+    step3Subheading: "Fill in your parent information, communication address, and qualifying examination marks.",
+    step3ButtonText: "SAVE DETAILS & PROCEED TO DOCUMENTS",
+    genderOptions: ["Male", "Female", "Other"],
+    categoryOptions: ["General", "OBC", "SC", "ST", "EWS"],
+    // Step 4: Documents Upload
+    step4Heading: "UPLOAD DOCUMENTS",
+    step4Subheading: "Attach self-attested digital copies of your marksheets and government ID proofs.",
+    step4ButtonText: "SAVE DOCUMENTS & PROCEED TO PAYMENT",
+    documentsList: [
+      {
+        id: "tenthMarksheet",
+        label: "10th / SSC Marks Memo *",
+        description: "Scanned copy of 10th grade marksheet",
+        required: true,
+        allowedFormats: "PDF, JPG, PNG",
+        maxSizeMb: 5
+      },
+      {
+        id: "twelfthMarksheet",
+        label: "12th / Intermediate / Diploma Memo *",
+        description: "Scanned copy of qualifying 10+2 marks memo",
+        required: true,
+        allowedFormats: "PDF, JPG, PNG",
+        maxSizeMb: 5
+      },
+      {
+        id: "photoId",
+        label: "Aadhaar Card / Government Photo ID *",
+        description: "Government issued identity proof",
+        required: true,
+        allowedFormats: "PDF, JPG, PNG",
+        maxSizeMb: 5
+      },
+      {
+        id: "passportPhoto",
+        label: "Recent Passport Size Photograph *",
+        description: "Formal color passport photograph with white background",
+        required: true,
+        allowedFormats: "JPG, PNG",
+        maxSizeMb: 2
+      },
+      {
+        id: "transferCert",
+        label: "Transfer Certificate (TC) / Migration (Optional)",
+        description: "School / college leaving certificate",
+        required: false,
+        allowedFormats: "PDF, JPG",
+        maxSizeMb: 5
+      }
+    ],
+    // Step 5: Fee Payment
+    step5Heading: "APPLICATION FEE PAYMENT",
+    step5Subheading: "Complete your online application fee transaction to generate your official Admission Enrollment Slip.",
+    step5ButtonText: "PROCEED TO PAY ₹1,000",
+    successTitle: "Application Submitted Successfully!",
+    successSubtitle: "Your application has been received and registered into the Chalapathi University admissions database.",
+    paymentModes: [
+      {
+        id: "upi",
+        name: "Instant UPI / QR Code",
+        badge: "Most Popular",
+        desc: "Google Pay, PhonePe, Paytm, BHIM",
+        enabled: true
+      },
+      {
+        id: "card",
+        name: "Credit / Debit Card",
+        badge: "All Major Cards",
+        desc: "Visa, MasterCard, RuPay, Maestro",
+        enabled: true
+      },
+      {
+        id: "netbanking",
+        name: "Net Banking",
+        badge: "50+ Banks",
+        desc: "SBI, HDFC, ICICI, Axis, Canara & more",
+        enabled: true
+      },
+      {
+        id: "offline",
+        name: "Bank Challan / Campus Cash",
+        badge: "Offline Counter",
+        desc: "Pay directly at campus admissions cash counter",
+        enabled: true
+      }
+    ]
   }
 };
 
@@ -1409,6 +1655,13 @@ export const DEFAULT_NAV_MENU: NavMenuItem[] = [
 
 export const DEFAULT_FOOTER_CONTENT: FooterContent = {
   brandDescription: "Empowering minds through quality education, advanced learning and real-world experience. Your future begins here.",
+  brandSocials: [
+    { icon: "Globe", url: "https://city.ac.in", label: "Official Website" },
+    { icon: "Users", url: "/about", label: "Alumni & Community" },
+    { icon: "Briefcase", url: "/placements", label: "Careers & Placements" },
+    { icon: "Play", url: "/campus-life", label: "Campus Life Media" }
+  ],
+  quickLinksTitle: "Quick Links",
   quickLinks: [
     { label: "About Us", to: "/about" },
     { label: "Vision & Mission", to: "/about/vision" },
@@ -1417,6 +1670,7 @@ export const DEFAULT_FOOTER_CONTENT: FooterContent = {
     { label: "Chalapathi Advantage", to: "/about/advantage" },
     { label: "Accreditations", to: "/about" }
   ],
+  academicsLinksTitle: "Academics",
   academicsLinks: [
     { label: "Programs", to: "/academics" },
     { label: "Computer Science", to: "/academics/computer-science" },
@@ -1424,6 +1678,7 @@ export const DEFAULT_FOOTER_CONTENT: FooterContent = {
     { label: "Data Science", to: "/academics/data-science" },
     { label: "Schools", to: "/academics/schools" }
   ],
+  admissionsLinksTitle: "Admissions",
   admissionsLinks: [
     { label: "Undergraduate", to: "/admissions/undergraduate" },
     { label: "Postgraduate", to: "/admissions/postgraduate" },
@@ -1431,12 +1686,29 @@ export const DEFAULT_FOOTER_CONTENT: FooterContent = {
     { label: "Scholarships", to: "/admissions/scholarships" },
     { label: "Apply Online", to: "/admissions/apply" }
   ],
+  campusLifeLinksTitle: "Campus Life",
   campusLifeLinks: [
     { label: "Hostels", to: "/campus-life/hostels" },
     { label: "Library", to: "/campus-life/library" },
     { label: "Sports", to: "/campus-life/sports" },
     { label: "Clubs", to: "/campus-life/clubs" },
     { label: "Amenities", to: "/campus-life" }
+  ],
+  contactTitle: "Contact Us",
+  contactAddress: "A.R. Nagar, Mothadaka, Guntur, Andhra Pradesh - 522034",
+  contactPhones: "8886630355 | 8886630356 | 9905505566",
+  contactEmail: "admissions@city.ac.in",
+  socialLinks: {
+    instagram: "https://instagram.com",
+    linkedin: "https://linkedin.com",
+    facebook: "https://facebook.com",
+    twitter: "https://twitter.com"
+  },
+  bottomLinks: [
+    { label: "Privacy Policy", to: "/privacy-policy" },
+    { label: "Terms & Conditions", to: "/terms-conditions" },
+    { label: "Sitemap", to: "/sitemap" },
+    { label: "Admin Portal", to: "/admin" }
   ],
   copyrightText: "© 2026 Chalapathi University. All rights reserved."
 };
@@ -2656,6 +2928,50 @@ export const INITIAL_ENQUIRIES: EnquiryLead[] = [
   { id: "ENQ-3", name: "Kiran Dev", mobile: "7654321098", email: "kiran@gmail.com", city: "Hyderabad", state: "Telangana", qualification: "Class 12 / Intermediate", yearOfPassing: "2025", program: "B.Tech - CSE (Artificial Intelligence)", date: "18 May 2025", status: "New" }
 ];
 
+export const INITIAL_EVENT_REGISTRATIONS: EventRegistration[] = [
+  {
+    id: "EVR-101",
+    fullName: "V. Harsha Vardhan",
+    email: "harsha.v@gmail.com",
+    phone: "9876543210",
+    eventId: 2,
+    eventTitle: "Annual Placements Boot Camp and Corporate Summit",
+    registeredAt: "18 Sep 2026",
+    status: "Confirmed"
+  },
+  {
+    id: "EVR-102",
+    fullName: "K. Sneha",
+    email: "sneha.k@gmail.com",
+    phone: "9848123456",
+    eventId: 4,
+    eventTitle: "Smart India Hackathon 2026 Campus Edition",
+    registeredAt: "19 Sep 2026",
+    status: "Confirmed"
+  }
+];
+
+export const INITIAL_ONLINE_APPLICATIONS: OnlineApplication[] = [
+  {
+    id: "APP-2026-001",
+    applicationNo: "CU2026-88392",
+    fullName: "Sai Teja Reddy",
+    email: "saiteja.r@gmail.com",
+    mobile: "9905505566",
+    state: "Andhra Pradesh",
+    city: "Guntur",
+    program: "B.Tech - Computer Science and Engineering",
+    qualification: "Class 12 / Intermediate",
+    yearOfPassing: "2026",
+    parentName: "V. Ramana Reddy",
+    gender: "Male",
+    applicationFeePaid: true,
+    transactionId: "TXN_9988221",
+    submittedAt: "19 Sep 2026",
+    status: "Submitted"
+  }
+];
+
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [showAnnouncementsDrawer, setShowAnnouncementsDrawer] = useState(false);
   const [lastSavedTime, setLastSavedTime] = useState<string | null>(() => localStorage.getItem("chalapathi_last_saved") || null);
@@ -2822,6 +3138,59 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   });
 
+  // Event Registrations
+  const [eventRegistrations, setEventRegistrations] = useState<EventRegistration[]>(() => {
+    const local = localStorage.getItem("chalapathi_event_registrations");
+    return local ? JSON.parse(local) : INITIAL_EVENT_REGISTRATIONS;
+  });
+
+  const updateEventRegistrations = (regs: EventRegistration[]) => {
+    setEventRegistrations(regs);
+    localStorage.setItem("chalapathi_event_registrations", JSON.stringify(regs));
+    recordSave();
+  };
+
+  const addEventRegistration = (reg: Omit<EventRegistration, "id" | "registeredAt">) => {
+    const newReg: EventRegistration = {
+      ...reg,
+      id: "EVR-" + Date.now(),
+      registeredAt: new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+      status: "Confirmed"
+    };
+    const updated = [newReg, ...eventRegistrations];
+    setEventRegistrations(updated);
+    localStorage.setItem("chalapathi_event_registrations", JSON.stringify(updated));
+    recordSave();
+  };
+
+  // Online Applications (Apply 5-Step Portal)
+  const [onlineApplications, setOnlineApplications] = useState<OnlineApplication[]>(() => {
+    const local = localStorage.getItem("chalapathi_online_applications");
+    return local ? JSON.parse(local) : INITIAL_ONLINE_APPLICATIONS;
+  });
+
+  const updateOnlineApplications = (apps: OnlineApplication[]) => {
+    setOnlineApplications(apps);
+    localStorage.setItem("chalapathi_online_applications", JSON.stringify(apps));
+    recordSave();
+  };
+
+  const addOnlineApplication = (app: Omit<OnlineApplication, "id" | "applicationNo" | "submittedAt">): string => {
+    const appNum = "CU" + new Date().getFullYear() + "-" + Math.floor(10000 + Math.random() * 90000);
+    const newApp: OnlineApplication = {
+      ...app,
+      id: "APP-" + Date.now(),
+      applicationNo: appNum,
+      submittedAt: new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+      status: "Submitted"
+    };
+    const updated = [newApp, ...onlineApplications];
+    setOnlineApplications(updated);
+    localStorage.setItem("chalapathi_online_applications", JSON.stringify(updated));
+    recordSave();
+    return appNum;
+  };
+
   const recordSave = () => {
     const timeStr = new Date().toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
     setLastSavedTime(timeStr);
@@ -2857,7 +3226,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (localNav) setNavigationMenu(JSON.parse(localNav));
 
         const localFooter = localStorage.getItem("chalapathi_footer_content");
-        if (localFooter) setFooterContent(JSON.parse(localFooter));
+        if (localFooter) setFooterContent({ ...DEFAULT_FOOTER_CONTENT, ...JSON.parse(localFooter) });
 
         const localEnquiries = localStorage.getItem("chalapathi_enquiries");
         if (localEnquiries) setEnquiries(JSON.parse(localEnquiries));
@@ -2896,7 +3265,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (localPlacements) setPlacementsContent(JSON.parse(localPlacements));
 
         const localContact = localStorage.getItem("chalapathi_contact_page");
-        if (localContact) setContactPageContent(JSON.parse(localContact));
+        if (localContact) setContactPageContent({ ...DEFAULT_CONTACT_PAGE_CONTENT, ...JSON.parse(localContact) });
 
         const localStories = localStorage.getItem("chalapathi_success_stories");
         if (localStories) setSuccessStories(JSON.parse(localStories));
@@ -2943,6 +3312,23 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (channel) channel.close();
     };
   }, []);
+
+  // Global Theme CSS Variables Injector for Public Website
+  React.useEffect(() => {
+    if (typeof document !== "undefined" && themeColors) {
+      const root = document.documentElement;
+      root.style.setProperty("--primary", themeColors.primary || "#0B2A5B");
+      root.style.setProperty("--secondary", themeColors.secondary || "#163D7A");
+      root.style.setProperty("--accent", themeColors.accent || "#D4A72C");
+      root.style.setProperty("--background", themeColors.pageBackground || "#FFFFFF");
+      root.style.setProperty("--surface", themeColors.statsBg || "#F8FAFC");
+      root.style.setProperty("--text", themeColors.textPrimary || "#172033");
+      root.style.setProperty("--muted", themeColors.textSecondary || "#64748B");
+      root.style.setProperty("--border", themeColors.whyChooseBg || "#E2E8F0");
+      root.style.setProperty("--footer-background", themeColors.footerBg || "#0B2A5B");
+      root.style.setProperty("--footer-text", themeColors.footerText || "#D1D5DB");
+    }
+  }, [themeColors]);
 
   const updateSiteSettings = (settings: SiteSettings) => {
     setSiteSettings(settings);
@@ -3244,6 +3630,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setHeroSlides(INITIAL_HERO_SLIDES);
       setEnquiries(INITIAL_ENQUIRIES);
       setAdmissionsContent(DEFAULT_ADMISSIONS_CONTENT);
+      setEventRegistrations(INITIAL_EVENT_REGISTRATIONS);
+      setOnlineApplications(INITIAL_ONLINE_APPLICATIONS);
       recordSave();
     }
   };
@@ -3268,6 +3656,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       enquiries,
       updateEnquiries,
       addEnquiry,
+      eventRegistrations,
+      updateEventRegistrations,
+      addEventRegistration,
+      onlineApplications,
+      updateOnlineApplications,
+      addOnlineApplication,
       announcements,
       programs,
       academicStructure,

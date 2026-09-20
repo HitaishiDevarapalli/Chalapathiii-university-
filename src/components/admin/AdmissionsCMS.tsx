@@ -19,9 +19,11 @@ import {
   EnquiryCourseItem,
   DEFAULT_ADMISSIONS_CONTENT,
   EnquiryLead,
+  OnlineApplication,
   INITIAL_ENQUIRIES
 } from "../../context/DataContext";
 import { SectionHeader, ImageField } from "./AdminComponents";
+import { ApplyOnlineCMS } from "./ApplyOnlineCMS";
 
 export interface AdmissionsCMSProps {
   notifySave: (msg: string) => void;
@@ -33,7 +35,9 @@ export const AdmissionsCMS: React.FC<AdmissionsCMSProps> = ({ notifySave }) => {
     updateAdmissionsContent,
     enquiries,
     updateEnquiries,
-    addEnquiry
+    addEnquiry,
+    onlineApplications,
+    updateOnlineApplications
   } = useData();
 
   // Local form state cloned from context
@@ -41,7 +45,11 @@ export const AdmissionsCMS: React.FC<AdmissionsCMSProps> = ({ notifySave }) => {
     return admissionsContent || DEFAULT_ADMISSIONS_CONTENT;
   });
 
-  const [activeTab, setActiveTab] = useState<"portal" | "fees" | "scholarships" | "popup" | "leads">("portal");
+  const [activeTab, setActiveTab] = useState<"portal" | "apply_online" | "fees" | "scholarships" | "popup" | "leads" | "applications">("portal");
+  
+  // Subtab 6 (Applications): Search and filter
+  const [appSearch, setAppSearch] = useState("");
+  const [appStatusFilter, setAppStatusFilter] = useState("All");
   
   // Subtab 1 (Portal): Active step in the step editor
   const [activeStepIdx, setActiveStepIdx] = useState<number>(0);
@@ -235,14 +243,16 @@ export const AdmissionsCMS: React.FC<AdmissionsCMSProps> = ({ notifySave }) => {
         resetLabel="Reset All Admissions"
       />
 
-      {/* 5 Main Sub-Tabs Navigation */}
+      {/* 7 Main Sub-Tabs Navigation */}
       <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3">
         {[
-          { id: "portal", label: "Admissions Portal & 5-Step Process", icon: Sparkles, count: `${formData.portal.steps.length} Steps` },
+          { id: "portal", label: "Admissions Portal Overview", icon: Sparkles, count: `${formData.portal.steps.length} Steps` },
+          { id: "apply_online", label: "📝 Apply Online (5-Step Form CMS)", icon: UserPlus, count: "All 5 Steps" },
           { id: "fees", label: "Academic Fee Structure", icon: FileText, count: `${formData.feeStructure.length} Streams` },
           { id: "scholarships", label: "Scholarships & Merit Schemes", icon: Award, count: "CMST & Aid" },
           { id: "popup", label: "Admission Enquiry Popup & Tab", icon: Sliders, count: "Popup CMS" },
-          { id: "leads", label: "Enquiries & Lead Management", icon: Users, count: `${enquiries.length} Leads` }
+          { id: "leads", label: "Enquiries & Lead Management", icon: Users, count: `${enquiries.length} Leads` },
+          { id: "applications", label: "Online Student Applications", icon: GraduationCap, count: `${onlineApplications?.length || 0} Apps` }
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -267,6 +277,13 @@ export const AdmissionsCMS: React.FC<AdmissionsCMSProps> = ({ notifySave }) => {
           );
         })}
       </div>
+
+      {/* ═════════════════════════════════════════════════════════════════════ */}
+      {/* SUBTAB: APPLY ONLINE 5-STEP PORTAL CMS                                */}
+      {/* ═════════════════════════════════════════════════════════════════════ */}
+      {activeTab === "apply_online" && (
+        <ApplyOnlineCMS notifySave={notifySave} />
+      )}
 
       {/* ═════════════════════════════════════════════════════════════════════ */}
       {/* SUBTAB 1: ADMISSIONS PORTAL OVERVIEW & 5-STEP WORKFLOW                 */}
@@ -2428,6 +2445,213 @@ export const AdmissionsCMS: React.FC<AdmissionsCMSProps> = ({ notifySave }) => {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ────────────────────────────────────────────────────────── */}
+      {/* SUBTAB 6: ONLINE APPLICATIONS MANAGER                      */}
+      {/* ────────────────────────────────────────────────────────── */}
+      {activeTab === "applications" && (
+        <div className="space-y-6">
+          {/* Top Bar with Search & Export */}
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h3 className="text-sm font-black text-[#072A6C] uppercase flex items-center gap-2">
+                <GraduationCap size={16} className="text-[#072A6C]" />
+                Online Student Admission Applications ({(onlineApplications || []).length})
+              </h3>
+              <p className="text-xs text-gray-500">
+                Track and manage complete online applications submitted through the 5-step /admissions/apply portal
+              </p>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                type="button"
+                onClick={() => {
+                  const headers = ["Application No", "Full Name", "Program", "Mobile", "Email", "State", "City", "Qualification", "Year", "Parent Name", "Status", "Date"];
+                  const rows = (onlineApplications || []).map((app) => [
+                    app.applicationNo,
+                    `"${app.fullName}"`,
+                    `"${app.program}"`,
+                    `"${app.mobile}"`,
+                    `"${app.email}"`,
+                    `"${app.state}"`,
+                    `"${app.city || ''}"`,
+                    `"${app.qualification}"`,
+                    app.yearOfPassing,
+                    `"${app.parentName || ''}"`,
+                    app.status,
+                    app.submittedAt
+                  ]);
+                  const csv = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+                  const uri = encodeURI(csv);
+                  const a = document.createElement("a");
+                  a.href = uri;
+                  a.download = `Chalapathi_Online_Applications_${new Date().toISOString().slice(0, 10)}.csv`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  notifySave("Exported applications to CSV!");
+                }}
+                className="h-8 px-3.5 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-xs cursor-pointer"
+              >
+                <Download size={13} /> Export Applications CSV
+              </button>
+            </div>
+          </div>
+
+          {/* Stats Bar */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl">
+              <span className="text-[10px] font-black uppercase tracking-wider text-blue-700">Total Applications</span>
+              <div className="text-2xl font-black text-[#072A6C] mt-1">{(onlineApplications || []).length}</div>
+            </div>
+            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl">
+              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700">Submitted</span>
+              <div className="text-2xl font-black text-emerald-800 mt-1">
+                {(onlineApplications || []).filter(a => a.status === "Submitted").length}
+              </div>
+            </div>
+            <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl">
+              <span className="text-[10px] font-black uppercase tracking-wider text-amber-700">Under Review</span>
+              <div className="text-2xl font-black text-amber-800 mt-1">
+                {(onlineApplications || []).filter(a => a.status === "Under Review" || a.status === "Verified").length}
+              </div>
+            </div>
+            <div className="p-4 bg-purple-50 border border-purple-200 rounded-2xl">
+              <span className="text-[10px] font-black uppercase tracking-wider text-purple-700">Admitted</span>
+              <div className="text-2xl font-black text-purple-800 mt-1">
+                {(onlineApplications || []).filter(a => a.status === "Admitted").length}
+              </div>
+            </div>
+          </div>
+
+          {/* Search & Filter Controls */}
+          <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs flex flex-col sm:flex-row items-center gap-3">
+            <div className="relative flex-1 w-full">
+              <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search by Applicant Name, App No, Mobile, Program, or City..."
+                value={appSearch}
+                onChange={(e) => setAppSearch(e.target.value)}
+                className="w-full h-9 pl-9 pr-3 text-xs bg-slate-50 border border-gray-200 rounded-xl"
+              />
+            </div>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Status:</span>
+              <select
+                value={appStatusFilter}
+                onChange={(e) => setAppStatusFilter(e.target.value)}
+                className="h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-gray-700"
+              >
+                <option value="All">All Statuses</option>
+                <option value="Submitted">Submitted</option>
+                <option value="Verified">Verified</option>
+                <option value="Under Review">Under Review</option>
+                <option value="Admitted">Admitted</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Applications Table */}
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="bg-slate-50 border-b border-gray-200 text-gray-500 font-bold uppercase text-[10px] tracking-wider">
+                  <tr>
+                    <th className="py-3 px-4">App No & Date</th>
+                    <th className="py-3 px-4">Applicant Details</th>
+                    <th className="py-3 px-4">Program Applied</th>
+                    <th className="py-3 px-4">Location</th>
+                    <th className="py-3 px-4">Fee Paid</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 font-medium text-gray-700">
+                  {(onlineApplications || [])
+                    .filter((a) => {
+                      const q = appSearch.toLowerCase();
+                      const matchQ =
+                        a.fullName.toLowerCase().includes(q) ||
+                        a.applicationNo.toLowerCase().includes(q) ||
+                        a.mobile.includes(q) ||
+                        a.program.toLowerCase().includes(q) ||
+                        (a.city && a.city.toLowerCase().includes(q));
+                      const matchStatus = appStatusFilter === "All" || a.status === appStatusFilter;
+                      return matchQ && matchStatus;
+                    })
+                    .map((app) => (
+                      <tr key={app.id} className="hover:bg-slate-50/80 transition">
+                        <td className="py-3 px-4">
+                          <span className="font-mono font-black text-[#072A6C] block">{app.applicationNo}</span>
+                          <span className="text-[10px] text-gray-400">{app.submittedAt}</span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="font-bold text-gray-900">{app.fullName}</div>
+                          <div className="text-[11px] text-gray-500 font-mono">+91 {app.mobile}</div>
+                          <div className="text-[10px] text-gray-400">{app.email}</div>
+                          {app.parentName && (
+                            <div className="text-[10px] text-blue-600">Parent: {app.parentName}</div>
+                          )}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="font-bold text-gray-800 block max-w-[220px]">{app.program}</span>
+                          <span className="text-[10px] text-gray-500">{app.qualification} • {app.yearOfPassing}</span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="block font-semibold">{app.city || "Guntur"}</span>
+                          <span className="text-[10px] text-gray-400">{app.state}</span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                            <Check size={11} /> ₹1,000 Paid
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <select
+                            value={app.status}
+                            onChange={(e) => {
+                              const newStatus = e.target.value as any;
+                              const updated = (onlineApplications || []).map((item) =>
+                                item.id === app.id ? { ...item, status: newStatus } : item
+                              );
+                              updateOnlineApplications(updated);
+                              notifySave(`Application ${app.applicationNo} status changed to ${newStatus}`);
+                            }}
+                            className="text-[11px] font-bold py-1 px-2 rounded-lg border border-gray-300 bg-white"
+                          >
+                            <option value="Submitted">Submitted</option>
+                            <option value="Verified">Verified</option>
+                            <option value="Under Review">Under Review</option>
+                            <option value="Admitted">Admitted</option>
+                            <option value="Rejected">Rejected</option>
+                          </select>
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (window.confirm(`Delete application ${app.applicationNo} for ${app.fullName}?`)) {
+                                const updated = (onlineApplications || []).filter((item) => item.id !== app.id);
+                                updateOnlineApplications(updated);
+                                notifySave(`Application ${app.applicationNo} deleted.`);
+                              }
+                            }}
+                            className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition cursor-pointer"
+                            title="Delete Application"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
 

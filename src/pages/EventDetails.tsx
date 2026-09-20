@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useData } from "../context/DataContext";
 import { Calendar, Clock, MapPin, Share2, ArrowLeft, CheckCircle, X, Link2, Check } from "lucide-react";
+import EventRegistrationModal from "../components/common/EventRegistrationModal";
 
 // Social Share Icons Helper Components (Official SVG path logos)
 const WhatsAppIcon = () => (
@@ -271,7 +272,7 @@ export default function EventDetails() {
     return false;
   };
 
-  const closed = isRegistrationClosed(eventItem.date);
+  const closed = isRegistrationClosed(eventItem.date) || eventItem.registrationOpen === false;
 
   const handleRegisterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -557,89 +558,11 @@ export default function EventDetails() {
       )}
 
       {/* 🌟 Registration Modal (Center of the screen) */}
-      {showRegForm && !closed && !regSuccess && (
-        <>
-          {/* Backdrop */}
-          <div 
-            className="fixed inset-0 bg-black/45 backdrop-blur-sm z-50 transition-opacity duration-300 pointer-events-auto cursor-pointer"
-            onClick={() => setShowRegForm(false)}
-          />
-
-          {/* Modal Container */}
-          <div className="fixed inset-0 flex items-center justify-center p-4 z-50 pointer-events-none">
-            <div 
-              className="bg-white border border-gray-100 w-full max-w-[360px] rounded-[24px] p-6 shadow-2xl relative flex flex-col gap-4 transform transition-transform duration-300 animate-fade-in pointer-events-auto text-left"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button 
-                type="button" 
-                onClick={() => setShowRegForm(false)}
-                className="absolute top-5 right-5 text-gray-400 hover:text-[#D4AF37] border-none bg-transparent cursor-pointer outline-none transition-colors"
-                aria-label="Close modal"
-              >
-                <X size={16} />
-              </button>
-
-              <h3 className="text-sm font-black text-[#072A6C] uppercase tracking-wider text-center border-b border-gray-100 pb-3">
-                Registration
-              </h3>
-
-              <form onSubmit={handleRegisterSubmit} className="space-y-3.5">
-                <div>
-                  <label className="block text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Full Name</label>
-                  <input 
-                    type="text" 
-                    required 
-                    className="w-full px-3 py-2 text-xs border border-gray-200 rounded-lg outline-none focus:ring-1 focus:ring-[#072A6C] bg-white font-medium text-gray-800"
-                    placeholder="Enter name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Email Address</label>
-                  <input 
-                    type="email" 
-                    required 
-                    className="w-full px-3 py-2 text-xs border border-gray-200 rounded-lg outline-none focus:ring-1 focus:ring-[#072A6C] bg-white font-medium text-gray-800"
-                    placeholder="Enter email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Phone Number</label>
-                  <input 
-                    type="tel" 
-                    required 
-                    className="w-full px-3 py-2 text-xs border border-gray-200 rounded-lg outline-none focus:ring-1 focus:ring-[#072A6C] bg-white font-medium text-gray-800"
-                    placeholder="Enter phone"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  />
-                </div>
-
-                <div className="flex gap-3 pt-3">
-                  <button 
-                    type="button"
-                    onClick={() => setShowRegForm(false)}
-                    className="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition-colors cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button 
-                    type="submit"
-                    className="flex-1 py-2 bg-[#D4AF37] hover:bg-[#C9A84C] text-white text-xs font-bold rounded-xl transition-colors cursor-pointer"
-                  >
-                    Confirm
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </>
-      )}
-
+      <EventRegistrationModal
+        isOpen={showRegForm && !closed}
+        onClose={() => setShowRegForm(false)}
+        event={eventItem}
+      />
     </div>
   );
 }

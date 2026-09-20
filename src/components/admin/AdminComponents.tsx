@@ -513,19 +513,34 @@ interface ColorFieldProps {
   value: string;
   onChange: (value: string) => void;
   presetColors?: string[];
+  defaultValue?: string;
+  onReset?: () => void;
 }
 
 export const ColorField: React.FC<ColorFieldProps> = ({
   label,
   value,
   onChange,
-  presetColors = ["#072A6C", "#D4AF37", "#D71920", "#FFFFFF", "#F8FAFC", "#0F172A", "#64748B", "#10B981"]
+  presetColors = ["#072A6C", "#D4AF37", "#D71920", "#FFFFFF", "#F8FAFC", "#0F172A", "#64748B", "#10B981"],
+  defaultValue,
+  onReset
 }) => {
   return (
     <div className="space-y-1.5 bg-slate-50/50 p-2.5 rounded-xl border border-gray-200/60 text-left">
-      <label className="text-[10.5px] font-bold text-gray-700 uppercase tracking-wider block">
-        {label}
-      </label>
+      <div className="flex items-center justify-between">
+        <label className="text-[10.5px] font-bold text-gray-700 uppercase tracking-wider block">
+          {label}
+        </label>
+        {(defaultValue || onReset) && (
+          <button
+            type="button"
+            onClick={() => onReset ? onReset() : onChange(defaultValue || "")}
+            className="text-[9px] font-bold text-amber-700 hover:text-amber-900 cursor-pointer"
+          >
+            Reset
+          </button>
+        )}
+      </div>
       <div className="flex items-center gap-2">
         <div 
           className="w-8 h-8 rounded-lg border border-gray-300 shadow-xs shrink-0 relative overflow-hidden cursor-pointer"

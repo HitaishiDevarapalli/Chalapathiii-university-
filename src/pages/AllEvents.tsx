@@ -66,7 +66,7 @@ export default function AllEvents() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {events.map((item, idx) => {
-              const closed = isRegistrationClosed(item.date);
+              const closed = isRegistrationClosed(item.date) || item.registrationOpen === false;
               return (
                 <Link 
                   key={idx}
@@ -82,8 +82,8 @@ export default function AllEvents() {
                       draggable="false"
                     />
                     {closed && (
-                      <div className="absolute top-4 right-4 bg-gray-500/90 text-white text-[10px] font-bold px-3 py-1 rounded-full backdrop-blur-sm uppercase tracking-wider">
-                        Registration Closed
+                      <div className="absolute top-4 right-4 bg-gray-600/90 text-white text-[10px] font-black px-3 py-1 rounded-full backdrop-blur-sm uppercase tracking-wider shadow-sm">
+                        REGISTRATION CLOSED
                       </div>
                     )}
                     <span className="absolute bottom-4 left-4 text-[10px] font-black text-white bg-[#F97316] py-1 px-3 rounded-lg uppercase tracking-wider shadow-sm">

@@ -1,11 +1,13 @@
-import React, { useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, Calendar, Clock, MapPin } from "lucide-react";
-import { useData } from "../context/DataContext";
+import { useData, EventItem } from "../context/DataContext";
+import EventRegistrationModal from "../components/common/EventRegistrationModal";
 
 export default function Events() {
   const { events } = useData();
   const navigate = useNavigate();
+  const [registeringEvent, setRegisteringEvent] = useState<EventItem | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   
@@ -166,12 +168,12 @@ export default function Events() {
               style={{ transform: "translate3d(0px, 0, 0)" }}
             >
               {displayEvents.map((item, idx) => {
-                const closed = isRegistrationClosed(item.date);
+                const closed = isRegistrationClosed(item.date) || item.registrationOpen === false;
                 return (
                   <div
                     key={idx}
                     onClick={() => navigate(`/news/events/${item.slug}`)}
-                    className="w-full md:w-[calc((100%-32px)/2)] lg:w-[calc((100%-64px)/3)] shrink-0 bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-lg hover:border-orange-200 transition-all duration-300 flex flex-col group text-left cursor-pointer outline-none pointer-events-auto"
+                    className="w-full md:w-[calc((100%-32px)/2)] lg:w-[calc((100%-64px)/3)] shrink-0 bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-lg hover:border-orange-200 transition-all duration-300 flex flex-col group text-left cursor-pointer outline-none pointer-events-auto select-none"
                   >
                     {/* Image */}
                     <div className="h-56 overflow-hidden bg-slate-900 relative w-full">
@@ -184,8 +186,8 @@ export default function Events() {
                         loading="lazy"
                       />
                       {closed && (
-                        <div className="absolute top-4 right-4 bg-gray-500/90 text-white text-[10px] font-bold px-3 py-1 rounded-full backdrop-blur-sm uppercase tracking-wider">
-                          Registration Closed
+                        <div className="absolute top-4 right-4 bg-gray-600/90 text-white text-[10px] font-black px-3 py-1 rounded-full backdrop-blur-sm uppercase tracking-wider shadow-sm">
+                          REGISTRATION CLOSED
                         </div>
                       )}
                       <span className="absolute bottom-4 left-4 text-[10px] font-black text-white bg-[#F97316] py-1 px-3 rounded-lg uppercase tracking-wider shadow-sm">
@@ -213,8 +215,24 @@ export default function Events() {
                         </p>
                       </div>
                       <div className="pt-4 border-t border-gray-50 mt-5 flex justify-between items-center text-xs font-bold text-[#072A6C] group-hover:text-[#D4AF37] transition-colors">
-                        <span>{closed ? "View Details" : "Register Now"}</span>
-                        <ArrowRight size={14} className={closed ? "text-gray-400" : "text-[#F97316] group-hover:translate-x-1 transition-transform"} />
+                        {closed ? (
+                          <>
+                            <span className="text-gray-400">View Details</span>
+                            <ArrowRight size={14} className="text-gray-400" />
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setRegisteringEvent(item);
+                            }}
+                            className="w-full flex items-center justify-between text-[#072A6C] group-hover:text-[#D4AF37] font-bold cursor-pointer"
+                          >
+                            <span>Register Now</span>
+                            <ArrowRight size={14} className="text-[#F97316] group-hover:translate-x-1 transition-transform" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -235,6 +253,13 @@ export default function Events() {
           </Link>
         </div>
       </section>
+
+      {/* Event Registration Modal Popup (Matches Screenshot media_1789894355143.png) */}
+      <EventRegistrationModal
+        isOpen={!!registeringEvent}
+        onClose={() => setRegisteringEvent(null)}
+        event={registeringEvent}
+      />
     </div>
   );
 }

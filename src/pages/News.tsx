@@ -13,7 +13,8 @@ import {
   ChevronLeft,
   ChevronRight
 } from "lucide-react";
-import { useData } from "../context/DataContext";
+import { useData, EventItem } from "../context/DataContext";
+import EventRegistrationModal from "../components/common/EventRegistrationModal";
 
 // Social Share Icons Helper Components (Official SVG path logos)
 const WhatsAppIcon = () => (
@@ -85,6 +86,7 @@ export default function News() {
 
   // Upcoming Events drawer state
   const [showEventsDrawer, setShowEventsDrawer] = useState(false);
+  const [registeringEvent, setRegisteringEvent] = useState<EventItem | null>(null);
   const newsDrawerScrollRef = useRef<HTMLDivElement>(null);
 
   // Lock body scroll, handle escape key, and scroll to top when Events Drawer opens
@@ -760,6 +762,12 @@ export default function News() {
         </>
       )}
 
+      {/* Event Registration Modal Popup (Matches Screenshot media_1789894355143.png) */}
+      <EventRegistrationModal
+        isOpen={!!registeringEvent}
+        onClose={() => setRegisteringEvent(null)}
+        event={registeringEvent}
+      />
     </div>
   );
 }
