@@ -42,7 +42,7 @@ const SECTION_ICONS: Record<string, React.ElementType> = {
   eventsAssociation: Calendar
 };
 
-// 5 Cyber Sectors grouping the 19 sections
+// 6 Cyber Sectors grouping the 19 sections
 interface CyberSector {
   id: string;
   title: string;
@@ -53,6 +53,14 @@ interface CyberSector {
 }
 
 const CYBER_SECTORS: CyberSector[] = [
+  {
+    id: "sector-all",
+    title: "All Academic Dimensions",
+    shortTitle: "All Dimensions",
+    subtitle: "Complete matrix of all 19 curriculum, laboratory, research & career dimensions",
+    icon: Grid,
+    sectionIds: []
+  },
   {
     id: "sector-overview",
     title: "Overview & Leadership",
@@ -142,13 +150,12 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
     return sections.filter(s => s.enabled);
   }, [sections]);
 
-  // Interactive View States
-  // "holo" = Dedicated Single-Module Futuristic Screen (Default)
-  // "matrix" = 3D Cyber Matrix (19 interactive cards grid)
-  // "dossier" = Continuous Document View
-  const [viewMode, setViewMode] = useState<"holo" | "matrix" | "dossier">("holo");
-  const [activeSectionId, setActiveSectionId] = useState<string>("about");
-  const [activeSectorId, setActiveSectorId] = useState<string>("sector-overview");
+  // Integrated Interaction Flow:
+  // selectedModuleId === null -> 3D Cyber Matrix (Default Grid of all 19 Dimensions)
+  // selectedModuleId === string -> Dedicated Holographic Interactive Module Screen
+  const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
+  const [activeSectorId, setActiveSectorId] = useState<string>("sector-all");
+  const [matrixSearch, setMatrixSearch] = useState<string>("");
 
   // Section-specific sub-states
   const [peoTab, setPeoTab] = useState<"peos" | "pos" | "psos">("peos");
@@ -157,52 +164,87 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
   const [facultySearch, setFacultySearch] = useState<string>("");
   const [activeLabIndex, setActiveLabIndex] = useState<number>(0);
 
-  // Sync active sector when active section changes
+  // Sync active sector when a module is active
   useEffect(() => {
-    const sector = CYBER_SECTORS.find(s => s.sectionIds.includes(activeSectionId));
-    if (sector && sector.id !== activeSectorId) {
-      setActiveSectorId(sector.id);
+    if (selectedModuleId) {
+      const sector = CYBER_SECTORS.find(s => s.sectionIds.includes(selectedModuleId));
+      if (sector && sector.id !== activeSectorId) {
+        setActiveSectorId(sector.id);
+      }
     }
-  }, [activeSectionId]);
+  }, [selectedModuleId]);
+
+  // Active section object when in Holo-Deck view
+  const activeSection = useMemo(() => {
+    if (!selectedModuleId) return enabledSections[0];
+    return enabledSections.find(s => s.id === selectedModuleId) || enabledSections[0];
+  }, [enabledSections, selectedModuleId]);
 
   // Current active section index & navigation helpers
   const currentSectionIndex = useMemo(() => {
-    return enabledSections.findIndex(s => s.id === activeSectionId);
-  }, [enabledSections, activeSectionId]);
+    if (!selectedModuleId) return 0;
+    return enabledSections.findIndex(s => s.id === selectedModuleId);
+  }, [enabledSections, selectedModuleId]);
 
   const goToPrevSection = () => {
     if (currentSectionIndex > 0) {
-      setActiveSectionId(enabledSections[currentSectionIndex - 1].id);
+      const prevId = enabledSections[currentSectionIndex - 1].id;
+      setSelectedModuleId(prevId);
       window.scrollTo({ top: 380, behavior: "smooth" });
     }
   };
 
   const goToNextSection = () => {
     if (currentSectionIndex < enabledSections.length - 1) {
-      setActiveSectionId(enabledSections[currentSectionIndex + 1].id);
+      const nextId = enabledSections[currentSectionIndex + 1].id;
+      setSelectedModuleId(nextId);
       window.scrollTo({ top: 380, behavior: "smooth" });
     }
+  };
+
+  const backToMatrix = () => {
+    setSelectedModuleId(null);
+    window.scrollTo({ top: 380, behavior: "smooth" });
   };
 
   // Keyboard navigation between modules
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (viewMode !== "holo") return;
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if (e.key === "ArrowLeft") {
-        goToPrevSection();
-      } else if (e.key === "ArrowRight") {
-        goToNextSection();
+      if (selectedModuleId) {
+        if (e.key === "ArrowLeft") {
+          goToPrevSection();
+        } else if (e.key === "ArrowRight") {
+          goToNextSection();
+        } else if (e.key === "Escape") {
+          backToMatrix();
+        }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [viewMode, currentSectionIndex, enabledSections]);
+  }, [selectedModuleId, currentSectionIndex, enabledSections]);
 
-  // Active section object
-  const activeSection = useMemo(() => {
-    return enabledSections.find(s => s.id === activeSectionId) || enabledSections[0];
-  }, [enabledSections, activeSectionId]);
+  // Filtered sections for 3D Matrix grid
+  const matrixSections = useMemo(() => {
+    return enabledSections.filter(sec => {
+      // Sector filter
+      if (activeSectorId !== "sector-all") {
+        const sector = CYBER_SECTORS.find(s => s.id === activeSectorId);
+        if (sector && !sector.sectionIds.includes(sec.id)) return false;
+      }
+      // Search filter
+      if (matrixSearch.trim()) {
+        const q = matrixSearch.toLowerCase();
+        const sector = CYBER_SECTORS.find(s => s.sectionIds.includes(sec.id));
+        const matchesTitle = sec.title.toLowerCase().includes(q);
+        const matchesSector = sector?.title.toLowerCase().includes(q) || sector?.shortTitle.toLowerCase().includes(q);
+        const matchesId = sec.id.toLowerCase().includes(q);
+        if (!matchesTitle && !matchesSector && !matchesId) return false;
+      }
+      return true;
+    });
+  }, [enabledSections, activeSectorId, matrixSearch]);
 
   // Filtered faculty list
   const filteredFaculty = useMemo(() => {
@@ -437,163 +479,297 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
 
 
       {/* ═══════════════════════════════════════════════════════════════════
-          2. FUTURISTIC COMMAND DOCK & MULTI-SCREEN SWITCHER
+          2. INTEGRATED COMMAND DOCK (SECTOR FILTERS & MATRIX / HOLO-DECK CONTROLS)
       ═══════════════════════════════════════════════════════════════════ */}
-      <div className="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-slate-200 shadow-md">
-        <div className="max-w-7xl mx-auto px-4 py-3 space-y-3">
+      <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-xl border-b border-slate-200 shadow-md transition-all">
+        <div className="max-w-7xl mx-auto px-4 py-3">
           
-          {/* Top Bar: 5 Cyber Sectors & Perspective Mode Switcher */}
-          <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
-            
-            {/* 5 Thematic Cyber Sectors */}
-            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1 lg:pb-0">
-              <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider shrink-0 mr-1 flex items-center gap-1 font-mono">
-                <Radio size={12} className="text-cyan-600 animate-pulse" /> SECTORS:
-              </span>
-              {CYBER_SECTORS.map((sector) => {
-                const SectorIcon = sector.icon;
-                const isCurrentSector = activeSectorId === sector.id;
-                return (
+          {/* STATE A: IN 3D CYBER MATRIX (DEFAULT OVERVIEW) */}
+          {!selectedModuleId ? (
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+              {/* Sector Filter Buttons */}
+              <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1 md:pb-0">
+                <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider shrink-0 mr-1 flex items-center gap-1 font-mono">
+                  <Radio size={12} className="text-cyan-600 animate-pulse" /> SECTORS:
+                </span>
+                {CYBER_SECTORS.map((sector) => {
+                  const SectorIcon = sector.icon;
+                  const isCurrentSector = activeSectorId === sector.id;
+                  const count = sector.id === "sector-all" 
+                    ? enabledSections.length 
+                    : enabledSections.filter(s => sector.sectionIds.includes(s.id)).length;
+                  return (
+                    <button
+                      key={sector.id}
+                      onClick={() => setActiveSectorId(sector.id)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap flex items-center gap-2 transition-all cursor-pointer relative ${
+                        isCurrentSector
+                          ? "bg-[#072A6C] text-white shadow-md shadow-[#072A6C]/20"
+                          : "bg-slate-100 hover:bg-slate-200/80 text-slate-700"
+                      }`}
+                    >
+                      <SectorIcon size={13} className={isCurrentSector ? "text-[#D4AF37]" : "text-slate-500"} />
+                      <span>{sector.shortTitle}</span>
+                      <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
+                        isCurrentSector ? "bg-white/20 text-[#D4AF37]" : "bg-slate-200 text-slate-600"
+                      }`}>
+                        {count}
+                      </span>
+                      {isCurrentSector && (
+                        <motion.div
+                          layoutId="activeSectorGlow"
+                          className="absolute -bottom-1.5 left-2 right-2 h-0.5 bg-[#D4AF37] rounded-full shadow-[0_0_8px_#D4AF37]"
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Quick Search inside Matrix */}
+              <div className="relative shrink-0 max-w-xs w-full md:w-64">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                <input
+                  type="text"
+                  value={matrixSearch}
+                  onChange={(e) => setMatrixSearch(e.target.value)}
+                  placeholder="Search 19 dimensions..."
+                  className="w-full pl-8 pr-8 py-1.5 bg-slate-100 border border-slate-200 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#072A6C] focus:border-transparent transition-all"
+                />
+                {matrixSearch && (
                   <button
-                    key={sector.id}
-                    onClick={() => {
-                      setActiveSectorId(sector.id);
-                      const firstSec = sector.sectionIds.find(id => enabledSections.some(s => s.id === id));
-                      if (firstSec) setActiveSectionId(firstSec);
-                    }}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap flex items-center gap-2 transition-all cursor-pointer relative ${
-                      isCurrentSector
-                        ? "bg-[#072A6C] text-white shadow-md shadow-[#072A6C]/20"
-                        : "bg-slate-100 hover:bg-slate-200/80 text-slate-700"
-                    }`}
+                    onClick={() => setMatrixSearch("")}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 text-xs font-bold cursor-pointer"
                   >
-                    <SectorIcon size={14} className={isCurrentSector ? "text-[#D4AF37]" : "text-slate-500"} />
-                    <span>{sector.shortTitle}</span>
-                    {isCurrentSector && (
-                      <motion.div
-                        layoutId="activeSectorGlow"
-                        className="absolute -bottom-1.5 left-2 right-2 h-0.5 bg-[#D4AF37] rounded-full shadow-[0_0_8px_#D4AF37]"
-                      />
-                    )}
+                    ×
                   </button>
-                );
-              })}
+                )}
+              </div>
             </div>
-
-            {/* 3 Interactive Perspective Modes */}
-            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl shrink-0 self-end lg:self-auto border border-slate-200/80">
-              <button
-                type="button"
-                onClick={() => setViewMode("holo")}
-                className={`px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer ${
-                  viewMode === "holo"
-                    ? "bg-[#072A6C] text-white shadow-sm"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-                title="Dedicated Futuristic Screen for each Section"
-              >
-                <Zap size={13} className={viewMode === "holo" ? "text-[#D4AF37]" : ""} /> Holo-Deck
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setViewMode("matrix")}
-                className={`px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer ${
-                  viewMode === "matrix"
-                    ? "bg-[#072A6C] text-white shadow-sm"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-                title="3D Matrix Grid of all 19 Modules"
-              >
-                <Grid size={13} className={viewMode === "matrix" ? "text-[#D4AF37]" : ""} /> 3D Matrix
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setViewMode("dossier")}
-                className={`px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer ${
-                  viewMode === "dossier"
-                    ? "bg-[#072A6C] text-white shadow-sm"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-                title="Continuous Document Scroll"
-              >
-                <List size={13} className={viewMode === "dossier" ? "text-[#D4AF37]" : ""} /> Dossier
-              </button>
-            </div>
-
-          </div>
-
-          {/* Dedicated 19-Module Interactive Navigation Deck */}
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pt-1 border-t border-slate-100">
-            <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest shrink-0">
-              MODULES:
-            </span>
-            {enabledSections.map((sec, idx) => {
-              const Icon = SECTION_ICONS[sec.id] || BookOpen;
-              const isSelected = activeSectionId === sec.id;
-              return (
+          ) : (
+            /* STATE B: IN DEDICATED HOLO-DECK MODULE SCREEN */
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
                 <button
-                  key={sec.id}
-                  onClick={() => {
-                    setActiveSectionId(sec.id);
-                    if (viewMode === "dossier") {
-                      const el = document.getElementById(sec.id);
-                      if (el) el.scrollIntoView({ behavior: "smooth" });
-                    }
-                  }}
-                  className={`px-3 py-1 rounded-xl text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all cursor-pointer relative shrink-0 ${
-                    isSelected
-                      ? "bg-gradient-to-r from-[#072A6C] to-[#0B3D91] text-white shadow-sm ring-2 ring-[#D4AF37]/50"
-                      : "bg-white hover:bg-slate-100 text-slate-600 border border-slate-200/80"
+                  type="button"
+                  onClick={backToMatrix}
+                  className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#072A6C] to-[#0A3A94] hover:from-[#031538] hover:to-[#072A6C] text-white text-xs font-bold flex items-center gap-2 transition-all shadow-md shadow-[#072A6C]/20 border border-[#D4AF37]/40 cursor-pointer group"
+                >
+                  <ChevronLeft size={15} className="text-[#D4AF37] group-hover:-translate-x-0.5 transition-transform" />
+                  <span>Back to 3D Matrix</span>
+                  <Grid size={13} className="text-[#D4AF37]/80" />
+                </button>
+
+                <div className="hidden sm:flex items-center gap-2 border-l border-slate-200 pl-3">
+                  <span className="text-[10px] font-mono font-bold text-[#D4AF37] uppercase bg-[#072A6C]/5 px-2 py-0.5 rounded-md">
+                    DIMENSION 0{currentSectionIndex + 1}
+                  </span>
+                  <span className="text-xs font-black text-[#072A6C] truncate max-w-xs">
+                    {activeSection.title}
+                  </span>
+                </div>
+              </div>
+
+              {/* Quick Prev / Next Controls */}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={goToPrevSection}
+                  disabled={currentSectionIndex === 0}
+                  className={`h-8 px-3 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                    currentSectionIndex === 0
+                      ? "opacity-40 cursor-not-allowed bg-slate-100 text-slate-400"
+                      : "bg-white border border-slate-200 text-slate-700 hover:bg-[#072A6C] hover:text-white shadow-xs"
                   }`}
                 >
-                  <Icon size={12} className={isSelected ? "text-[#D4AF37]" : "text-slate-400"} />
-                  <span className="font-mono text-[10px] opacity-70">0{idx + 1}.</span>
-                  <span>{sec.title}</span>
+                  <ChevronLeft size={13} /> Prev
                 </button>
-              );
-            })}
-          </div>
+
+                <div className="px-2.5 py-1 bg-slate-100 rounded-lg text-[11px] font-mono font-black text-[#072A6C]">
+                  {currentSectionIndex + 1} / {enabledSections.length}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={goToNextSection}
+                  disabled={currentSectionIndex === enabledSections.length - 1}
+                  className={`h-8 px-3 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                    currentSectionIndex === enabledSections.length - 1
+                      ? "opacity-40 cursor-not-allowed bg-slate-100 text-slate-400"
+                      : "bg-[#072A6C] text-white hover:bg-[#0B3D91] shadow-sm"
+                  }`}
+                >
+                  Next <ChevronRight size={13} />
+                </button>
+              </div>
+            </div>
+          )}
 
         </div>
       </div>
 
 
       {/* ═══════════════════════════════════════════════════════════════════
-          3. MAIN CONTENT CONTAINER (3 VIEWING EXPERIENCES)
+          3. MAIN INTERACTIVE CONTAINER: 3D MATRIX OR HOLO-DECK
       ═══════════════════════════════════════════════════════════════════ */}
       <main className="max-w-7xl mx-auto px-4 py-8 relative z-10">
 
         {/* ─────────────────────────────────────────────────────────────
-            MODE A: 🚀 FUTURISTIC HOLO-DECK (SINGLE-MODULE DEDICATED SCREEN)
+            VIEW A: 🌐 3D CYBER MATRIX GRID (DEFAULT VIEW)
         ───────────────────────────────────────────────────────────── */}
-        {viewMode === "holo" && (
+        {!selectedModuleId ? (
+          <div className="space-y-8">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-2 border-b border-slate-200/80">
+              <div className="space-y-1.5 text-left">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono font-black text-[#D4AF37] uppercase tracking-widest bg-[#072A6C]/5 px-2.5 py-0.5 rounded-full border border-[#D4AF37]/20">
+                    ACADEMIC BLUEPRINT & TELEMETRY
+                  </span>
+                  <span className="text-slate-300">•</span>
+                  <span className="text-xs text-slate-500 font-semibold">
+                    {matrixSections.length} {matrixSections.length === 1 ? "Dimension" : "Dimensions"} Available
+                  </span>
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-black text-[#072A6C]">
+                  {activeSectorId === "sector-all" 
+                    ? "3D Academic Dimensions Matrix" 
+                    : CYBER_SECTORS.find(s => s.id === activeSectorId)?.title || "Academic Matrix"}
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-600 font-light">
+                  Click any module below to open its dedicated Holo-Deck interactive console for {programData.shortName}.
+                </p>
+              </div>
+
+              {/* Clear search or sector filter pill if active */}
+              {(activeSectorId !== "sector-all" || matrixSearch) && (
+                <button
+                  onClick={() => {
+                    setActiveSectorId("sector-all");
+                    setMatrixSearch("");
+                  }}
+                  className="text-xs font-bold text-[#072A6C] hover:text-[#D4AF37] flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200/80 px-3 py-1.5 rounded-xl transition-all self-start md:self-auto cursor-pointer"
+                >
+                  <span>Reset Filters</span>
+                </button>
+              )}
+            </div>
+
+            {/* Matrix Cards Grid */}
+            {matrixSections.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 text-left">
+                {matrixSections.map((sec, idx) => {
+                  const Icon = SECTION_ICONS[sec.id] || BookOpen;
+                  const sector = CYBER_SECTORS.find(s => s.sectionIds.includes(sec.id));
+                  const globalIdx = enabledSections.findIndex(s => s.id === sec.id);
+
+                  return (
+                    <motion.div
+                      key={sec.id}
+                      whileHover={{ y: -6, scale: 1.02, rotateY: 2 }}
+                      transition={{ type: "spring", stiffness: 320, damping: 22 }}
+                      onClick={() => {
+                        setSelectedModuleId(sec.id);
+                        window.scrollTo({ top: 380, behavior: "smooth" });
+                      }}
+                      className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-sm hover:shadow-2xl hover:border-[#D4AF37]/60 hover:ring-2 hover:ring-[#D4AF37]/30 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between group"
+                    >
+                      {/* Cyber Gradient Glow Sweep on Card */}
+                      <div className="absolute top-0 right-0 w-28 h-28 bg-gradient-to-bl from-[#072A6C]/5 via-[#D4AF37]/10 to-transparent group-hover:scale-125 transition-transform duration-500 pointer-events-none" />
+                      <div className="absolute bottom-0 left-0 w-20 h-20 bg-gradient-to-tr from-[#072A6C]/5 to-transparent pointer-events-none" />
+                      
+                      <div className="space-y-4 relative z-10">
+                        {/* Card Header: Icon + Number + Sector */}
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#072A6C]/10 to-blue-100 text-[#072A6C] group-hover:from-[#072A6C] group-hover:to-[#0B3D91] group-hover:text-[#D4AF37] flex items-center justify-center transition-all duration-300 shadow-sm">
+                            <Icon size={22} className="group-hover:scale-110 transition-transform" />
+                          </div>
+                          <div className="text-right">
+                            <span className="text-[11px] font-mono font-black text-slate-400 group-hover:text-[#D4AF37] transition-colors block">
+                              #0{globalIdx + 1}
+                            </span>
+                            <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest block">
+                              {sector?.shortTitle || "DIMENSION"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Title & Hint */}
+                        <div>
+                          <h3 className="text-base font-black text-[#072A6C] group-hover:text-[#0B3D91] transition-colors leading-snug">
+                            {sec.title}
+                          </h3>
+                          <p className="text-xs text-slate-500 mt-1 line-clamp-2 font-normal leading-relaxed">
+                            {sector?.subtitle || "Explore interactive syllabus, labs, and outcomes."}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Card Footer: Interactive CTA */}
+                      <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600 group-hover:text-[#072A6C] font-bold relative z-10">
+                        <span className="flex items-center gap-1.5 group-hover:text-[#072A6C]">
+                          <Zap size={13} className="text-[#D4AF37] group-hover:scale-125 transition-transform" /> Open Holo-Deck
+                        </span>
+                        <div className="w-7 h-7 rounded-xl bg-slate-100 group-hover:bg-[#072A6C] group-hover:text-[#D4AF37] text-slate-600 flex items-center justify-center transition-all">
+                          <ArrowRight size={13} className="transform group-hover:translate-x-0.5 transition-transform" />
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center space-y-4 max-w-lg mx-auto">
+                <Search size={36} className="mx-auto text-slate-300 animate-bounce" />
+                <h3 className="text-lg font-black text-[#072A6C]">No Academic Dimensions Found</h3>
+                <p className="text-xs text-slate-500">
+                  No modules matched your search filter "{matrixSearch}". Try adjusting your keywords or clearing the filter.
+                </p>
+                <button
+                  onClick={() => {
+                    setMatrixSearch("");
+                    setActiveSectorId("sector-all");
+                  }}
+                  className="px-4 py-2 bg-[#072A6C] text-white rounded-xl text-xs font-bold hover:bg-[#0B3D91] transition-all cursor-pointer"
+                >
+                  Show All 19 Dimensions
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          /* ─────────────────────────────────────────────────────────────
+              VIEW B: 🚀 DEDICATED HOLO-DECK MODULE SCREEN
+          ───────────────────────────────────────────────────────────── */
           <div className="space-y-6">
             
-            {/* Top Module Telemetry Bar */}
-            <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-slate-200/80 p-4 flex flex-wrap items-center justify-between gap-4 shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#072A6C] to-[#0B3D91] text-[#D4AF37] flex items-center justify-center font-black shadow-md shrink-0">
-                  {React.createElement(SECTION_ICONS[activeSection.id] || BookOpen, { size: 18 })}
-                </div>
+            {/* Top Module Telemetry Header Bar */}
+            <div className="bg-white/90 backdrop-blur-md rounded-3xl border border-slate-200/90 p-5 flex flex-wrap items-center justify-between gap-4 shadow-sm">
+              <div className="flex items-center gap-3.5">
+                <button
+                  type="button"
+                  onClick={backToMatrix}
+                  className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#072A6C] to-[#0B3D91] text-[#D4AF37] flex items-center justify-center hover:scale-105 transition-all shadow-md shrink-0 cursor-pointer group"
+                  title="Return to 3D Matrix"
+                >
+                  <ChevronLeft size={22} className="group-hover:-translate-x-0.5 transition-transform" />
+                </button>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono font-bold text-[#D4AF37] uppercase tracking-widest">
-                      MODULE {currentSectionIndex + 1} OF {enabledSections.length}
+                    <span className="text-[10px] font-mono font-bold text-[#D4AF37] uppercase tracking-widest bg-[#072A6C]/5 px-2 py-0.5 rounded-md">
+                      MODULE 0{currentSectionIndex + 1} OF {enabledSections.length}
                     </span>
                     <span className="text-slate-300">•</span>
                     <span className="text-[10px] font-bold text-slate-500 uppercase">
-                      {CYBER_SECTORS.find(s => s.sectionIds.includes(activeSection.id))?.title}
+                      {CYBER_SECTORS.find(s => s.sectionIds.includes(activeSection.id))?.title || "ACADEMICS"}
                     </span>
                   </div>
-                  <h2 className="text-xl sm:text-2xl font-black text-[#072A6C] tracking-tight">
+                  <h2 className="text-xl sm:text-2xl font-black text-[#072A6C] tracking-tight flex items-center gap-2">
                     {activeSection.title}
                   </h2>
                 </div>
               </div>
 
-              {/* Prev / Next Quick Controls */}
+              {/* Prev / Next & Back Controls */}
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -624,6 +800,14 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
                 >
                   Next Module <ChevronRight size={14} />
                 </button>
+
+                <button
+                  type="button"
+                  onClick={backToMatrix}
+                  className="h-9 px-3.5 rounded-xl text-xs font-bold bg-[#D4AF37]/15 hover:bg-[#D4AF37]/25 text-[#072A6C] border border-[#D4AF37]/40 flex items-center gap-1.5 transition-all cursor-pointer ml-1"
+                >
+                  <Grid size={14} className="text-[#D4AF37]" /> 3D Matrix
+                </button>
               </div>
             </div>
 
@@ -646,8 +830,8 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
               </motion.div>
             </AnimatePresence>
 
-            {/* Bottom Cyber Nav Bar */}
-            <div className="flex items-center justify-between pt-2">
+            {/* Bottom Telemetry Navigation Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
               <button
                 type="button"
                 onClick={goToPrevSection}
@@ -660,10 +844,10 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
 
               <button
                 type="button"
-                onClick={() => setViewMode("matrix")}
-                className="text-xs font-mono font-bold text-[#D4AF37] hover:underline flex items-center gap-1 cursor-pointer"
+                onClick={backToMatrix}
+                className="text-xs font-mono font-bold text-[#072A6C] hover:text-[#D4AF37] bg-white border border-slate-200 px-4 py-2 rounded-xl shadow-xs flex items-center gap-2 cursor-pointer transition-all hover:border-[#D4AF37]"
               >
-                <Grid size={13} /> View Full 3D Matrix
+                <Grid size={14} className="text-[#D4AF37]" /> ← Back to 3D Matrix (All 19 Modules)
               </button>
 
               <button
@@ -677,119 +861,6 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
               </button>
             </div>
 
-          </div>
-        )}
-
-
-        {/* ─────────────────────────────────────────────────────────────
-            MODE B: 🌐 3D CYBER MATRIX (19 INTERACTIVE CARDS GRID)
-        ───────────────────────────────────────────────────────────── */}
-        {viewMode === "matrix" && (
-          <div className="space-y-8">
-            <div className="text-center max-w-2xl mx-auto space-y-2">
-              <span className="text-[10px] font-mono font-black text-[#D4AF37] uppercase tracking-widest block">
-                CYBER MATRIX EXPLORER
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-black text-[#072A6C]">
-                Explore All 19 Academic Dimensions
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-600 font-light">
-                Click any module card below to teleport directly into its dedicated holographic interactive console.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 text-left">
-              {enabledSections.map((sec, idx) => {
-                const Icon = SECTION_ICONS[sec.id] || BookOpen;
-                const sector = CYBER_SECTORS.find(s => s.sectionIds.includes(sec.id));
-                return (
-                  <motion.div
-                    key={sec.id}
-                    whileHover={{ y: -6, scale: 1.02, rotateY: 3 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    onClick={() => {
-                      setActiveSectionId(sec.id);
-                      setViewMode("holo");
-                    }}
-                    className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-2xl hover:border-[#072A6C]/40 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between group"
-                  >
-                    <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-[#072A6C]/5 group-hover:from-[#D4AF37]/20 to-transparent transition-all" />
-                    
-                    <div>
-                      <div className="flex items-center justify-between gap-2 mb-3">
-                        <div className="w-10 h-10 rounded-xl bg-[#072A6C]/10 text-[#072A6C] group-hover:bg-[#072A6C] group-hover:text-[#D4AF37] flex items-center justify-center transition-all shadow-xs">
-                          <Icon size={18} />
-                        </div>
-                        <span className="text-[10px] font-mono font-bold text-slate-400 group-hover:text-[#D4AF37]">
-                          #0{idx + 1}
-                        </span>
-                      </div>
-
-                      <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest block mb-1">
-                        {sector?.shortTitle}
-                      </span>
-                      <h3 className="text-sm font-black text-[#072A6C] group-hover:text-[#0B3D91] transition-colors leading-snug">
-                        {sec.title}
-                      </h3>
-                    </div>
-
-                    <div className="pt-4 mt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 group-hover:text-[#072A6C] font-semibold">
-                      <span>Launch Holo-Deck</span>
-                      <ArrowRight size={13} className="transform group-hover:translate-x-1 transition-transform text-[#D4AF37]" />
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-
-        {/* ─────────────────────────────────────────────────────────────
-            MODE C: 📜 CONTINUOUS DOSSIER (ALL 19 SECTIONS SCROLL)
-        ───────────────────────────────────────────────────────────── */}
-        {viewMode === "dossier" && (
-          <div className="space-y-10 text-left">
-            {enabledSections.map((sec, secIdx) => {
-              const Icon = SECTION_ICONS[sec.id] || BookOpen;
-              return (
-                <section
-                  key={sec.id}
-                  id={sec.id}
-                  className="scroll-mt-36 bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-sm hover:shadow-xl transition-all relative overflow-hidden"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-4 pb-5 mb-7 border-b border-slate-100">
-                    <div className="flex items-center gap-3.5">
-                      <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#072A6C] to-[#0B3D91] text-[#D4AF37] flex items-center justify-center shadow-md shrink-0">
-                        <Icon size={20} />
-                      </div>
-                      <div>
-                        <span className="text-[10px] text-[#D4AF37] font-mono font-black uppercase tracking-widest block">
-                          DIMENSION 0{secIdx + 1} • {programData.shortName}
-                        </span>
-                        <h2 className="text-xl sm:text-2xl font-black text-[#072A6C] tracking-tight">
-                          {sec.title}
-                        </h2>
-                      </div>
-                    </div>
-                    
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setActiveSectionId(sec.id);
-                        setViewMode("holo");
-                        window.scrollTo({ top: 350, behavior: "smooth" });
-                      }}
-                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-[#072A6C] hover:text-white text-slate-700 flex items-center gap-1.5 transition-all cursor-pointer"
-                    >
-                      <Zap size={12} className="text-[#D4AF37]" /> Open in Holo-Deck
-                    </button>
-                  </div>
-
-                  {renderModuleContent(sec.id, programData, peoTab, setPeoTab, syllabusSem, setSyllabusSem, facultyFilter, setFacultyFilter, facultySearch, setFacultySearch, filteredFaculty, activeLabIndex, setActiveLabIndex)}
-                </section>
-              );
-            })}
           </div>
         )}
 
