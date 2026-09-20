@@ -9,7 +9,8 @@ import {
   ChevronRight, ChevronLeft, Sparkles, Trophy, Cpu, Network, ShieldCheck, Microscope,
   Library, Lightbulb, Compass, Share2, HelpCircle, FileCheck, Landmark, Check,
   Grid, List, Search, SlidersHorizontal, Eye, Zap, Radio, Globe, Terminal,
-  TrendingUp, Star, Award as MedalIcon, Clock, Flame, CheckCircle, ArrowUpRight
+  TrendingUp, Star, Award as MedalIcon, Clock, Flame, CheckCircle, ArrowUpRight,
+  LayoutGrid
 } from "lucide-react";
 import {
   FullProgramData,
@@ -55,17 +56,17 @@ interface CyberSector {
 const CYBER_SECTORS: CyberSector[] = [
   {
     id: "sector-all",
-    title: "All Academic Dimensions",
-    shortTitle: "All Dimensions",
-    subtitle: "Complete matrix of all 19 curriculum, laboratory, research & career dimensions",
-    icon: Grid,
+    title: "All Program Modules",
+    shortTitle: "All Modules",
+    subtitle: "Complete curriculum, laboratory facilities, faculty directory and career outcomes",
+    icon: LayoutGrid,
     sectionIds: []
   },
   {
     id: "sector-overview",
     title: "Overview & Leadership",
     shortTitle: "Overview",
-    subtitle: "Program Vision, HOD Desk & Educational Objectives",
+    subtitle: "Program Vision, HOD Message & Educational Objectives",
     icon: Compass,
     sectionIds: ["about", "hodMessage", "visionMission", "peoPoPso"]
   },
@@ -73,15 +74,15 @@ const CYBER_SECTORS: CyberSector[] = [
     id: "sector-academics",
     title: "Curriculum & Pedagogy",
     shortTitle: "Curriculum",
-    subtitle: "Syllabus, Academic Calendar & Pedagogy Innovations",
+    subtitle: "Semester-wise Syllabus, Teaching Innovations & Academic Honours",
     icon: BookOpen,
     sectionIds: ["syllabus", "teachingInnovations", "rollOfHonour"]
   },
   {
     id: "sector-labs",
-    title: "Labs & Innovation",
+    title: "Laboratories & Research",
     shortTitle: "Labs & R&D",
-    subtitle: "Advanced Laboratories, R&D Thrust Areas & Grants",
+    subtitle: "Advanced Laboratories, Funded Projects & Department Library",
     icon: Cpu,
     sectionIds: ["labs", "research", "fundingProjects", "library"]
   },
@@ -89,14 +90,14 @@ const CYBER_SECTORS: CyberSector[] = [
     id: "sector-placements",
     title: "Placements & Industry",
     shortTitle: "Placements",
-    subtitle: "Packages, Top Recruiters & Corporate MoUs",
+    subtitle: "Salary Packages, Top Recruiters & Corporate MoUs",
     icon: Briefcase,
     sectionIds: ["placements", "mou", "achievements"]
   },
   {
     id: "sector-community",
     title: "Faculty & Student Life",
-    shortTitle: "Community",
+    shortTitle: "Faculty & Life",
     subtitle: "Faculty Directory, Student Societies & Technical Events",
     icon: Users,
     sectionIds: ["faculty", "societies", "newsletters", "magazines", "eventsAssociation"]
@@ -443,18 +444,18 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
                     <TrendingUp size={13} className="text-cyan-400" />
                   </div>
                   <span className="text-sm sm:text-base font-black text-cyan-300 block truncate">{programData.placements.placementRate}</span>
-                  <span className="text-[9px] font-bold text-cyan-400/90 uppercase tracking-widest mt-1 block">Assurance Matrix</span>
+                  <span className="text-[9px] font-bold text-cyan-400/90 uppercase tracking-widest mt-1 block">Placement Track</span>
                 </motion.div>
 
               </div>
 
             </div>
 
-            {/* Right VIP Hologram Enrolment Pass */}
+            {/* Right Admission Enrolment Pass */}
             <div className="lg:col-span-4">
               <motion.div 
-                whileHover={{ y: -5, rotateY: 2 }}
-                transition={{ type: "spring", stiffness: 300 }}
+                whileHover={{ y: -4 }}
+                transition={{ duration: 0.2 }}
                 className="bg-gradient-to-b from-white/20 via-white/12 to-white/5 backdrop-blur-2xl border-2 border-white/30 hover:border-[#D4AF37]/60 p-7 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] space-y-4 text-left relative overflow-hidden group"
               >
                 {/* Dynamic Shimmer Light Sweep on Hover */}
@@ -511,19 +512,16 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
 
 
       {/* ═══════════════════════════════════════════════════════════════════
-          2. INTEGRATED COMMAND DOCK (SECTOR FILTERS & MATRIX / HOLO-DECK CONTROLS)
+          2. INTEGRATED PROGRAM NAVIGATION (CATEGORY FILTERS & MODULE CONTROLS)
       ═══════════════════════════════════════════════════════════════════ */}
       <div id="academic-command-viewport" className="sticky top-0 z-30 bg-white/95 backdrop-blur-xl border-b border-slate-200 shadow-md transition-all">
-        <div className="max-w-7xl mx-auto px-4 py-3">
+        <div className="max-w-7xl mx-auto px-4 py-2.5">
           
-          {/* STATE A: IN 3D CYBER MATRIX (DEFAULT OVERVIEW) */}
+          {/* STATE A: IN DEFAULT MODULES OVERVIEW */}
           {!selectedModuleId ? (
-            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-              {/* Sector Filter Buttons */}
-              <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1 md:pb-0">
-                <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider shrink-0 mr-1 flex items-center gap-1 font-mono">
-                  <Radio size={12} className="text-cyan-600 animate-pulse" /> SECTORS:
-                </span>
+            <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+              {/* Category Filter Pills - Flex-wrap ensures no button is ever cut in half on the side! */}
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                 {CYBER_SECTORS.map((sector) => {
                   const SectorIcon = sector.icon;
                   const isCurrentSector = activeSectorId === sector.id;
@@ -533,39 +531,34 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
                   return (
                     <button
                       key={sector.id}
+                      type="button"
                       onClick={() => setActiveSectorId(sector.id)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap flex items-center gap-2 transition-all cursor-pointer relative ${
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap flex items-center gap-2 transition-all cursor-pointer ${
                         isCurrentSector
-                          ? "bg-[#072A6C] text-white shadow-md shadow-[#072A6C]/20"
-                          : "bg-slate-100 hover:bg-slate-200/80 text-slate-700"
+                          ? "bg-[#072A6C] text-white shadow-sm ring-1 ring-[#072A6C]"
+                          : "bg-slate-100 hover:bg-slate-200/80 text-slate-700 border border-slate-200/80"
                       }`}
                     >
                       <SectorIcon size={13} className={isCurrentSector ? "text-[#D4AF37]" : "text-slate-500"} />
                       <span>{sector.shortTitle}</span>
-                      <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
+                      <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full ${
                         isCurrentSector ? "bg-white/20 text-[#D4AF37]" : "bg-slate-200 text-slate-600"
                       }`}>
                         {count}
                       </span>
-                      {isCurrentSector && (
-                        <motion.div
-                          layoutId="activeSectorGlow"
-                          className="absolute -bottom-1.5 left-2 right-2 h-0.5 bg-[#D4AF37] rounded-full shadow-[0_0_8px_#D4AF37]"
-                        />
-                      )}
                     </button>
                   );
                 })}
               </div>
 
-              {/* Quick Search inside Matrix */}
-              <div className="relative shrink-0 max-w-xs w-full md:w-64">
+              {/* Quick Search inside Modules */}
+              <div className="relative shrink-0 w-full sm:w-60">
                 <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                 <input
                   type="text"
                   value={matrixSearch}
                   onChange={(e) => setMatrixSearch(e.target.value)}
-                  placeholder="Search 19 dimensions..."
+                  placeholder="Search modules..."
                   className="w-full pl-8 pr-8 py-1.5 bg-slate-100 border border-slate-200 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#072A6C] focus:border-transparent transition-all"
                 />
                 {matrixSearch && (
@@ -579,22 +572,22 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
               </div>
             </div>
           ) : (
-            /* STATE B: IN DEDICATED HOLO-DECK MODULE SCREEN */
+            /* STATE B: IN DEDICATED MODULE SCREEN */
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={backToMatrix}
-                  className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#072A6C] to-[#0A3A94] hover:from-[#031538] hover:to-[#072A6C] text-white text-xs font-bold flex items-center gap-2 transition-all shadow-md shadow-[#072A6C]/20 border border-[#D4AF37]/40 cursor-pointer group"
+                  className="px-3.5 py-1.5 rounded-xl bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold flex items-center gap-2 transition-all shadow-sm border border-slate-700 cursor-pointer group"
                 >
                   <ChevronLeft size={15} className="text-[#D4AF37] group-hover:-translate-x-0.5 transition-transform" />
-                  <span>Back to 3D Matrix</span>
-                  <Grid size={13} className="text-[#D4AF37]/80" />
+                  <span>Back to All Modules</span>
+                  <LayoutGrid size={13} className="text-[#D4AF37]/80" />
                 </button>
 
                 <div className="hidden sm:flex items-center gap-2 border-l border-slate-200 pl-3">
-                  <span className="text-[10px] font-mono font-bold text-[#D4AF37] uppercase bg-[#072A6C]/5 px-2 py-0.5 rounded-md">
-                    DIMENSION 0{currentSectionIndex + 1}
+                  <span className="text-[10px] font-mono font-bold text-[#072A6C] uppercase bg-slate-100 px-2 py-0.5 rounded-md">
+                    MODULE 0{currentSectionIndex + 1}
                   </span>
                   <span className="text-xs font-black text-[#072A6C] truncate max-w-xs">
                     {activeSection.title}
@@ -647,7 +640,7 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
       <main className="max-w-7xl mx-auto px-4 py-8 relative z-10">
 
         {/* ─────────────────────────────────────────────────────────────
-            VIEW A: 🌐 3D CYBER MATRIX GRID (DEFAULT VIEW)
+            VIEW A: PROGRAM CURRICULUM & MODULES GRID (DEFAULT VIEW)
         ───────────────────────────────────────────────────────────── */}
         {!selectedModuleId ? (
           <div id="academic-blueprint-matrix" className="space-y-8 scroll-mt-24">
@@ -655,24 +648,24 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
               <div className="space-y-1.5 text-left">
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-mono font-black text-[#D4AF37] uppercase tracking-widest bg-[#072A6C]/5 px-2.5 py-0.5 rounded-full border border-[#D4AF37]/20">
-                    ACADEMIC BLUEPRINT & TELEMETRY
+                    PROGRAM CURRICULUM & MODULES
                   </span>
                   <span className="text-slate-300">•</span>
                   <span className="text-xs text-slate-500 font-semibold">
-                    {matrixSections.length} {matrixSections.length === 1 ? "Dimension" : "Dimensions"} Available
+                    {matrixSections.length} {matrixSections.length === 1 ? "Module" : "Modules"} Available
                   </span>
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-black text-[#072A6C]">
                   {activeSectorId === "sector-all" 
-                    ? "3D Academic Dimensions Matrix" 
-                    : CYBER_SECTORS.find(s => s.id === activeSectorId)?.title || "Academic Matrix"}
+                    ? "Curriculum & Program Modules" 
+                    : CYBER_SECTORS.find(s => s.id === activeSectorId)?.title || "Program Modules"}
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-600 font-light">
-                  Click any module below to open its dedicated Holo-Deck interactive console for {programData.shortName}.
+                  Explore comprehensive course curriculum, laboratories, faculty mentorship, and career pathways for {programData.shortName}. Click any module to view details.
                 </p>
               </div>
 
-              {/* Clear search or sector filter pill if active */}
+              {/* Clear search or category filter pill if active */}
               {(activeSectorId !== "sector-all" || matrixSearch) && (
                 <button
                   onClick={() => {
@@ -686,7 +679,7 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
               )}
             </div>
 
-            {/* Matrix Cards Grid */}
+            {/* Modules Cards Grid */}
             {matrixSections.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 text-left">
                 {matrixSections.map((sec, idx) => {
@@ -697,49 +690,45 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
                   return (
                     <motion.div
                       key={sec.id}
-                      whileHover={{ y: -6, scale: 1.02, rotateY: 2 }}
-                      transition={{ type: "spring", stiffness: 320, damping: 22 }}
+                      whileHover={{ y: -4, scale: 1.01 }}
+                      transition={{ duration: 0.2 }}
                       onClick={() => selectModule(sec.id)}
-                      className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-sm hover:shadow-2xl hover:border-[#D4AF37]/60 hover:ring-2 hover:ring-[#D4AF37]/30 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between group"
+                      className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs hover:shadow-lg hover:border-[#D4AF37]/60 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between group"
                     >
-                      {/* Cyber Gradient Glow Sweep on Card */}
-                      <div className="absolute top-0 right-0 w-28 h-28 bg-gradient-to-bl from-[#072A6C]/5 via-[#D4AF37]/10 to-transparent group-hover:scale-125 transition-transform duration-500 pointer-events-none" />
-                      <div className="absolute bottom-0 left-0 w-20 h-20 bg-gradient-to-tr from-[#072A6C]/5 to-transparent pointer-events-none" />
-                      
-                      <div className="space-y-4 relative z-10">
-                        {/* Card Header: Icon + Number + Sector */}
+                      <div className="space-y-3 relative z-10">
+                        {/* Card Header: Icon + Number + Category */}
                         <div className="flex items-center justify-between gap-2">
-                          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#072A6C]/10 to-blue-100 text-[#072A6C] group-hover:from-[#072A6C] group-hover:to-[#0B3D91] group-hover:text-[#D4AF37] flex items-center justify-center transition-all duration-300 shadow-sm">
-                            <Icon size={22} className="group-hover:scale-110 transition-transform" />
+                          <div className="w-11 h-11 rounded-xl bg-slate-100 text-[#072A6C] group-hover:bg-[#072A6C] group-hover:text-white flex items-center justify-center transition-all duration-200 shadow-xs">
+                            <Icon size={20} className="group-hover:scale-105 transition-transform" />
                           </div>
                           <div className="text-right">
                             <span className="text-[11px] font-mono font-black text-slate-400 group-hover:text-[#D4AF37] transition-colors block">
                               #0{globalIdx + 1}
                             </span>
-                            <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest block">
-                              {sector?.shortTitle || "DIMENSION"}
+                            <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-wider block">
+                              {sector?.shortTitle || "MODULE"}
                             </span>
                           </div>
                         </div>
 
                         {/* Title & Hint */}
                         <div>
-                          <h3 className="text-base font-black text-[#072A6C] group-hover:text-[#0B3D91] transition-colors leading-snug">
+                          <h3 className="text-sm sm:text-base font-black text-[#072A6C] group-hover:text-[#0B3D91] transition-colors leading-snug">
                             {sec.title}
                           </h3>
                           <p className="text-xs text-slate-500 mt-1 line-clamp-2 font-normal leading-relaxed">
-                            {sector?.subtitle || "Explore interactive syllabus, labs, and outcomes."}
+                            {sector?.subtitle || "Explore course details, outcomes and resources."}
                           </p>
                         </div>
                       </div>
 
-                      {/* Card Footer: Interactive CTA */}
-                      <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600 group-hover:text-[#072A6C] font-bold relative z-10">
+                      {/* Card Footer: View Details CTA */}
+                      <div className="pt-3.5 mt-3.5 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600 group-hover:text-[#072A6C] font-bold relative z-10">
                         <span className="flex items-center gap-1.5 group-hover:text-[#072A6C]">
-                          <Zap size={13} className="text-[#D4AF37] group-hover:scale-125 transition-transform" /> Open Holo-Deck
+                          <BookOpen size={13} className="text-[#072A6C] group-hover:scale-110 transition-transform" /> View Details
                         </span>
-                        <div className="w-7 h-7 rounded-xl bg-slate-100 group-hover:bg-[#072A6C] group-hover:text-[#D4AF37] text-slate-600 flex items-center justify-center transition-all">
-                          <ArrowRight size={13} className="transform group-hover:translate-x-0.5 transition-transform" />
+                        <div className="w-6 h-6 rounded-lg bg-slate-100 group-hover:bg-[#072A6C] group-hover:text-white text-slate-600 flex items-center justify-center transition-all">
+                          <ArrowRight size={12} className="transform group-hover:translate-x-0.5 transition-transform" />
                         </div>
                       </div>
                     </motion.div>
@@ -749,7 +738,7 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
             ) : (
               <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center space-y-4 max-w-lg mx-auto">
                 <Search size={36} className="mx-auto text-slate-300 animate-bounce" />
-                <h3 className="text-lg font-black text-[#072A6C]">No Academic Dimensions Found</h3>
+                <h3 className="text-lg font-black text-[#072A6C]">No Modules Found</h3>
                 <p className="text-xs text-slate-500">
                   No modules matched your search filter "{matrixSearch}". Try adjusting your keywords or clearing the filter.
                 </p>
@@ -760,31 +749,31 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
                   }}
                   className="px-4 py-2 bg-[#072A6C] text-white rounded-xl text-xs font-bold hover:bg-[#0B3D91] transition-all cursor-pointer"
                 >
-                  Show All 19 Dimensions
+                  Show All Modules
                 </button>
               </div>
             )}
           </div>
         ) : (
           /* ─────────────────────────────────────────────────────────────
-              VIEW B: 🚀 DEDICATED HOLO-DECK MODULE SCREEN
+              VIEW B: DEDICATED MODULE SCREEN
           ───────────────────────────────────────────────────────────── */
           <div id="academic-dimension-screen" className="space-y-6 scroll-mt-24">
             
-            {/* Top Module Telemetry Header Bar */}
-            <div className="bg-white/90 backdrop-blur-md rounded-3xl border border-slate-200/90 p-5 flex flex-wrap items-center justify-between gap-4 shadow-sm">
-              <div className="flex items-center gap-3.5">
+            {/* Top Module Header Bar */}
+            <div className="bg-white/90 backdrop-blur-md rounded-2xl border border-slate-200/90 p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4 shadow-xs">
+              <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={backToMatrix}
-                  className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#072A6C] to-[#0B3D91] text-[#D4AF37] flex items-center justify-center hover:scale-105 transition-all shadow-md shrink-0 cursor-pointer group"
-                  title="Return to 3D Matrix"
+                  className="w-10 h-10 rounded-xl bg-[#072A6C] hover:bg-[#051c4a] text-white flex items-center justify-center hover:scale-105 transition-all shadow-sm shrink-0 cursor-pointer group"
+                  title="Return to All Modules"
                 >
-                  <ChevronLeft size={22} className="group-hover:-translate-x-0.5 transition-transform" />
+                  <ChevronLeft size={20} className="group-hover:-translate-x-0.5 transition-transform text-[#D4AF37]" />
                 </button>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono font-bold text-[#D4AF37] uppercase tracking-widest bg-[#072A6C]/5 px-2 py-0.5 rounded-md">
+                    <span className="text-[10px] font-mono font-bold text-[#072A6C] uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded-md">
                       MODULE 0{currentSectionIndex + 1} OF {enabledSections.length}
                     </span>
                     <span className="text-slate-300">•</span>
@@ -804,16 +793,16 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
                   type="button"
                   onClick={goToPrevSection}
                   disabled={currentSectionIndex === 0}
-                  className={`h-9 px-3.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  className={`h-8 px-3 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                     currentSectionIndex === 0
                       ? "opacity-40 cursor-not-allowed bg-slate-100 text-slate-400"
                       : "bg-white border border-slate-200 text-slate-700 hover:bg-[#072A6C] hover:text-white shadow-xs"
                   }`}
                 >
-                  <ChevronLeft size={14} /> Prev Module
+                  <ChevronLeft size={13} /> Prev
                 </button>
 
-                <div className="px-3 py-1.5 bg-slate-100 rounded-xl text-[11px] font-mono font-black text-[#072A6C]">
+                <div className="px-2.5 py-1 bg-slate-100 rounded-lg text-[11px] font-mono font-black text-[#072A6C]">
                   {currentSectionIndex + 1} / {enabledSections.length}
                 </div>
 
@@ -821,45 +810,41 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
                   type="button"
                   onClick={goToNextSection}
                   disabled={currentSectionIndex === enabledSections.length - 1}
-                  className={`h-9 px-3.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  className={`h-8 px-3 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                     currentSectionIndex === enabledSections.length - 1
                       ? "opacity-40 cursor-not-allowed bg-slate-100 text-slate-400"
-                      : "bg-[#072A6C] text-white hover:bg-[#0B3D91] shadow-md shadow-[#072A6C]/20"
+                      : "bg-[#072A6C] text-white hover:bg-[#0B3D91] shadow-sm"
                   }`}
                 >
-                  Next Module <ChevronRight size={14} />
+                  Next <ChevronRight size={13} />
                 </button>
 
                 <button
                   type="button"
                   onClick={backToMatrix}
-                  className="h-9 px-3.5 rounded-xl text-xs font-bold bg-[#D4AF37]/15 hover:bg-[#D4AF37]/25 text-[#072A6C] border border-[#D4AF37]/40 flex items-center gap-1.5 transition-all cursor-pointer ml-1"
+                  className="h-8 px-3 rounded-xl text-xs font-bold bg-[#072A6C]/10 hover:bg-[#072A6C]/20 text-[#072A6C] border border-[#072A6C]/20 flex items-center gap-1.5 transition-all cursor-pointer ml-1"
                 >
-                  <Grid size={14} className="text-[#D4AF37]" /> 3D Matrix
+                  <LayoutGrid size={13} className="text-[#072A6C]" /> All Modules
                 </button>
               </div>
             </div>
 
-            {/* Dedicated Module Screen with 3D Holographic Entry Animation */}
+            {/* Dedicated Module Screen */}
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeSection.id}
-                initial={{ opacity: 0, y: 15, scale: 0.98, rotateX: 2 }}
-                animate={{ opacity: 1, y: 0, scale: 1, rotateX: 0 }}
-                exit={{ opacity: 0, y: -15, scale: 0.98, rotateX: -2 }}
-                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-xl relative overflow-hidden text-left"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="bg-white rounded-2xl border border-slate-200/90 p-6 sm:p-8 shadow-sm relative text-left"
               >
-                {/* Cyber Corner Chamfer Accents */}
-                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-[#D4AF37]/10 to-transparent pointer-events-none" />
-                <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-[#072A6C]/5 to-transparent pointer-events-none" />
-
                 {/* Render the Active Module Content */}
                 {renderModuleContent(activeSection.id, programData, peoTab, setPeoTab, syllabusSem, setSyllabusSem, facultyFilter, setFacultyFilter, facultySearch, setFacultySearch, filteredFaculty, activeLabIndex, setActiveLabIndex)}
               </motion.div>
             </AnimatePresence>
 
-            {/* Bottom Telemetry Navigation Bar */}
+            {/* Bottom Navigation Bar */}
             <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
               <button
                 type="button"
@@ -874,16 +859,16 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
               <button
                 type="button"
                 onClick={backToMatrix}
-                className="text-xs font-mono font-bold text-[#072A6C] hover:text-[#D4AF37] bg-white border border-slate-200 px-4 py-2 rounded-xl shadow-xs flex items-center gap-2 cursor-pointer transition-all hover:border-[#D4AF37]"
+                className="text-xs font-bold text-[#072A6C] hover:text-[#051c4a] bg-white border border-slate-200 px-4 py-2 rounded-xl shadow-xs flex items-center gap-2 cursor-pointer transition-all hover:border-[#072A6C]"
               >
-                <Grid size={14} className="text-[#D4AF37]" /> ← Back to 3D Matrix (All 19 Modules)
+                <LayoutGrid size={14} className="text-[#072A6C]" /> ← Back to All Modules
               </button>
 
               <button
                 type="button"
                 onClick={goToNextSection}
                 disabled={currentSectionIndex === enabledSections.length - 1}
-                className="text-xs font-bold text-[#072A6C] hover:text-[#D4AF37] flex items-center gap-1.5 disabled:opacity-30 cursor-pointer"
+                className="text-xs font-bold text-[#072A6C] hover:text-[#0B3D91] flex items-center gap-1.5 disabled:opacity-30 cursor-pointer"
               >
                 {currentSectionIndex < enabledSections.length - 1 ? `Next: ${enabledSections[currentSectionIndex + 1].title}` : "End of Program"}
                 <ChevronRight size={16} />
