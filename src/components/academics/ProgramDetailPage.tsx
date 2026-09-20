@@ -298,111 +298,46 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans selection:bg-[#D4AF37] selection:text-[#072A6C] relative overflow-x-hidden">
       
       {/* ═══════════════════════════════════════════════════════════════════
-          1. ACADEMIC PROGRAM HERO (CLEAN, PRESTIGIOUS UNIVERSITY THEME)
+          1. ACADEMIC PROGRAM HERO (CLEAN, AIRY, LIGHT UNIVERSITY HEADER)
       ═══════════════════════════════════════════════════════════════════ */}
-      <section className="relative z-10 bg-[#072A6C] text-white py-12 px-4 sm:px-6 lg:px-8 border-b border-slate-200/20 shadow-md">
-        {/* Clean university subtle watermark pattern */}
-        <div 
-          className="absolute inset-0 opacity-5 pointer-events-none"
-          style={{
-            backgroundImage: `radial-gradient(circle, #ffffff 1px, transparent 1px)`,
-            backgroundSize: "24px 24px"
-          }}
-        />
-
-        <div className="max-w-7xl mx-auto space-y-6 relative z-10">
+      <section className="relative z-10 bg-white border-b border-slate-200 py-8 sm:py-10 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto space-y-4 text-left">
           
           {/* Clean Breadcrumb Navigation */}
-          <nav className="flex items-center gap-2 text-xs text-white/75 font-medium overflow-x-auto scrollbar-none">
-            <Link to="/" className="hover:text-white transition-colors">Home</Link>
-            <ChevronRight size={13} className="text-white/40 shrink-0" />
-            <Link to="/academics" className="hover:text-white transition-colors">Academics</Link>
-            <ChevronRight size={13} className="text-white/40 shrink-0" />
-            <Link to="/academics/programmes" className="hover:text-white transition-colors">{programData.department}</Link>
-            <ChevronRight size={13} className="text-[#D4AF37] shrink-0" />
-            <span className="text-[#D4AF37] font-semibold truncate">{programData.shortName}</span>
+          <nav className="flex items-center gap-2 text-xs text-slate-500 font-medium overflow-x-auto scrollbar-none pb-1">
+            <Link to="/" className="hover:text-[#072A6C] transition-colors">Home</Link>
+            <ChevronRight size={12} className="text-slate-400 shrink-0" />
+            <Link to="/academics" className="hover:text-[#072A6C] transition-colors">Academics</Link>
+            <ChevronRight size={12} className="text-slate-400 shrink-0" />
+            <Link to="/academics/programmes" className="hover:text-[#072A6C] transition-colors">{programData.department}</Link>
+            <ChevronRight size={12} className="text-[#072A6C] shrink-0" />
+            <span className="text-[#072A6C] font-semibold truncate">{programData.shortName}</span>
           </nav>
 
-          {/* Main Hero Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center pt-1">
-            
-            <div className="lg:col-span-8 space-y-5 text-left">
-              
-              {/* Clean Minimalist Badges: Department Name & Duration ONLY */}
-              <div className="flex flex-wrap items-center gap-3">
-                <div className="inline-flex items-center gap-2 bg-white/10 text-white text-xs font-semibold px-3.5 py-1.5 rounded-lg border border-white/20 shadow-xs">
-                  <Building size={14} className="text-[#D4AF37]" />
-                  <span>{programData.department}</span>
-                </div>
-                <div className="inline-flex items-center gap-2 bg-white/10 text-white text-xs font-semibold px-3.5 py-1.5 rounded-lg border border-white/20 shadow-xs">
-                  <Clock size={14} className="text-[#D4AF37]" />
-                  <span>Duration: {programData.duration}</span>
-                </div>
-              </div>
-
-              {/* Program Title */}
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white leading-tight">
-                {programData.title}
-              </h1>
-
-              {/* Program Overview Summary */}
-              <p className="text-slate-200 text-sm sm:text-base leading-relaxed max-w-3xl font-normal">
-                {programData.about.summary}
-              </p>
-
+          {/* Simple Clean Badges: Department Name & Duration ONLY */}
+          <div className="flex flex-wrap items-center gap-2.5 pt-1">
+            <div className="inline-flex items-center gap-1.5 bg-slate-100 text-[#072A6C] text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-200">
+              <Building size={13} className="text-[#D4AF37]" />
+              <span>{programData.department}</span>
             </div>
-
-            {/* Right Admission Enrolment Card (Prestigious White Card) */}
-            <div className="lg:col-span-4">
-              <div className="bg-white text-slate-900 rounded-2xl p-6 sm:p-7 shadow-xl border border-slate-100 space-y-4 text-left">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#072A6C] uppercase tracking-wider">
-                    Admissions 2026–27
-                  </span>
-                  <span className="text-[11px] font-semibold bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                    Open Now
-                  </span>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-extrabold text-[#072A6C] leading-snug">
-                    Apply for {programData.shortName}
-                  </h3>
-                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                    Direct merit seats, state counselling & scholarship pathways active for eligible applicants.
-                  </p>
-                </div>
-
-                <div className="space-y-2.5 pt-1">
-                  <Link
-                    to="/admissions/apply"
-                    className="w-full h-11 bg-[#072A6C] hover:bg-[#051C4A] text-white text-xs font-bold uppercase tracking-wider rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-98 cursor-pointer"
-                  >
-                    <span>Apply for Admission</span>
-                    <ArrowRight size={15} />
-                  </Link>
-                  
-                  <a
-                    href={programData.syllabus.curriculumPdfUrl || "#"}
-                    onClick={(e) => {
-                      if (!programData.syllabus.curriculumPdfUrl || programData.syllabus.curriculumPdfUrl === "#") {
-                        e.preventDefault();
-                        alert(`Downloading Syllabus & Curriculum PDF for ${programData.title}.`);
-                      }
-                    }}
-                    className="w-full h-10 bg-slate-100 hover:bg-slate-200/80 text-slate-700 text-xs font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors border border-slate-200 cursor-pointer"
-                  >
-                    <Download size={14} /> Download Syllabus (PDF)
-                  </a>
-                </div>
-
-                <div className="pt-3 border-t border-slate-100 text-[11px] text-slate-600">
-                  <span className="font-semibold text-slate-800">Eligibility:</span> {programData.eligibility}
-                </div>
-              </div>
+            <div className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-700 text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-200">
+              <Clock size={13} className="text-[#D4AF37]" />
+              <span>Duration: {programData.duration}</span>
             </div>
-
           </div>
+
+          {/* Program Title */}
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-[#072A6C] leading-tight pt-1">
+            {programData.title}
+          </h1>
+
+          {/* Program Overview Summary */}
+          {programData.about?.summary && (
+            <p className="text-slate-600 text-xs sm:text-sm leading-relaxed max-w-4xl font-normal">
+              {programData.about.summary}
+            </p>
+          )}
+
         </div>
       </section>
 
