@@ -684,7 +684,7 @@ export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionConfig[] = [
     enabled: true,
     order: 6,
     title: "News & Events",
-    subtitle: "Stay updated with campus happenings, national awards, research publications, and upcoming workshops.",
+    subtitle: "Stay Informed. Stay Ahead. Discover the latest updates and exciting events happening at Chalapathi.",
     bgColor: "#FFFFFF"
   },
   {
@@ -1300,44 +1300,46 @@ export const INITIAL_HERO_SLIDES: HeroSlide[] = [
 export const INITIAL_NEWS: NewsArticle[] = [
   {
     id: 1,
-    title: "AI Research Lab Inaugurated on Campus",
-    date: "18 May 2025",
-    time: "10:30 AM",
-    location: "Main Science Block, Room 302",
-    category: "Innovation",
-    excerpt: "In partnership with global tech giants, the new laboratory features advanced machine learning compute nodes for research projects.",
-    bodyText: "Today marks a historic milestone for Chalapathi University as we formally inaugurate our state-of-the-art Artificial Intelligence and Machine Learning Research Laboratory. Developed in close collaboration with global technology leaders, this research center is equipped with high-throughput multi-GPU processing systems and next-generation compute environments designed specifically for heavy workload deep learning and neural network model training. Under the direction of our senior AI research staff, undergraduate and doctoral scholars will collaborate on active research papers, smart industrial solutions, and healthcare diagnostics automation projects.",
-    image: "/prog_computer.png",
-    slug: "ai-research-lab",
-    sourceUrl: "https://www.thehindu.com/sci-tech/technology/internet/artificial-intelligence-research-lab-inaugurated/article671829.ece",
-    featured: true
-  },
-  {
-    id: 2,
     title: "Engineering Students Win Smart Hackathon 2025",
     date: "17 May 2025",
     time: "09:00 AM",
     location: "Tech Exhibition Hub, New Delhi",
-    category: "Achievement",
+    category: "ACHIEVEMENT",
     excerpt: "Our team developed a decentralized IoT mesh network algorithm to win first prize.",
     bodyText: "Our student research team from our Electronics and Computer Science Engineering departments has won the prestigious National Smart Systems Hackathon 2025. Over a grueling 36-hour continuous sprint in New Delhi, the team designed and prototyped a self-healing, decentralized IoT mesh network framework tailored for real-time disaster management communication.",
     image: "/prog_engineering.png",
+    images: ["/prog_engineering.png", "/prog_computer.png"],
     slug: "smart-hackathon",
     sourceUrl: "https://timesofindia.indiatimes.com/education/engineering-students-win-national-smart-hackathon-2025/articleshow/1089271.cms",
     featured: true
   },
   {
-    id: 3,
-    title: "International Yoga Day Celebrated with Enthusiasm",
-    date: "16 May 2025",
-    time: "07:00 AM",
-    location: "Central Playground Complex",
+    id: 2,
+    title: "Annual Convocation 2025 Held with Grandeur",
+    date: "12 May 2025",
+    time: "10:00 AM",
+    location: "Main Auditorium Hall",
     category: "Campus Life",
-    excerpt: "Students and faculty participated in a special yoga session promoting health and wellness.",
-    bodyText: "Students and faculty participated in a special yoga session promoting health, wellness, and mental clarity on International Yoga Day. The event was held in the main campus courtyard with over 500 participants practicing various asanas guided by certified yoga instructors.",
-    image: "/prog_diploma.png",
-    slug: "yoga-day",
-    sourceUrl: "https://www.eenadu.net/yoga-day-celebrations-chalapathi-campus/article/120250516"
+    excerpt: "Graduating students received degrees and medals at the colorful convocation ceremony.",
+    bodyText: "The 2025 annual convocation ceremony was celebrated with grand success. Distinguished chief guests from corporate and academic bodies addressed the graduating cohort and distributed gold medals to academic toppers.",
+    image: "/prog_pharmacy.png",
+    images: ["/prog_pharmacy.png", "/prog_management.png"],
+    slug: "annual-convocation",
+    sourceUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+  },
+  {
+    id: 3,
+    title: "Record Placements in 2025 Batch",
+    date: "14 May 2025",
+    time: "10:00 AM",
+    location: "Placements Office",
+    category: "Placements",
+    excerpt: "Top recruiters from across the globe visited campus. Students secured roles in leading MNCs.",
+    bodyText: "Chalapathi University registers outstanding placement results for the 2025 batch. Leading multinationals including tech and core giants participated, offering premium software engineering and core research positions to over 90% of eligible graduates.",
+    image: "/prog_management.png",
+    images: ["/prog_management.png", "/prog_engineering.png"],
+    slug: "record-placements",
+    sourceUrl: "https://www.abnandhrajyothy.com/chalapathi-university-record-placements-2025/article/1109"
   },
   {
     id: 4,
@@ -1349,59 +1351,63 @@ export const INITIAL_NEWS: NewsArticle[] = [
     excerpt: "The research highlights the efficiency of hybrid models in optimizing sustainable energy.",
     bodyText: "A breakthrough research paper on renewable energy harvesting techniques has been published in a top-tier Scopus-indexed journal. The study highlights the implementation of hybrid solar-wind energy conservation models in microgrids.",
     image: "/prog_mtech.png",
+    images: ["/prog_mtech.png", "/prog_computer.png"],
     slug: "renewable-energy",
     sourceUrl: "https://www.sakshi.com/renewable-energy-research-study-published-scopus/article/20250515"
   },
   {
     id: 5,
-    title: "Record Placements in 2025 Batch",
-    date: "14 May 2025",
-    time: "10:00 AM",
-    location: "Placements Office",
-    category: "Placements",
-    excerpt: "Top recruiters from across the globe visited campus. Students secured roles in leading MNCs.",
-    bodyText: "Chalapathi University registers outstanding placement results for the 2025 batch. Leading multinationals including tech and core giants participated, offering premium software engineering and core research positions to over 90% of eligible graduates.",
-    image: "/prog_management.png",
-    slug: "record-placements",
-    sourceUrl: "https://www.abnandhrajyothy.com/chalapathi-university-record-placements-2025/article/1109"
+    title: "International Yoga Day Celebrated with Enthusiasm",
+    date: "16 May 2025",
+    time: "07:00 AM",
+    location: "Central Playground Complex",
+    category: "Campus Life",
+    excerpt: "Students and faculty participated in a special yoga session promoting health and wellness.",
+    bodyText: "Students and faculty participated in a special yoga session promoting health, wellness, and mental clarity on International Yoga Day. The event was held in the main campus courtyard with over 500 participants practicing various asanas guided by certified yoga instructors.",
+    image: "/prog_diploma.png",
+    images: ["/prog_diploma.png", "/prog_pharmacy.png"],
+    slug: "yoga-day",
+    sourceUrl: "https://www.eenadu.net/yoga-day-celebrations-chalapathi-campus/article/120250516"
   },
   {
     id: 6,
-    title: "Annual Convocation 2025 Held with Grandeur",
-    date: "12 May 2025",
-    time: "10:00 AM",
-    location: "Main Auditorium Auditorium Hall",
-    category: "Campus Life",
-    excerpt: "Graduating students received degrees and medals at the colorful convocation ceremony.",
-    bodyText: "The 2025 annual convocation ceremony was celebrated with grand success. Distinguished chief guests from corporate and academic bodies addressed the graduating cohort and distributed gold medals to academic toppers.",
-    image: "/prog_pharmacy.png",
-    slug: "annual-convocation",
-    sourceUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    title: "AI Research Lab Inaugurated on Campus",
+    date: "18 May 2025",
+    time: "10:30 AM",
+    location: "Main Science Block, Room 302",
+    category: "Innovation",
+    excerpt: "In partnership with global tech giants, the new laboratory features advanced machine learning compute nodes for research projects.",
+    bodyText: "Today marks a historic milestone for Chalapathi University as we formally inaugurate our state-of-the-art Artificial Intelligence and Machine Learning Research Laboratory. Developed in close collaboration with global technology leaders, this research center is equipped with high-throughput multi-GPU processing systems and next-generation compute environments designed specifically for heavy workload deep learning and neural network model training. Under the direction of our senior AI research staff, undergraduate and doctoral scholars will collaborate on active research papers, smart industrial solutions, and healthcare diagnostics automation projects.",
+    image: "/prog_computer.png",
+    images: ["/prog_computer.png", "/prog_engineering.png"],
+    slug: "ai-research-lab",
+    sourceUrl: "https://www.thehindu.com/sci-tech/technology/internet/artificial-intelligence-research-lab-inaugurated/article671829.ece",
+    featured: true
   }
 ];
 
 export const INITIAL_EVENTS: EventItem[] = [
   { 
     id: 1, 
-    slug: "air-taxi-demonstration-aviation-forum", 
-    title: "Air Taxi Demonstration & Aviation Forum", 
-    date: "17 Jul 2026", 
-    time: "09:30 AM", 
-    location: "Aeronautics Hangar & Airfield Complex", 
-    category: "Aerospace", 
-    image: "/prog_engineering.png", 
-    bodyText: "In collaboration with global aerospace research institutions and pioneering aviation companies, Chalapathi University is proud to host the Air Taxi Demonstration and Aviation Forum. This event features real-world test flights and static exhibitions of cutting-edge electric Vertical Take-Off and Landing (eVTOL) air taxi models." 
+    slug: "national-sports-meet-2026", 
+    title: "National Sports Meet & Athletic Championship", 
+    date: "12 Nov 2026", 
+    time: "07:00 AM", 
+    location: "University Sports Arena & Athletic Track", 
+    category: "Sports", 
+    image: "/prog_diploma.png", 
+    bodyText: "Over 50 universities face off in the annual athletic championship, featuring track events, field sports, inter-college football, cricket leagues, and indoor badminton tournaments with cash prizes." 
   },
   { 
     id: 2, 
-    slug: "smart-india-hackathon-2026", 
-    title: "Smart India Hackathon 2026 Campus Edition", 
-    date: "24 Aug 2026", 
-    time: "09:00 AM", 
-    location: "Main Seminar Hall & Central Library Labs", 
-    category: "Technology", 
-    image: "/prog_computer.png", 
-    bodyText: "Join the national-level coding hackathon where students build solutions for real-world government and corporate challenges. The campus round decides the top teams representing the university in the grand finale." 
+    slug: "placements-bootcamp-2026", 
+    title: "Annual Placements Boot Camp and Corporate Summit", 
+    date: "08 Oct 2026", 
+    time: "08:30 AM", 
+    location: "Placement Training Center", 
+    category: "Placements", 
+    image: "/prog_management.png", 
+    bodyText: "A comprehensive recruitment readiness workshop featuring mock HR interviews, quantitative aptitude sessions, group discussion prep, and interactive roundtables with hiring heads of Fortune 500 tech partners." 
   },
   { 
     id: 3, 
@@ -1416,25 +1422,25 @@ export const INITIAL_EVENTS: EventItem[] = [
   },
   { 
     id: 4, 
-    slug: "placements-bootcamp-2026", 
-    title: "Annual Placements Boot Camp and Corporate Summit", 
-    date: "08 Oct 2026", 
-    time: "08:30 AM", 
-    location: "Placement Training Center", 
-    category: "Placements", 
-    image: "/prog_management.png", 
-    bodyText: "A comprehensive recruitment readiness workshop featuring mock HR interviews, quantitative aptitude sessions, group discussion prep, and interactive roundtables with hiring heads of Fortune 500 tech partners." 
+    slug: "smart-india-hackathon-2026", 
+    title: "Smart India Hackathon 2026 Campus Edition", 
+    date: "24 Aug 2026", 
+    time: "09:00 AM", 
+    location: "Main Seminar Hall & Central Library Labs", 
+    category: "Technology", 
+    image: "/prog_computer.png", 
+    bodyText: "Join the national-level coding hackathon where students build solutions for real-world government and corporate challenges. The campus round decides the top teams representing the university in the grand finale." 
   },
   { 
     id: 5, 
-    slug: "national-sports-meet-2026", 
-    title: "National Sports Meet & Athletic Championship", 
-    date: "12 Nov 2026", 
-    time: "07:00 AM", 
-    location: "University Sports Arena & Athletic Track", 
-    category: "Sports", 
-    image: "/prog_diploma.png", 
-    bodyText: "Over 50 universities face off in the annual athletic championship, featuring track events, field sports, inter-college football, cricket leagues, and indoor badminton tournaments with cash prizes." 
+    slug: "air-taxi-demonstration-aviation-forum", 
+    title: "Air Taxi Demonstration & Aviation Forum", 
+    date: "17 Jul 2026", 
+    time: "09:30 AM", 
+    location: "Aeronautics Hangar & Airfield Complex", 
+    category: "Aerospace", 
+    image: "/prog_engineering.png", 
+    bodyText: "In collaboration with global aerospace research institutions and pioneering aviation companies, Chalapathi University is proud to host the Air Taxi Demonstration and Aviation Forum. This event features real-world test flights and static exhibitions of cutting-edge electric Vertical Take-Off and Landing (eVTOL) air taxi models." 
   }
 ];
 
@@ -2074,8 +2080,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // News
   const [news, setNews] = useState<NewsArticle[]>(() => {
-    const local = localStorage.getItem("chalapathi_news");
-    return local ? JSON.parse(local) : INITIAL_NEWS;
+    const local = localStorage.getItem("chalapathi_news_v3");
+    if (local) return JSON.parse(local);
+    localStorage.setItem("chalapathi_news_v3", JSON.stringify(INITIAL_NEWS));
+    return INITIAL_NEWS;
   });
 
   // News Page Configuration
@@ -2086,13 +2094,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Events
   const [events, setEvents] = useState<EventItem[]>(() => {
-    const local = localStorage.getItem("chalapathi_events");
-    const parsed = local ? JSON.parse(local) : [];
-    if (parsed.length <= 1) {
-      localStorage.setItem("chalapathi_events", JSON.stringify(INITIAL_EVENTS));
-      return INITIAL_EVENTS;
-    }
-    return parsed;
+    const local = localStorage.getItem("chalapathi_events_v3");
+    if (local) return JSON.parse(local);
+    localStorage.setItem("chalapathi_events_v3", JSON.stringify(INITIAL_EVENTS));
+    return INITIAL_EVENTS;
   });
 
   // About Content
@@ -2203,13 +2208,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const localPrograms = localStorage.getItem("chalapathi_programs");
         if (localPrograms) setPrograms(JSON.parse(localPrograms));
 
-        const localNews = localStorage.getItem("chalapathi_news");
+        const localNews = localStorage.getItem("chalapathi_news_v3") || localStorage.getItem("chalapathi_news");
         if (localNews) setNews(JSON.parse(localNews));
 
         const localNewsConfig = localStorage.getItem("chalapathi_news_page_config");
         if (localNewsConfig) setNewsPageConfig(JSON.parse(localNewsConfig));
 
-        const localEvents = localStorage.getItem("chalapathi_events");
+        const localEvents = localStorage.getItem("chalapathi_events_v3") || localStorage.getItem("chalapathi_events");
         if (localEvents) setEvents(JSON.parse(localEvents));
 
         const localAbout = localStorage.getItem("chalapathi_about_v2");
@@ -2338,6 +2343,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateNews = (list: NewsArticle[]) => {
     setNews(list);
+    localStorage.setItem("chalapathi_news_v3", JSON.stringify(list));
     localStorage.setItem("chalapathi_news", JSON.stringify(list));
     recordSave();
   };
@@ -2350,6 +2356,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateEvents = (list: EventItem[]) => {
     setEvents(list);
+    localStorage.setItem("chalapathi_events_v3", JSON.stringify(list));
     localStorage.setItem("chalapathi_events", JSON.stringify(list));
     recordSave();
   };

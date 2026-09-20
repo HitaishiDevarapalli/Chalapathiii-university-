@@ -786,10 +786,18 @@ export default function Home() {
           {/* Header */}
           <div className="text-left mb-16">
             <h2 className="text-4xl md:text-6xl lg:text-7xl font-[950] text-[#072A6C] uppercase tracking-tight mb-4 leading-none">
-              News & <span className="text-[#D4AF37]">Events</span>
+              {(() => {
+                const sec = homepageSections?.find((s) => s.id === "newsEvents");
+                const title = sec?.title || "News & Events";
+                if (title.includes("&")) {
+                  const [p1, p2] = title.split("&");
+                  return <>{p1}& <span className="text-[#D4AF37]">{p2}</span></>;
+                }
+                return title;
+              })()}
             </h2>
             <p className="text-xs md:text-sm text-gray-500 max-w-2xl font-light leading-relaxed">
-              Stay Informed. Stay Ahead. Discover the latest updates and exciting events happening at Chalapathi.
+              {homepageSections?.find((s) => s.id === "newsEvents")?.subtitle || "Stay Informed. Stay Ahead. Discover the latest updates and exciting events happening at Chalapathi."}
             </p>
           </div>
 
@@ -937,7 +945,7 @@ export default function Home() {
                 </div>
 
                 <div className="space-y-4">
-                  {[...news].reverse().slice(0, 4).map((item, idx) => {
+                  {(news.length > 4 ? news.slice(1, 5) : news.slice(0, 4)).map((item, idx) => {
                     const dateParts = (() => {
                       if (!item.date) return { day: "12", month: "MAY" };
                       const parts = item.date.trim().split(" ");
@@ -987,7 +995,7 @@ export default function Home() {
                 </div>
 
                 <div className="space-y-4">
-                  {[...events].reverse().slice(0, 4).map((item, idx) => {
+                  {events.slice(0, 4).map((item, idx) => {
                     const dateParts = (() => {
                       if (!item.date) return { day: "12", month: "MAY" };
                       const parts = item.date.trim().split(" ");

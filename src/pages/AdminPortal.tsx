@@ -451,10 +451,10 @@ export default function AdminPortal() {
   // News & Events Section
   const newsEventsSection = sectionsList.find((s) => s.id === "newsEvents");
   const [newsEventsData, setNewsEventsData] = useState(() => ({
-    title: newsEventsSection?.title || "News & Events Highlights",
-    subtitle: newsEventsSection?.subtitle || "Stay updated with campus happenings, national awards, research publications, and upcoming workshops.",
+    title: newsEventsSection?.title || "News & Events",
+    subtitle: newsEventsSection?.subtitle || "Stay Informed. Stay Ahead. Discover the latest updates and exciting events happening at Chalapathi.",
     buttonText: newsEventsSection?.buttonText || "View All News & Events",
-    buttonUrl: newsEventsSection?.buttonUrl || "/news-events"
+    buttonUrl: newsEventsSection?.buttonUrl || "/news"
   }));
 
   const saveNewsEventsSection = () => {
@@ -2195,10 +2195,10 @@ export default function AdminPortal() {
                           updateEvents(INITIAL_EVENTS);
                           const defNewsEvents = DEFAULT_HOMEPAGE_SECTIONS.find((s) => s.id === "newsEvents");
                           setNewsEventsData({
-                            title: defNewsEvents?.title || "News & Events Highlights",
-                            subtitle: defNewsEvents?.subtitle || "Stay updated with campus happenings, national awards, research publications, and upcoming workshops.",
+                            title: defNewsEvents?.title || "News & Events",
+                            subtitle: defNewsEvents?.subtitle || "Stay Informed. Stay Ahead. Discover the latest updates and exciting events happening at Chalapathi.",
                             buttonText: defNewsEvents?.buttonText || "View All News & Events",
-                            buttonUrl: defNewsEvents?.buttonUrl || "/news-events"
+                            buttonUrl: defNewsEvents?.buttonUrl || "/news"
                           });
                           notifySave("News & Events highlights reset to default!");
                         }}
@@ -2281,7 +2281,7 @@ export default function AdminPortal() {
                                   updated[0] = { ...updated[0], category: e.target.value };
                                   setNewsList(updated);
                                 }}
-                                placeholder="e.g. INNOVATION"
+                                placeholder="e.g. ACHIEVEMENT"
                                 className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold text-[#D4AF37]"
                               />
                             </div>
@@ -2295,7 +2295,7 @@ export default function AdminPortal() {
                                   updated[0] = { ...updated[0], date: e.target.value };
                                   setNewsList(updated);
                                 }}
-                                placeholder="18 May 2025"
+                                placeholder="17 May 2025"
                                 className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-medium"
                               />
                             </div>
@@ -2357,13 +2357,17 @@ export default function AdminPortal() {
                               date: new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
                               time: "10:00 AM",
                               location: "Campus",
-                              category: "Campus",
+                              category: "Campus Life",
                               excerpt: "Short news snippet description.",
                               bodyText: "Full article text.",
                               image: "/prog_computer.png",
                               slug: "news-" + Date.now()
                             };
-                            setNewsList([newNews, ...newsList]);
+                            if (newsList.length > 0) {
+                              setNewsList([newsList[0], newNews, ...newsList.slice(1)]);
+                            } else {
+                              setNewsList([newNews]);
+                            }
                           }}
                           className="h-6 px-2 bg-[#072A6C] text-white text-[10px] font-bold rounded cursor-pointer"
                         >
@@ -2372,46 +2376,49 @@ export default function AdminPortal() {
                       </div>
 
                       <div className="space-y-3">
-                        {newsList.slice(0, 4).map((item, idx) => (
-                          <div key={item.id || idx} className="p-3 bg-white border border-gray-200 rounded-xl space-y-2 shadow-xs">
-                            <div className="flex items-center justify-between">
-                              <span className="text-[10px] font-black text-[#D4AF37]">Item #{idx + 1}</span>
+                        {newsList.slice(1, 5).map((item, sliceIdx) => {
+                          const actualIdx = sliceIdx + 1;
+                          return (
+                            <div key={item.id || actualIdx} className="p-3 bg-white border border-gray-200 rounded-xl space-y-2 shadow-xs">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-black text-[#D4AF37]">Item #{sliceIdx + 1}</span>
+                                <input
+                                  type="text"
+                                  value={item.date}
+                                  onChange={(e) => {
+                                    const updated = [...newsList];
+                                    updated[actualIdx] = { ...updated[actualIdx], date: e.target.value };
+                                    setNewsList(updated);
+                                  }}
+                                  placeholder="12 May 2025"
+                                  className="w-24 h-6 px-1.5 text-[10px] bg-slate-50 border border-gray-200 rounded font-bold text-center"
+                                />
+                              </div>
                               <input
                                 type="text"
-                                value={item.date}
+                                value={item.title}
                                 onChange={(e) => {
                                   const updated = [...newsList];
-                                  updated[idx] = { ...updated[idx], date: e.target.value };
+                                  updated[actualIdx] = { ...updated[actualIdx], title: e.target.value };
                                   setNewsList(updated);
                                 }}
-                                placeholder="18 May 2025"
-                                className="w-24 h-6 px-1.5 text-[10px] bg-slate-50 border border-gray-200 rounded font-bold text-center"
+                                placeholder="News headline"
+                                className="w-full h-7 px-2 text-[11px] font-bold bg-slate-50 border border-gray-200 rounded text-slate-800"
+                              />
+                              <textarea
+                                rows={2}
+                                value={item.excerpt || ""}
+                                onChange={(e) => {
+                                  const updated = [...newsList];
+                                  updated[actualIdx] = { ...updated[actualIdx], excerpt: e.target.value };
+                                  setNewsList(updated);
+                                }}
+                                placeholder="Excerpt"
+                                className="w-full p-1.5 text-[10px] bg-slate-50 border border-gray-200 rounded text-gray-600"
                               />
                             </div>
-                            <input
-                              type="text"
-                              value={item.title}
-                              onChange={(e) => {
-                                const updated = [...newsList];
-                                updated[idx] = { ...updated[idx], title: e.target.value };
-                                setNewsList(updated);
-                              }}
-                              placeholder="News headline"
-                              className="w-full h-7 px-2 text-[11px] font-bold bg-slate-50 border border-gray-200 rounded text-slate-800"
-                            />
-                            <textarea
-                              rows={2}
-                              value={item.excerpt || ""}
-                              onChange={(e) => {
-                                const updated = [...newsList];
-                                updated[idx] = { ...updated[idx], excerpt: e.target.value };
-                                setNewsList(updated);
-                              }}
-                              placeholder="Excerpt"
-                              className="w-full p-1.5 text-[10px] bg-slate-50 border border-gray-200 rounded text-gray-600"
-                            />
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
 
@@ -2456,7 +2463,7 @@ export default function AdminPortal() {
                                   updated[idx] = { ...updated[idx], date: e.target.value };
                                   setEventsList(updated);
                                 }}
-                                placeholder="20 Jun 2026"
+                                placeholder="12 Nov 2026"
                                 className="w-24 h-6 px-1.5 text-[10px] bg-slate-50 border border-gray-200 rounded font-bold text-center"
                               />
                             </div>
@@ -2480,7 +2487,7 @@ export default function AdminPortal() {
                                   updated[idx] = { ...updated[idx], time: e.target.value };
                                   setEventsList(updated);
                                 }}
-                                placeholder="09:30 AM"
+                                placeholder="07:00 AM"
                                 className="h-6 px-1.5 text-[10px] bg-slate-50 border border-gray-200 rounded"
                               />
                               <input
