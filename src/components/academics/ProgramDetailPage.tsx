@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   GraduationCap, BookOpen, Award, Users, Briefcase, Building, FileText,
@@ -110,6 +110,8 @@ interface ProgramDetailPageProps {
 
 export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPageProps) {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const moduleParam = searchParams.get("module");
   const { programs } = useData();
 
   // Find base program if available in programsData
@@ -153,9 +155,20 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
   // Integrated Interaction Flow:
   // selectedModuleId === null -> 3D Cyber Matrix (Default Grid of all 19 Dimensions)
   // selectedModuleId === string -> Dedicated Holographic Interactive Module Screen
-  const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
+  const [selectedModuleId, setSelectedModuleId] = useState<string | null>(() => {
+    return moduleParam || null;
+  });
   const [activeSectorId, setActiveSectorId] = useState<string>("sector-all");
   const [matrixSearch, setMatrixSearch] = useState<string>("");
+
+  // Sync module state when URL query parameter changes
+  useEffect(() => {
+    if (moduleParam && enabledSections.some(s => s.id === moduleParam)) {
+      setSelectedModuleId(moduleParam);
+    } else if (!moduleParam) {
+      setSelectedModuleId(null);
+    }
+  }, [moduleParam, enabledSections]);
 
   // Section-specific sub-states
   const [peoTab, setPeoTab] = useState<"peos" | "pos" | "psos">("peos");
@@ -186,25 +199,44 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
     return enabledSections.findIndex(s => s.id === selectedModuleId);
   }, [enabledSections, selectedModuleId]);
 
+  const selectModule = (id: string) => {
+    setSelectedModuleId(id);
+    setSearchParams({ module: id }, { replace: false });
+    setTimeout(() => {
+      const target = document.getElementById("academic-dimension-screen") || document.getElementById("academic-command-viewport");
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        window.scrollTo({ top: 420, behavior: "smooth" });
+      }
+    }, 50);
+  };
+
+  const backToMatrix = () => {
+    setSelectedModuleId(null);
+    setSearchParams({}, { replace: true });
+    setTimeout(() => {
+      const target = document.getElementById("academic-blueprint-matrix") || document.getElementById("academic-command-viewport");
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        window.scrollTo({ top: 380, behavior: "smooth" });
+      }
+    }, 50);
+  };
+
   const goToPrevSection = () => {
     if (currentSectionIndex > 0) {
       const prevId = enabledSections[currentSectionIndex - 1].id;
-      setSelectedModuleId(prevId);
-      window.scrollTo({ top: 380, behavior: "smooth" });
+      selectModule(prevId);
     }
   };
 
   const goToNextSection = () => {
     if (currentSectionIndex < enabledSections.length - 1) {
       const nextId = enabledSections[currentSectionIndex + 1].id;
-      setSelectedModuleId(nextId);
-      window.scrollTo({ top: 380, behavior: "smooth" });
+      selectModule(nextId);
     }
-  };
-
-  const backToMatrix = () => {
-    setSelectedModuleId(null);
-    window.scrollTo({ top: 380, behavior: "smooth" });
   };
 
   // Keyboard navigation between modules
@@ -481,7 +513,7 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
       {/* ═══════════════════════════════════════════════════════════════════
           2. INTEGRATED COMMAND DOCK (SECTOR FILTERS & MATRIX / HOLO-DECK CONTROLS)
       ═══════════════════════════════════════════════════════════════════ */}
-      <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-xl border-b border-slate-200 shadow-md transition-all">
+      <div id="academic-command-viewport" className="sticky top-0 z-30 bg-white/95 backdrop-blur-xl border-b border-slate-200 shadow-md transition-all">
         <div className="max-w-7xl mx-auto px-4 py-3">
           
           {/* STATE A: IN 3D CYBER MATRIX (DEFAULT OVERVIEW) */}
@@ -618,7 +650,7 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
             VIEW A: 🌐 3D CYBER MATRIX GRID (DEFAULT VIEW)
         ───────────────────────────────────────────────────────────── */}
         {!selectedModuleId ? (
-          <div className="space-y-8">
+          <div id="academic-blueprint-matrix" className="space-y-8 scroll-mt-24">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-2 border-b border-slate-200/80">
               <div className="space-y-1.5 text-left">
                 <div className="flex items-center gap-2">
@@ -667,10 +699,7 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
                       key={sec.id}
                       whileHover={{ y: -6, scale: 1.02, rotateY: 2 }}
                       transition={{ type: "spring", stiffness: 320, damping: 22 }}
-                      onClick={() => {
-                        setSelectedModuleId(sec.id);
-                        window.scrollTo({ top: 380, behavior: "smooth" });
-                      }}
+                      onClick={() => selectModule(sec.id)}
                       className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-sm hover:shadow-2xl hover:border-[#D4AF37]/60 hover:ring-2 hover:ring-[#D4AF37]/30 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between group"
                     >
                       {/* Cyber Gradient Glow Sweep on Card */}
@@ -740,7 +769,7 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
           /* ─────────────────────────────────────────────────────────────
               VIEW B: 🚀 DEDICATED HOLO-DECK MODULE SCREEN
           ───────────────────────────────────────────────────────────── */
-          <div className="space-y-6">
+          <div id="academic-dimension-screen" className="space-y-6 scroll-mt-24">
             
             {/* Top Module Telemetry Header Bar */}
             <div className="bg-white/90 backdrop-blur-md rounded-3xl border border-slate-200/90 p-5 flex flex-wrap items-center justify-between gap-4 shadow-sm">

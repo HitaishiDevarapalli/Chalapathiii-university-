@@ -549,7 +549,7 @@ export default function AdminPortal() {
   // 6. ABOUT US FORM
   // ----------------------------------------------------
   const [aboutForm, setAboutForm] = useState<AboutUsContent>(aboutContent);
-  const [activeAboutSubTab, setActiveAboutSubTab] = useState<"genesis" | "vision" | "leadership" | "advantage">("genesis");
+  const [activeAboutSubTab, setActiveAboutSubTab] = useState<"genesis" | "vision" | "leadership" | "advantage" | "homepage">("genesis");
   React.useEffect(() => setAboutForm(aboutContent), [aboutContent]);
 
   const saveAbout = () => {
@@ -560,6 +560,8 @@ export default function AdminPortal() {
   // ----------------------------------------------------
   // 7. ACADEMICS & PROGRAM BUILDER
   // ----------------------------------------------------
+  const [academicsSubTab, setAcademicsSubTab] = useState<"program" | "homepage">("program");
+  const [gallerySubTab, setGallerySubTab] = useState<"moments" | "homepage">("moments");
   const [programsList, setProgramsList] = useState<ProgramDetail[]>(programs);
   const [selectedProgSlug, setSelectedProgSlug] = useState<string>(programs[0]?.slug || "btech-cse");
   const currentProg = programsList.find((p) => p.slug === selectedProgSlug) || programsList[0];
@@ -4561,7 +4563,8 @@ export default function AdminPortal() {
                   { id: "genesis", label: "1. Genesis & Heritage" },
                   { id: "vision", label: "2. Vision & Mission" },
                   { id: "leadership", label: "3. Leadership & Chairman" },
-                  { id: "advantage", label: "4. Chalapathi Advantage" }
+                  { id: "advantage", label: "4. Chalapathi Advantage" },
+                  { id: "homepage", label: "🏠 5. Homepage Why Choose Us, Chairman & Journey" }
                 ].map((st) => (
                   <button
                     key={st.id}
@@ -6154,6 +6157,134 @@ export default function AdminPortal() {
                   </div>
                 </div>
               )}
+
+              {/* 5. Sub-tab: Homepage Why Choose Us, Chairman & Journey */}
+              {activeAboutSubTab === "homepage" && (
+                <div className="space-y-6 text-left">
+                  {/* Header */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-300">
+                          Homepage Section Sync
+                        </span>
+                        <span className="text-xs text-gray-400 font-mono">Live on Home Page</span>
+                      </div>
+                      <h3 className="text-base font-black text-[#072A6C] uppercase">
+                        🏠 Homepage Why Choose Us, Chairman & Journey Sync
+                      </h3>
+                      <p className="text-xs text-gray-500">
+                        Edit the 6 "Why Choose Us" feature cards, Chairman's leadership spotlight, and the 30-year journey milestones that appear on the homepage.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          saveAbout();
+                          saveWhyChoose();
+                          saveChairman();
+                          notifySave("Homepage Why Choose Us & Chairman content published live!");
+                        }}
+                        className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      >
+                        <Save size={13} /> Save Homepage About Sync
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 1. Why Choose Us (6 Feature Cards) */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                      <div>
+                        <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-2">
+                          <Sparkles size={14} className="text-[#D4AF37]" />
+                          1. Why Choose Chalapathi University (6 Core Cards)
+                        </h4>
+                        <p className="text-[11px] text-gray-500">The 6 value proposition cards presented in the Why Choose Us section</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                      {whyChooseData.map((card, idx) => (
+                        <div key={idx} className="p-4 rounded-xl border border-gray-200 bg-slate-50/60 space-y-2">
+                          <span className="text-[10px] font-black text-[#072A6C] uppercase">Card #{idx + 1}</span>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Card Title</label>
+                            <input
+                              type="text"
+                              value={card.title || ""}
+                              onChange={(e) => {
+                                const updated = [...whyChooseData];
+                                updated[idx] = { ...updated[idx], title: e.target.value };
+                                setWhyChooseData(updated);
+                              }}
+                              className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Card Description</label>
+                            <textarea
+                              rows={3}
+                              value={card.desc || ""}
+                              onChange={(e) => {
+                                const updated = [...whyChooseData];
+                                updated[idx] = { ...updated[idx], desc: e.target.value };
+                                setWhyChooseData(updated);
+                              }}
+                              className="w-full p-2 text-xs bg-white border border-gray-200 rounded-lg font-medium"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 2. Chairman's Message & Leadership Spotlight */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                      <div>
+                        <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-2">
+                          <Award size={14} className="text-[#072A6C]" />
+                          2. Chairman's Leadership Message & Video
+                        </h4>
+                        <p className="text-[11px] text-gray-500">Inspiring message from Sri Y.V. Anjaneyulu, Chairman</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Chairman Name</label>
+                        <input
+                          type="text"
+                          value={chairmanData.name || "Sri Y.V. Anjaneyulu"}
+                          onChange={(e) => setChairmanData({ ...chairmanData, name: e.target.value })}
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Designation</label>
+                        <input
+                          type="text"
+                          value={chairmanData.designation || "Chairman, Chalapathi Educational Society"}
+                          onChange={(e) => setChairmanData({ ...chairmanData, designation: e.target.value })}
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#D4AF37]"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-600 uppercase">Featured Quote</label>
+                      <textarea
+                        rows={2}
+                        value={chairmanData.quote || "Empowering minds, inspiring innovation, and building leaders for tomorrow."}
+                        onChange={(e) => setChairmanData({ ...chairmanData, quote: e.target.value })}
+                        className="w-full p-2.5 text-xs bg-slate-50 border border-gray-200 rounded-xl italic text-gray-800"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -6163,10 +6294,16 @@ export default function AdminPortal() {
           {activeTab === "academics" && (
             <div className="space-y-6 animate-fade-in text-left">
               <SectionHeader
-                title="Academics & 19-Section Program Builder"
-                subtitle="Manage program curriculum, syllabus files, year flowcharts, and section visibility"
+                title="Academics & Program Explorer CMS"
+                subtitle="Manage individual program 19 dimensions, syllabus blueprints, and the homepage Schools & Programs Explorer"
                 icon={GraduationCap}
-                onSave={saveProgramDetails}
+                onSave={() => {
+                  if (academicsSubTab === "program") {
+                    saveProgramDetails();
+                  } else {
+                    saveProgramsSection();
+                  }
+                }}
                 saveSuccess={saveSuccess}
                 onReset={() => {
                   setProgramsList(PROGRAMS_DATA);
@@ -6179,7 +6316,30 @@ export default function AdminPortal() {
                 resetLabel="Reset Academics"
               />
 
-              {/* Program Selector */}
+              {/* Subtabs Selector */}
+              <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3">
+                {[
+                  { id: "program", label: "🎓 1. Program Blueprint & 19 Dimensions" },
+                  { id: "homepage", label: "🏠 2. Homepage Programs & Schools Explorer" }
+                ].map((st) => (
+                  <button
+                    key={st.id}
+                    onClick={() => setAcademicsSubTab(st.id as any)}
+                    className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      academicsSubTab === st.id
+                        ? "bg-[#072A6C] text-white shadow-xs"
+                        : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
+                    }`}
+                  >
+                    {st.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Subtab 1: Individual Program Blueprint & 19 Dimensions */}
+              {academicsSubTab === "program" && (
+                <div className="space-y-6">
+                  {/* Program Selector */}
               <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs flex flex-col sm:flex-row gap-3 items-center justify-between">
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                   <span className="text-xs font-bold text-gray-700 uppercase shrink-0">Select Program:</span>
@@ -6314,6 +6474,96 @@ export default function AdminPortal() {
               </div>
             </div>
           )}
+
+          {/* Subtab 2: Homepage Programs & Schools Explorer */}
+          {academicsSubTab === "homepage" && (
+            <div className="space-y-6 text-left">
+              {/* Header Card */}
+              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-100 text-purple-900 border border-purple-300">
+                      Homepage Section Sync
+                    </span>
+                    <span className="text-xs text-gray-400 font-mono">Live on Home Page</span>
+                  </div>
+                  <h3 className="text-base font-black text-[#072A6C] uppercase">
+                    🏠 Homepage Schools & Programs Explorer Sync
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    Configure the school tabs, category navigation, and program cards shown on the university homepage explorer.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={saveProgramsSection}
+                    className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+                  >
+                    <Save size={13} /> Save Homepage Explorer
+                  </button>
+                </div>
+              </div>
+
+              {/* Section Headings */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-5 rounded-2xl bg-white border border-gray-200 shadow-xs">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-600 uppercase">Section Main Heading</label>
+                  <input
+                    type="text"
+                    value={programsSectionData.title}
+                    onChange={(e) => setProgramsSectionData({ ...programsSectionData, title: e.target.value })}
+                    className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-600 uppercase">Section Subtitle</label>
+                  <input
+                    type="text"
+                    value={programsSectionData.subtitle}
+                    onChange={(e) => setProgramsSectionData({ ...programsSectionData, subtitle: e.target.value })}
+                    className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-700"
+                  />
+                </div>
+              </div>
+
+              {/* School Tabs Overview */}
+              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                  <div>
+                    <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-2">
+                      <GraduationCap size={14} className="text-[#072A6C]" />
+                      Active Schools & Faculty Tabs ({Object.keys(academicData).length})
+                    </h4>
+                    <p className="text-[11px] text-gray-500">Each school tab organizes departments and displays degree cards on the homepage</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                  {Object.keys(academicData).map((schoolName) => {
+                    const depts = Object.keys(academicData[schoolName] || {});
+                    return (
+                      <div key={schoolName} className="p-4 rounded-xl border border-gray-200 bg-slate-50/70 space-y-2">
+                        <h5 className="font-bold text-xs text-[#072A6C] truncate">{schoolName}</h5>
+                        <span className="text-[10px] font-semibold text-gray-500 block">
+                          {depts.length} Department Categories
+                        </span>
+                        <div className="flex flex-wrap gap-1 pt-1">
+                          {depts.map((d) => (
+                            <span key={d} className="px-2 py-0.5 bg-white border border-gray-200 rounded text-[9.5px] font-bold text-gray-700">
+                              {d}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
           {/* ════════════════════════════════════════════════════ */}
           {/* TAB 5: ADMISSIONS & LEADS MANAGEMENT                */}
@@ -7265,15 +7515,37 @@ export default function AdminPortal() {
                 resetLabel="Reset Gallery"
               />
 
-              {/* Moments that Make Memories Section */}
-              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
-                <div className="flex items-center justify-between pb-2 border-b border-gray-100">
-                  <div>
-                    <h3 className="text-sm font-black text-[#072A6C] uppercase">
-                      Moments that Make Memories ({campusGalleryList.length} Cards)
-                    </h3>
-                    <p className="text-xs text-gray-500">Live square gallery carousel displayed on the home page</p>
-                  </div>
+              {/* Subtabs Selector */}
+              <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3">
+                {[
+                  { id: "moments", label: `🖼️ 1. Photo Memories & Categories (${campusGalleryList.length})` },
+                  { id: "homepage", label: "🏠 2. Homepage Photo Memories & Tour Videos" }
+                ].map((st) => (
+                  <button
+                    key={st.id}
+                    onClick={() => setGallerySubTab(st.id as any)}
+                    className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      gallerySubTab === st.id
+                        ? "bg-[#072A6C] text-white shadow-xs"
+                        : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
+                    }`}
+                  >
+                    {st.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Subtab 1: Moments that Make Memories Section */}
+              {gallerySubTab === "moments" && (
+                <div className="space-y-6">
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+                      <div>
+                        <h3 className="text-sm font-black text-[#072A6C] uppercase">
+                          Moments that Make Memories ({campusGalleryList.length} Cards)
+                        </h3>
+                        <p className="text-xs text-gray-500">Live square gallery carousel displayed on the home page</p>
+                      </div>
                   <button
                     type="button"
                     onClick={() => {
@@ -7462,6 +7734,93 @@ export default function AdminPortal() {
                   </div>
                 </div>
               </div>
+              </div>
+              )}
+
+              {/* Subtab 2: Homepage Photo Memories & Tour Videos */}
+              {gallerySubTab === "homepage" && (
+                <div className="space-y-6 text-left">
+                  {/* Header Card */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-rose-100 text-rose-900 border border-rose-300">
+                          Homepage Section Sync
+                        </span>
+                        <span className="text-xs text-gray-400 font-mono">Live on Home Page</span>
+                      </div>
+                      <h3 className="text-base font-black text-[#072A6C] uppercase">
+                        🏠 Homepage Moments & Campus Tour Video Sync
+                      </h3>
+                      <p className="text-xs text-gray-500">
+                        Manage the "Moments that Make Memories" marquee carousel and featured campus tour video cards displayed on the homepage.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          saveFullCampusCMS();
+                          notifySave("Homepage Gallery Moments & Videos published live!");
+                        }}
+                        className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      >
+                        <Save size={13} /> Save Homepage Gallery
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 1. Moments That Make Memories Grid */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                      <div>
+                        <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-2">
+                          <ImageIcon size={14} className="text-rose-600" />
+                          1. Moments That Make Memories (Featured Carousel Cards)
+                        </h4>
+                        <p className="text-[11px] text-gray-500">Live square photo cards displayed in the homepage moments gallery</p>
+                      </div>
+                      <span className="text-xs font-bold text-gray-500 bg-slate-100 px-2.5 py-1 rounded-lg">
+                        {campusGalleryList.length} Photos Active
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                      {campusGalleryList.map((item, idx) => (
+                        <div key={idx} className="p-2.5 rounded-xl border border-gray-200 bg-slate-50/70 space-y-2">
+                          <div className="w-full aspect-square rounded-lg overflow-hidden bg-slate-200">
+                            <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                          </div>
+                          <p className="text-[10px] font-bold text-gray-800 truncate text-center">{item.title}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 2. Campus Guided Tour Video */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                      <div>
+                        <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-2">
+                          <Sparkles size={14} className="text-[#072A6C]" />
+                          2. Homepage Campus Tour Video Reel
+                        </h4>
+                        <p className="text-[11px] text-gray-500">The drone overview and student tour video highlighted on the home page</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      {campusVideosList.map((vid, vIdx) => (
+                        <div key={vIdx} className="p-3 bg-slate-50 rounded-xl border border-gray-200 space-y-2">
+                          <span className="text-[10px] font-black text-[#072A6C] uppercase">Video Reel #{vIdx + 1}</span>
+                          <div className="text-xs font-bold text-gray-800">{vid.title || "Campus Overview"}</div>
+                          <div className="text-[10px] text-gray-400 font-mono truncate">{vid.url}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

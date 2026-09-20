@@ -29,10 +29,12 @@ export function NewsCMS({
     newsPageConfig, 
     updateNewsPageConfig,
     announcements, 
-    updateAnnouncements 
+    updateAnnouncements,
+    homepageSections,
+    updateHomepageSections
   } = useData();
 
-  const [newsSubTab, setNewsSubTab] = useState<"pageSettings" | "articlesList" | "announcements">("pageSettings");
+  const [newsSubTab, setNewsSubTab] = useState<"pageSettings" | "articlesList" | "announcements" | "homepage">("pageSettings");
   
   // Local state forms
   const [newsList, setNewsList] = useState<NewsArticle[]>(news);
@@ -128,7 +130,8 @@ export function NewsCMS({
         {[
           { id: "pageSettings", label: "🌟 1. News Intro, Hero Spotlight & Highlights" },
           { id: "articlesList", label: `📰 2. News Articles Directory & CRUD (${newsList.length})` },
-          { id: "announcements", label: `📢 3. Announcements Drawer (${announcementsList.length})` }
+          { id: "announcements", label: `📢 3. Announcements Drawer (${announcementsList.length})` },
+          { id: "homepage", label: "🏠 4. Homepage News Slider & Feed" }
         ].map((st) => (
           <button
             key={st.id}
@@ -821,6 +824,176 @@ export function NewsCMS({
                 />
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* ────────────────────────────────────────────────────────── */}
+      {/* SUBTAB 4: HOMEPAGE NEWS SLIDER & EVENTS FEED               */}
+      {/* ────────────────────────────────────────────────────────── */}
+      {newsSubTab === "homepage" && (
+        <div className="space-y-6 text-left">
+          {/* Header */}
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-rose-100 text-rose-900 border border-rose-300">
+                  Homepage Section Sync
+                </span>
+                <span className="text-xs text-gray-400 font-mono">Live on Home Page</span>
+              </div>
+              <h3 className="text-base font-black text-[#072A6C] uppercase">
+                🏠 Homepage News & Events Section Sync
+              </h3>
+              <p className="text-xs text-gray-500">
+                Directly configure what appears in the <strong>News & Events</strong> section on the homepage, including the main headline, subtitle, and featured articles in the carousel.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  updateNews(newsList);
+                  notifySave("Homepage News carousel and featured headlines saved live!");
+                }}
+                className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <Save size={13} /> Save Homepage News
+              </button>
+            </div>
+          </div>
+
+          {/* Section Heading & Subtitle */}
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+              <div>
+                <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-2">
+                  <Newspaper size={14} className="text-[#072A6C]" />
+                  1. Homepage Section Header & Subtitle
+                </h4>
+                <p className="text-[11px] text-gray-500">The headline text that introduces the news and events grid on the homepage</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Section Main Heading</label>
+                <input
+                  type="text"
+                  value={
+                    (homepageSections || []).find((s) => s.id === "newsEvents")?.title ||
+                    "News & Events"
+                  }
+                  onChange={(e) => {
+                    const newTitle = e.target.value;
+                    const updated = (homepageSections || []).map((s) =>
+                      s.id === "newsEvents" ? { ...s, title: newTitle } : s
+                    );
+                    updateHomepageSections(updated);
+                  }}
+                  className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Button CTA Text</label>
+                <input
+                  type="text"
+                  value={
+                    (homepageSections || []).find((s) => s.id === "newsEvents")?.buttonText ||
+                    "View All News & Events"
+                  }
+                  onChange={(e) => {
+                    const newBtn = e.target.value;
+                    const updated = (homepageSections || []).map((s) =>
+                      s.id === "newsEvents" ? { ...s, buttonText: newBtn } : s
+                    );
+                    updateHomepageSections(updated);
+                  }}
+                  className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-gray-600 uppercase">Section Subtitle / Description</label>
+              <textarea
+                rows={2}
+                value={
+                  (homepageSections || []).find((s) => s.id === "newsEvents")?.subtitle ||
+                  "Stay Informed. Stay Ahead. Discover the latest updates and exciting events happening at Chalapathi."
+                }
+                onChange={(e) => {
+                  const newSubtitle = e.target.value;
+                  const updated = (homepageSections || []).map((s) =>
+                    s.id === "newsEvents" ? { ...s, subtitle: newSubtitle } : s
+                  );
+                  updateHomepageSections(updated);
+                }}
+                className="w-full p-2.5 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-700 leading-relaxed"
+              />
+            </div>
+          </div>
+
+          {/* Featured Articles on Homepage Carousel */}
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+              <div>
+                <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-2">
+                  <Flame size={14} className="text-amber-500" />
+                  2. Select Featured Articles for Homepage Carousel
+                </h4>
+                <p className="text-[11px] text-gray-500">Toggle "Featured" on any article to include it in the auto-rotating homepage news carousel</p>
+              </div>
+              <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
+                {newsList.filter((n) => n.featured).length} Featured
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+              {newsList.map((art) => (
+                <div
+                  key={art.id}
+                  className={`p-4 rounded-xl border transition-all ${
+                    art.featured
+                      ? "bg-amber-50/40 border-amber-300 shadow-xs ring-1 ring-amber-300"
+                      : "bg-white border-gray-200 hover:border-gray-300"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-black uppercase text-[#072A6C] bg-blue-50 px-2 py-0.5 rounded">
+                      {art.category}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = newsList.map((n) =>
+                          n.id === art.id ? { ...n, featured: !n.featured } : n
+                        );
+                        setNewsList(updated);
+                        updateNews(updated);
+                        notifySave(`Toggled featured status for "${art.title}"`);
+                      }}
+                      className={`text-[10px] font-black px-2.5 py-1 rounded-lg border flex items-center gap-1 cursor-pointer transition-colors ${
+                        art.featured
+                          ? "bg-amber-500 text-white border-amber-600"
+                          : "bg-white text-gray-600 border-gray-200 hover:bg-gray-100"
+                      }`}
+                    >
+                      {art.featured ? "⭐ Featured" : "+ Feature"}
+                    </button>
+                  </div>
+
+                  <h5 className="text-xs font-bold text-gray-900 line-clamp-2 mb-1">{art.title}</h5>
+                  <p className="text-[10px] text-gray-500 line-clamp-2">{art.excerpt || art.bodyText}</p>
+
+                  <div className="flex items-center justify-between text-[10px] text-gray-400 mt-2.5 pt-2 border-t border-gray-100">
+                    <span>{art.date}</span>
+                    <span>{art.readTime || "3 min read"}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}

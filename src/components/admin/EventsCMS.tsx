@@ -24,10 +24,12 @@ export function EventsCMS({
     updateEvents, 
     eventRegistrations, 
     updateEventRegistrations,
-    addEventRegistration
+    addEventRegistration,
+    homepageSections,
+    updateHomepageSections
   } = useData();
 
-  const [eventsSubTab, setEventsSubTab] = useState<"eventsList" | "attendeesCRM" | "pageBanner">("eventsList");
+  const [eventsSubTab, setEventsSubTab] = useState<"eventsList" | "attendeesCRM" | "pageBanner" | "homepage">("eventsList");
   const [eventsList, setEventsList] = useState<EventItem[]>(events);
   
   // Search & Filter for Events List
@@ -156,7 +158,8 @@ export function EventsCMS({
         {[
           { id: "eventsList", label: `📅 1. Campus Events Directory & Editor (${eventsList.length})` },
           { id: "attendeesCRM", label: `🎟️ 2. Event Registrations & Attendees CRM (${registrationsList.length})` },
-          { id: "pageBanner", label: "🌟 3. Events Page Banner & Overview" }
+          { id: "pageBanner", label: "🌟 3. Events Page Banner & Overview" },
+          { id: "homepage", label: "🏠 4. Homepage Events Feed & Drawer" }
         ].map((st) => (
           <button
             key={st.id}
@@ -935,6 +938,121 @@ export function EventsCMS({
               >
                 Save Attendee
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ────────────────────────────────────────────────────────── */}
+      {/* SUBTAB 4: HOMEPAGE UPCOMING EVENTS FEED & DRAWER           */}
+      {/* ────────────────────────────────────────────────────────── */}
+      {eventsSubTab === "homepage" && (
+        <div className="space-y-6 text-left">
+          {/* Header */}
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-100 text-purple-900 border border-purple-300">
+                  Homepage Section Sync
+                </span>
+                <span className="text-xs text-gray-400 font-mono">Live on Home Page</span>
+              </div>
+              <h3 className="text-base font-black text-[#072A6C] uppercase">
+                🏠 Homepage Events Feed & Interactive Drawer
+              </h3>
+              <p className="text-xs text-gray-500">
+                Manage the live upcoming events feed displayed on the homepage, along with the interactive full-screen event details drawer and RSVP integration.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  updateEvents(eventsList);
+                  notifySave("Homepage Events feed and drawer published live!");
+                }}
+                className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <Save size={13} /> Save Homepage Events
+              </button>
+            </div>
+          </div>
+
+          {/* Homepage Feed Preview */}
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+              <div>
+                <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-2">
+                  <Calendar size={14} className="text-[#072A6C]" />
+                  1. Homepage Upcoming Events Feed (Top 4 Displayed)
+                </h4>
+                <p className="text-[11px] text-gray-500">The first 4 chronological events are automatically featured in the homepage events feed</p>
+              </div>
+              <span className="text-xs font-bold text-purple-700 bg-purple-50 px-2.5 py-1 rounded-lg border border-purple-200">
+                {eventsList.length} Total Events
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {eventsList.slice(0, 4).map((ev, idx) => (
+                <div key={ev.id} className="p-4 rounded-xl border border-gray-200 bg-slate-50/60 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase text-[#072A6C] bg-white px-2 py-0.5 rounded border border-gray-200">
+                      Feed Slot #{idx + 1}
+                    </span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      ev.registrationOpen !== false
+                        ? "bg-emerald-100 text-emerald-800"
+                        : "bg-rose-100 text-rose-800"
+                    }`}>
+                      {ev.registrationOpen !== false ? "Registration Open" : "Registration Closed"}
+                    </span>
+                  </div>
+
+                  <h5 className="text-xs font-bold text-gray-900 line-clamp-1">{ev.title}</h5>
+                  <p className="text-[11px] text-gray-500 line-clamp-2">{ev.bodyText}</p>
+
+                  <div className="flex items-center gap-3 text-[10px] text-gray-400 font-semibold pt-2 border-t border-gray-200">
+                    <span className="flex items-center gap-1 text-[#072A6C] font-bold">
+                      <Clock size={11} /> {ev.date} • {ev.time}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <MapPin size={11} /> {ev.location}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Interactive Events Drawer Config */}
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+              <div>
+                <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-2">
+                  <Users size={14} className="text-emerald-600" />
+                  2. Interactive Drawer & RSVP Configuration
+                </h4>
+                <p className="text-[11px] text-gray-500">Settings for the slide-out events drawer when visitors click any event on the homepage</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="p-3 bg-slate-50 rounded-xl border border-gray-200 space-y-1">
+                <span className="text-[10px] font-bold text-gray-600 uppercase">RSVP Mode</span>
+                <div className="font-bold text-xs text-gray-900">Instant Online Registration</div>
+                <p className="text-[10px] text-gray-400">Captures Name, Email, Phone & assigns Ticket ID</p>
+              </div>
+              <div className="p-3 bg-slate-50 rounded-xl border border-gray-200 space-y-1">
+                <span className="text-[10px] font-bold text-gray-600 uppercase">Notifications</span>
+                <div className="font-bold text-xs text-emerald-700">Auto-Confirmation Badge</div>
+                <p className="text-[10px] text-gray-400">Shows instant registration pass with ID</p>
+              </div>
+              <div className="p-3 bg-slate-50 rounded-xl border border-gray-200 space-y-1">
+                <span className="text-[10px] font-bold text-gray-600 uppercase">Attendee CRM Sync</span>
+                <div className="font-bold text-xs text-[#072A6C]">Live Lead Capture</div>
+                <p className="text-[10px] text-gray-400">Synced directly to Subtab 2 Attendees CRM</p>
+              </div>
             </div>
           </div>
         </div>

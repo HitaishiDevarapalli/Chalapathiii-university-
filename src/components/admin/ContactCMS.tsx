@@ -16,11 +16,11 @@ export interface ContactCMSProps {
 }
 
 export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
-  const { contactPageContent, updateContactPageContent, siteSettings, updateSiteSettings } = useData();
+  const { contactPageContent, updateContactPageContent, siteSettings, updateSiteSettings, homepageSections, updateHomepageSections } = useData();
 
   const [formState, setFormState] = useState<ContactPageContent>(() => contactPageContent || DEFAULT_CONTACT_PAGE_CONTENT);
   const [activeSubTab, setActiveSubTab] = useState<
-    "hero" | "getInTouch" | "form" | "departments" | "map" | "helpdesk"
+    "hero" | "getInTouch" | "form" | "departments" | "map" | "helpdesk" | "homepage"
   >("hero");
   const [saveSuccess, setSaveSuccess] = useState(false);
 
@@ -76,7 +76,8 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
           { id: "form" as const, label: "✉️ 3. Contact Form Settings", icon: Mail },
           { id: "departments" as const, label: `🏢 4. Department Helplines (${formState.departments?.length || 0})`, icon: Building },
           { id: "map" as const, label: "🗺️ 5. Google Maps & Location", icon: MapPin },
-          { id: "helpdesk" as const, label: "🧭 6. Quick Nav & Helpdesk", icon: Layers }
+          { id: "helpdesk" as const, label: "🧭 6. Quick Nav & Helpdesk", icon: Layers },
+          { id: "homepage" as const, label: "🏠 7. Homepage Directions, Helplines & Map", icon: MapPin }
         ].map((sub) => {
           const Icon = sub.icon;
           const isActive = activeSubTab === sub.id;
@@ -751,6 +752,149 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                   placeholder="Call Counselor"
                 />
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ──────────────────────────────────────────────── */}
+      {/* 🏠 SUBTAB 7: HOMEPAGE DIRECTIONS, HELPLINES & MAP */}
+      {/* ──────────────────────────────────────────────── */}
+      {activeSubTab === "homepage" && (
+        <div className="space-y-6 text-left">
+          {/* Header */}
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-900 border border-emerald-300">
+                  Homepage Section Sync
+                </span>
+                <span className="text-xs text-gray-400 font-mono">Live on Home Page</span>
+              </div>
+              <h3 className="text-base font-black text-[#072A6C] uppercase">
+                🏠 Homepage Directions, Helplines & Map Sync
+              </h3>
+              <p className="text-xs text-gray-500">
+                Configure the "Find Your Way" route search bar, campus helplines, and Google Maps destination pinned at the bottom of the Chalapathi University homepage.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={handleSave}
+                className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <CheckCircle2 size={13} /> Save Homepage Contact Sync
+              </button>
+            </div>
+          </div>
+
+          {/* Section 1: Route Search / Directions Bar */}
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+              <div>
+                <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-2">
+                  <MapPin size={14} className="text-rose-600" />
+                  1. Homepage "Find Your Way / Get Directions" Search Bar
+                </h4>
+                <p className="text-[11px] text-gray-500">Live navigation search widget allowing students to enter their starting city and open Google Maps navigation</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Destination Landmark</label>
+                <input
+                  type="text"
+                  value={formState.locationAddress || "Chalapathi Institute of Technology, Mothadaka, Guntur, AP - 522016"}
+                  onChange={(e) => setFormState({ ...formState, locationAddress: e.target.value })}
+                  className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Directions Button Text</label>
+                <input
+                  type="text"
+                  value="Get Directions"
+                  disabled
+                  className="w-full h-9 px-3 text-xs bg-slate-100 border border-gray-200 rounded-xl font-bold text-gray-500"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Section 2: Direct Helplines on Homepage */}
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+              <div>
+                <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-2">
+                  <Phone size={14} className="text-emerald-600" />
+                  2. University Helplines & Office Hours
+                </h4>
+                <p className="text-[11px] text-gray-500">Official contact numbers shown in the homepage visit bar and quick contact links</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+              <div className="p-3 bg-slate-50 rounded-xl border border-gray-200 space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Main Telephone</label>
+                <input
+                  type="text"
+                  value={formState.phoneNumber || "+91 91543 99999"}
+                  onChange={(e) => setFormState({ ...formState, phoneNumber: e.target.value })}
+                  className="w-full h-8 px-2 text-xs bg-white border border-gray-200 rounded-lg font-bold text-[#072A6C]"
+                />
+              </div>
+              <div className="p-3 bg-slate-50 rounded-xl border border-gray-200 space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Admissions Hotline</label>
+                <input
+                  type="text"
+                  value={formState.helpdeskPhone || "+91 88866 30355"}
+                  onChange={(e) => setFormState({ ...formState, helpdeskPhone: e.target.value })}
+                  className="w-full h-8 px-2 text-xs bg-white border border-gray-200 rounded-lg font-bold text-emerald-700"
+                />
+              </div>
+              <div className="p-3 bg-slate-50 rounded-xl border border-gray-200 space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Primary Email</label>
+                <input
+                  type="text"
+                  value={formState.emailAddress || "info@chalapathi.ac.in"}
+                  onChange={(e) => setFormState({ ...formState, emailAddress: e.target.value })}
+                  className="w-full h-8 px-2 text-xs bg-white border border-gray-200 rounded-lg font-bold text-[#072A6C]"
+                />
+              </div>
+              <div className="p-3 bg-slate-50 rounded-xl border border-gray-200 space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Visiting Timings</label>
+                <input
+                  type="text"
+                  value={formState.workingHoursDays || "Mon - Sat: 9:00 AM - 5:00 PM"}
+                  onChange={(e) => setFormState({ ...formState, workingHoursDays: e.target.value })}
+                  className="w-full h-8 px-2 text-xs bg-white border border-gray-200 rounded-lg font-bold text-gray-800"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3: Google Maps Preview */}
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+              <div>
+                <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-2">
+                  <Globe size={14} className="text-blue-600" />
+                  3. Interactive Campus Location Map
+                </h4>
+                <p className="text-[11px] text-gray-500">Live Google Maps view showing the 20-acre lush green campus location in Mothadaka</p>
+              </div>
+            </div>
+
+            <div className="rounded-xl overflow-hidden border border-gray-200 h-[220px] bg-slate-100">
+              <iframe
+                title="Chalapathi Campus Map Preview"
+                src={formState.mapEmbedUrl || "https://maps.google.com/maps?q=Chalapathi+Institute+of+Technology+Mothadaka&t=&z=14&ie=UTF8&iwloc=&output=embed"}
+                className="w-full h-full border-0"
+                loading="lazy"
+              />
             </div>
           </div>
         </div>

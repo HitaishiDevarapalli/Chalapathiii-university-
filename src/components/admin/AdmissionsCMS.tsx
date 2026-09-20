@@ -5,7 +5,7 @@ import {
   CreditCard, UploadCloud, GraduationCap, Zap, Smartphone, Check,
   Search, Download, Edit3, X, ChevronRight, ChevronDown, RefreshCw,
   ExternalLink, DollarSign, Users, Sliders, Eye, Palette, Settings,
-  Send, Mail, Phone, MapPin, Landmark, User
+  Send, Mail, Phone, MapPin, Landmark, User, Save, RotateCcw
 } from "lucide-react";
 import { 
   useData, 
@@ -20,9 +20,10 @@ import {
   DEFAULT_ADMISSIONS_CONTENT,
   EnquiryLead,
   OnlineApplication,
-  INITIAL_ENQUIRIES
+  INITIAL_ENQUIRIES,
+  DEFAULT_HOMEPAGE_SECTIONS
 } from "../../context/DataContext";
-import { SectionHeader, ImageField } from "./AdminComponents";
+import { SectionHeader, ImageField, ColorField } from "./AdminComponents";
 import { ApplyOnlineCMS } from "./ApplyOnlineCMS";
 
 export interface AdmissionsCMSProps {
@@ -37,7 +38,9 @@ export const AdmissionsCMS: React.FC<AdmissionsCMSProps> = ({ notifySave }) => {
     updateEnquiries,
     addEnquiry,
     onlineApplications,
-    updateOnlineApplications
+    updateOnlineApplications,
+    homepageSections,
+    updateHomepageSections
   } = useData();
 
   // Local form state cloned from context
@@ -45,7 +48,7 @@ export const AdmissionsCMS: React.FC<AdmissionsCMSProps> = ({ notifySave }) => {
     return admissionsContent || DEFAULT_ADMISSIONS_CONTENT;
   });
 
-  const [activeTab, setActiveTab] = useState<"portal" | "apply_online" | "fees" | "scholarships" | "popup" | "leads" | "applications">("portal");
+  const [activeTab, setActiveTab] = useState<"portal" | "apply_online" | "fees" | "scholarships" | "popup" | "leads" | "applications" | "homepage">("portal");
   
   // Subtab 6 (Applications): Search and filter
   const [appSearch, setAppSearch] = useState("");
@@ -243,7 +246,7 @@ export const AdmissionsCMS: React.FC<AdmissionsCMSProps> = ({ notifySave }) => {
         resetLabel="Reset All Admissions"
       />
 
-      {/* 7 Main Sub-Tabs Navigation */}
+      {/* 8 Main Sub-Tabs Navigation */}
       <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3">
         {[
           { id: "portal", label: "Admissions Portal Overview", icon: Sparkles, count: `${formData.portal.steps.length} Steps` },
@@ -252,7 +255,8 @@ export const AdmissionsCMS: React.FC<AdmissionsCMSProps> = ({ notifySave }) => {
           { id: "scholarships", label: "Scholarships & Merit Schemes", icon: Award, count: "CMST & Aid" },
           { id: "popup", label: "Admission Enquiry Popup & Tab", icon: Sliders, count: "Popup CMS" },
           { id: "leads", label: "Enquiries & Lead Management", icon: Users, count: `${enquiries.length} Leads` },
-          { id: "applications", label: "Online Student Applications", icon: GraduationCap, count: `${onlineApplications?.length || 0} Apps` }
+          { id: "applications", label: "Online Student Applications", icon: GraduationCap, count: `${onlineApplications?.length || 0} Apps` },
+          { id: "homepage", label: "🏠 8. Homepage Admissions Strip, Ticker & Visit Us", icon: Sliders, count: "Homepage" }
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -2650,6 +2654,240 @@ export const AdmissionsCMS: React.FC<AdmissionsCMSProps> = ({ notifySave }) => {
                     ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── SUB-TAB 8: HOMEPAGE ADMISSIONS STRIP, TICKER & VISIT US ── */}
+      {activeTab === "homepage" && (
+        <div className="space-y-6 text-left">
+          {/* Header */}
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-300">
+                  Homepage Section Sync
+                </span>
+                <span className="text-xs text-gray-400 font-mono">Live on Home Page</span>
+              </div>
+              <h3 className="text-base font-black text-[#072A6C] uppercase">
+                🏠 Homepage Admissions Strip, Alert Ticker & Visit Card
+              </h3>
+              <p className="text-xs text-gray-500">
+                Directly configure what appears on the Chalapathi University homepage for admissions notices, the marquee alert ticker, and the campus visit block.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  const tickerSec = (homepageSections || []).find((s) => s.id === "ticker");
+                  const virtualSec = (homepageSections || []).find((s) => s.id === "virtualTour" || s.id === "admissionsStrip");
+                  const updated = (homepageSections || []).map((s) => {
+                    if (s.id === "ticker") {
+                      return {
+                        ...s,
+                        title: "🚨 Admissions Open for Academic Year 2026–27 • Applications Closing Soon • Apply Now • Scholarships Available for Meritorious Students • Limited Seats • Register Today • Highest Placement Opportunities • Admissions Open for 2026–27 •"
+                      };
+                    }
+                    if (s.id === "virtualTour" || s.id === "admissionsStrip") {
+                      return {
+                        ...s,
+                        title: "Admissions Open for 2026–2027",
+                        subtitle: "Experience world-class education with state-of-the-art facilities, expert faculty, and industry-oriented programs at Chalapathi University.",
+                        buttonText: "Apply Online Now",
+                        buttonUrl: "/apply-online"
+                      };
+                    }
+                    return s;
+                  });
+                  updateHomepageSections(updated);
+                  notifySave("Homepage Admissions sections updated and published live!");
+                }}
+                className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <Save size={13} /> Save Homepage Admissions
+              </button>
+            </div>
+          </div>
+
+          {/* Section 1: Alert Marquee Ticker */}
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+              <div>
+                <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-2">
+                  <Zap size={14} className="text-amber-500" />
+                  1. Homepage Top Marquee Ticker
+                </h4>
+                <p className="text-[11px] text-gray-500">Continuous scrolling alert bar below the main hero header on the homepage</p>
+              </div>
+              <span className="px-2.5 py-1 bg-amber-50 text-amber-800 text-[10px] font-black rounded-lg border border-amber-200">
+                Yellow Marquee #F4B400
+              </span>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-gray-600 uppercase">Ticker Running Text</label>
+              <textarea
+                rows={3}
+                value={
+                  (homepageSections || []).find((s) => s.id === "ticker")?.title ||
+                  "🚨 Admissions Open for Academic Year 2026–27 • Applications Closing Soon • Apply Now • Scholarships Available for Meritorious Students • Limited Seats • Register Today • Highest Placement Opportunities • Admissions Open for 2026–27 •"
+                }
+                onChange={(e) => {
+                  const newText = e.target.value;
+                  const exists = (homepageSections || []).some((s) => s.id === "ticker");
+                  let updated;
+                  if (exists) {
+                    updated = (homepageSections || []).map((s) => (s.id === "ticker" ? { ...s, title: newText } : s));
+                  } else {
+                    updated = [...(homepageSections || []), { id: "ticker", name: "Admission Ticker", title: newText, enabled: true, order: (homepageSections?.length || 0) + 1 }];
+                  }
+                  updateHomepageSections(updated);
+                }}
+                className="w-full p-3 text-xs bg-amber-50/50 border border-amber-200 rounded-xl font-bold text-[#0A2D6D] leading-relaxed"
+                placeholder="Enter scrolling marquee announcement..."
+              />
+            </div>
+
+            {/* Live Ticker Preview */}
+            <div className="space-y-1.5 pt-2">
+              <span className="text-[10px] font-bold text-gray-400 uppercase">Live Visual Preview</span>
+              <div className="h-[42px] bg-[#F4B400] text-[#0A2D6D] rounded-xl flex items-center px-4 overflow-hidden font-bold text-xs shadow-inner">
+                <div className="animate-pulse flex items-center gap-2 truncate">
+                  {(homepageSections || []).find((s) => s.id === "ticker")?.title ||
+                    "🚨 Admissions Open for Academic Year 2026–27 • Applications Closing Soon • Apply Now"}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 2: Admissions Open Strip & Call to Action */}
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+              <div>
+                <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-2">
+                  <Sparkles size={14} className="text-blue-600" />
+                  2. Admissions Strip & CTA Banner
+                </h4>
+                <p className="text-[11px] text-gray-500">The high-impact admissions call-to-action banner on the homepage</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Main Banner Heading</label>
+                <input
+                  type="text"
+                  value={
+                    (homepageSections || []).find((s) => s.id === "virtualTour" || s.id === "admissionsStrip")?.title ||
+                    "Admissions Open for 2026–2027"
+                  }
+                  onChange={(e) => {
+                    const newTitle = e.target.value;
+                    const updated = (homepageSections || []).map((s) =>
+                      s.id === "virtualTour" || s.id === "admissionsStrip" ? { ...s, title: newTitle } : s
+                    );
+                    updateHomepageSections(updated);
+                  }}
+                  className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Primary Button Text</label>
+                <input
+                  type="text"
+                  value={
+                    (homepageSections || []).find((s) => s.id === "virtualTour" || s.id === "admissionsStrip")?.buttonText ||
+                    "Apply Online Now"
+                  }
+                  onChange={(e) => {
+                    const newBtn = e.target.value;
+                    const updated = (homepageSections || []).map((s) =>
+                      s.id === "virtualTour" || s.id === "admissionsStrip" ? { ...s, buttonText: newBtn } : s
+                    );
+                    updateHomepageSections(updated);
+                  }}
+                  className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-gray-600 uppercase">Banner Subtitle / Description</label>
+              <textarea
+                rows={2}
+                value={
+                  (homepageSections || []).find((s) => s.id === "virtualTour" || s.id === "admissionsStrip")?.subtitle ||
+                  "Experience world-class education with state-of-the-art facilities, expert faculty, and industry-oriented programs at Chalapathi University."
+                }
+                onChange={(e) => {
+                  const newSubtitle = e.target.value;
+                  const updated = (homepageSections || []).map((s) =>
+                    s.id === "virtualTour" || s.id === "admissionsStrip" ? { ...s, subtitle: newSubtitle } : s
+                  );
+                  updateHomepageSections(updated);
+                }}
+                className="w-full p-2.5 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-700 leading-relaxed"
+              />
+            </div>
+
+            {/* Feature Pills */}
+            <div className="p-4 bg-slate-50 rounded-xl border border-gray-200 space-y-2">
+              <span className="text-[10px] font-bold text-[#072A6C] uppercase">Highlight Badges on Banner</span>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-semibold text-gray-700">
+                <div className="p-2 bg-white rounded-lg border border-gray-200 flex items-center gap-2">
+                  <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
+                  <span>100% Merit Scholarships</span>
+                </div>
+                <div className="p-2 bg-white rounded-lg border border-gray-200 flex items-center gap-2">
+                  <CheckCircle2 size={13} className="text-blue-600 shrink-0" />
+                  <span>95% Placement Record</span>
+                </div>
+                <div className="p-2 bg-white rounded-lg border border-gray-200 flex items-center gap-2">
+                  <CheckCircle2 size={13} className="text-purple-600 shrink-0" />
+                  <span>150+ Degree Programs</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3: Visit Our Campus & Helpline Card */}
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+              <div>
+                <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-2">
+                  <MapPin size={14} className="text-rose-600" />
+                  3. Homepage "Visit Our Campus" Card & Helplines
+                </h4>
+                <p className="text-[11px] text-gray-500">Contact helplines, visiting hours, and direct navigation links shown to aspiring students</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="p-3 bg-slate-50 rounded-xl border border-gray-200 space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Admissions Helpline</label>
+                <div className="font-bold text-xs text-[#072A6C] flex items-center gap-1.5">
+                  <Phone size={12} /> +91 91543 99999
+                </div>
+                <span className="text-[10px] text-gray-400">Available Mon-Sat 9AM-6PM</span>
+              </div>
+              <div className="p-3 bg-slate-50 rounded-xl border border-gray-200 space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Counseling Email</label>
+                <div className="font-bold text-xs text-[#072A6C] flex items-center gap-1.5">
+                  <Mail size={12} /> admissions@chalapathi.edu.in
+                </div>
+                <span className="text-[10px] text-gray-400">24hr response turnaround</span>
+              </div>
+              <div className="p-3 bg-slate-50 rounded-xl border border-gray-200 space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Campus Location</label>
+                <div className="font-bold text-xs text-[#072A6C] flex items-center gap-1.5">
+                  <Landmark size={12} /> Mothadaka, Guntur, AP
+                </div>
+                <span className="text-[10px] text-gray-400">Pin: 522016</span>
+              </div>
             </div>
           </div>
         </div>

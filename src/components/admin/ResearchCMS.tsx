@@ -83,7 +83,7 @@ export const ResearchCMS: React.FC<ResearchCMSProps> = ({ notifySave }) => {
     return DEFAULT_RESEARCH_DATA;
   });
 
-  const [activeSubTab, setActiveSubTab] = useState<"overview" | "thrustAreas" | "projects" | "publications">("overview");
+  const [activeSubTab, setActiveSubTab] = useState<"overview" | "thrustAreas" | "projects" | "publications" | "homepage">("overview");
 
   const saveResearch = () => {
     localStorage.setItem("chalapathi_research_cms_data", JSON.stringify(researchData));
@@ -112,7 +112,8 @@ export const ResearchCMS: React.FC<ResearchCMSProps> = ({ notifySave }) => {
           { id: "overview" as const, label: "🌟 1. Overview & Metrics", icon: Sparkles },
           { id: "thrustAreas" as const, label: `🔬 2. Thrust Areas (${researchData.thrustAreas.length})`, icon: Microscope },
           { id: "projects" as const, label: `📑 3. Sponsored Projects (${researchData.projects.length})`, icon: FileText },
-          { id: "publications" as const, label: `📜 4. Publications & Patents (${researchData.publications.length})`, icon: BookOpen }
+          { id: "publications" as const, label: `📜 4. Publications & Patents (${researchData.publications.length})`, icon: BookOpen },
+          { id: "homepage" as const, label: "🏠 5. Homepage Research Showcase & Metrics", icon: Award }
         ].map((sub) => {
           const Icon = sub.icon;
           const isActive = activeSubTab === sub.id;
@@ -513,6 +514,106 @@ export const ResearchCMS: React.FC<ResearchCMSProps> = ({ notifySave }) => {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SUBTAB 5: Homepage Research Showcase & Metrics */}
+      {activeSubTab === "homepage" && (
+        <div className="space-y-6">
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+              <div>
+                <h3 className="text-sm font-black text-[#072A6C] uppercase flex items-center gap-2">
+                  <Award size={16} className="text-[#D4AF37]" /> Homepage Research Highlights & Metrics
+                </h3>
+                <p className="text-xs text-gray-500 mt-0.5">Control how research accomplishments, funded grant totals, and patent counters appear on the main website homepage</p>
+              </div>
+              <button
+                onClick={saveResearch}
+                className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+              >
+                Save Research Showcase
+              </button>
+            </div>
+
+            {/* 4 Homepage Metric Counters */}
+            <div className="space-y-3">
+              <label className="text-[11px] font-bold text-gray-700 uppercase block">
+                Homepage Research Statistics Counters (4 Live Badges)
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                {researchData.stats.map((st, sIdx) => (
+                  <div key={sIdx} className="p-3.5 bg-slate-50 border border-gray-200 rounded-xl space-y-2">
+                    <span className="text-[10px] font-black text-[#D4AF37] uppercase">Metric #{sIdx + 1}</span>
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-bold text-gray-500 uppercase">Number Value</label>
+                      <input
+                        type="text"
+                        value={st.value}
+                        onChange={(e) => {
+                          const updated = [...researchData.stats];
+                          updated[sIdx] = { ...updated[sIdx], value: e.target.value };
+                          setResearchData({ ...researchData, stats: updated });
+                        }}
+                        className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-black text-[#072A6C]"
+                        placeholder="e.g. 45+"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-bold text-gray-500 uppercase">Label Text</label>
+                      <input
+                        type="text"
+                        value={st.label}
+                        onChange={(e) => {
+                          const updated = [...researchData.stats];
+                          updated[sIdx] = { ...updated[sIdx], label: e.target.value };
+                          setResearchData({ ...researchData, stats: updated });
+                        }}
+                        className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-semibold text-gray-700"
+                        placeholder="e.g. Funded Projects"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Homepage Thrust Areas Showcase Teaser */}
+            <div className="space-y-3 pt-3 border-t border-gray-100">
+              <div className="flex items-center justify-between">
+                <label className="text-[11px] font-bold text-gray-700 uppercase">
+                  Featured Research Thrust Badges on Homepage
+                </label>
+                <span className="text-[10px] text-gray-400">Pills displayed across homepage showcase</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {researchData.thrustAreas.map((t, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50/70 border border-blue-200 text-[#072A6C] rounded-xl text-xs font-bold"
+                  >
+                    🔬 {t.title}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Top Grant Spotlight */}
+            <div className="p-4 bg-amber-50/60 rounded-2xl border border-amber-200 space-y-2">
+              <span className="text-[10px] font-bold text-amber-800 uppercase font-mono tracking-wider block">
+                FEATURED HIGH-IMPACT SPONSORED PROJECT SPOTLIGHT
+              </span>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <h4 className="text-xs sm:text-sm font-black text-[#072A6C]">{researchData.projects[0]?.title || "Research Project"}</h4>
+                  <p className="text-[11px] text-gray-600">Investigator: {researchData.projects[0]?.investigator} • Agency: {researchData.projects[0]?.agency}</p>
+                </div>
+                <span className="text-sm font-black text-[#D4AF37] shrink-0 bg-white px-3 py-1 rounded-xl border border-amber-200 shadow-2xs">
+                  {researchData.projects[0]?.amount || "₹45 Lakhs"}
+                </span>
+              </div>
             </div>
           </div>
         </div>

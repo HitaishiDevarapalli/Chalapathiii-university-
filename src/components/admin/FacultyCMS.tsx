@@ -73,14 +73,14 @@ export const getDeptData = (deptName: string, source: Record<string, DirectoryDa
 };
 
 export function FacultyCMS({ notifySave }: FacultyCMSProps) {
-  const { facultyData, updateFacultyData, boardData, updateBoardData } = useData();
+  const { facultyData, updateFacultyData, boardData, updateBoardData, homepageSections, updateHomepageSections } = useData();
 
   // Local state for editing
   const [facultyForm, setFacultyForm] = useState<Record<string, DirectoryData>>(facultyData);
   const [boardForm, setBoardForm] = useState<Record<string, DirectoryData>>(boardData);
 
-  // Active view: "schools" (School-wise Esteemed Faculty) or "board" (Board of Governance)
-  const [mainView, setMainView] = useState<"schools" | "board">("schools");
+  // Active view: "schools" (School-wise Esteemed Faculty), "board" (Board of Governance) or "homepage"
+  const [mainView, setMainView] = useState<"schools" | "board" | "homepage">("schools");
 
   // Selected School (computing | engineering | business)
   const [selectedSchoolId, setSelectedSchoolId] = useState<string>("computing");
@@ -652,6 +652,18 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
           >
             <Shield size={15} />
             <span>Board of Governance & Leadership</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setMainView("homepage")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              mainView === "homepage"
+                ? "bg-[#072A6C] text-white shadow-xs"
+                : "text-gray-600 hover:text-[#072A6C]"
+            }`}
+          >
+            <Award size={15} className={mainView === "homepage" ? "text-[#D4AF37]" : "text-amber-500"} />
+            <span>🏠 3. Homepage Faculty & Mentors Spotlight</span>
           </button>
         </div>
 
@@ -1638,6 +1650,137 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
               >
                 <Check size={14} /> Confirm & Import {excelRows.length > 0 ? `(${excelRows.length})` : ""}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════════════════════════════════════════════════ */}
+      {/* 🏠 VIEW 3: HOMEPAGE FACULTY & MENTORS SPOTLIGHT              */}
+      {/* ════════════════════════════════════════════════════════════ */}
+      {mainView === "homepage" && (
+        <div className="space-y-6 text-left">
+          {/* Header Card */}
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-100 text-blue-900 border border-blue-300">
+                  Homepage Section Sync
+                </span>
+                <span className="text-xs text-gray-400 font-mono">Live on Home Page</span>
+              </div>
+              <h3 className="text-base font-black text-[#072A6C] uppercase">
+                🏠 Homepage Faculty & Mentors Spotlight
+              </h3>
+              <p className="text-xs text-gray-500">
+                Configure the faculty excellence counters, spotlighted Deans/HODs, and academic leadership highlights shown on the main homepage.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  updateFacultyData(facultyForm);
+                  notifySave("Homepage Faculty metrics and spotlight published live!");
+                }}
+                className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <Save size={13} /> Save Homepage Faculty
+              </button>
+            </div>
+          </div>
+
+          {/* 1. Faculty Excellence Metric Counters */}
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+              <div>
+                <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-2">
+                  <Award size={14} className="text-[#D4AF37]" />
+                  1. Homepage Faculty Metrics & Key Statistics
+                </h4>
+                <p className="text-[11px] text-gray-500">Key statistics displayed on the homepage stats bar and academic highlights</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+              {[
+                { title: "Expert Faculty", val: "50+", desc: "Full-time professors & researchers", icon: Users },
+                { title: "Doctorate / Ph.D.", val: "85%", desc: "Faculty holding Ph.D. credentials", icon: GraduationCap },
+                { title: "Student-Faculty Ratio", val: "15:1", desc: "Personalized mentorship ratio", icon: Briefcase },
+                { title: "Patents Published", val: "120+", desc: "Faculty-led research patents", icon: Award }
+              ].map((stat, sIdx) => {
+                const Icon = stat.icon;
+                return (
+                  <div key={sIdx} className="p-4 rounded-xl border border-gray-200 bg-slate-50/70 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black text-gray-400 uppercase">Stat #{sIdx + 1}</span>
+                      <Icon size={14} className="text-[#072A6C]" />
+                    </div>
+                    <div>
+                      <div className="text-xl font-black text-[#072A6C]">{stat.val}</div>
+                      <div className="text-xs font-bold text-gray-800">{stat.title}</div>
+                      <div className="text-[10px] text-gray-500 mt-0.5">{stat.desc}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 2. Spotlighted Deans & Department Heads */}
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+              <div>
+                <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-2">
+                  <GraduationCap size={14} className="text-blue-600" />
+                  2. Spotlighted Department Heads & Academic Mentors
+                </h4>
+                <p className="text-[11px] text-gray-500">Heads of Department and faculty leaders represented across the university</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Object.entries(facultyForm).map(([deptName, data]) => {
+                const hod = data?.hod;
+                if (!hod || !hod.name) return null;
+
+                return (
+                  <div key={deptName} className="p-4 rounded-xl border border-gray-200 bg-white shadow-xs space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-slate-100 border border-gray-200 flex items-center justify-center font-black text-xs text-[#072A6C] overflow-hidden shrink-0">
+                        {hod.avatar && (hod.avatar.startsWith("http") || hod.avatar.startsWith("/")) ? (
+                          <img src={hod.avatar} alt={hod.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <span>{hod.avatar || "HOD"}</span>
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <span className="px-2 py-0.5 bg-amber-100 text-amber-900 rounded text-[9px] font-black uppercase">
+                          Head of Department
+                        </span>
+                        <h5 className="font-bold text-xs text-gray-900 truncate mt-1">{hod.name}</h5>
+                        <p className="text-[10px] text-gray-500 truncate">{deptName}</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5 text-[11px]">
+                      <div className="flex items-center justify-between text-gray-600">
+                        <span className="font-semibold">Qualification:</span>
+                        <span className="font-mono text-gray-800">{hod.edu || "Ph.D."}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-gray-600">
+                        <span className="font-semibold">Experience:</span>
+                        <span className="text-gray-800">{hod.experience || "10+ Years"}</span>
+                      </div>
+                      {hod.interests && (
+                        <div className="text-[10px] text-gray-500 italic truncate">
+                          "{hod.interests}"
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
