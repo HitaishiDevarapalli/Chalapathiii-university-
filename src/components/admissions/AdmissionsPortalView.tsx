@@ -23,69 +23,15 @@ import {
   ChevronRight,
   ChevronDown
 } from "lucide-react";
+import { useData, DEFAULT_ADMISSIONS_CONTENT } from "../../context/DataContext";
 
 export const AdmissionsPortalView: React.FC = () => {
+  const { admissionsContent } = useData();
+  const portalData = admissionsContent?.portal || DEFAULT_ADMISSIONS_CONTENT.portal;
+  const steps = portalData.steps && portalData.steps.length > 0 ? portalData.steps : DEFAULT_ADMISSIONS_CONTENT.portal.steps;
+
   const [activeStep, setActiveStep] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-
-  const steps = [
-    {
-      id: 0,
-      stepNum: "01",
-      title: "Register Yourself",
-      shortTitle: "Account Creation",
-      desc: "Create your official student admission portal account in under 2 minutes with basic contact details.",
-      icon: UserPlus,
-      badge: "Quick 2 Mins",
-      features: ["No Registration Fee", "Instant Portal Access", "Single Sign-On"],
-      ctaText: "Start Account Registration",
-      ctaLink: "/admissions/apply"
-    },
-    {
-      id: 1,
-      stepNum: "02",
-      title: "Verify Contact",
-      desc: "Receive instant 6-digit OTP verification on your mobile and email for secure credentials activation.",
-      icon: ShieldCheck,
-      badge: "Instant Verification",
-      features: ["Mobile & Email OTP", "256-bit SSL Security", "Auto Account Activation"],
-      ctaText: "Verify Mobile & Email",
-      ctaLink: "/admissions/apply"
-    },
-    {
-      id: 2,
-      stepNum: "03",
-      title: "Fill Application Form",
-      desc: "Enter academic marks, choose your preferred program stream (CSE, ECE, MBA), and enter personal details.",
-      icon: FileText,
-      badge: "Auto-Save Draft",
-      features: ["Multi-Stream Selection", "Auto-Save Progress", "Edit Anytime Before Submit"],
-      ctaText: "Fill Online Form",
-      ctaLink: "/admissions/apply"
-    },
-    {
-      id: 3,
-      stepNum: "04",
-      title: "Upload Required Documents",
-      desc: "Upload scanned copies of 10th/12th marksheets, ID proof, and passport photo into your encrypted vault.",
-      icon: UploadCloud,
-      badge: "Secure Vault",
-      features: ["Cloud Document Vault", "PDF & JPG Support", "Instant File Validation"],
-      ctaText: "Upload Certificates",
-      ctaLink: "/admissions/apply"
-    },
-    {
-      id: 4,
-      stepNum: "05",
-      title: "Submit & Track Status",
-      desc: "Pay nominal application fee online and receive real-time admission tracking ID with SMS notifications.",
-      icon: CreditCard,
-      badge: "Instant Confirmation",
-      features: ["UPI / NetBanking / Cards", "Instant Tracking ID", "Counselor Callback"],
-      ctaText: "Pay & Complete Application",
-      ctaLink: "/admissions/apply"
-    }
-  ];
 
   // Auto-cycle through steps every 4 seconds unless user interacts
   useEffect(() => {
@@ -96,7 +42,7 @@ export const AdmissionsPortalView: React.FC = () => {
     return () => clearInterval(interval);
   }, [isAutoPlaying, steps.length]);
 
-  const current = steps[activeStep];
+  const current = steps[activeStep] || steps[0];
 
   return (
     <div className="space-y-16 py-4 font-[var(--font-poppins)] overflow-hidden">
@@ -124,7 +70,7 @@ export const AdmissionsPortalView: React.FC = () => {
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-[#D4AF37]/40 text-[#D4AF37] text-xs font-black tracking-widest uppercase"
           >
             <Sparkles size={14} className="animate-spin-slow" />
-            <span>Academic Session 2026-27 Open</span>
+            <span>{portalData.heroBadge || "Academic Session 2026-27 Open"}</span>
           </motion.div>
 
           <motion.h2 
@@ -133,7 +79,21 @@ export const AdmissionsPortalView: React.FC = () => {
             transition={{ duration: 0.7, delay: 0.1 }}
             className="text-3xl md:text-5xl font-black tracking-tight leading-tight"
           >
-            Shape Your Future at <span className="bg-gradient-to-r from-white via-[#F3E5AB] to-[#D4AF37] bg-clip-text text-transparent">Chalapathi University</span>
+            {portalData.heroTitle ? (
+              portalData.heroTitle.includes("Chalapathi University") ? (
+                <>
+                  {portalData.heroTitle.split("Chalapathi University")[0]}
+                  <span className="bg-gradient-to-r from-white via-[#F3E5AB] to-[#D4AF37] bg-clip-text text-transparent">
+                    Chalapathi University
+                  </span>
+                  {portalData.heroTitle.split("Chalapathi University")[1]}
+                </>
+              ) : (
+                portalData.heroTitle
+              )
+            ) : (
+              <>Shape Your Future at <span className="bg-gradient-to-r from-white via-[#F3E5AB] to-[#D4AF37] bg-clip-text text-transparent">Chalapathi University</span></>
+            )}
           </motion.h2>
 
           <motion.p 
@@ -142,7 +102,7 @@ export const AdmissionsPortalView: React.FC = () => {
             transition={{ duration: 0.7, delay: 0.2 }}
             className="text-sm md:text-lg text-blue-100/90 font-light leading-relaxed max-w-2xl"
           >
-            Empowering next-generation innovators with world-class infrastructure, industry-aligned curricula, 100% placement support, and lucrative merit scholarships.
+            {portalData.heroSubtitle || "Empowering next-generation innovators with world-class infrastructure, industry-aligned curricula, 100% placement support, and lucrative merit scholarships."}
           </motion.p>
 
           {/* Quick Stats Ticker */}
@@ -152,117 +112,72 @@ export const AdmissionsPortalView: React.FC = () => {
             transition={{ duration: 0.7, delay: 0.3 }}
             className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-white/10 text-center sm:text-left"
           >
-            <div>
-              <p className="text-2xl md:text-3xl font-extrabold text-[#D4AF37]">₹25 LPA</p>
-              <p className="text-[11px] text-blue-200 font-medium uppercase tracking-wider">Highest Package</p>
-            </div>
-            <div>
-              <p className="text-2xl md:text-3xl font-extrabold text-white">100%</p>
-              <p className="text-[11px] text-blue-200 font-medium uppercase tracking-wider">Placement Assistance</p>
-            </div>
-            <div>
-              <p className="text-2xl md:text-3xl font-extrabold text-[#D4AF37]">50+</p>
-              <p className="text-[11px] text-blue-200 font-medium uppercase tracking-wider">Global Corporate MOUs</p>
-            </div>
-            <div>
-              <p className="text-2xl md:text-3xl font-extrabold text-white">Up to 100%</p>
-              <p className="text-[11px] text-blue-200 font-medium uppercase tracking-wider">Merit Waivers</p>
-            </div>
+            {(portalData.stats || DEFAULT_ADMISSIONS_CONTENT.portal.stats).map((st, idx) => (
+              <div key={idx}>
+                <p className={`text-2xl md:text-3xl font-extrabold ${idx % 2 === 0 ? "text-[#D4AF37]" : "text-white"}`}>
+                  {st.value}
+                </p>
+                <p className="text-[11px] text-blue-200 font-medium uppercase tracking-wider">
+                  {st.label}
+                </p>
+              </div>
+            ))}
           </motion.div>
         </div>
       </div>
 
       {/* 2. Three Animated Gateway Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        
-        {/* Card 1: Start Application */}
-        <motion.div 
-          whileHover={{ y: -8, scale: 1.02 }}
-          transition={{ type: "spring", stiffness: 300, damping: 20 }}
-        >
-          <Link 
-            to="/admissions/apply" 
-            className="group relative block bg-gradient-to-br from-[#072A6C] to-[#0A3A93] text-white p-7 rounded-2xl shadow-xl overflow-hidden min-h-[170px] flex flex-col justify-between border border-blue-400/20"
+        {(portalData.gatewayCards || DEFAULT_ADMISSIONS_CONTENT.portal.gatewayCards).map((card, idx) => (
+          <motion.div 
+            key={card.id || idx}
+            whileHover={{ y: -8, scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
           >
-            <div className="absolute top-0 right-0 -mr-6 -mt-6 w-24 h-24 bg-white/10 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500" />
-            <div className="flex items-center justify-between">
-              <div className="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-md flex items-center justify-center text-[#D4AF37] border border-white/20">
-                <GraduationCap size={20} />
+            <Link 
+              to={card.link || "/admissions/apply"} 
+              className={`group relative block p-7 rounded-2xl shadow-xl overflow-hidden min-h-[170px] flex flex-col justify-between border transition-all duration-300 ${
+                idx === 0 
+                  ? "bg-gradient-to-br from-[#072A6C] to-[#0A3A93] text-white border-blue-400/20" 
+                  : "bg-white border-gray-100 hover:border-[#072A6C]/30 hover:shadow-2xl"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                  idx === 0 
+                    ? "bg-white/15 backdrop-blur-md text-[#D4AF37] border border-white/20" 
+                    : idx === 1 
+                    ? "bg-[#072A6C]/5 text-[#072A6C]" 
+                    : "bg-[#D4AF37]/10 text-[#D4AF37]"
+                }`}>
+                  {idx === 0 ? <GraduationCap size={20} /> : idx === 1 ? <FileText size={20} /> : <Award size={20} />}
+                </div>
+                <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full ${
+                  idx === 0 
+                    ? "bg-[#D4AF37] text-white" 
+                    : idx === 1 
+                    ? "bg-slate-100 text-slate-600" 
+                    : "bg-[#D4AF37]/15 text-[#072A6C]"
+                }`}>
+                  {card.tag}
+                </span>
               </div>
-              <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 bg-[#D4AF37] text-white rounded-full">
-                Step 1
-              </span>
-            </div>
-            <div>
-              <h4 className="font-extrabold text-lg md:text-xl text-white group-hover:text-[#D4AF37] transition-colors">
-                Start Application 2026
-              </h4>
-              <p className="text-xs text-blue-200/90 font-light mt-1 flex items-center gap-1.5">
-                <span>Online Admission Form</span>
-                <ArrowRight size={14} className="group-hover:translate-x-1.5 transition-transform" />
-              </p>
-            </div>
-          </Link>
-        </motion.div>
-
-        {/* Card 2: Fee Structure */}
-        <motion.div 
-          whileHover={{ y: -8, scale: 1.02 }}
-          transition={{ type: "spring", stiffness: 300, damping: 20 }}
-        >
-          <Link 
-            to="/admissions/fees" 
-            className="group relative block bg-white border border-gray-100 hover:border-[#072A6C]/30 p-7 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 min-h-[170px] flex flex-col justify-between"
-          >
-            <div className="flex items-center justify-between">
-              <div className="w-10 h-10 rounded-xl bg-[#072A6C]/5 flex items-center justify-center text-[#072A6C]">
-                <FileText size={20} />
+              <div>
+                <h4 className={`font-extrabold text-lg md:text-xl transition-colors ${
+                  idx === 0 ? "text-white group-hover:text-[#D4AF37]" : "text-[#072A6C]"
+                }`}>
+                  {card.title}
+                </h4>
+                <p className={`text-xs font-light mt-1 flex items-center gap-1.5 ${
+                  idx === 0 ? "text-blue-200/90" : "text-[#D4AF37] font-semibold"
+                }`}>
+                  <span>{card.subtitle}</span>
+                  <ArrowRight size={14} className="group-hover:translate-x-1.5 transition-transform" />
+                </p>
               </div>
-              <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full">
-                Fee Charts
-              </span>
-            </div>
-            <div>
-              <h4 className="font-extrabold text-lg md:text-xl text-[#072A6C]">
-                Academic Fee Structure
-              </h4>
-              <p className="text-xs text-[#D4AF37] font-semibold mt-1 flex items-center gap-1.5">
-                <span>View Stream Fee Breakdown</span>
-                <ArrowRight size={14} className="group-hover:translate-x-1.5 transition-transform" />
-              </p>
-            </div>
-          </Link>
-        </motion.div>
-
-        {/* Card 3: Scholarships */}
-        <motion.div 
-          whileHover={{ y: -8, scale: 1.02 }}
-          transition={{ type: "spring", stiffness: 300, damping: 20 }}
-        >
-          <Link 
-            to="/admissions/scholarships" 
-            className="group relative block bg-white border border-gray-100 hover:border-[#D4AF37]/40 p-7 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 min-h-[170px] flex flex-col justify-between"
-          >
-            <div className="flex items-center justify-between">
-              <div className="w-10 h-10 rounded-xl bg-[#D4AF37]/10 flex items-center justify-center text-[#D4AF37]">
-                <Award size={20} />
-              </div>
-              <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 bg-[#D4AF37]/15 text-[#072A6C] rounded-full">
-                Waivers
-              </span>
-            </div>
-            <div>
-              <h4 className="font-extrabold text-lg md:text-xl text-[#072A6C]">
-                Scholarships & Financial Aid
-              </h4>
-              <p className="text-xs text-[#D4AF37] font-semibold mt-1 flex items-center gap-1.5">
-                <span>Apply for Up to 100% Merit Waivers</span>
-                <ArrowRight size={14} className="group-hover:translate-x-1.5 transition-transform" />
-              </p>
-            </div>
-          </Link>
-        </motion.div>
-
+            </Link>
+          </motion.div>
+        ))}
       </div>
 
       {/* 3. GenRush-Style Interactive Stepper Section */}

@@ -74,6 +74,7 @@ import { ImageField, ColorField, SectionHeader, VideoField } from "../components
 import { PlacementsCMS } from "../components/admin/PlacementsCMS";
 import { ResearchCMS } from "../components/admin/ResearchCMS";
 import { FacultyCMS } from "../components/admin/FacultyCMS";
+import { AdmissionsCMS } from "../components/admin/AdmissionsCMS";
 import { 
   DEFAULT_PROGRAM_SECTIONS, 
   SectionMeta, 
@@ -6224,126 +6225,7 @@ export default function AdminPortal() {
           {/* TAB 5: ADMISSIONS & LEADS MANAGEMENT                */}
           {/* ════════════════════════════════════════════════════ */}
           {activeTab === "admissions" && (
-            <div className="space-y-6 animate-fade-in text-left">
-              <SectionHeader
-                title="Admissions & Lead Management"
-                subtitle="View, search, filter and export incoming student admission enquiries"
-                icon={UserPlus}
-                onReset={() => {
-                  updateEnquiries(INITIAL_ENQUIRIES);
-                  notifySave("Admissions enquiries reset to default!");
-                }}
-                resetLabel="Reset Enquiries"
-              />
-
-              {/* Controls & Export */}
-              <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs flex flex-col sm:flex-row gap-3 items-center justify-between">
-                <div className="flex flex-1 items-center gap-2 w-full">
-                  <div className="relative flex-1">
-                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="text"
-                      placeholder="Search enquiries by name, phone, city, program..."
-                      value={leadSearch}
-                      onChange={(e) => setLeadSearch(e.target.value)}
-                      className="w-full h-9 pl-9 pr-3 text-xs bg-slate-50 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500"
-                    />
-                  </div>
-                  <select
-                    value={leadStatusFilter}
-                    onChange={(e) => setLeadStatusFilter(e.target.value)}
-                    className="h-9 px-3 text-xs font-bold bg-slate-50 border border-gray-200 rounded-xl cursor-pointer"
-                  >
-                    <option value="All">All Statuses</option>
-                    <option value="New">New</option>
-                    <option value="Contacted">Contacted</option>
-                    <option value="Admitted">Admitted</option>
-                    <option value="Closed">Closed</option>
-                  </select>
-                </div>
-
-                <button
-                  onClick={exportLeadsToCSV}
-                  className="h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-xs"
-                >
-                  <Download size={14} /> Export to CSV
-                </button>
-              </div>
-
-              {/* Table */}
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-left">
-                    <thead className="bg-slate-50 text-gray-600 uppercase text-[10px] font-bold border-b border-gray-200">
-                      <tr>
-                        <th className="p-3">ID</th>
-                        <th className="p-3">Candidate</th>
-                        <th className="p-3">Contact</th>
-                        <th className="p-3">Location</th>
-                        <th className="p-3">Program</th>
-                        <th className="p-3">Date</th>
-                        <th className="p-3">Status</th>
-                        <th className="p-3 text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {filteredLeads.map((lead) => (
-                        <tr key={lead.id} className="hover:bg-slate-50/50">
-                          <td className="p-3 font-mono text-gray-500">{lead.id}</td>
-                          <td className="p-3">
-                            <span className="font-bold text-slate-800 block">{lead.name}</span>
-                            <span className="text-[10px] text-gray-400">{lead.qualification} ({lead.yearOfPassing})</span>
-                          </td>
-                          <td className="p-3">
-                            <span className="font-semibold text-slate-700 block">{lead.mobile}</span>
-                            <span className="text-[10px] text-gray-400">{lead.email}</span>
-                          </td>
-                          <td className="p-3">
-                            <span className="font-medium text-slate-700 block">{lead.city}</span>
-                            <span className="text-[10px] text-gray-400">{lead.state}</span>
-                          </td>
-                          <td className="p-3 font-bold text-[#072A6C]">{lead.program}</td>
-                          <td className="p-3 text-gray-500 whitespace-nowrap">{lead.date}</td>
-                          <td className="p-3">
-                            <select
-                              value={lead.status || "New"}
-                              onChange={(e) => updateLeadStatus(lead.id, e.target.value as any)}
-                              className={`px-2 py-1 rounded-md text-[10px] font-bold cursor-pointer border ${
-                                lead.status === "Admitted"
-                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                  : lead.status === "Contacted"
-                                  ? "bg-amber-50 text-amber-700 border-amber-200"
-                                  : "bg-blue-50 text-blue-700 border-blue-200"
-                              }`}
-                            >
-                              <option value="New">New</option>
-                              <option value="Contacted">Contacted</option>
-                              <option value="Admitted">Admitted</option>
-                              <option value="Closed">Closed</option>
-                            </select>
-                          </td>
-                          <td className="p-3 text-right">
-                            <button
-                              onClick={() => deleteLead(lead.id)}
-                              className="text-gray-400 hover:text-red-600 p-1 transition-colors cursor-pointer"
-                              title="Delete Lead"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {filteredLeads.length === 0 && (
-                  <div className="p-10 text-center text-gray-400 text-xs font-medium">
-                    No enquiries match the filter criteria.
-                  </div>
-                )}
-              </div>
-            </div>
+            <AdmissionsCMS notifySave={notifySave} />
           )}
 
           {/* ════════════════════════════════════════════════════ */}

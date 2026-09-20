@@ -4248,6 +4248,11 @@ function AdmissionsApplyFlow() {
 }
 
 function FeesView() {
+  const { admissionsContent } = useData();
+  const feeList = admissionsContent?.feeStructure && admissionsContent.feeStructure.length > 0
+    ? admissionsContent.feeStructure
+    : FEES_DATA;
+
   return (
     <div className="space-y-6 font-[var(--font-poppins)] text-left w-full mt-4">
       <div className="relative w-full h-40 md:h-48 rounded-2xl overflow-hidden bg-[#072A6C] flex items-center justify-center select-none shadow-sm mb-6">
@@ -4256,7 +4261,7 @@ function FeesView() {
       </div>
 
       <div className="space-y-6">
-        {FEES_DATA.map((feeRow) => (
+        {feeList.map((feeRow) => (
           <div key={feeRow.id} className="flex gap-4 md:gap-6 items-start">
             <div className="w-14 h-14 md:w-16 md:h-16 shrink-0 bg-gradient-to-b from-[#072A6C] to-[#0c409c] text-white text-lg md:text-xl font-extrabold flex items-center justify-center rounded-full shadow-md">
               {feeRow.id}
@@ -4269,12 +4274,12 @@ function FeesView() {
                 </h4>
                 
                 <div className="flex flex-wrap gap-2">
-                  {feeRow.duration !== "Varies" && (
+                  {feeRow.duration && feeRow.duration !== "Varies" && (
                     <span className="px-3 py-1 bg-[#D4AF37]/5 text-[#D4AF37] font-bold text-[10px] uppercase tracking-wider rounded-md border border-[#D4AF37]/15">
                       {feeRow.duration}
                     </span>
                   )}
-                  {feeRow.feePerYear !== "See Details" && (
+                  {feeRow.feePerYear && feeRow.feePerYear !== "See Details" && (
                     <span className="px-3 py-1 bg-[#D4AF37]/10 text-gray-900 font-extrabold text-[10px] uppercase tracking-wider rounded-md border border-[#D4AF37]/35">
                       {feeRow.feePerYear}
                     </span>
@@ -4285,7 +4290,7 @@ function FeesView() {
               <div className="space-y-1.5">
                 <span className="text-[9px] text-gray-400 font-extrabold uppercase tracking-wider block mb-1">Applicable Programs</span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-600 font-light">
-                  {feeRow.courses.map((course, idx) => (
+                  {(feeRow.courses || []).map((course, idx) => (
                     <div key={idx} className="flex items-center gap-1.5 leading-relaxed">
                       <span className="w-1.5 h-1.5 bg-[#D4AF37] rounded-full shrink-0" />
                       <span>{course}</span>
@@ -4295,7 +4300,7 @@ function FeesView() {
               </div>
 
               <div className="mt-4 pt-3 border-t border-gray-50 flex flex-col sm:flex-row justify-between items-start sm:items-center text-[10px] text-gray-400 font-medium gap-1">
-                {feeRow.examFee !== "N/A" ? (
+                {feeRow.examFee && feeRow.examFee !== "N/A" ? (
                   <span>* Mandatory Exam Cell Fee: <strong>{feeRow.examFee}</strong></span>
                 ) : (
                   <span>* Transportation service is optional and routes vary</span>
@@ -4311,11 +4316,48 @@ function FeesView() {
 }
 
 function ScholarshipsView() {
+  const { admissionsContent } = useData();
+  const sc = admissionsContent?.scholarships || {
+    heroTitle: "Scholarships & Merits",
+    heroImage: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200&h=400&fit=crop",
+    cmstTitle: "Chalapathi Merit Scholarship Test (CMST)",
+    cmstDescription: "The Chalapathi Merit Scholarship Test (CMST) offers deserving students an opportunity to receive substantial tuition fee concessions based on their academic excellence and performance.",
+    cmstHighlights: [
+      "Tuition fee waiver of up to 100% for top-performing students.",
+      "Scholarships awarded based on merit and eligibility.",
+      "Recognition for exceptional academic talent.",
+      "Encouragement for students to pursue excellence throughout their academic journey."
+    ],
+    entranceTitle: "Entrance Exam Merit Scholarships",
+    entranceDescription: "Students with outstanding performance in national and state-level entrance examinations are eligible for merit-based scholarships during admission.",
+    entranceExams: ["AP EAPCET", "JEE Main", "NEET (for eligible programs)", "Intermediate / Class XII Academic Merit"],
+    entranceNote: "* Scholarship benefits are offered based on rank, score, and institutional eligibility criteria.",
+    governmentTitle: "Government Scholarship Support",
+    governmentDescription: "The institute facilitates eligible students in availing various Government of Andhra Pradesh and Government of India scholarship schemes.",
+    governmentSchemes: [
+      { title: "Post-Matric Scholarships", desc: "State and national scholarship programs for reserved and minority categories." },
+      { title: "AICTE Pragati & Saksham", desc: "Support programs for female advancement in technology (Pragati) and differently-abled students (Saksham)." }
+    ],
+    nspTipText: "💡 Our dedicated student support team assists eligible candidates throughout the entire application and documentation process on the National Scholarship Portal (NSP) schemes.",
+    rewardsTitle: "Rewards for Academic Excellence",
+    rewardsDescription: "Academic excellence is celebrated and encouraged through various recognition programs.",
+    academicRewards: [
+      { title: "Merit Awards", subtitle: "Cash rewards for toppers" },
+      { title: "Academic Excellence Certificates", subtitle: "Official university records" },
+      { title: "University Rank Recognition", subtitle: "BOS and senate felicitations" },
+      { title: "Performance-Based Incentives", subtitle: "Project grants and waivers" }
+    ],
+    excellenceFooterText: "★ Special Recognition for Outstanding Achievements in a Unique Way! ★"
+  };
+
   return (
     <div className="space-y-8 text-left font-[var(--font-poppins)] mt-4">
       <div className="relative w-full h-40 md:h-48 rounded-2xl overflow-hidden bg-[#072A6C] flex items-center justify-center select-none shadow-sm mb-6">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200&h=400&fit=crop')] bg-cover bg-center opacity-30 mix-blend-overlay" />
-        <h2 className="text-white text-3xl font-extrabold tracking-tight relative z-10">Scholarships & Merits</h2>
+        <div 
+          className="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-overlay"
+          style={{ backgroundImage: `url('${sc.heroImage || "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200&h=400&fit=crop"}')` }} 
+        />
+        <h2 className="text-white text-3xl font-extrabold tracking-tight relative z-10">{sc.heroTitle || "Scholarships & Merits"}</h2>
       </div>
 
       <div className="space-y-6">
@@ -4329,32 +4371,22 @@ function ScholarshipsView() {
         <div className="bg-white border border-gray-155 border-l-4 border-l-[#D4AF37] rounded-r-2xl rounded-l-md p-6 shadow-sm space-y-4">
           <div>
             <h3 className="text-base font-extrabold text-[#072A6C] uppercase tracking-wide">
-              Chalapathi Merit Scholarship Test (CMST)
+              {sc.cmstTitle}
             </h3>
             <p className="text-xs text-gray-500 font-light mt-1.5 leading-relaxed">
-              The Chalapathi Merit Scholarship Test (CMST) offers deserving students an opportunity to receive substantial tuition fee concessions based on their academic excellence and performance.
+              {sc.cmstDescription}
             </p>
           </div>
 
           <div className="pt-2">
             <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider block mb-2">Scholarship Highlights</span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-gray-600 font-light">
-              <div className="flex items-center gap-2 bg-[#D4AF37]/5 p-2 rounded-xl border border-[#D4AF37]/10">
-                <span className="text-[#D4AF37] font-black text-sm">✓</span>
-                <span>Tuition fee waiver of up to 100% for top-performing students.</span>
-              </div>
-              <div className="flex items-center gap-2 bg-[#D4AF37]/5 p-2 rounded-xl border border-[#D4AF37]/10">
-                <span className="text-[#D4AF37] font-black text-sm">✓</span>
-                <span>Scholarships awarded based on merit and eligibility.</span>
-              </div>
-              <div className="flex items-center gap-2 bg-[#D4AF37]/5 p-2 rounded-xl border border-[#D4AF37]/10">
-                <span className="text-[#D4AF37] font-black text-sm">✓</span>
-                <span>Recognition for exceptional academic talent.</span>
-              </div>
-              <div className="flex items-center gap-2 bg-[#D4AF37]/5 p-2 rounded-xl border border-[#D4AF37]/10">
-                <span className="text-[#D4AF37] font-black text-sm">✓</span>
-                <span>Encouragement for students to pursue excellence throughout their academic journey.</span>
-              </div>
+              {(sc.cmstHighlights || []).map((highlight, idx) => (
+                <div key={idx} className="flex items-center gap-2 bg-[#D4AF37]/5 p-2 rounded-xl border border-[#D4AF37]/10">
+                  <span className="text-[#D4AF37] font-black text-sm">✓</span>
+                  <span>{highlight}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -4362,24 +4394,24 @@ function ScholarshipsView() {
         <div className="bg-white border border-gray-155 border-l-4 border-l-[#D4AF37] rounded-r-2xl rounded-l-md p-6 shadow-sm space-y-4">
           <div>
             <h3 className="text-base font-extrabold text-[#072A6C] uppercase tracking-wide">
-              Entrance Exam Merit Scholarships
+              {sc.entranceTitle}
             </h3>
             <p className="text-xs text-gray-500 font-light mt-1.5 leading-relaxed">
-              Students with outstanding performance in national and state-level entrance examinations are eligible for merit-based scholarships during admission.
+              {sc.entranceDescription}
             </p>
           </div>
 
           <div className="pt-2">
             <h4 className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider block mb-2">Eligible Entrance Examinations</h4>
             <div className="flex flex-wrap gap-2">
-              {["AP EAPCET", "JEE Main", "NEET (for eligible programs)", "Intermediate / Class XII Academic Merit"].map((exam, idx) => (
+              {(sc.entranceExams || []).map((exam, idx) => (
                 <span key={idx} className="px-3 py-1 bg-amber-50 text-gray-800 font-extrabold text-[10.5px] uppercase tracking-wider rounded-md border border-amber-200">
                   {exam}
                 </span>
               ))}
             </div>
             <p className="text-[11px] text-gray-400 italic font-light mt-3 leading-normal">
-              * Scholarship benefits are offered based on rank, score, and institutional eligibility criteria.
+              {sc.entranceNote || "* Scholarship benefits are offered based on rank, score, and institutional eligibility criteria."}
             </p>
           </div>
         </div>
@@ -4389,31 +4421,29 @@ function ScholarshipsView() {
         <div className="border-b-2 border-[#D4AF37]/80 pb-2 flex items-center gap-2">
           <ShieldCheck className="text-[#D4AF37] shrink-0" size={24} />
           <h2 className="text-xl md:text-2xl font-extrabold text-[#072A6C] uppercase tracking-tight">
-            Government Scholarship Support
+            {sc.governmentTitle || "Government Scholarship Support"}
           </h2>
         </div>
 
         <div className="bg-white border border-gray-155 border-l-4 border-l-[#072A6C] rounded-r-2xl rounded-l-md p-6 shadow-sm space-y-4">
           <p className="text-xs text-gray-500 font-light leading-relaxed">
-            The institute facilitates eligible students in availing various Government of Andhra Pradesh and Government of India scholarship schemes.
+            {sc.governmentDescription}
           </p>
 
           <div>
             <h4 className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider block mb-3">Supported Schemes Include</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 text-xs text-gray-700">
-              <div className="p-3 bg-gray-50 border border-gray-100 rounded-xl">
-                <span className="font-extrabold text-[#072A6C] block mb-1">Post-Matric Scholarships</span>
-                <span className="text-[10.5px] text-gray-400 font-light">State and national scholarship programs for reserved and minority categories.</span>
-              </div>
-              <div className="p-3 bg-gray-50 border border-gray-100 rounded-xl">
-                <span className="font-extrabold text-[#072A6C] block mb-1">AICTE Pragati & Saksham</span>
-                <span className="text-[10.5px] text-gray-400 font-light">Support programs for female advancement in technology (Pragati) and differently-abled students (Saksham).</span>
-              </div>
+              {(sc.governmentSchemes || []).map((scheme, idx) => (
+                <div key={idx} className="p-3 bg-gray-50 border border-gray-100 rounded-xl">
+                  <span className="font-extrabold text-[#072A6C] block mb-1">{scheme.title}</span>
+                  <span className="text-[10.5px] text-gray-400 font-light">{scheme.desc}</span>
+                </div>
+              ))}
             </div>
           </div>
 
           <div className="bg-blue-50 border-l-4 border-blue-500 p-4.5 rounded-r-xl text-xs text-blue-900 font-medium">
-            💡 Our dedicated student support team assists eligible candidates throughout the entire application and documentation process on the National Scholarship Portal (NSP) schemes.
+            {sc.nspTipText || "💡 Our dedicated student support team assists eligible candidates throughout the entire application and documentation process on the National Scholarship Portal (NSP) schemes."}
           </div>
         </div>
       </div>
@@ -4422,24 +4452,19 @@ function ScholarshipsView() {
         <div className="border-b-2 border-[#D4AF37]/80 pb-2 flex items-center gap-2">
           <BookOpen className="text-[#D4AF37] shrink-0" size={24} />
           <h2 className="text-xl md:text-2xl font-extrabold text-[#072A6C] uppercase tracking-tight">
-            Rewards for Academic Excellence
+            {sc.rewardsTitle || "Rewards for Academic Excellence"}
           </h2>
         </div>
 
         <div className="bg-white border border-gray-155 border-l-4 border-l-[#D4AF37] rounded-r-2xl rounded-l-md p-6 shadow-sm space-y-4">
           <p className="text-xs text-gray-500 font-light leading-relaxed">
-            Academic excellence is celebrated and encouraged through various recognition programs.
+            {sc.rewardsDescription}
           </p>
 
           <div>
             <h4 className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider block mb-2.5">Students are recognized through</h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                { title: "Merit Awards", subtitle: "Cash rewards for toppers" },
-                { title: "Academic Excellence Certificates", subtitle: "Official university records" },
-                { title: "University Rank Recognition", subtitle: "BOS and senate felicitations" },
-                { title: "Performance-Based Incentives", subtitle: "Project grants and waivers" }
-              ].map((reward, i) => (
+              {(sc.academicRewards || []).map((reward, i) => (
                 <div key={i} className="bg-amber-50/50 border border-amber-200/50 rounded-xl p-3 text-center">
                   <span className="font-extrabold text-[#072A6C] text-xs block">{reward.title}</span>
                   <span className="text-[9.5px] text-gray-400 font-light block mt-0.5">{reward.subtitle}</span>
@@ -4447,7 +4472,7 @@ function ScholarshipsView() {
               ))}
             </div>
             <p className="text-[11px] text-[#D4AF37] italic font-extrabold mt-4 text-center leading-normal uppercase tracking-wider">
-              ★ Special Recognition for Outstanding Achievements in a Unique Way! ★
+              {sc.excellenceFooterText || "★ Special Recognition for Outstanding Achievements in a Unique Way! ★"}
             </p>
           </div>
         </div>

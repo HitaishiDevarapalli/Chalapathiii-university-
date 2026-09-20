@@ -449,9 +449,82 @@ export interface CampusLifePageData {
 
 export type CampusLifeContent = Record<string, CampusLifePageData>;
 
+// Admissions CMS Interfaces
+export interface AdmissionsStep {
+  id: number;
+  stepNum: string;
+  title: string;
+  shortTitle?: string;
+  desc: string;
+  icon: string;
+  badge: string;
+  features: string[];
+  ctaText: string;
+  ctaLink: string;
+}
+
+export interface AdmissionsGatewayCard {
+  id: string;
+  title: string;
+  subtitle: string;
+  tag: string;
+  link: string;
+  icon: string;
+}
+
+export interface AdmissionsPortalConfig {
+  heroBadge: string;
+  heroTitle: string;
+  heroSubtitle: string;
+  stats: { label: string; value: string }[];
+  gatewayCards: AdmissionsGatewayCard[];
+  stepsHeading: string;
+  stepsSubheading: string;
+  steps: AdmissionsStep[];
+}
+
+export interface AdmissionsFeeItem {
+  id: string;
+  title: string;
+  courses: string[];
+  duration: string;
+  feePerYear: string;
+  examFee: string;
+  notes?: string;
+}
+
+export interface AdmissionsScholarshipsConfig {
+  heroTitle: string;
+  heroImage: string;
+  cmstTitle: string;
+  cmstDescription: string;
+  cmstHighlights: string[];
+  entranceTitle: string;
+  entranceDescription: string;
+  entranceExams: string[];
+  entranceNote: string;
+  governmentTitle: string;
+  governmentDescription: string;
+  governmentSchemes: { title: string; desc: string }[];
+  nspTipText: string;
+  rewardsTitle: string;
+  rewardsDescription: string;
+  academicRewards: { title: string; subtitle: string }[];
+  excellenceFooterText: string;
+}
+
+export interface AdmissionsContent {
+  portal: AdmissionsPortalConfig;
+  feeStructure: AdmissionsFeeItem[];
+  scholarships: AdmissionsScholarshipsConfig;
+}
+
 interface DataContextType {
   siteSettings: SiteSettings;
   updateSiteSettings: (settings: SiteSettings) => void;
+
+  admissionsContent: AdmissionsContent;
+  updateAdmissionsContent: (content: AdmissionsContent) => void;
 
   campusLifeContent: CampusLifeContent;
   updateCampusLifeContent: (content: CampusLifeContent) => void;
@@ -563,6 +636,280 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   seoTitle: "Chalapathi University | Best University in Andhra Pradesh",
   seoDescription: "Chalapathi University offers world-class higher education with premium undergraduate, postgraduate, and research programs. Admissions Open for 2026–2027.",
   seoKeywords: "Chalapathi University, Engineering College Guntur, Best University Andhra Pradesh, B.Tech Admissions"
+};
+
+export const DEFAULT_ADMISSIONS_CONTENT: AdmissionsContent = {
+  portal: {
+    heroBadge: "Academic Session 2026-27 Open",
+    heroTitle: "Shape Your Future at Chalapathi University",
+    heroSubtitle: "Empowering next-generation innovators with world-class infrastructure, industry-aligned curricula, 100% placement support, and lucrative merit scholarships.",
+    stats: [
+      { value: "₹25 LPA", label: "Highest Package" },
+      { value: "100%", label: "Placement Assistance" },
+      { value: "50+", label: "Global Corporate MOUs" },
+      { value: "Up to 100%", label: "Merit Waivers" }
+    ],
+    gatewayCards: [
+      {
+        id: "apply",
+        title: "Start Application 2026",
+        subtitle: "Online Admission Form",
+        tag: "Step 1",
+        link: "/admissions/apply",
+        icon: "GraduationCap"
+      },
+      {
+        id: "fees",
+        title: "Academic Fee Structure",
+        subtitle: "View Stream Fee Breakdown",
+        tag: "Fee Charts",
+        link: "/admissions/fees",
+        icon: "FileText"
+      },
+      {
+        id: "scholarships",
+        title: "Scholarships & Financial Aid",
+        subtitle: "Apply for Up to 100% Merit Waivers",
+        tag: "Waivers",
+        link: "/admissions/scholarships",
+        icon: "Award"
+      }
+    ],
+    stepsHeading: "Admissions Process 2026",
+    stepsSubheading: "Click any step or watch the automated workflow preview below.",
+    steps: [
+      {
+        id: 0,
+        stepNum: "01",
+        title: "Register Yourself",
+        shortTitle: "Account Creation",
+        desc: "Create your official student admission portal account in under 2 minutes with basic contact details.",
+        icon: "UserPlus",
+        badge: "Quick 2 Mins",
+        features: ["No Registration Fee", "Instant Portal Access", "Single Sign-On"],
+        ctaText: "Start Account Registration",
+        ctaLink: "/admissions/apply"
+      },
+      {
+        id: 1,
+        stepNum: "02",
+        title: "Verify Contact",
+        shortTitle: "OTP Verification",
+        desc: "Receive instant 6-digit OTP verification on your mobile and email for secure credentials activation.",
+        icon: "ShieldCheck",
+        badge: "Instant Verification",
+        features: ["Mobile & Email OTP", "256-bit SSL Security", "Auto Account Activation"],
+        ctaText: "Verify Mobile & Email",
+        ctaLink: "/admissions/apply"
+      },
+      {
+        id: 2,
+        stepNum: "03",
+        title: "Fill Application Form",
+        shortTitle: "Program & Marks",
+        desc: "Enter academic marks, choose your preferred program stream (CSE, ECE, MBA), and enter personal details.",
+        icon: "FileText",
+        badge: "Auto-Save Draft",
+        features: ["Multi-Stream Selection", "Auto-Save Progress", "Edit Anytime Before Submit"],
+        ctaText: "Fill Online Form",
+        ctaLink: "/admissions/apply"
+      },
+      {
+        id: 3,
+        stepNum: "04",
+        title: "Upload Required Documents",
+        shortTitle: "Document Vault",
+        desc: "Upload scanned copies of 10th/12th marksheets, ID proof, and passport photo into your encrypted vault.",
+        icon: "UploadCloud",
+        badge: "Secure Vault",
+        features: ["Cloud Document Vault", "PDF & JPG Support", "Instant File Validation"],
+        ctaText: "Upload Certificates",
+        ctaLink: "/admissions/apply"
+      },
+      {
+        id: 4,
+        stepNum: "05",
+        title: "Submit & Track Status",
+        shortTitle: "Payment & Confirmation",
+        desc: "Pay nominal application fee online and receive real-time admission tracking ID with SMS notifications.",
+        icon: "CreditCard",
+        badge: "Instant Confirmation",
+        features: ["UPI / NetBanking / Cards", "Instant Tracking ID", "Counselor Callback"],
+        ctaText: "Pay & Complete Application",
+        ctaLink: "/admissions/apply"
+      }
+    ]
+  },
+  feeStructure: [
+    {
+      id: "01",
+      title: "B.Tech. Computer Science & Engineering (All Specializations)",
+      courses: [
+        "B.Tech. Computer Science & Eng",
+        "B.Tech. CSE (AI & Machine Learning)",
+        "B.Tech. CSE (Data Science)",
+        "B.Tech. CSE (Cyber Security)",
+        "B.Tech. CSE (Internet of Things)",
+        "B.Tech. CSE (Cloud Computing)",
+        "B.Tech. CSE (Blockchain)",
+        "B.Tech. CSE (Software Engineering)"
+      ],
+      duration: "4 Years",
+      feePerYear: "₹90,000 / Year",
+      examFee: "₹5,000 / Year"
+    },
+    {
+      id: "02",
+      title: "B.Tech. Electronics & Communication Engineering (All Specializations)",
+      courses: [
+        "B.Tech. Electronics & Comm Eng",
+        "B.Tech. ECE (VLSI Design)",
+        "B.Tech. ECE (Embedded Systems)",
+        "B.Tech. ECE (Robotics & Automation)",
+        "B.Tech. ECE (IoT Specialization)"
+      ],
+      duration: "4 Years",
+      feePerYear: "₹80,000 / Year",
+      examFee: "₹5,000 / Year"
+    },
+    {
+      id: "03",
+      title: "B.Tech. Electrical, Mechanical & Automobile Engineering",
+      courses: [
+        "B.Tech. Electrical & Electronics Eng",
+        "B.Tech. EEE (Electric Vehicles)",
+        "B.Tech. EEE (Renewable Energy)",
+        "B.Tech. EEE (Smart Grid)",
+        "B.Tech. Mechanical Engineering",
+        "B.Tech. Mechanical (Mechatronics)",
+        "B.Tech. Mechanical (Robotics)",
+        "B.Tech. Mechanical (Automobile)",
+        "B.Tech. Mechanical (Manufacturing)"
+      ],
+      duration: "4 Years",
+      feePerYear: "₹75,000 / Year",
+      examFee: "₹5,000 / Year"
+    },
+    {
+      id: "04",
+      title: "B.Tech. Civil, Bio & Agricultural Engineering",
+      courses: [
+        "B.Tech. Civil Engineering",
+        "B.Tech. Civil (Smart Infrastructure)",
+        "B.Tech. Civil (Construction Tech)",
+        "B.Tech. Emerging (AI)",
+        "B.Tech. Emerging (Data Science)",
+        "B.Tech. Emerging (Robotics)",
+        "B.Tech. Biomedical Engineering",
+        "B.Tech. Biotechnology",
+        "B.Tech. Agricultural Engineering"
+      ],
+      duration: "4 Years",
+      feePerYear: "₹70,000 / Year",
+      examFee: "₹5,000 / Year"
+    },
+    {
+      id: "05",
+      title: "Postgraduate M.Tech Programs",
+      courses: [
+        "M.Tech. Computer Science",
+        "M.Tech. Power Systems",
+        "M.Tech. VLSI & Embedded Systems"
+      ],
+      duration: "2 Years",
+      feePerYear: "₹60,000 / Year",
+      examFee: "₹4,000 / Year"
+    },
+    {
+      id: "06",
+      title: "Management & Applications (MBA & MCA)",
+      courses: [
+        "MBA (Master of Business Administration)",
+        "MCA (Master of Computer Applications)"
+      ],
+      duration: "2 Years",
+      feePerYear: "₹65,000 / Year",
+      examFee: "₹4,000 / Year"
+    },
+    {
+      id: "07",
+      title: "Pharmacy Programs (B.Pharm, M.Pharm, D.Pharm)",
+      courses: [
+        "B.Pharm. (Bachelor of Pharmacy) - 4 Years - ₹85,000 / Year",
+        "M.Pharm. (Master of Pharmacy) - 2 Years - ₹95,000 / Year",
+        "D.Pharm. (Diploma in Pharmacy) - 2 Years - ₹45,000 / Year"
+      ],
+      duration: "Varies",
+      feePerYear: "See Details",
+      examFee: "₹4,000 / Year"
+    },
+    {
+      id: "08",
+      title: "Diploma in Engineering (Polytechnic)",
+      courses: [
+        "Diploma in Engineering (Polytechnic) - Civil, Mech, EEE, ECE, CSE"
+      ],
+      duration: "3 Years",
+      feePerYear: "₹35,000 / Year",
+      examFee: "₹3,000 / Year"
+    },
+    {
+      id: "09",
+      title: "Transportation / Bus Fee Details",
+      courses: [
+        "Guntur City Route - ₹18,000 / Year",
+        "Vijayawada Route - ₹22,000 / Year",
+        "Mothadaka Local Route - ₹12,000 / Year",
+        "Other Intermediate Routes - ₹15,000 to ₹20,000 / Year"
+      ],
+      duration: "Annual",
+      feePerYear: "Varies by Route",
+      examFee: "N/A"
+    }
+  ],
+  scholarships: {
+    heroTitle: "Scholarships & Merits",
+    heroImage: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200&h=400&fit=crop",
+    cmstTitle: "Chalapathi Merit Scholarship Test (CMST)",
+    cmstDescription: "The Chalapathi Merit Scholarship Test (CMST) offers deserving students an opportunity to receive substantial tuition fee concessions based on their academic excellence and performance.",
+    cmstHighlights: [
+      "Tuition fee waiver of up to 100% for top-performing students.",
+      "Scholarships awarded based on merit and eligibility.",
+      "Recognition for exceptional academic talent.",
+      "Encouragement for students to pursue excellence throughout their academic journey."
+    ],
+    entranceTitle: "Entrance Exam Merit Scholarships",
+    entranceDescription: "Students with outstanding performance in national and state-level entrance examinations are eligible for merit-based scholarships during admission.",
+    entranceExams: [
+      "AP EAPCET",
+      "JEE Main",
+      "NEET (for eligible programs)",
+      "Intermediate / Class XII Academic Merit"
+    ],
+    entranceNote: "* Scholarship benefits are offered based on rank, score, and institutional eligibility criteria.",
+    governmentTitle: "Government Scholarship Support",
+    governmentDescription: "The institute facilitates eligible students in availing various Government of Andhra Pradesh and Government of India scholarship schemes.",
+    governmentSchemes: [
+      {
+        title: "Post-Matric Scholarships",
+        desc: "State and national scholarship programs for reserved and minority categories."
+      },
+      {
+        title: "AICTE Pragati & Saksham",
+        desc: "Support programs for female advancement in technology (Pragati) and differently-abled students (Saksham)."
+      }
+    ],
+    nspTipText: "💡 Our dedicated student support team assists eligible candidates throughout the entire application and documentation process on the National Scholarship Portal (NSP) schemes.",
+    rewardsTitle: "Rewards for Academic Excellence",
+    rewardsDescription: "Academic excellence is celebrated and encouraged through various recognition programs.",
+    academicRewards: [
+      { title: "Merit Awards", subtitle: "Cash rewards for toppers" },
+      { title: "Academic Excellence Certificates", subtitle: "Official university records" },
+      { title: "University Rank Recognition", subtitle: "BOS and senate felicitations" },
+      { title: "Performance-Based Incentives", subtitle: "Project grants and waivers" }
+    ],
+    excellenceFooterText: "★ Special Recognition for Outstanding Achievements in a Unique Way! ★"
+  }
 };
 
 export const DEFAULT_THEME_COLORS: ThemeColors = {
@@ -2532,6 +2879,25 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     recordSave();
   };
 
+  // Admissions Content
+  const [admissionsContent, setAdmissionsContent] = useState<AdmissionsContent>(() => {
+    try {
+      const local = localStorage.getItem("chalapathi_admissions_content");
+      if (local) {
+        return { ...DEFAULT_ADMISSIONS_CONTENT, ...JSON.parse(local) };
+      }
+    } catch (e) {
+      console.error("Failed to parse admissions content", e);
+    }
+    return DEFAULT_ADMISSIONS_CONTENT;
+  });
+
+  const updateAdmissionsContent = (content: AdmissionsContent) => {
+    setAdmissionsContent(content);
+    localStorage.setItem("chalapathi_admissions_content", JSON.stringify(content));
+    recordSave();
+  };
+
   const resetToDefaults = () => {
     if (window.confirm("Are you sure you want to reset all CMS content to original university defaults? This will restore original website content.")) {
       localStorage.clear();
@@ -2560,6 +2926,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSuccessStories(INITIAL_SUCCESS_STORIES);
       setHeroSlides(INITIAL_HERO_SLIDES);
       setEnquiries(INITIAL_ENQUIRIES);
+      setAdmissionsContent(DEFAULT_ADMISSIONS_CONTENT);
       recordSave();
     }
   };
@@ -2568,6 +2935,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <DataContext.Provider value={{
       siteSettings,
       updateSiteSettings,
+      admissionsContent,
+      updateAdmissionsContent,
       campusLifeContent,
       updateCampusLifeContent,
       updateCampusLifePage,
