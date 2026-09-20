@@ -372,8 +372,12 @@ const getPageContent = (path: string, programs: any[], newsPageConfig?: any) => 
   }
 
   // Academics Pages
-  if (cleanPath.startsWith("/academics")) {
-    const slug = cleanPath.replace("/academics/", "").replace(/\/$/, "");
+  if (cleanPath.startsWith("/academics") || cleanPath.startsWith("/programs")) {
+    const slug = cleanPath
+      .replace("/academics/programmes/", "")
+      .replace("/academics/", "")
+      .replace("/programs/", "")
+      .replace(/\/$/, "");
     const reservedRoutes = ["schools", "departments", "calendar", "flexibilities", "programmes", "grading", "degrees", "electives", "rules", "teaching", "certifications", "bos", "computer-science", "artificial-intelligence", "data-science"];
     
     // Check if this is a program detail route
@@ -383,6 +387,8 @@ const getPageContent = (path: string, programs: any[], newsPageConfig?: any) => 
         title: matchedProgram ? matchedProgram.title : `About ${slug.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}`,
         category: "Academics",
         desc: matchedProgram ? matchedProgram.desc : "Academic program information, curriculum, faculty, laboratories, and career prospects.",
+        isProgramDetail: true,
+        hideHeader: true,
         body: <ProgramDetailPage slug={matchedProgram ? matchedProgram.slug : slug} defaultData={matchedProgram} />
       };
     }
@@ -2280,6 +2286,15 @@ export default function DynamicPage() {
   const isCampusLife = cleanPath.startsWith("/campus-life");
 
   const campusPage = campusLifeContent ? (campusLifeContent[cleanPath] || campusLifeContent["/campus-life"]) : undefined;
+
+  // Dedicated Full-Bleed Academic Program View (Prevents duplicate outer breadcrumbs & duplicate title cards)
+  if ((content as any).isProgramDetail) {
+    return (
+      <div className="flex-grow w-full">
+        {content.body}
+      </div>
+    );
+  }
 
   if (isCampusLife && campusPage) {
     const galleryItems = campusPage.gallery && campusPage.gallery.length > 0 ? campusPage.gallery : [
