@@ -301,19 +301,18 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
           FUTURISTIC BACKGROUND MESH & LUXURY AMBIENCE
       ═══════════════════════════════════════════════════════════════════ */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        {/* Subtle Cyber Grid */}
+        {/* Subtle Background Pattern */}
         <div 
-          className="absolute inset-0 opacity-[0.035]"
+          className="absolute inset-0 opacity-[0.03]"
           style={{
-            backgroundImage: `radial-gradient(#072A6C 1px, transparent 1px), radial-gradient(#D4AF37 1px, transparent 1px)`,
-            backgroundSize: "40px 40px",
-            backgroundPosition: "0 0, 20px 20px"
+            backgroundImage: `radial-gradient(#072A6C 1px, transparent 1px)`,
+            backgroundSize: "32px 32px"
           }}
         />
-        {/* Soft Glowing Orbs */}
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-[#072A6C]/10 rounded-full blur-[120px]" />
-        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-[#D4AF37]/15 rounded-full blur-[140px]" />
-        <div className="absolute bottom-20 left-1/3 w-[30rem] h-[30rem] bg-cyan-500/10 rounded-full blur-[160px]" />
+        {/* Soft Glowing Ambient Orbs - Clean Sapphire & Slate Tones */}
+        <div className="absolute -top-40 -left-40 w-96 h-96 bg-[#072A6C]/8 rounded-full blur-[120px]" />
+        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-blue-500/5 rounded-full blur-[140px]" />
+        <div className="absolute bottom-20 left-1/3 w-[30rem] h-[30rem] bg-indigo-500/5 rounded-full blur-[160px]" />
       </div>
 
       {/* ═══════════════════════════════════════════════════════════════════
@@ -647,7 +646,7 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-2 border-b border-slate-200/80">
               <div className="space-y-1.5 text-left">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono font-black text-[#D4AF37] uppercase tracking-widest bg-[#072A6C]/5 px-2.5 py-0.5 rounded-full border border-[#D4AF37]/20">
+                  <span className="text-[10px] font-mono font-black text-[#072A6C] uppercase tracking-wider bg-blue-50 px-3 py-1 rounded-lg border border-blue-200/80">
                     PROGRAM CURRICULUM & MODULES
                   </span>
                   <span className="text-slate-300">•</span>
@@ -672,7 +671,7 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
                     setActiveSectorId("sector-all");
                     setMatrixSearch("");
                   }}
-                  className="text-xs font-bold text-[#072A6C] hover:text-[#D4AF37] flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200/80 px-3 py-1.5 rounded-xl transition-all self-start md:self-auto cursor-pointer"
+                  className="text-xs font-bold text-[#072A6C] hover:text-[#051c4a] flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200/80 px-3 py-1.5 rounded-xl transition-all self-start md:self-auto cursor-pointer"
                 >
                   <span>Reset Filters</span>
                 </button>
@@ -693,20 +692,20 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
                       whileHover={{ y: -4, scale: 1.01 }}
                       transition={{ duration: 0.2 }}
                       onClick={() => selectModule(sec.id)}
-                      className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs hover:shadow-lg hover:border-[#D4AF37]/60 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between group"
+                      className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs hover:shadow-lg hover:border-[#072A6C]/40 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between group"
                     >
-                      <div className="space-y-3 relative z-10">
-                        {/* Card Header: Icon + Number + Category */}
+                      <div className="space-y-3.5 relative z-10">
+                        {/* Card Header: Icon + Category Badge + Module Number */}
                         <div className="flex items-center justify-between gap-2">
                           <div className="w-11 h-11 rounded-xl bg-slate-100 text-[#072A6C] group-hover:bg-[#072A6C] group-hover:text-white flex items-center justify-center transition-all duration-200 shadow-xs">
                             <Icon size={20} className="group-hover:scale-105 transition-transform" />
                           </div>
-                          <div className="text-right">
-                            <span className="text-[11px] font-mono font-black text-slate-400 group-hover:text-[#D4AF37] transition-colors block">
-                              #0{globalIdx + 1}
-                            </span>
-                            <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-wider block">
+                          <div className="flex items-center gap-1.5">
+                            <span className="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-slate-100 text-[#072A6C] border border-slate-200/90 group-hover:bg-[#072A6C] group-hover:text-white group-hover:border-[#072A6C] transition-all shadow-2xs">
                               {sector?.shortTitle || "MODULE"}
+                            </span>
+                            <span className="w-6 h-6 rounded-md bg-slate-50 border border-slate-200 text-slate-700 group-hover:text-[#072A6C] group-hover:border-[#072A6C]/40 text-[11px] font-mono font-bold flex items-center justify-center transition-colors">
+                              {globalIdx < 9 ? `0${globalIdx + 1}` : globalIdx + 1}
                             </span>
                           </div>
                         </div>
@@ -723,11 +722,11 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
                       </div>
 
                       {/* Card Footer: View Details CTA */}
-                      <div className="pt-3.5 mt-3.5 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600 group-hover:text-[#072A6C] font-bold relative z-10">
-                        <span className="flex items-center gap-1.5 group-hover:text-[#072A6C]">
-                          <BookOpen size={13} className="text-[#072A6C] group-hover:scale-110 transition-transform" /> View Details
+                      <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-700 group-hover:text-[#072A6C] font-bold relative z-10">
+                        <span className="flex items-center gap-1.5 font-semibold text-slate-600 group-hover:text-[#072A6C] transition-colors">
+                          <BookOpen size={13} className="text-[#072A6C]" /> View Details
                         </span>
-                        <div className="w-6 h-6 rounded-lg bg-slate-100 group-hover:bg-[#072A6C] group-hover:text-white text-slate-600 flex items-center justify-center transition-all">
+                        <div className="w-6 h-6 rounded-md bg-slate-100 group-hover:bg-[#072A6C] group-hover:text-white text-slate-600 flex items-center justify-center transition-all">
                           <ArrowRight size={12} className="transform group-hover:translate-x-0.5 transition-transform" />
                         </div>
                       </div>
