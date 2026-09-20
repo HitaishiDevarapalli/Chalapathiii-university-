@@ -358,6 +358,233 @@ export default function AdminPortal() {
     notifySave("Schools, Categories & Course Programs published live!");
   };
 
+  // Interactive Schools, Departments & Branches Management State
+  const [newSchoolInput, setNewSchoolInput] = useState("");
+  const [isAddingSchool, setIsAddingSchool] = useState(false);
+  const [editingSchool, setEditingSchool] = useState<string | null>(null);
+  const [editingSchoolNewName, setEditingSchoolNewName] = useState("");
+  const [newDeptInput, setNewDeptInput] = useState("");
+  const [addingDeptToSchool, setAddingDeptToSchool] = useState<string | null>(null);
+  const [expandedExplorerSchool, setExpandedExplorerSchool] = useState<string | null>(null);
+  const [selectedExplorerDept, setSelectedExplorerDept] = useState<string | null>(null);
+  const [newCourseForm, setNewCourseForm] = useState<CourseLinkItem>({
+    label: "",
+    to: "/academics",
+    desc: ""
+  });
+  const [isAddingCourse, setIsAddingCourse] = useState(false);
+  const [newBranchInput, setNewBranchInput] = useState("");
+  const [isAddingBranch, setIsAddingBranch] = useState(false);
+  const [editingBranchName, setEditingBranchName] = useState<{ oldName: string; newName: string } | null>(null);
+
+  const handleDeleteSchool = (schoolName: string) => {
+    if (!window.confirm(`Are you sure you want to permanently delete "${schoolName}" and all its department categories from the homepage explorer?`)) return;
+    const updated = { ...academicData };
+    delete updated[schoolName];
+    setAcademicData(updated);
+    updateAcademicStructure(updated);
+    if (activeAdminSchool === schoolName) {
+      const remaining = Object.keys(updated);
+      setActiveAdminSchool(remaining[0] || "");
+      setActiveAdminDept(remaining[0] ? Object.keys(updated[remaining[0]] || {})[0] || "" : "");
+    }
+    if (expandedExplorerSchool === schoolName) setExpandedExplorerSchool(null);
+    notifySave(`Deleted "${schoolName}".`);
+  };
+
+  const handleAddSchool = () => {
+    const trimmed = newSchoolInput.trim();
+    if (!trimmed) {
+      alert("Please enter a valid school name.");
+      return;
+    }
+    if (academicData[trimmed]) {
+      alert(`A school named "${trimmed}" already exists.`);
+      return;
+    }
+    const updated = {
+      ...academicData,
+      [trimmed]: {}
+    };
+    setAcademicData(updated);
+    updateAcademicStructure(updated);
+    setNewSchoolInput("");
+    setIsAddingSchool(false);
+    setActiveAdminSchool(trimmed);
+    notifySave(`Added school "${trimmed}".`);
+  };
+
+  const handleRenameSchool = (oldName: string) => {
+    const trimmed = editingSchoolNewName.trim();
+    if (!trimmed || trimmed === oldName) {
+      setEditingSchool(null);
+      return;
+    }
+    if (academicData[trimmed]) {
+      alert(`A school named "${trimmed}" already exists.`);
+      return;
+    }
+    const updated: AcademicStructure = {};
+    Object.keys(academicData).forEach((k) => {
+      if (k === oldName) {
+        updated[trimmed] = academicData[oldName];
+      } else {
+        updated[k] = academicData[k];
+      }
+    });
+    setAcademicData(updated);
+    updateAcademicStructure(updated);
+    if (activeAdminSchool === oldName) setActiveAdminSchool(trimmed);
+    if (expandedExplorerSchool === oldName) setExpandedExplorerSchool(trimmed);
+    setEditingSchool(null);
+    notifySave(`Renamed school to "${trimmed}".`);
+  };
+
+  const handleDeleteDeptCategory = (schoolName: string, deptName: string) => {
+    if (!window.confirm(`Are you sure you want to delete category "${deptName}" from "${schoolName}"?`)) return;
+    const updated = { ...academicData };
+    if (updated[schoolName]) {
+      const updatedDepts = { ...updated[schoolName] };
+      delete updatedDepts[deptName];
+      updated[schoolName] = updatedDepts;
+      setAcademicData(updated);
+      updateAcademicStructure(updated);
+      if (selectedExplorerDept === deptName) setSelectedExplorerDept(null);
+      notifySave(`Deleted category "${deptName}" from ${schoolName}.`);
+    }
+  };
+
+  const handleAddDeptCategory = (schoolName: string) => {
+    const trimmed = newDeptInput.trim();
+    if (!trimmed) {
+      alert("Please enter a department category name.");
+      return;
+    }
+    const updated = { ...academicData };
+    if (!updated[schoolName]) updated[schoolName] = {};
+    if (updated[schoolName][trimmed]) {
+      alert(`Category "${trimmed}" already exists in ${schoolName}.`);
+      return;
+    }
+    updated[schoolName] = {
+      ...updated[schoolName],
+      [trimmed]: []
+    };
+    setAcademicData(updated);
+    updateAcademicStructure(updated);
+    setNewDeptInput("");
+    setAddingDeptToSchool(null);
+    notifySave(`Added category "${trimmed}" to ${schoolName}.`);
+  };
+
+  const handleDeleteCourseCard = (schoolName: string, deptName: string, courseIndex: number) => {
+    const updated = { ...academicData };
+    if (updated[schoolName]?.[deptName]) {
+      const courses = [...updated[schoolName][deptName]];
+      const removed = courses.splice(courseIndex, 1);
+      updated[schoolName][deptName] = courses;
+      setAcademicData(updated);
+      updateAcademicStructure(updated);
+      notifySave(`Deleted "${removed[0]?.label || 'course'}" from ${deptName}.`);
+    }
+  };
+
+  const handleAddCourseCard = (schoolName: string, deptName: string) => {
+    if (!newCourseForm.label.trim()) {
+      alert("Please enter program / course name.");
+      return;
+    }
+    const updated = { ...academicData };
+    if (!updated[schoolName]) updated[schoolName] = {};
+    if (!updated[schoolName][deptName]) updated[schoolName][deptName] = [];
+    updated[schoolName][deptName] = [
+      ...updated[schoolName][deptName],
+      { ...newCourseForm }
+    ];
+    setAcademicData(updated);
+    updateAcademicStructure(updated);
+    setNewCourseForm({
+      label: "",
+      to: "/academics",
+      desc: ""
+    });
+    setIsAddingCourse(false);
+    notifySave(`Added "${newCourseForm.label}" to ${deptName}.`);
+  };
+
+  const handleDeleteBranch = (deptName: string) => {
+    const affected = programsList.filter(p => p.department === deptName);
+    if (!window.confirm(`Permanently delete branch "${deptName}" and all its ${affected.length} degree programs?`)) return;
+    const updated = programsList.filter(p => p.department !== deptName);
+    setProgramsList(updated);
+    updatePrograms(updated);
+    affected.forEach(p => {
+      localStorage.removeItem(`custom_program_data_${p.slug}`);
+      localStorage.removeItem(`program_sections_order_${p.slug}`);
+    });
+    window.dispatchEvent(new Event("chalapathi_cms_updated"));
+    notifySave(`Deleted branch "${deptName}" and ${affected.length} programs.`);
+  };
+
+  const handleRenameBranch = (oldName: string, newName: string) => {
+    const trimmed = newName.trim();
+    if (!trimmed || trimmed === oldName) {
+      setEditingBranchName(null);
+      return;
+    }
+    const updated = programsList.map(p => {
+      if (p.department === oldName) {
+        const fullKey = `custom_program_data_${p.slug}`;
+        const existing = localStorage.getItem(fullKey);
+        if (existing) {
+          try {
+            const parsed = JSON.parse(existing);
+            parsed.department = trimmed;
+            localStorage.setItem(fullKey, JSON.stringify(parsed));
+          } catch (e) {}
+        }
+        return { ...p, department: trimmed };
+      }
+      return p;
+    });
+    setProgramsList(updated);
+    updatePrograms(updated);
+    setEditingBranchName(null);
+    window.dispatchEvent(new Event("chalapathi_cms_updated"));
+    notifySave(`Renamed branch "${oldName}" to "${trimmed}".`);
+  };
+
+  const handleAddBranch = () => {
+    const trimmed = newBranchInput.trim();
+    if (!trimmed) {
+      alert("Please enter a valid branch name.");
+      return;
+    }
+    if (allDepartments.includes(trimmed)) {
+      alert(`Branch "${trimmed}" already exists.`);
+      return;
+    }
+    const newSlug = trimmed.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-foundation";
+    const newProg: ProgramDetail = {
+      slug: newSlug,
+      title: `${trimmed} Degree Program`,
+      department: trimmed,
+      duration: "4 Years (8 Semesters)",
+      degreeType: "B.Tech",
+      overview: `Official academic program in ${trimmed} at Chalapathi University.`,
+      desc: `Premier degree in ${trimmed} with practical labs and industry training.`,
+      curriculum: ["Semester 1 Core Courses", "Semester 2 Foundation"],
+      careers: [{ title: `${trimmed} Specialist`, desc: "Specialist role." }]
+    };
+    const updated = [newProg, ...programsList];
+    setProgramsList(updated);
+    updatePrograms(updated);
+    setNewBranchInput("");
+    setIsAddingBranch(false);
+    window.dispatchEvent(new Event("chalapathi_cms_updated"));
+    notifySave(`Created new academic branch "${trimmed}".`);
+  };
+
   // ----------------------------------------------------
   // 5. CAMPUS LIFE CMS STATE
   // ----------------------------------------------------
@@ -593,9 +820,28 @@ export default function AdminPortal() {
 
   // ----------------------------------------------------
   // 7. ACADEMICS & PROGRAM BUILDER (FULL ADMIN)
-  // ----------------------------------------------------
   const [academicsSubTab, setAcademicsSubTab] = useState<"directory" | "editor" | "branches" | "homepage">("directory");
-  const [progEditorSubTab, setProgEditorSubTab] = useState<"general" | "hod" | "vision" | "syllabus" | "faculty" | "labs" | "placements" | "sections">("general");
+  const [progEditorSubTab, setProgEditorSubTab] = useState<
+    | "general"
+    | "hod"
+    | "vision"
+    | "syllabus"
+    | "faculty"
+    | "labs"
+    | "placements"
+    | "achievements"
+    | "library"
+    | "newsletters"
+    | "magazines"
+    | "mous"
+    | "research"
+    | "societies"
+    | "rollOfHonour"
+    | "funding"
+    | "teaching"
+    | "events"
+    | "sections"
+  >("general");
   const [gallerySubTab, setGallerySubTab] = useState<"moments" | "homepage">("moments");
   const [programsList, setProgramsList] = useState<ProgramDetail[]>(programs);
   const [selectedProgSlug, setSelectedProgSlug] = useState<string>(programs[0]?.slug || "btech-cse");
@@ -7103,7 +7349,18 @@ export default function AdminPortal() {
                       { id: "faculty", label: `👨‍🏫 5. Faculty (${customFullProgram.facultyList?.length || 0})` },
                       { id: "labs", label: `🔬 6. Laboratories (${customFullProgram.laboratories?.length || 0})` },
                       { id: "placements", label: "💼 7. Placements & CTC" },
-                      { id: "sections", label: "⚙️ 8. 19 Dimensions Order" }
+                      { id: "achievements", label: `🏆 8. Achievements (${customFullProgram.achievements?.length || 0})` },
+                      { id: "library", label: "📖 10. Dept Library" },
+                      { id: "newsletters", label: `📰 11. Newsletters (${customFullProgram.newsletters?.length || 0})` },
+                      { id: "magazines", label: `📑 12. Magazines (${customFullProgram.magazines?.length || 0})` },
+                      { id: "mous", label: `🤝 13. MoUs (${customFullProgram.mous?.length || 0})` },
+                      { id: "research", label: "🔬 14. Research & Dev" },
+                      { id: "societies", label: `🌐 15. Societies (${customFullProgram.professionalSocieties?.length || 0})` },
+                      { id: "rollOfHonour", label: `🎖️ 16. Roll of Honour (${customFullProgram.rollOfHonour?.length || 0})` },
+                      { id: "funding", label: `💰 17. Grants (${customFullProgram.fundingProjects?.length || 0})` },
+                      { id: "teaching", label: `💡 18. Teaching Innovations (${customFullProgram.teachingInnovations?.length || 0})` },
+                      { id: "events", label: "🎉 19. Events & Association" },
+                      { id: "sections", label: "⚙️ 20. 19 Dimensions Order" }
                     ].map((st) => (
                       <button
                         key={st.id}
@@ -7123,11 +7380,19 @@ export default function AdminPortal() {
                   {/* ──────────────── 1. IDENTITY & HERO SETTINGS ──────────────── */}
                   {progEditorSubTab === "general" && (
                     <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
-                      <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-100 pb-3 gap-3">
                         <div>
                           <h4 className="text-sm font-black text-[#072A6C] uppercase">Program Identity & Hero Attributes</h4>
                           <p className="text-xs text-gray-500">Configure program headers, duration, eligibility, and core descriptions</p>
                         </div>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteProgram(selectedProgSlug, customFullProgram.title)}
+                          className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold rounded-lg border border-red-200 flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+                          title="Permanently delete this entire program"
+                        >
+                          <Trash2 size={13} /> Delete This Program
+                        </button>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -7260,11 +7525,27 @@ export default function AdminPortal() {
                   {/* ──────────────── 2. HOD & LEADERSHIP ──────────────── */}
                   {progEditorSubTab === "hod" && (
                     <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-5">
-                      <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-100 pb-3 gap-3">
                         <div>
                           <h4 className="text-sm font-black text-[#072A6C] uppercase">Head of Department (HOD) Leadership Profile</h4>
                           <p className="text-xs text-gray-500">Configure Department Head credentials, message, contact details, and photo</p>
                         </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (window.confirm("Clear all HOD leadership details for this program?")) {
+                              setCustomFullProgram({
+                                ...customFullProgram,
+                                hodMessage: { hodName: "", designation: "", qualification: "", email: "", message: "", image: "" }
+                              });
+                              notifySave("HOD profile cleared.");
+                            }
+                          }}
+                          className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold rounded-lg border border-red-200 flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+                          title="Clear / Delete HOD Profile"
+                        >
+                          <Trash2 size={13} /> Clear HOD Profile
+                        </button>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -7771,7 +8052,1302 @@ export default function AdminPortal() {
                     </div>
                   )}
 
-                  {/* ──────────────── 8. 19-SECTION ORDERING & VISIBILITY ──────────────── */}
+                  {/* ──────────────── 8. KEY ACHIEVEMENTS & ACCREDITATIONS ──────────────── */}
+                  {progEditorSubTab === "achievements" && (
+                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-3">
+                        <div>
+                          <h4 className="text-sm font-black text-[#072A6C] uppercase">Key Achievements & Accreditations</h4>
+                          <p className="text-xs text-gray-500">Student awards, patent filings, faculty recognitions & department honours</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const list = customFullProgram.achievements || [];
+                            setCustomFullProgram({
+                              ...customFullProgram,
+                              achievements: [
+                                ...list,
+                                {
+                                  title: "New Achievement / Accreditation Title",
+                                  category: "Student Award",
+                                  year: "2025 - 2026",
+                                  desc: "Detailed description of the recognition, award body, and accomplishments."
+                                }
+                              ]
+                            });
+                          }}
+                          className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs"
+                        >
+                          <Plus size={14} /> Add Achievement
+                        </button>
+                      </div>
+
+                      <div className="space-y-4">
+                        {(customFullProgram.achievements || []).map((ach, aIdx) => (
+                          <div key={aIdx} className="p-4 bg-slate-50 border border-gray-200 rounded-2xl space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[11px] font-black text-[#072A6C] uppercase">Achievement #{aIdx + 1}</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = (customFullProgram.achievements || []).filter((_, idx) => idx !== aIdx);
+                                  setCustomFullProgram({ ...customFullProgram, achievements: updated });
+                                }}
+                                className="text-xs text-rose-600 hover:text-rose-700 flex items-center gap-1 cursor-pointer"
+                              >
+                                <Trash2 size={13} /> Remove
+                              </button>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                              <div className="sm:col-span-2 space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Title / Honour Name</label>
+                                <input
+                                  type="text"
+                                  value={ach.title}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.achievements || [])];
+                                    updated[aIdx] = { ...updated[aIdx], title: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, achievements: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800 font-bold"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Category</label>
+                                <select
+                                  value={ach.category}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.achievements || [])];
+                                    updated[aIdx] = { ...updated[aIdx], category: e.target.value as any };
+                                    setCustomFullProgram({ ...customFullProgram, achievements: updated });
+                                  }}
+                                  className="w-full h-8 px-2 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                >
+                                  <option value="Accreditation">Accreditation</option>
+                                  <option value="Student Award">Student Award</option>
+                                  <option value="Faculty Award">Faculty Award</option>
+                                  <option value="Patent">Patent</option>
+                                  <option value="Hackathon">Hackathon</option>
+                                </select>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Year</label>
+                                <input
+                                  type="text"
+                                  value={ach.year}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.achievements || [])];
+                                    updated[aIdx] = { ...updated[aIdx], year: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, achievements: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                />
+                              </div>
+                              <div className="sm:col-span-3 space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Description / Details</label>
+                                <input
+                                  type="text"
+                                  value={ach.desc}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.achievements || [])];
+                                    updated[aIdx] = { ...updated[aIdx], desc: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, achievements: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ──────────────── 10. DEPARTMENT LIBRARY & E-RESOURCES ──────────────── */}
+                  {progEditorSubTab === "library" && (
+                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+                      <div className="border-b border-gray-100 pb-3">
+                        <h4 className="text-sm font-black text-[#072A6C] uppercase">Department Library & E-Resources</h4>
+                        <p className="text-xs text-gray-500">Physical book holdings, journals, digital library databases & e-resource subscriptions</p>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Volumes Count</label>
+                          <input
+                            type="text"
+                            value={customFullProgram.library?.volumesCount || ""}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              library: { ...(customFullProgram.library || {} as any), volumesCount: e.target.value }
+                            })}
+                            placeholder="e.g. 1,450+ Reference Volumes"
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Titles Count</label>
+                          <input
+                            type="text"
+                            value={customFullProgram.library?.titlesCount || ""}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              library: { ...(customFullProgram.library || {} as any), titlesCount: e.target.value }
+                            })}
+                            placeholder="e.g. 520+ Unique Titles"
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">National Journals</label>
+                          <input
+                            type="text"
+                            value={customFullProgram.library?.nationalJournals || ""}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              library: { ...(customFullProgram.library || {} as any), nationalJournals: e.target.value }
+                            })}
+                            placeholder="e.g. 14 National Journals"
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">International Journals</label>
+                          <input
+                            type="text"
+                            value={customFullProgram.library?.internationalJournals || ""}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              library: { ...(customFullProgram.library || {} as any), internationalJournals: e.target.value }
+                            })}
+                            placeholder="e.g. 10 IEEE/ACM Transactions"
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Digital Access Subscriptions (Comma separated)</label>
+                          <textarea
+                            rows={3}
+                            value={(customFullProgram.library?.digitalAccess || []).join(", ")}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              library: {
+                                ...(customFullProgram.library || {} as any),
+                                digitalAccess: e.target.value.split(",").map(s => s.trim()).filter(Boolean)
+                              }
+                            })}
+                            placeholder="IEEE Xplore, ACM Digital Library, SpringerLink, Elsevier ScienceDirect"
+                            className="w-full p-3 text-xs bg-slate-50 border border-gray-200 rounded-xl leading-relaxed"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">E-Resources & DELNET Highlights (Comma separated)</label>
+                          <textarea
+                            rows={3}
+                            value={(customFullProgram.library?.eResources || []).join(", ")}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              library: {
+                                ...(customFullProgram.library || {} as any),
+                                eResources: e.target.value.split(",").map(s => s.trim()).filter(Boolean)
+                              }
+                            })}
+                            placeholder="DELNET inter-library loan facility, NPTEL video course archives, NDLI institutional membership"
+                            className="w-full p-3 text-xs bg-slate-50 border border-gray-200 rounded-xl leading-relaxed"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ──────────────── 11. NEWS LETTERS ──────────────── */}
+                  {progEditorSubTab === "newsletters" && (
+                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-3">
+                        <div>
+                          <h4 className="text-sm font-black text-[#072A6C] uppercase">Department News Letters</h4>
+                          <p className="text-xs text-gray-500">Periodical department newsletters, semester chronicles & student editorial issues</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const list = customFullProgram.newsletters || [];
+                            setCustomFullProgram({
+                              ...customFullProgram,
+                              newsletters: [
+                                ...list,
+                                {
+                                  title: "TECH-PULSE Newsletter",
+                                  volume: "Vol. 10",
+                                  issue: "Issue 1",
+                                  period: "Jan - Jun 2026",
+                                  pdfUrl: "/newsletters/issue.pdf"
+                                }
+                              ]
+                            });
+                          }}
+                          className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs"
+                        >
+                          <Plus size={14} /> Add Newsletter
+                        </button>
+                      </div>
+
+                      <div className="space-y-4">
+                        {(customFullProgram.newsletters || []).map((nl, nIdx) => (
+                          <div key={nIdx} className="p-4 bg-slate-50 border border-gray-200 rounded-2xl space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[11px] font-black text-[#072A6C] uppercase">Newsletter Issue #{nIdx + 1}</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = (customFullProgram.newsletters || []).filter((_, idx) => idx !== nIdx);
+                                  setCustomFullProgram({ ...customFullProgram, newsletters: updated });
+                                }}
+                                className="text-xs text-rose-600 hover:text-rose-700 flex items-center gap-1 cursor-pointer"
+                              >
+                                <Trash2 size={13} /> Remove
+                              </button>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                              <div className="sm:col-span-2 space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Newsletter Title</label>
+                                <input
+                                  type="text"
+                                  value={nl.title}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.newsletters || [])];
+                                    updated[nIdx] = { ...updated[nIdx], title: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, newsletters: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800 font-bold"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Volume & Issue</label>
+                                <div className="flex gap-1.5">
+                                  <input
+                                    type="text"
+                                    placeholder="Vol. 10"
+                                    value={nl.volume}
+                                    onChange={(e) => {
+                                      const updated = [...(customFullProgram.newsletters || [])];
+                                      updated[nIdx] = { ...updated[nIdx], volume: e.target.value };
+                                      setCustomFullProgram({ ...customFullProgram, newsletters: updated });
+                                    }}
+                                    className="w-1/2 h-8 px-2 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                  />
+                                  <input
+                                    type="text"
+                                    placeholder="Issue 1"
+                                    value={nl.issue}
+                                    onChange={(e) => {
+                                      const updated = [...(customFullProgram.newsletters || [])];
+                                      updated[nIdx] = { ...updated[nIdx], issue: e.target.value };
+                                      setCustomFullProgram({ ...customFullProgram, newsletters: updated });
+                                    }}
+                                    className="w-1/2 h-8 px-2 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                  />
+                                </div>
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Period (e.g. Jan - Jun 2026)</label>
+                                <input
+                                  type="text"
+                                  value={nl.period}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.newsletters || [])];
+                                    updated[nIdx] = { ...updated[nIdx], period: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, newsletters: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ──────────────── 12. TECHNICAL MAGAZINES ──────────────── */}
+                  {progEditorSubTab === "magazines" && (
+                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-3">
+                        <div>
+                          <h4 className="text-sm font-black text-[#072A6C] uppercase">Technical Magazines</h4>
+                          <p className="text-xs text-gray-500">Student & faculty peer-reviewed technical articles, research spotlights & editorial gazettes</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const list = customFullProgram.magazines || [];
+                            setCustomFullProgram({
+                              ...customFullProgram,
+                              magazines: [
+                                ...list,
+                                {
+                                  title: "INFOSIGHT Magazine",
+                                  edition: "Annual Edition 2026",
+                                  theme: "Generative AI & Smart Microelectronics",
+                                  editor: "Dr. Faculty Editor",
+                                  pdfUrl: "/magazines/issue.pdf"
+                                }
+                              ]
+                            });
+                          }}
+                          className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs"
+                        >
+                          <Plus size={14} /> Add Magazine
+                        </button>
+                      </div>
+
+                      <div className="space-y-4">
+                        {(customFullProgram.magazines || []).map((mag, mIdx) => (
+                          <div key={mIdx} className="p-4 bg-slate-50 border border-gray-200 rounded-2xl space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[11px] font-black text-[#072A6C] uppercase">Technical Magazine #{mIdx + 1}</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = (customFullProgram.magazines || []).filter((_, idx) => idx !== mIdx);
+                                  setCustomFullProgram({ ...customFullProgram, magazines: updated });
+                                }}
+                                className="text-xs text-rose-600 hover:text-rose-700 flex items-center gap-1 cursor-pointer"
+                              >
+                                <Trash2 size={13} /> Remove
+                              </button>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                              <div className="sm:col-span-2 space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Magazine Title</label>
+                                <input
+                                  type="text"
+                                  value={mag.title}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.magazines || [])];
+                                    updated[mIdx] = { ...updated[mIdx], title: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, magazines: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800 font-bold"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Edition</label>
+                                <input
+                                  type="text"
+                                  value={mag.edition}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.magazines || [])];
+                                    updated[mIdx] = { ...updated[mIdx], edition: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, magazines: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Chief Editor</label>
+                                <input
+                                  type="text"
+                                  value={mag.editor}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.magazines || [])];
+                                    updated[mIdx] = { ...updated[mIdx], editor: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, magazines: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                />
+                              </div>
+                              <div className="sm:col-span-4 space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Theme / Focus Topics</label>
+                                <input
+                                  type="text"
+                                  value={mag.theme}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.magazines || [])];
+                                    updated[mIdx] = { ...updated[mIdx], theme: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, magazines: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ──────────────── 13. MEMORANDA OF UNDERSTANDING (MOU) ──────────────── */}
+                  {progEditorSubTab === "mous" && (
+                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-3">
+                        <div>
+                          <h4 className="text-sm font-black text-[#072A6C] uppercase">Memoranda of Understanding (MoU)</h4>
+                          <p className="text-xs text-gray-500">Corporate partnerships, industry training agreements, global university pacts</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const list = customFullProgram.mous || [];
+                            setCustomFullProgram({
+                              ...customFullProgram,
+                              mous: [
+                                ...list,
+                                {
+                                  partner: "Industry Partner / Organization",
+                                  country: "India",
+                                  scope: "Student internships, guest lectures & hands-on certification training",
+                                  signedYear: "2024",
+                                  validity: "Active (5 Years)"
+                                }
+                              ]
+                            });
+                          }}
+                          className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs"
+                        >
+                          <Plus size={14} /> Add MoU
+                        </button>
+                      </div>
+
+                      <div className="space-y-4">
+                        {(customFullProgram.mous || []).map((m, mIdx) => (
+                          <div key={mIdx} className="p-4 bg-slate-50 border border-gray-200 rounded-2xl space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[11px] font-black text-[#072A6C] uppercase">MoU #{mIdx + 1}</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = (customFullProgram.mous || []).filter((_, idx) => idx !== mIdx);
+                                  setCustomFullProgram({ ...customFullProgram, mous: updated });
+                                }}
+                                className="text-xs text-rose-600 hover:text-rose-700 flex items-center gap-1 cursor-pointer"
+                              >
+                                <Trash2 size={13} /> Remove
+                              </button>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                              <div className="sm:col-span-2 space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Partner Organization / Company</label>
+                                <input
+                                  type="text"
+                                  value={m.partner}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.mous || [])];
+                                    updated[mIdx] = { ...updated[mIdx], partner: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, mous: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800 font-bold"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Country</label>
+                                <input
+                                  type="text"
+                                  value={m.country}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.mous || [])];
+                                    updated[mIdx] = { ...updated[mIdx], country: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, mous: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Validity / Status</label>
+                                <input
+                                  type="text"
+                                  value={m.validity}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.mous || [])];
+                                    updated[mIdx] = { ...updated[mIdx], validity: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, mous: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                />
+                              </div>
+                              <div className="sm:col-span-4 space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Scope & Collaboration Objectives</label>
+                                <input
+                                  type="text"
+                                  value={m.scope}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.mous || [])];
+                                    updated[mIdx] = { ...updated[mIdx], scope: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, mous: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ──────────────── 14. RESEARCH & DEVELOPMENT ──────────────── */}
+                  {progEditorSubTab === "research" && (
+                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+                      <div className="border-b border-gray-100 pb-3">
+                        <h4 className="text-sm font-black text-[#072A6C] uppercase">Department Research & Development</h4>
+                        <p className="text-xs text-gray-500">Research metrics, patents, thrust areas & key peer-reviewed publications</p>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Publications Count</label>
+                          <input
+                            type="number"
+                            value={customFullProgram.research?.publicationsCount || 0}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              research: { ...(customFullProgram.research || {} as any), publicationsCount: Number(e.target.value) }
+                            })}
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Patents Published</label>
+                          <input
+                            type="number"
+                            value={customFullProgram.research?.patentsPublished || 0}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              research: { ...(customFullProgram.research || {} as any), patentsPublished: Number(e.target.value) }
+                            })}
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Patents Granted</label>
+                          <input
+                            type="number"
+                            value={customFullProgram.research?.patentsGranted || 0}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              research: { ...(customFullProgram.research || {} as any), patentsGranted: Number(e.target.value) }
+                            })}
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Active Scholars</label>
+                          <input
+                            type="number"
+                            value={customFullProgram.research?.activeScholars || 0}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              research: { ...(customFullProgram.research || {} as any), activeScholars: Number(e.target.value) }
+                            })}
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Research Thrust Areas (Comma separated)</label>
+                        <textarea
+                          rows={2}
+                          value={(customFullProgram.research?.thrustAreas || []).join(", ")}
+                          onChange={(e) => setCustomFullProgram({
+                            ...customFullProgram,
+                            research: {
+                              ...(customFullProgram.research || {} as any),
+                              thrustAreas: e.target.value.split(",").map(s => s.trim()).filter(Boolean)
+                            }
+                          })}
+                          className="w-full p-3 text-xs bg-slate-50 border border-gray-200 rounded-xl"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ──────────────── 15. PROFESSIONAL SOCIETIES & CHAPTERS ──────────────── */}
+                  {progEditorSubTab === "societies" && (
+                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-3">
+                        <div>
+                          <h4 className="text-sm font-black text-[#072A6C] uppercase">Professional Societies & Student Chapters</h4>
+                          <p className="text-xs text-gray-500">IEEE, CSI, ACM, ISTE, and technical student society branches</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const list = customFullProgram.professionalSocieties || [];
+                            setCustomFullProgram({
+                              ...customFullProgram,
+                              professionalSocieties: [
+                                ...list,
+                                {
+                                  name: "New Society Chapter",
+                                  chapterId: "STB-000",
+                                  counselor: "Dr. Faculty Advisor",
+                                  membersCount: "50+ Members",
+                                  recentActivities: ["Coding contest", "Technical webinar", "Hackathon sprint"]
+                                }
+                              ]
+                            });
+                          }}
+                          className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs"
+                        >
+                          <Plus size={14} /> Add Society
+                        </button>
+                      </div>
+
+                      <div className="space-y-4">
+                        {(customFullProgram.professionalSocieties || []).map((soc, sIdx) => (
+                          <div key={sIdx} className="p-4 bg-slate-50 border border-gray-200 rounded-2xl space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[11px] font-black text-[#072A6C] uppercase">Society #{sIdx + 1}</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = (customFullProgram.professionalSocieties || []).filter((_, idx) => idx !== sIdx);
+                                  setCustomFullProgram({ ...customFullProgram, professionalSocieties: updated });
+                                }}
+                                className="text-xs text-rose-600 hover:text-rose-700 flex items-center gap-1 cursor-pointer"
+                              >
+                                <Trash2 size={13} /> Remove
+                              </button>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Society / Chapter Name</label>
+                                <input
+                                  type="text"
+                                  value={soc.name}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.professionalSocieties || [])];
+                                    updated[sIdx] = { ...updated[sIdx], name: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, professionalSocieties: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800 font-bold"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Chapter ID</label>
+                                <input
+                                  type="text"
+                                  value={soc.chapterId}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.professionalSocieties || [])];
+                                    updated[sIdx] = { ...updated[sIdx], chapterId: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, professionalSocieties: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Faculty Counselor</label>
+                                <input
+                                  type="text"
+                                  value={soc.counselor}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.professionalSocieties || [])];
+                                    updated[sIdx] = { ...updated[sIdx], counselor: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, professionalSocieties: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Members Count</label>
+                                <input
+                                  type="text"
+                                  value={soc.membersCount}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.professionalSocieties || [])];
+                                    updated[sIdx] = { ...updated[sIdx], membersCount: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, professionalSocieties: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ──────────────── 16. ROLL OF HONOUR & TOPPERS ──────────────── */}
+                  {progEditorSubTab === "rollOfHonour" && (
+                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-3">
+                        <div>
+                          <h4 className="text-sm font-black text-[#072A6C] uppercase">Roll of Honour & Toppers</h4>
+                          <p className="text-xs text-gray-500">Gold medalists, university 1st rank holders & outstanding student achievers</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const list = customFullProgram.rollOfHonour || [];
+                            setCustomFullProgram({
+                              ...customFullProgram,
+                              rollOfHonour: [
+                                ...list,
+                                {
+                                  studentName: "Student Name",
+                                  batch: "2022 - 2026 Batch",
+                                  rankOrMedal: "Gold Medalist (1st Rank)",
+                                  cgpa: "9.80 CGPA",
+                                  achievement: "Placed at Premier Tier-1 Corporate"
+                                }
+                              ]
+                            });
+                          }}
+                          className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs"
+                        >
+                          <Plus size={14} /> Add Topper
+                        </button>
+                      </div>
+
+                      <div className="space-y-4">
+                        {(customFullProgram.rollOfHonour || []).map((roh, rIdx) => (
+                          <div key={rIdx} className="p-4 bg-slate-50 border border-gray-200 rounded-2xl space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[11px] font-black text-[#072A6C] uppercase">Student Honour #{rIdx + 1}</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = (customFullProgram.rollOfHonour || []).filter((_, idx) => idx !== rIdx);
+                                  setCustomFullProgram({ ...customFullProgram, rollOfHonour: updated });
+                                }}
+                                className="text-xs text-rose-600 hover:text-rose-700 flex items-center gap-1 cursor-pointer"
+                              >
+                                <Trash2 size={13} /> Remove
+                              </button>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Student Name</label>
+                                <input
+                                  type="text"
+                                  value={roh.studentName}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.rollOfHonour || [])];
+                                    updated[rIdx] = { ...updated[rIdx], studentName: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, rollOfHonour: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800 font-bold"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Batch</label>
+                                <input
+                                  type="text"
+                                  value={roh.batch}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.rollOfHonour || [])];
+                                    updated[rIdx] = { ...updated[rIdx], batch: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, rollOfHonour: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Rank / Medal Title</label>
+                                <input
+                                  type="text"
+                                  value={roh.rankOrMedal}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.rollOfHonour || [])];
+                                    updated[rIdx] = { ...updated[rIdx], rankOrMedal: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, rollOfHonour: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">CGPA</label>
+                                <input
+                                  type="text"
+                                  value={roh.cgpa}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.rollOfHonour || [])];
+                                    updated[rIdx] = { ...updated[rIdx], cgpa: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, rollOfHonour: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                />
+                              </div>
+                              <div className="sm:col-span-4 space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Notable Achievement / Placement Details</label>
+                                <input
+                                  type="text"
+                                  value={roh.achievement}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.rollOfHonour || [])];
+                                    updated[rIdx] = { ...updated[rIdx], achievement: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, rollOfHonour: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ──────────────── 17. FUNDING PROJECTS & GRANTS ──────────────── */}
+                  {progEditorSubTab === "funding" && (
+                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-3">
+                        <div>
+                          <h4 className="text-sm font-black text-[#072A6C] uppercase">Sponsored Research Projects & Grants</h4>
+                          <p className="text-xs text-gray-500">DST, AICTE, UGC, DRDO and industry sponsored faculty grants</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const list = customFullProgram.fundingProjects || [];
+                            setCustomFullProgram({
+                              ...customFullProgram,
+                              fundingProjects: [
+                                ...list,
+                                {
+                                  title: "New Sponsored Project Title",
+                                  fundingAgency: "DST / AICTE",
+                                  grantAmount: "₹25.00 Lakhs",
+                                  principalInvestigator: "Dr. Principal Investigator",
+                                  duration: "2024 - 2027",
+                                  status: "Ongoing"
+                                }
+                              ]
+                            });
+                          }}
+                          className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs"
+                        >
+                          <Plus size={14} /> Add Funded Project
+                        </button>
+                      </div>
+
+                      <div className="space-y-4">
+                        {(customFullProgram.fundingProjects || []).map((proj, pIdx) => (
+                          <div key={pIdx} className="p-4 bg-slate-50 border border-gray-200 rounded-2xl space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[11px] font-black text-[#072A6C] uppercase">Grant #{pIdx + 1}</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = (customFullProgram.fundingProjects || []).filter((_, idx) => idx !== pIdx);
+                                  setCustomFullProgram({ ...customFullProgram, fundingProjects: updated });
+                                }}
+                                className="text-xs text-rose-600 hover:text-rose-700 flex items-center gap-1 cursor-pointer"
+                              >
+                                <Trash2 size={13} /> Remove
+                              </button>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                              <div className="sm:col-span-2 space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Project Title</label>
+                                <input
+                                  type="text"
+                                  value={proj.title}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.fundingProjects || [])];
+                                    updated[pIdx] = { ...updated[pIdx], title: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, fundingProjects: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800 font-bold"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Funding Agency</label>
+                                <input
+                                  type="text"
+                                  value={proj.fundingAgency}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.fundingProjects || [])];
+                                    updated[pIdx] = { ...updated[pIdx], fundingAgency: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, fundingProjects: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Grant Amount</label>
+                                <input
+                                  type="text"
+                                  value={proj.grantAmount}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.fundingProjects || [])];
+                                    updated[pIdx] = { ...updated[pIdx], grantAmount: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, fundingProjects: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800 font-black text-[#072A6C]"
+                                />
+                              </div>
+                              <div className="sm:col-span-2 space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Principal Investigator</label>
+                                <input
+                                  type="text"
+                                  value={proj.principalInvestigator}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.fundingProjects || [])];
+                                    updated[pIdx] = { ...updated[pIdx], principalInvestigator: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, fundingProjects: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Duration</label>
+                                <input
+                                  type="text"
+                                  value={proj.duration}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.fundingProjects || [])];
+                                    updated[pIdx] = { ...updated[pIdx], duration: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, fundingProjects: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Status</label>
+                                <select
+                                  value={proj.status}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.fundingProjects || [])];
+                                    updated[pIdx] = { ...updated[pIdx], status: e.target.value as any };
+                                    setCustomFullProgram({ ...customFullProgram, fundingProjects: updated });
+                                  }}
+                                  className="w-full h-8 px-2 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                >
+                                  <option value="Ongoing">Ongoing</option>
+                                  <option value="Completed">Completed</option>
+                                  <option value="Sanctioned">Sanctioned</option>
+                                </select>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ──────────────── 18. TEACHING INNOVATIONS BY FACULTY ──────────────── */}
+                  {progEditorSubTab === "teaching" && (
+                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-3">
+                        <div>
+                          <h4 className="text-sm font-black text-[#072A6C] uppercase">Teaching Innovations by Faculty</h4>
+                          <p className="text-xs text-gray-500">Pedagogical initiatives, blended classrooms, virtual laboratories & practical learning models</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const list = customFullProgram.teachingInnovations || [];
+                            setCustomFullProgram({
+                              ...customFullProgram,
+                              teachingInnovations: [
+                                ...list,
+                                {
+                                  title: "New Pedagogical Methodology",
+                                  faculty: "Dr. Faculty Name",
+                                  methodology: "Interactive flipped classroom with automated code grading",
+                                  impact: "Higher student engagement and improved practical laboratory comprehension"
+                                }
+                              ]
+                            });
+                          }}
+                          className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs"
+                        >
+                          <Plus size={14} /> Add Innovation
+                        </button>
+                      </div>
+
+                      <div className="space-y-4">
+                        {(customFullProgram.teachingInnovations || []).map((ti, tIdx) => (
+                          <div key={tIdx} className="p-4 bg-slate-50 border border-gray-200 rounded-2xl space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[11px] font-black text-[#072A6C] uppercase">Innovation #{tIdx + 1}</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = (customFullProgram.teachingInnovations || []).filter((_, idx) => idx !== tIdx);
+                                  setCustomFullProgram({ ...customFullProgram, teachingInnovations: updated });
+                                }}
+                                className="text-xs text-rose-600 hover:text-rose-700 flex items-center gap-1 cursor-pointer"
+                              >
+                                <Trash2 size={13} /> Remove
+                              </button>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Innovation Title</label>
+                                <input
+                                  type="text"
+                                  value={ti.title}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.teachingInnovations || [])];
+                                    updated[tIdx] = { ...updated[tIdx], title: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, teachingInnovations: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800 font-bold"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Faculty Member(s)</label>
+                                <input
+                                  type="text"
+                                  value={ti.faculty}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.teachingInnovations || [])];
+                                    updated[tIdx] = { ...updated[tIdx], faculty: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, teachingInnovations: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Pedagogy / Methodology</label>
+                                <input
+                                  type="text"
+                                  value={ti.methodology}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.teachingInnovations || [])];
+                                    updated[tIdx] = { ...updated[tIdx], methodology: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, teachingInnovations: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Educational Impact</label>
+                                <input
+                                  type="text"
+                                  value={ti.impact}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.teachingInnovations || [])];
+                                    updated[tIdx] = { ...updated[tIdx], impact: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, teachingInnovations: updated });
+                                  }}
+                                  className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ──────────────── 19. EVENTS & DEPARTMENT ASSOCIATION ──────────────── */}
+                  {progEditorSubTab === "events" && (
+                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+                      <div className="border-b border-gray-100 pb-3">
+                        <h4 className="text-sm font-black text-[#072A6C] uppercase">Department Student Association & Events</h4>
+                        <p className="text-xs text-gray-500">Student association governance, annual technical fests, hackathons & symposiums</p>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Association Name</label>
+                          <input
+                            type="text"
+                            value={customFullProgram.eventsAndAssociation?.associationName || ""}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              eventsAndAssociation: {
+                                ...(customFullProgram.eventsAndAssociation || {} as any),
+                                associationName: e.target.value
+                              }
+                            })}
+                            placeholder="e.g. CYBERKNOTS"
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Motto / Tagline</label>
+                          <input
+                            type="text"
+                            value={customFullProgram.eventsAndAssociation?.motto || ""}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              eventsAndAssociation: {
+                                ...(customFullProgram.eventsAndAssociation || {} as any),
+                                motto: e.target.value
+                              }
+                            })}
+                            placeholder="e.g. Innovate, Code, Transform"
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Student President</label>
+                          <input
+                            type="text"
+                            value={customFullProgram.eventsAndAssociation?.president || ""}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              eventsAndAssociation: {
+                                ...(customFullProgram.eventsAndAssociation || {} as any),
+                                president: e.target.value
+                              }
+                            })}
+                            placeholder="e.g. V. Rahul (Final Year)"
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Faculty Advisor</label>
+                          <input
+                            type="text"
+                            value={customFullProgram.eventsAndAssociation?.facultyAdvisor || ""}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              eventsAndAssociation: {
+                                ...(customFullProgram.eventsAndAssociation || {} as any),
+                                facultyAdvisor: e.target.value
+                              }
+                            })}
+                            placeholder="e.g. Dr. Faculty Advisor"
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Activities Summary</label>
+                        <textarea
+                          rows={2}
+                          value={customFullProgram.eventsAndAssociation?.activitiesSummary || ""}
+                          onChange={(e) => setCustomFullProgram({
+                            ...customFullProgram,
+                            eventsAndAssociation: {
+                              ...(customFullProgram.eventsAndAssociation || {} as any),
+                              activitiesSummary: e.target.value
+                            }
+                          })}
+                          className="w-full p-3 text-xs bg-slate-50 border border-gray-200 rounded-xl"
+                        />
+                      </div>
+
+                      <div className="space-y-3 pt-3 border-t border-gray-100">
+                        <div className="flex items-center justify-between">
+                          <label className="text-[11px] font-black text-[#072A6C] uppercase">
+                            Major Department Events ({(customFullProgram.eventsAndAssociation?.events || []).length})
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const currentEvents = customFullProgram.eventsAndAssociation?.events || [];
+                              setCustomFullProgram({
+                                ...customFullProgram,
+                                eventsAndAssociation: {
+                                  ...(customFullProgram.eventsAndAssociation || {} as any),
+                                  events: [
+                                    ...currentEvents,
+                                    {
+                                      title: "Annual Technical Symposium",
+                                      date: "March 15, 2026",
+                                      type: "National Symposium",
+                                      venue: "Central Auditorium",
+                                      description: "Paper presentations, coding relays, robotics showcases and cash awards."
+                                    }
+                                  ]
+                                }
+                              });
+                            }}
+                            className="h-8 px-3 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer"
+                          >
+                            <Plus size={13} /> Add Event
+                          </button>
+                        </div>
+
+                        <div className="space-y-3">
+                          {(customFullProgram.eventsAndAssociation?.events || []).map((ev, eIdx) => (
+                            <div key={eIdx} className="p-3 bg-slate-50 border border-gray-200 rounded-xl space-y-2">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-black text-gray-600 uppercase">Event #{eIdx + 1}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const currentEvents = customFullProgram.eventsAndAssociation?.events || [];
+                                    setCustomFullProgram({
+                                      ...customFullProgram,
+                                      eventsAndAssociation: {
+                                        ...(customFullProgram.eventsAndAssociation || {} as any),
+                                        events: currentEvents.filter((_, idx) => idx !== eIdx)
+                                      }
+                                    });
+                                  }}
+                                  className="text-[11px] text-rose-600 hover:text-rose-700 flex items-center gap-0.5 cursor-pointer"
+                                >
+                                  <Trash2 size={12} /> Remove
+                                </button>
+                              </div>
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                <input
+                                  type="text"
+                                  placeholder="Event Title"
+                                  value={ev.title}
+                                  onChange={(e) => {
+                                    const currentEvents = [...(customFullProgram.eventsAndAssociation?.events || [])];
+                                    currentEvents[eIdx] = { ...currentEvents[eIdx], title: e.target.value };
+                                    setCustomFullProgram({
+                                      ...customFullProgram,
+                                      eventsAndAssociation: {
+                                        ...(customFullProgram.eventsAndAssociation || {} as any),
+                                        events: currentEvents
+                                      }
+                                    });
+                                  }}
+                                  className="w-full h-8 px-2 text-xs bg-white border border-gray-200 rounded-lg font-bold text-gray-800"
+                                />
+                                <input
+                                  type="text"
+                                  placeholder="Date"
+                                  value={ev.date}
+                                  onChange={(e) => {
+                                    const currentEvents = [...(customFullProgram.eventsAndAssociation?.events || [])];
+                                    currentEvents[eIdx] = { ...currentEvents[eIdx], date: e.target.value };
+                                    setCustomFullProgram({
+                                      ...customFullProgram,
+                                      eventsAndAssociation: {
+                                        ...(customFullProgram.eventsAndAssociation || {} as any),
+                                        events: currentEvents
+                                      }
+                                    });
+                                  }}
+                                  className="w-full h-8 px-2 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                />
+                                <input
+                                  type="text"
+                                  placeholder="Type / Venue"
+                                  value={ev.type}
+                                  onChange={(e) => {
+                                    const currentEvents = [...(customFullProgram.eventsAndAssociation?.events || [])];
+                                    currentEvents[eIdx] = { ...currentEvents[eIdx], type: e.target.value };
+                                    setCustomFullProgram({
+                                      ...customFullProgram,
+                                      eventsAndAssociation: {
+                                        ...(customFullProgram.eventsAndAssociation || {} as any),
+                                        events: currentEvents
+                                      }
+                                    });
+                                  }}
+                                  className="w-full h-8 px-2 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ──────────────── 20. 19-SECTION ORDERING & VISIBILITY ──────────────── */}
                   {progEditorSubTab === "sections" && (
                     <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
                       <div className="flex items-center justify-between">
@@ -7872,47 +9448,135 @@ export default function AdminPortal() {
                         Overview of faculties, academic divisions, and degree distributions across the university
                       </p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsAddProgramOpen(true);
-                      }}
-                      className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
-                    >
-                      <Plus size={13} /> Add Program to Branch
-                    </button>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsAddingBranch(!isAddingBranch)}
+                        className="h-9 px-4 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Plus size={13} /> {isAddingBranch ? "Cancel" : "Add New Branch"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsAddProgramOpen(true)}
+                        className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Plus size={13} /> Add Program
+                      </button>
+                    </div>
                   </div>
+
+                  {/* Add New Branch Inline Box */}
+                  {isAddingBranch && (
+                    <div className="bg-emerald-50/70 border border-emerald-200 p-5 rounded-2xl space-y-3">
+                      <h4 className="text-xs font-black text-emerald-900 uppercase">Create New Academic Branch / Department</h4>
+                      <div className="flex flex-col sm:flex-row gap-2.5">
+                        <input
+                          type="text"
+                          value={newBranchInput}
+                          onChange={(e) => setNewBranchInput(e.target.value)}
+                          placeholder="e.g. Mechanical Engineering, Cyber Security, Pharmacy"
+                          className="flex-1 h-9 px-3 text-xs bg-white border border-emerald-300 rounded-xl font-bold text-gray-800"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddBranch}
+                          className="h-9 px-5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                        >
+                          <Plus size={14} /> Create Branch
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setIsAddingBranch(false); setNewBranchInput(""); }}
+                          className="h-9 px-3 bg-white hover:bg-slate-100 text-slate-600 text-xs font-bold rounded-xl border border-slate-200 cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {allDepartments.filter((d) => d !== "All").map((dept) => {
                       const deptPrograms = programsList.filter((p) => p.department === dept);
+                      const isEditing = editingBranchName?.oldName === dept;
                       return (
                         <div key={dept} className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs space-y-3 flex flex-col justify-between">
-                          <div className="space-y-2">
-                            <div className="w-10 h-10 rounded-xl bg-slate-100 text-[#072A6C] flex items-center justify-center font-black">
-                              <Building size={20} />
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="w-10 h-10 rounded-xl bg-slate-100 text-[#072A6C] flex items-center justify-center font-black shrink-0">
+                                <Building size={20} />
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => setEditingBranchName(isEditing ? null : { oldName: dept, newName: dept })}
+                                  className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors cursor-pointer"
+                                  title="Rename this branch"
+                                >
+                                  <Edit3 size={13} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteBranch(dept)}
+                                  className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 transition-colors cursor-pointer"
+                                  title="Permanently delete this branch and all its programs"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
                             </div>
-                            <h4 className="font-extrabold text-sm text-[#072A6C] leading-snug">
-                              {dept}
-                            </h4>
+
+                            {isEditing ? (
+                              <div className="space-y-2 pt-1">
+                                <input
+                                  type="text"
+                                  value={editingBranchName.newName}
+                                  onChange={(e) => setEditingBranchName({ ...editingBranchName, newName: e.target.value })}
+                                  className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-blue-300 rounded-lg font-bold text-[#072A6C]"
+                                />
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRenameBranch(dept, editingBranchName.newName)}
+                                    className="px-2.5 py-1 bg-[#072A6C] text-white text-[10px] font-bold rounded-md cursor-pointer"
+                                  >
+                                    Save
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setEditingBranchName(null)}
+                                    className="px-2.5 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-md cursor-pointer"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <h4 className="font-extrabold text-sm text-[#072A6C] leading-snug">
+                                {dept}
+                              </h4>
+                            )}
+
                             <span className="text-[11px] font-mono font-bold text-gray-500 block">
                               {deptPrograms.length} Active Degree {deptPrograms.length === 1 ? "Program" : "Programs"}
                             </span>
+
                             <div className="flex flex-wrap gap-1 pt-1">
-                              {deptPrograms.slice(0, 3).map((dp) => (
+                              {deptPrograms.slice(0, 4).map((dp) => (
                                 <span key={dp.slug} className="text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md font-semibold truncate max-w-full">
-                                  {dp.degreeType}
+                                  {dp.degreeType || dp.title}
                                 </span>
                               ))}
-                              {deptPrograms.length > 3 && (
+                              {deptPrograms.length > 4 && (
                                 <span className="text-[10px] text-gray-400 font-semibold self-center">
-                                  +{deptPrograms.length - 3} more
+                                  +{deptPrograms.length - 4} more
                                 </span>
                               )}
                             </div>
                           </div>
 
-                          <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
+                          <div className="pt-3 border-t border-gray-100 flex items-center justify-between gap-2">
                             <button
                               type="button"
                               onClick={() => {
@@ -7924,6 +9588,17 @@ export default function AdminPortal() {
                               <span>View All {deptPrograms.length} Programs</span>
                               <ArrowRight size={12} />
                             </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setNewProgForm({ ...newProgForm, department: dept });
+                                setIsAddProgramOpen(true);
+                              }}
+                              className="px-2 py-1 text-[10px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg flex items-center gap-1 cursor-pointer"
+                              title="Add program to this branch"
+                            >
+                              <Plus size={11} /> Add Degree
+                            </button>
                           </div>
                         </div>
                       );
@@ -7932,7 +9607,9 @@ export default function AdminPortal() {
                 </div>
               )}
 
-          {/* Subtab 2: Homepage Programs & Schools Explorer */}
+          {/* ═══════════════════════════════════════════════════════════════
+              SUBTAB 4: HOMEPAGE PROGRAMS & SCHOOLS EXPLORER CMS
+          ═══════════════════════════════════════════════════════════════ */}
           {academicsSubTab === "homepage" && (
             <div className="space-y-6 text-left">
               {/* Header Card */}
@@ -7948,10 +9625,23 @@ export default function AdminPortal() {
                     🏠 Homepage Schools & Programs Explorer Sync
                   </h3>
                   <p className="text-xs text-gray-500">
-                    Configure the school tabs, category navigation, and program cards shown on the university homepage explorer.
+                    Configure school tabs, department categories, and program cards shown on the university homepage explorer. Add, rename, or delete any section.
                   </p>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex flex-wrap items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm("Reset all schools and department categories to system defaults?")) {
+                        setAcademicData(DEFAULT_ACADEMIC_STRUCTURE);
+                        updateAcademicStructure(DEFAULT_ACADEMIC_STRUCTURE);
+                        notifySave("Reset schools structure to default!");
+                      }
+                    }}
+                    className="h-9 px-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <RotateCcw size={13} /> Reset Schools
+                  </button>
                   <button
                     type="button"
                     onClick={saveProgramsSection}
@@ -7984,38 +9674,327 @@ export default function AdminPortal() {
                 </div>
               </div>
 
-              {/* School Tabs Overview */}
+              {/* Active Schools & Faculty Tabs with Full Delete & Edit Features */}
               <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-gray-100 gap-3">
                   <div>
                     <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-2">
                       <GraduationCap size={14} className="text-[#072A6C]" />
                       Active Schools & Faculty Tabs ({Object.keys(academicData).length})
                     </h4>
-                    <p className="text-[11px] text-gray-500">Each school tab organizes departments and displays degree cards on the homepage</p>
+                    <p className="text-[11px] text-gray-500">Each school tab organizes departments and displays degree cards on the homepage. Use delete or add options below.</p>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsAddingSchool(!isAddingSchool)}
+                    className="h-8 px-3 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer self-start sm:self-auto shadow-xs"
+                  >
+                    <Plus size={13} /> {isAddingSchool ? "Cancel" : "Add New School Tab"}
+                  </button>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                {/* Inline Add School Box */}
+                {isAddingSchool && (
+                  <div className="p-4 bg-blue-50/70 border border-blue-200 rounded-xl space-y-3">
+                    <h5 className="text-xs font-black text-[#072A6C] uppercase">Add New School Tab</h5>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <input
+                        type="text"
+                        value={newSchoolInput}
+                        onChange={(e) => setNewSchoolInput(e.target.value)}
+                        placeholder="e.g. School of Pharmacy, School of Applied Sciences"
+                        className="flex-1 h-9 px-3 text-xs bg-white border border-blue-300 rounded-xl font-bold text-gray-800"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddSchool}
+                        className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl cursor-pointer"
+                      >
+                        Create School
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setIsAddingSchool(false); setNewSchoolInput(""); }}
+                        className="h-9 px-3 bg-white text-slate-600 text-xs font-bold rounded-xl border border-slate-200 cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Grid of School Cards with Complete Deletion / Modification Controls */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {Object.keys(academicData).map((schoolName) => {
                     const depts = Object.keys(academicData[schoolName] || {});
+                    const isRenaming = editingSchool === schoolName;
+                    const isExpanded = expandedExplorerSchool === schoolName;
+                    const isAddingDept = addingDeptToSchool === schoolName;
+
                     return (
-                      <div key={schoolName} className="p-4 rounded-xl border border-gray-200 bg-slate-50/70 space-y-2">
-                        <h5 className="font-bold text-xs text-[#072A6C] truncate">{schoolName}</h5>
-                        <span className="text-[10px] font-semibold text-gray-500 block">
-                          {depts.length} Department Categories
-                        </span>
-                        <div className="flex flex-wrap gap-1 pt-1">
-                          {depts.map((d) => (
-                            <span key={d} className="px-2 py-0.5 bg-white border border-gray-200 rounded text-[9.5px] font-bold text-gray-700">
-                              {d}
+                      <div key={schoolName} className="p-4 rounded-xl border border-gray-200 bg-slate-50/70 space-y-3 flex flex-col justify-between">
+                        <div className="space-y-2.5">
+                          {/* School Header with Rename and Delete */}
+                          <div className="flex items-center justify-between gap-2 pb-2 border-b border-gray-200">
+                            {isRenaming ? (
+                              <div className="flex items-center gap-1.5 flex-1">
+                                <input
+                                  type="text"
+                                  value={editingSchoolNewName}
+                                  onChange={(e) => setEditingSchoolNewName(e.target.value)}
+                                  className="flex-1 h-7 px-2 text-xs bg-white border border-blue-400 rounded-lg font-bold text-[#072A6C]"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => handleRenameSchool(schoolName)}
+                                  className="p-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 cursor-pointer"
+                                  title="Confirm Rename"
+                                >
+                                  <Check size={12} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setEditingSchool(null)}
+                                  className="p-1 bg-slate-200 text-slate-700 rounded hover:bg-slate-300 cursor-pointer"
+                                  title="Cancel"
+                                >
+                                  <X size={12} />
+                                </button>
+                              </div>
+                            ) : (
+                              <>
+                                <h5 className="font-extrabold text-xs text-[#072A6C] truncate flex-1" title={schoolName}>
+                                  {schoolName}
+                                </h5>
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEditingSchool(schoolName);
+                                      setEditingSchoolNewName(schoolName);
+                                    }}
+                                    className="p-1 rounded bg-white hover:bg-slate-200 text-slate-600 border border-slate-200 transition-colors cursor-pointer"
+                                    title="Rename school"
+                                  >
+                                    <Edit3 size={11} />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteSchool(schoolName)}
+                                    className="p-1 rounded bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 transition-colors cursor-pointer"
+                                    title="Delete school and all its departments"
+                                  >
+                                    <Trash2 size={11} />
+                                  </button>
+                                </div>
+                              </>
+                            )}
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-semibold text-gray-500">
+                              {depts.length} Department Categories
                             </span>
-                          ))}
+                            <button
+                              type="button"
+                              onClick={() => setAddingDeptToSchool(isAddingDept ? null : schoolName)}
+                              className="text-[10px] font-bold text-[#072A6C] hover:underline flex items-center gap-0.5 cursor-pointer"
+                            >
+                              <Plus size={10} /> Add Category
+                            </button>
+                          </div>
+
+                          {/* Add Department Inline Form */}
+                          {isAddingDept && (
+                            <div className="p-2.5 bg-white border border-blue-200 rounded-lg space-y-2">
+                              <input
+                                type="text"
+                                value={newDeptInput}
+                                onChange={(e) => setNewDeptInput(e.target.value)}
+                                placeholder="e.g. Data Science, Artificial Intelligence"
+                                className="w-full h-7 px-2 text-xs bg-slate-50 border border-gray-200 rounded font-medium"
+                              />
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => handleAddDeptCategory(schoolName)}
+                                  className="px-2 py-0.5 bg-[#072A6C] text-white text-[10px] font-bold rounded cursor-pointer"
+                                >
+                                  Add
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => { setAddingDeptToSchool(null); setNewDeptInput(""); }}
+                                  className="px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-bold rounded cursor-pointer"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Department Categories with Delete Buttons on each */}
+                          <div className="flex flex-wrap gap-1.5 pt-1">
+                            {depts.map((d) => {
+                              const coursesCount = (academicData[schoolName]?.[d] || []).length;
+                              return (
+                                <div
+                                  key={d}
+                                  className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-white border border-gray-200 rounded-lg text-[10px] font-bold text-gray-700 shadow-2xs group"
+                                >
+                                  <span>{d}</span>
+                                  <span className="text-[9px] text-gray-400 font-normal">({coursesCount})</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteDeptCategory(schoolName, d)}
+                                    className="text-gray-400 hover:text-red-600 transition-colors p-0.5 rounded cursor-pointer"
+                                    title={`Delete category "${d}"`}
+                                  >
+                                    <X size={10} />
+                                  </button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Collapsible Degree Cards Manager */}
+                        <div className="pt-2 border-t border-gray-200">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (isExpanded) {
+                                setExpandedExplorerSchool(null);
+                              } else {
+                                setExpandedExplorerSchool(schoolName);
+                                setSelectedExplorerDept(depts[0] || null);
+                              }
+                            }}
+                            className="w-full py-1.5 text-center text-[11px] font-bold text-[#072A6C] hover:bg-slate-200/60 rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1"
+                          >
+                            <span>{isExpanded ? "▲ Hide Degree Cards" : "▼ Manage Degree Cards"}</span>
+                          </button>
                         </div>
                       </div>
                     );
                   })}
                 </div>
+
+                {/* Expanded Degree Cards Editor Modal / Drawer */}
+                {expandedExplorerSchool && academicData[expandedExplorerSchool] && (
+                  <div className="p-5 rounded-2xl border-2 border-blue-200 bg-white space-y-4 shadow-sm mt-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                      <div>
+                        <span className="text-[10px] font-black uppercase text-blue-900 tracking-wider">Degree Cards Manager</span>
+                        <h4 className="text-sm font-black text-[#072A6C]">
+                          Degrees in {expandedExplorerSchool}
+                        </h4>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setExpandedExplorerSchool(null)}
+                        className="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 cursor-pointer"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+
+                    {/* Department Category Pills Selector */}
+                    <div className="flex flex-wrap gap-2">
+                      {Object.keys(academicData[expandedExplorerSchool]).map((dept) => (
+                        <button
+                          key={dept}
+                          type="button"
+                          onClick={() => setSelectedExplorerDept(dept)}
+                          className={`px-3 py-1 text-xs font-bold rounded-lg cursor-pointer transition-all ${
+                            selectedExplorerDept === dept
+                              ? "bg-[#072A6C] text-white shadow-xs"
+                              : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                          }`}
+                        >
+                          {dept} ({(academicData[expandedExplorerSchool][dept] || []).length})
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Active Department Degree Cards List */}
+                    {selectedExplorerDept && (
+                      <div className="space-y-3 pt-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-gray-700">
+                            Degree Cards in "{selectedExplorerDept}":
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setIsAddingCourse(!isAddingCourse)}
+                            className="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-bold rounded-lg flex items-center gap-1 cursor-pointer"
+                          >
+                            <Plus size={11} /> {isAddingCourse ? "Cancel" : "Add Degree Card"}
+                          </button>
+                        </div>
+
+                        {/* Add Degree Card Form */}
+                        {isAddingCourse && (
+                          <div className="p-4 bg-emerald-50/60 border border-emerald-200 rounded-xl space-y-3">
+                            <h5 className="text-[11px] font-bold text-emerald-900 uppercase">Add Degree Card to {selectedExplorerDept}</h5>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                              <input
+                                type="text"
+                                value={newCourseForm.label}
+                                onChange={(e) => setNewCourseForm({ ...newCourseForm, label: e.target.value })}
+                                placeholder="Program Name (e.g. B.Tech. Computer Science)"
+                                className="h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold text-gray-800"
+                              />
+                              <input
+                                type="text"
+                                value={newCourseForm.to}
+                                onChange={(e) => setNewCourseForm({ ...newCourseForm, to: e.target.value })}
+                                placeholder="Page Link (e.g. /academics/btech-cse)"
+                                className="h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg"
+                              />
+                              <input
+                                type="text"
+                                value={newCourseForm.desc || ""}
+                                onChange={(e) => setNewCourseForm({ ...newCourseForm, desc: e.target.value })}
+                                placeholder="Brief Tagline / Highlights (e.g. 4 Years • AI & Cloud Specializations)"
+                                className="h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg sm:col-span-2"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleAddCourseCard(expandedExplorerSchool, selectedExplorerDept)}
+                                className="h-8 px-4 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg cursor-pointer sm:col-span-2"
+                              >
+                                Save Degree Card
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* List of cards */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                          {(academicData[expandedExplorerSchool][selectedExplorerDept] || []).map((c, cIdx) => (
+                            <div key={cIdx} className="p-3 bg-slate-50 border border-gray-200 rounded-xl flex items-center justify-between gap-3">
+                              <div className="space-y-0.5 truncate">
+                                <h6 className="font-bold text-xs text-[#072A6C] truncate">{c.label}</h6>
+                                <p className="text-[10px] text-gray-500 truncate">
+                                  {c.desc || c.to}
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteCourseCard(expandedExplorerSchool, selectedExplorerDept, cIdx)}
+                                className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 transition-colors cursor-pointer shrink-0"
+                                title="Delete this degree card"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}

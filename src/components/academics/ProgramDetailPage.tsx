@@ -298,10 +298,23 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans selection:bg-[#D4AF37] selection:text-[#072A6C] relative overflow-x-hidden">
       
       {/* ═══════════════════════════════════════════════════════════════════
-          1. ACADEMIC PROGRAM HERO (CLEAN, AIRY, LIGHT UNIVERSITY HEADER)
+          1. ACADEMIC PROGRAM HERO (CLEAN AIRY HEADER WITH UNIQUE BLUE BLUR EFFECT)
       ═══════════════════════════════════════════════════════════════════ */}
-      <section className="relative z-10 bg-white border-b border-slate-200 py-8 sm:py-10 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto space-y-4 text-left">
+      <section className="relative z-10 bg-gradient-to-b from-white via-blue-50/30 to-slate-50/50 border-b border-slate-200/80 py-8 sm:py-11 px-4 sm:px-6 lg:px-8 overflow-hidden">
+        
+        {/* Ambient Blue Blur Light Orbs (Floating Below & Behind Text - No Box Boundaries) */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+          {/* Main radiant blue blur aura glowing right below the text */}
+          <div className="absolute -bottom-12 left-1/4 -translate-x-12 w-[480px] sm:w-[720px] h-[180px] sm:h-[240px] bg-gradient-to-r from-blue-500/25 via-sky-400/30 to-[#072A6C]/20 rounded-full blur-3xl opacity-80" />
+          
+          {/* Secondary soft sapphire blur floating upper-right */}
+          <div className="absolute -top-10 right-8 w-[320px] sm:w-[460px] h-[180px] bg-gradient-to-bl from-blue-400/15 via-[#072A6C]/10 to-transparent rounded-full blur-3xl opacity-60" />
+          
+          {/* Subtle micro dot grid texture for modern depth */}
+          <div className="absolute inset-0 bg-[radial-gradient(#072A6C_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.035]" />
+        </div>
+
+        <div className="max-w-7xl mx-auto space-y-4 text-left relative z-10">
           
           {/* Clean Breadcrumb Navigation */}
           <nav className="flex items-center gap-2 text-xs text-slate-500 font-medium overflow-x-auto scrollbar-none pb-1">
@@ -316,27 +329,38 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
 
           {/* Simple Clean Badges: Department Name & Duration ONLY */}
           <div className="flex flex-wrap items-center gap-2.5 pt-1">
-            <div className="inline-flex items-center gap-1.5 bg-slate-100 text-[#072A6C] text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-200">
+            <div className="inline-flex items-center gap-1.5 bg-white/90 backdrop-blur-sm text-[#072A6C] text-xs font-bold px-3 py-1.5 rounded-lg border border-blue-100 shadow-sm">
               <Building size={13} className="text-[#D4AF37]" />
               <span>{programData.department}</span>
             </div>
-            <div className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-700 text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-200">
+            <div className="inline-flex items-center gap-1.5 bg-white/90 backdrop-blur-sm text-slate-700 text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-200/90 shadow-sm">
               <Clock size={13} className="text-[#D4AF37]" />
               <span>Duration: {programData.duration}</span>
             </div>
           </div>
 
           {/* Program Title */}
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-[#072A6C] leading-tight pt-1">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-[#072A6C] leading-tight pt-1 drop-shadow-sm">
             {programData.title}
           </h1>
 
-          {/* Program Overview Summary */}
+          {/* Program Overview Summary with Ambient Blue Underglow */}
           {programData.about?.summary && (
-            <p className="text-slate-600 text-xs sm:text-sm leading-relaxed max-w-4xl font-normal">
-              {programData.about.summary}
-            </p>
+            <div className="relative max-w-4xl">
+              {/* Soft localized blue glow directly behind text paragraph */}
+              <div className="absolute -inset-2 bg-gradient-to-r from-blue-400/10 via-sky-300/15 to-transparent rounded-2xl blur-lg pointer-events-none -z-10" />
+              <p className="text-slate-600 text-xs sm:text-sm leading-relaxed font-normal">
+                {programData.about.summary}
+              </p>
+            </div>
           )}
+
+          {/* Sleek Luminous Accent Line below text */}
+          <div className="pt-1 flex items-center gap-2">
+            <div className="h-1 w-20 bg-gradient-to-r from-[#072A6C] via-blue-500 to-sky-400 rounded-full shadow-[0_0_12px_rgba(59,130,246,0.4)]" />
+            <div className="h-1 w-3 bg-blue-400/60 rounded-full" />
+            <div className="h-1 w-1.5 bg-blue-300/40 rounded-full" />
+          </div>
 
         </div>
       </section>
