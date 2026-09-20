@@ -592,14 +592,55 @@ export default function AdminPortal() {
   };
 
   // ----------------------------------------------------
-  // 7. ACADEMICS & PROGRAM BUILDER
+  // 7. ACADEMICS & PROGRAM BUILDER (FULL ADMIN)
   // ----------------------------------------------------
-  const [academicsSubTab, setAcademicsSubTab] = useState<"program" | "homepage">("program");
+  const [academicsSubTab, setAcademicsSubTab] = useState<"directory" | "editor" | "branches" | "homepage">("directory");
+  const [progEditorSubTab, setProgEditorSubTab] = useState<"general" | "hod" | "vision" | "syllabus" | "faculty" | "labs" | "placements" | "sections">("general");
   const [gallerySubTab, setGallerySubTab] = useState<"moments" | "homepage">("moments");
   const [programsList, setProgramsList] = useState<ProgramDetail[]>(programs);
   const [selectedProgSlug, setSelectedProgSlug] = useState<string>(programs[0]?.slug || "btech-cse");
   const currentProg = programsList.find((p) => p.slug === selectedProgSlug) || programsList[0];
   const [progSearch, setProgSearch] = useState("");
+  const [branchFilter, setBranchFilter] = useState("All");
+  const [levelFilter, setLevelFilter] = useState("All");
+  const [isAddProgramOpen, setIsAddProgramOpen] = useState(false);
+
+  // New program creation form state
+  const [newProgForm, setNewProgForm] = useState({
+    title: "",
+    shortName: "",
+    slug: "",
+    department: "Computer Science & Engineering",
+    school: "School of Engineering",
+    level: "Undergraduate" as "Undergraduate" | "Postgraduate" | "Doctoral",
+    degreeType: "B.Tech",
+    duration: "4 Years (8 Semesters)",
+    intake: "60 Seats",
+    eligibility: "Passed 10+2 with Physics, Mathematics & Chemistry with minimum 50% marks",
+    overview: ""
+  });
+
+  // Unique branches/departments across all programs
+  const allDepartments = useMemo(() => {
+    const set = new Set<string>();
+    programsList.forEach((p) => {
+      if (p.department) set.add(p.department);
+    });
+    return ["All", ...Array.from(set)];
+  }, [programsList]);
+
+  // Unique schools across all programs
+  const allSchools = useMemo(() => {
+    return [
+      "School of Engineering",
+      "School of Computing Sciences",
+      "School of Management",
+      "School of Pharmacy",
+      "School of Computer Applications",
+      "School of Health Sciences",
+      "School of Basic Sciences & Humanities"
+    ];
+  }, []);
 
   React.useEffect(() => setProgramsList(programs), [programs]);
 
@@ -628,11 +669,114 @@ export default function AdminPortal() {
     );
   }, [selectedProgSlug, currentProg]);
 
+  const selectProgramToEdit = (slug: string) => {
+    setSelectedProgSlug(slug);
+    const prog = programsList.find((p) => p.slug === slug);
+    const savedSecs = localStorage.getItem(`program_sections_order_${slug}`);
+    setProgSectionsOrder(savedSecs ? JSON.parse(savedSecs) : DEFAULT_PROGRAM_SECTIONS);
+    const savedFull = localStorage.getItem(`custom_program_data_${slug}`);
+    setCustomFullProgram(
+      savedFull
+        ? JSON.parse(savedFull)
+        : getProgramFullData(slug, prog?.title, prog?.department)
+    );
+    setAcademicsSubTab("editor");
+  };
+
   const saveProgramDetails = () => {
     localStorage.setItem(`program_sections_order_${selectedProgSlug}`, JSON.stringify(progSectionsOrder));
     localStorage.setItem(`custom_program_data_${selectedProgSlug}`, JSON.stringify(customFullProgram));
-    updatePrograms(programsList);
-    notifySave(`Program details for ${currentProg?.title} saved!`);
+
+    // Synchronize to DataContext programsList so all listings and search index update live!
+    const updated = programsList.map((p) => {
+      if (p.slug === selectedProgSlug) {
+        return {
+          ...p,
+          title: customFullProgram.title,
+          department: customFullProgram.department,
+          duration: customFullProgram.duration,
+          degreeType: customFullProgram.degreeType,
+          overview: customFullProgram.about?.summary || p.overview,
+          desc: customFullProgram.about?.summary ? customFullProgram.about.summary.slice(0, 160) + "..." : p.desc
+        };
+      }
+      return p;
+    });
+    setProgramsList(updated);
+    updatePrograms(updated);
+    window.dispatchEvent(new Event("chalapathi_cms_updated"));
+    notifySave(`Program "${customFullProgram.title}" published live!`);
+  };
+
+  const handleCreateNewProgram = () => {
+    if (!newProgForm.title.trim()) {
+      alert("Please enter program title");
+      return;
+    }
+    const slug = (newProgForm.slug.trim() || newProgForm.title)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+
+    if (programsList.some((p) => p.slug === slug)) {
+      alert(`A program with slug "${slug}" already exists. Please choose a different title or slug.`);
+      return;
+    }
+
+    const fullData = getProgramFullData(
+      slug,
+      newProgForm.title,
+      newProgForm.department,
+      newProgForm.school
+    );
+    fullData.shortName = newProgForm.shortName || newProgForm.title;
+    fullData.level = newProgForm.level;
+    fullData.degreeType = newProgForm.degreeType;
+    fullData.duration = newProgForm.duration;
+    fullData.intake = newProgForm.intake;
+    fullData.eligibility = newProgForm.eligibility;
+    if (newProgForm.overview) {
+      fullData.about.summary = newProgForm.overview;
+    }
+
+    const briefProg: ProgramDetail = {
+      slug,
+      title: newProgForm.title,
+      department: newProgForm.department,
+      duration: newProgForm.duration,
+      degreeType: newProgForm.degreeType,
+      overview: newProgForm.overview || fullData.about.summary,
+      desc: (newProgForm.overview || fullData.about.summary).slice(0, 150) + "...",
+      curriculum: ["Semester 1 Core Courses", "Semester 2 Foundation", "Semester 3 Specialization", "Semester 4 Project"],
+      careers: fullData.careerRoles.map((r) => ({ title: r, desc: "Specialist role." }))
+    };
+
+    const updated = [briefProg, ...programsList];
+    setProgramsList(updated);
+    updatePrograms(updated);
+    localStorage.setItem(`custom_program_data_${slug}`, JSON.stringify(fullData));
+    localStorage.setItem(`program_sections_order_${slug}`, JSON.stringify(DEFAULT_PROGRAM_SECTIONS));
+    setSelectedProgSlug(slug);
+    setCustomFullProgram(fullData);
+    setProgSectionsOrder(DEFAULT_PROGRAM_SECTIONS);
+    setIsAddProgramOpen(false);
+    setAcademicsSubTab("editor");
+    window.dispatchEvent(new Event("chalapathi_cms_updated"));
+    notifySave(`Created new program: ${newProgForm.title}`);
+  };
+
+  const handleDeleteProgram = (slug: string, title: string) => {
+    if (!window.confirm(`Are you sure you want to permanently delete "${title}" (${slug})?`)) return;
+    const updated = programsList.filter((p) => p.slug !== slug);
+    setProgramsList(updated);
+    updatePrograms(updated);
+    localStorage.removeItem(`custom_program_data_${slug}`);
+    localStorage.removeItem(`program_sections_order_${slug}`);
+    if (selectedProgSlug === slug && updated.length > 0) {
+      selectProgramToEdit(updated[0].slug);
+    }
+    window.dispatchEvent(new Event("chalapathi_cms_updated"));
+    notifySave(`Deleted program "${title}".`);
   };
 
   // ----------------------------------------------------
@@ -6498,13 +6642,16 @@ export default function AdminPortal() {
             <div className="space-y-6 animate-fade-in text-left">
               <SectionHeader
                 title="Academics & Program Explorer CMS"
-                subtitle="Manage individual program 19 dimensions, syllabus blueprints, and the homepage Schools & Programs Explorer"
+                subtitle="Complete academic management suite for all degrees, engineering branches, postgraduate programs, syllabus, faculty, and labs"
                 icon={GraduationCap}
                 onSave={() => {
-                  if (academicsSubTab === "program") {
+                  if (academicsSubTab === "editor") {
                     saveProgramDetails();
-                  } else {
+                  } else if (academicsSubTab === "homepage") {
                     saveProgramsSection();
+                  } else {
+                    updatePrograms(programsList);
+                    notifySave("Academic programs directory updated!");
                   }
                 }}
                 saveSuccess={saveSuccess}
@@ -6522,8 +6669,10 @@ export default function AdminPortal() {
               {/* Subtabs Selector */}
               <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3">
                 {[
-                  { id: "program", label: "🎓 1. Program Blueprint & 19 Dimensions" },
-                  { id: "homepage", label: "🏠 2. Homepage Programs & Schools Explorer" }
+                  { id: "directory", label: `🎓 1. All Programs & Branches (${programsList.length})` },
+                  { id: "editor", label: `✏️ 2. Program Details & Content Editor (${currentProg?.title ? currentProg.title.split(" ")[0] : "Active"})` },
+                  { id: "branches", label: `🏛️ 3. Schools & Academic Branches (${allDepartments.length - 1})` },
+                  { id: "homepage", label: "🏠 4. Homepage Programs Explorer" }
                 ].map((st) => (
                   <button
                     key={st.id}
@@ -6539,144 +6688,1249 @@ export default function AdminPortal() {
                 ))}
               </div>
 
-              {/* Subtab 1: Individual Program Blueprint & 19 Dimensions */}
-              {academicsSubTab === "program" && (
+              {/* ═══════════════════════════════════════════════════════════════
+                  SUBTAB 1: ALL PROGRAMS & BRANCHES DIRECTORY
+              ═══════════════════════════════════════════════════════════════ */}
+              {academicsSubTab === "directory" && (
                 <div className="space-y-6">
-                  {/* Program Selector */}
-              <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs flex flex-col sm:flex-row gap-3 items-center justify-between">
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <span className="text-xs font-bold text-gray-700 uppercase shrink-0">Select Program:</span>
-                  <select
-                    value={selectedProgSlug}
-                    onChange={(e) => setSelectedProgSlug(e.target.value)}
-                    className="flex-1 sm:w-80 h-9 px-3 text-xs font-bold bg-slate-50 border border-gray-200 rounded-xl text-[#072A6C] focus:outline-none focus:border-blue-500 cursor-pointer"
-                  >
-                    {programsList.map((p) => (
-                      <option key={p.slug} value={p.slug}>
-                        {p.title} ({p.department})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const title = prompt("Enter new program title (e.g. B.Tech - Robotics & Automation):");
-                      if (!title) return;
-                      const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-                      const newProg: ProgramDetail = {
-                        slug,
-                        title,
-                        department: "School of Engineering",
-                        duration: "4 Years (Undergraduate)",
-                        degreeType: "B.Tech",
-                        overview: "Industry aligned degree program.",
-                        desc: "Comprehensive engineering curriculum.",
-                        curriculum: ["Semester 1", "Semester 2", "Semester 3", "Semester 4"],
-                        careers: [{ title: "Domain Specialist", desc: "Industry professional." }]
-                      };
-                      const updated = [newProg, ...programsList];
-                      setProgramsList(updated);
-                      updatePrograms(updated);
-                      setSelectedProgSlug(slug);
-                      notifySave(`Created new program: ${title}`);
-                    }}
-                    className="h-8 px-3 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer"
-                  >
-                    <Plus size={13} /> Add Program
-                  </button>
-                  <Link
-                    to={`/academics/${selectedProgSlug}`}
-                    target="_blank"
-                    className="h-8 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg flex items-center gap-1"
-                  >
-                    <ExternalLink size={12} /> View Program Page
-                  </Link>
-                </div>
-              </div>
-
-              {/* 19 Section Order & Visibility */}
-              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-sm font-black text-[#072A6C] uppercase">
-                      19 Program Sections (Order & Visibility for {currentProg?.title})
-                    </h3>
-                    <p className="text-xs text-gray-500">Reorder and toggle specific sections for this program detail page</p>
-                  </div>
-                  <button
-                    onClick={saveProgramDetails}
-                    className="h-8 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer"
-                  >
-                    <Save size={13} /> Save Program
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-                  {progSectionsOrder.map((sec, idx) => (
-                    <div
-                      key={sec.id}
-                      className={`flex items-center justify-between p-2.5 rounded-xl border text-xs ${
-                        sec.enabled ? "bg-white border-gray-200" : "bg-gray-50 border-gray-200 opacity-60"
-                      }`}
-                    >
+                  {/* Top Overview & Action Bar */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-700 text-[10px] font-bold flex items-center justify-center">
-                          {idx + 1}
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-100 text-blue-900 border border-blue-200">
+                          Academic Catalog
                         </span>
-                        <span className="font-bold text-slate-800 truncate max-w-[150px]">{sec.title}</span>
+                        <span className="text-xs text-gray-500 font-mono font-bold">
+                          {programsList.length} Active Degrees Across {allDepartments.length - 1} Branches
+                        </span>
+                      </div>
+                      <h3 className="text-base font-black text-[#072A6C]">
+                        University Programs & Academic Branches Directory
+                      </h3>
+                      <p className="text-xs text-gray-500 max-w-2xl">
+                        Filter degrees by academic discipline, launch full content editors for syllabi and faculty, or introduce new undergraduate and postgraduate specializations.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setIsAddProgramOpen(true)}
+                        className="h-10 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl flex items-center gap-2 shadow-xs cursor-pointer transition-all"
+                      >
+                        <Plus size={15} /> Add New Program / Branch
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Branch / Department Filter Ribbon */}
+                  <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">
+                        Filter by Department / Branch:
+                      </span>
+                      <span className="text-[11px] text-gray-400 font-medium">
+                        Showing {programsList.filter(p => branchFilter === "All" || p.department === branchFilter).length} Programs
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                      {allDepartments.map((dept) => {
+                        const count = dept === "All" 
+                          ? programsList.length 
+                          : programsList.filter(p => p.department === dept).length;
+                        const isSelected = branchFilter === dept;
+                        return (
+                          <button
+                            key={dept}
+                            type="button"
+                            onClick={() => setBranchFilter(dept)}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                              isSelected
+                                ? "bg-[#072A6C] text-white shadow-xs"
+                                : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/80"
+                            }`}
+                          >
+                            <span>{dept === "All" ? "All Academic Branches" : dept}</span>
+                            <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
+                              isSelected ? "bg-white/20 text-[#D4AF37]" : "bg-slate-200 text-slate-600"
+                            }`}>
+                              {count}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Search & Level Filter Row */}
+                    <div className="flex flex-col sm:flex-row gap-2.5 pt-2 border-t border-gray-100">
+                      <div className="relative flex-1">
+                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                        <input
+                          type="text"
+                          value={progSearch}
+                          onChange={(e) => setProgSearch(e.target.value)}
+                          placeholder="Search programs by title, degree type, branch, or keywords..."
+                          className="w-full pl-8 pr-8 py-2 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#072A6C]"
+                        />
+                        {progSearch && (
+                          <button
+                            type="button"
+                            onClick={() => setProgSearch("")}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 text-xs font-bold cursor-pointer"
+                          >
+                            ×
+                          </button>
+                        )}
                       </div>
 
-                      <div className="flex items-center gap-1">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const updated = progSectionsOrder.map((s) => (s.id === sec.id ? { ...s, enabled: !s.enabled } : s));
-                            setProgSectionsOrder(updated);
-                          }}
-                          className={`px-2 py-0.5 rounded text-[9px] font-bold cursor-pointer ${
-                            sec.enabled ? "bg-emerald-50 text-emerald-700" : "bg-gray-200 text-gray-600"
-                          }`}
+                      <select
+                        value={levelFilter}
+                        onChange={(e) => setLevelFilter(e.target.value)}
+                        className="h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-700 font-bold focus:outline-none cursor-pointer"
+                      >
+                        <option value="All">All Degree Levels</option>
+                        <option value="Undergraduate">Undergraduate (B.Tech / B.Pharm / BBA)</option>
+                        <option value="Postgraduate">Postgraduate (M.Tech / MBA / MCA)</option>
+                        <option value="Doctoral">Doctoral (Ph.D.)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Programs Cards Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {programsList
+                      .filter(p => {
+                        const matchesBranch = branchFilter === "All" || p.department === branchFilter;
+                        const matchesLevel = levelFilter === "All" || 
+                          (levelFilter === "Undergraduate" && (p.duration?.includes("Undergraduate") || p.degreeType?.includes("B.") || p.title?.includes("B."))) ||
+                          (levelFilter === "Postgraduate" && (p.duration?.includes("Postgraduate") || p.degreeType?.includes("M.") || p.title?.includes("M.") || p.title?.includes("Master"))) ||
+                          (levelFilter === "Doctoral" && (p.duration?.includes("Doctoral") || p.degreeType?.includes("Ph.D") || p.title?.includes("Ph.D")));
+                        const q = progSearch.toLowerCase();
+                        const matchesSearch = !q || p.title.toLowerCase().includes(q) || p.slug.toLowerCase().includes(q) || p.department?.toLowerCase().includes(q) || p.degreeType?.toLowerCase().includes(q);
+                        return matchesBranch && matchesLevel && matchesSearch;
+                      })
+                      .map((prog) => (
+                        <div
+                          key={prog.slug}
+                          className="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-4"
                         >
-                          {sec.enabled ? "ON" : "OFF"}
-                        </button>
-                        <button
-                          type="button"
-                          disabled={idx === 0}
-                          onClick={() => {
-                            const updated = [...progSectionsOrder];
-                            const temp = updated[idx];
-                            updated[idx] = updated[idx - 1];
-                            updated[idx - 1] = temp;
-                            setProgSectionsOrder(updated);
-                          }}
-                          className="p-1 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-30 cursor-pointer"
-                        >
-                          <ArrowUp size={11} />
-                        </button>
-                        <button
-                          type="button"
-                          disabled={idx === progSectionsOrder.length - 1}
-                          onClick={() => {
-                            const updated = [...progSectionsOrder];
-                            const temp = updated[idx];
-                            updated[idx] = updated[idx + 1];
-                            updated[idx + 1] = temp;
-                            setProgSectionsOrder(updated);
-                          }}
-                          className="p-1 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-30 cursor-pointer"
-                        >
-                          <ArrowDown size={11} />
-                        </button>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-slate-100 text-[#072A6C] border border-slate-200">
+                                {prog.degreeType || "Degree"}
+                              </span>
+                              <span className="text-[10px] font-mono text-gray-500 font-bold">
+                                {prog.slug}
+                              </span>
+                            </div>
+
+                            <h4 className="text-sm font-extrabold text-[#072A6C] leading-snug">
+                              {prog.title}
+                            </h4>
+
+                            <div className="flex flex-wrap gap-1.5 pt-1">
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200">
+                                <Building size={11} className="text-[#D4AF37]" /> {prog.department}
+                              </span>
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200">
+                                <Clock size={11} className="text-[#D4AF37]" /> {prog.duration}
+                              </span>
+                            </div>
+
+                            <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed pt-1">
+                              {prog.desc || prog.overview}
+                            </p>
+                          </div>
+
+                          {/* Card Action Buttons */}
+                          <div className="pt-3 border-t border-gray-100 flex items-center justify-between gap-2">
+                            <button
+                              type="button"
+                              onClick={() => selectProgramToEdit(prog.slug)}
+                              className="flex-1 h-8 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                            >
+                              <Edit3 size={13} /> Edit Program
+                            </button>
+
+                            <Link
+                              to={`/academics/${prog.slug}`}
+                              target="_blank"
+                              className="h-8 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg flex items-center justify-center gap-1 transition-colors"
+                              title="View live program page on website"
+                            >
+                              <ExternalLink size={13} /> Live
+                            </Link>
+
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteProgram(prog.slug, prog.title)}
+                              className="h-8 px-2.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg flex items-center justify-center transition-colors cursor-pointer"
+                              title="Delete this program"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+
+                  {/* Add Program Modal */}
+                  {isAddProgramOpen && (
+                    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+                      <div className="bg-white rounded-3xl max-w-2xl w-full p-6 space-y-5 shadow-2xl border border-gray-200 max-h-[90vh] overflow-y-auto">
+                        <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                          <div>
+                            <h3 className="text-base font-black text-[#072A6C]">Add New Academic Degree Program</h3>
+                            <p className="text-xs text-gray-500">Create a new branch or degree offering with instant live page generation</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setIsAddProgramOpen(false)}
+                            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-gray-500 cursor-pointer"
+                          >
+                            ×
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-1 sm:col-span-2">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Program Full Title *</label>
+                            <input
+                              type="text"
+                              value={newProgForm.title}
+                              onChange={(e) => setNewProgForm({ ...newProgForm, title: e.target.value })}
+                              placeholder="e.g. B.Tech. Artificial Intelligence & Machine Learning"
+                              className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-gray-800"
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Short Display Name</label>
+                            <input
+                              type="text"
+                              value={newProgForm.shortName}
+                              onChange={(e) => setNewProgForm({ ...newProgForm, shortName: e.target.value })}
+                              placeholder="e.g. B.Tech. AI & ML"
+                              className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800"
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">URL Slug (leave empty to auto-create)</label>
+                            <input
+                              type="text"
+                              value={newProgForm.slug}
+                              onChange={(e) => setNewProgForm({ ...newProgForm, slug: e.target.value })}
+                              placeholder="e.g. btech-ai-ml"
+                              className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800 font-mono"
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Department / Academic Branch</label>
+                            <input
+                              type="text"
+                              value={newProgForm.department}
+                              onChange={(e) => setNewProgForm({ ...newProgForm, department: e.target.value })}
+                              placeholder="e.g. Computer Science & Engineering"
+                              className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800"
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Faculty / School</label>
+                            <select
+                              value={newProgForm.school}
+                              onChange={(e) => setNewProgForm({ ...newProgForm, school: e.target.value })}
+                              className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800 font-bold"
+                            >
+                              {allSchools.map((s) => (
+                                <option key={s} value={s}>{s}</option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Degree Level</label>
+                            <select
+                              value={newProgForm.level}
+                              onChange={(e) => setNewProgForm({ ...newProgForm, level: e.target.value as any })}
+                              className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800 font-bold"
+                            >
+                              <option value="Undergraduate">Undergraduate (UG)</option>
+                              <option value="Postgraduate">Postgraduate (PG)</option>
+                              <option value="Doctoral">Doctoral (Ph.D.)</option>
+                            </select>
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Degree Type</label>
+                            <input
+                              type="text"
+                              value={newProgForm.degreeType}
+                              onChange={(e) => setNewProgForm({ ...newProgForm, degreeType: e.target.value })}
+                              placeholder="e.g. B.Tech., M.Tech., MBA, MCA, Ph.D."
+                              className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800"
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Duration</label>
+                            <input
+                              type="text"
+                              value={newProgForm.duration}
+                              onChange={(e) => setNewProgForm({ ...newProgForm, duration: e.target.value })}
+                              placeholder="e.g. 4 Years (8 Semesters)"
+                              className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800"
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Annual Seat Intake</label>
+                            <input
+                              type="text"
+                              value={newProgForm.intake}
+                              onChange={(e) => setNewProgForm({ ...newProgForm, intake: e.target.value })}
+                              placeholder="e.g. 60 Seats"
+                              className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800"
+                            />
+                          </div>
+
+                          <div className="space-y-1 sm:col-span-2">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Eligibility Criteria</label>
+                            <textarea
+                              rows={2}
+                              value={newProgForm.eligibility}
+                              onChange={(e) => setNewProgForm({ ...newProgForm, eligibility: e.target.value })}
+                              placeholder="e.g. 10+2 with PCM (Min 50% Marks) / Valid EAPCET / JEE Score"
+                              className="w-full p-2.5 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800"
+                            />
+                          </div>
+
+                          <div className="space-y-1 sm:col-span-2">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Program Overview & Summary</label>
+                            <textarea
+                              rows={3}
+                              value={newProgForm.overview}
+                              onChange={(e) => setNewProgForm({ ...newProgForm, overview: e.target.value })}
+                              placeholder="Provide comprehensive details about this degree curriculum, objectives, and industry relevance..."
+                              className="w-full p-2.5 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-gray-100">
+                          <button
+                            type="button"
+                            onClick={() => setIsAddProgramOpen(false)}
+                            className="px-4 py-2 text-xs font-bold text-gray-600 bg-slate-100 hover:bg-slate-200 rounded-xl cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleCreateNewProgram}
+                            className="px-5 py-2 text-xs font-bold text-white bg-[#072A6C] hover:bg-[#051c4a] rounded-xl flex items-center gap-1.5 shadow-sm cursor-pointer"
+                          >
+                            <Plus size={14} /> Create & Open Editor
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  ))}
+                  )}
                 </div>
-              </div>
-            </div>
-          )}
+              )}
+
+              {/* ═══════════════════════════════════════════════════════════════
+                  SUBTAB 2: PROGRAM DETAILS & CONTENT EDITOR (FULL ADMIN)
+              ═══════════════════════════════════════════════════════════════ */}
+              {academicsSubTab === "editor" && (
+                <div className="space-y-6">
+                  {/* Top Program Switcher Bar */}
+                  <div className="bg-white p-4 sm:p-5 rounded-2xl border border-gray-200 shadow-xs flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setAcademicsSubTab("directory")}
+                        className="h-9 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer"
+                      >
+                        ← Programs Directory
+                      </button>
+
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-gray-500 uppercase shrink-0">Active Program:</span>
+                        <select
+                          value={selectedProgSlug}
+                          onChange={(e) => selectProgramToEdit(e.target.value)}
+                          className="h-9 px-3 text-xs font-extrabold bg-blue-50/70 border border-blue-200 rounded-xl text-[#072A6C] focus:outline-none cursor-pointer max-w-xs sm:max-w-md truncate"
+                        >
+                          {programsList.map((p) => (
+                            <option key={p.slug} value={p.slug}>
+                              {p.title} ({p.department})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0 self-end lg:self-auto">
+                      <Link
+                        to={`/academics/${selectedProgSlug}`}
+                        target="_blank"
+                        className="h-9 px-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl flex items-center gap-1.5"
+                      >
+                        <ExternalLink size={13} /> View Live Page
+                      </Link>
+
+                      <button
+                        type="button"
+                        onClick={saveProgramDetails}
+                        className="h-9 px-5 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm cursor-pointer"
+                      >
+                        <Save size={13} /> Save Program Details
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Program Editor Sub-Navigation Tabs */}
+                  <div className="flex flex-wrap gap-1.5 bg-white p-2.5 rounded-2xl border border-gray-200 shadow-xs">
+                    {[
+                      { id: "general", label: "🏷️ 1. Identity & Hero" },
+                      { id: "hod", label: "👤 2. HOD & Leadership" },
+                      { id: "vision", label: "🎯 3. Vision, Mission & PEOs" },
+                      { id: "syllabus", label: "📚 4. Syllabus & Curriculum" },
+                      { id: "faculty", label: `👨‍🏫 5. Faculty (${customFullProgram.facultyList?.length || 0})` },
+                      { id: "labs", label: `🔬 6. Laboratories (${customFullProgram.laboratories?.length || 0})` },
+                      { id: "placements", label: "💼 7. Placements & CTC" },
+                      { id: "sections", label: "⚙️ 8. 19 Dimensions Order" }
+                    ].map((st) => (
+                      <button
+                        key={st.id}
+                        type="button"
+                        onClick={() => setProgEditorSubTab(st.id as any)}
+                        className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                          progEditorSubTab === st.id
+                            ? "bg-[#072A6C] text-white shadow-xs"
+                            : "bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200/60"
+                        }`}
+                      >
+                        {st.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* ──────────────── 1. IDENTITY & HERO SETTINGS ──────────────── */}
+                  {progEditorSubTab === "general" && (
+                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+                      <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                        <div>
+                          <h4 className="text-sm font-black text-[#072A6C] uppercase">Program Identity & Hero Attributes</h4>
+                          <p className="text-xs text-gray-500">Configure program headers, duration, eligibility, and core descriptions</p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="space-y-1 sm:col-span-2">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Program Full Title</label>
+                          <input
+                            type="text"
+                            value={customFullProgram.title}
+                            onChange={(e) => setCustomFullProgram({ ...customFullProgram, title: e.target.value })}
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Short Display Name</label>
+                          <input
+                            type="text"
+                            value={customFullProgram.shortName || ""}
+                            onChange={(e) => setCustomFullProgram({ ...customFullProgram, shortName: e.target.value })}
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Department / Branch</label>
+                          <input
+                            type="text"
+                            value={customFullProgram.department}
+                            onChange={(e) => setCustomFullProgram({ ...customFullProgram, department: e.target.value })}
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-gray-800"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Faculty / School</label>
+                          <input
+                            type="text"
+                            value={customFullProgram.school}
+                            onChange={(e) => setCustomFullProgram({ ...customFullProgram, school: e.target.value })}
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Degree Level</label>
+                          <select
+                            value={customFullProgram.level}
+                            onChange={(e) => setCustomFullProgram({ ...customFullProgram, level: e.target.value as any })}
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-gray-800"
+                          >
+                            <option value="Undergraduate">Undergraduate</option>
+                            <option value="Postgraduate">Postgraduate</option>
+                            <option value="Doctoral">Doctoral</option>
+                          </select>
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Duration</label>
+                          <input
+                            type="text"
+                            value={customFullProgram.duration}
+                            onChange={(e) => setCustomFullProgram({ ...customFullProgram, duration: e.target.value })}
+                            placeholder="e.g. 4 Years (8 Semesters)"
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Annual Seat Intake</label>
+                          <input
+                            type="text"
+                            value={customFullProgram.intake}
+                            onChange={(e) => setCustomFullProgram({ ...customFullProgram, intake: e.target.value })}
+                            placeholder="e.g. 180 Seats"
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Degree Type</label>
+                          <input
+                            type="text"
+                            value={customFullProgram.degreeType}
+                            onChange={(e) => setCustomFullProgram({ ...customFullProgram, degreeType: e.target.value })}
+                            placeholder="e.g. B.Tech., M.Tech., MBA, MCA"
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800"
+                          />
+                        </div>
+
+                        <div className="space-y-1 sm:col-span-3">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Eligibility Criteria</label>
+                          <textarea
+                            rows={2}
+                            value={customFullProgram.eligibility}
+                            onChange={(e) => setCustomFullProgram({ ...customFullProgram, eligibility: e.target.value })}
+                            className="w-full p-2.5 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800"
+                          />
+                        </div>
+
+                        <div className="space-y-1 sm:col-span-3">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Program Overview & Summary</label>
+                          <textarea
+                            rows={4}
+                            value={customFullProgram.about?.summary || ""}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              about: { ...(customFullProgram.about || { highlights: [], objectives: [] }), summary: e.target.value }
+                            })}
+                            className="w-full p-2.5 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800 leading-relaxed"
+                          />
+                        </div>
+
+                        <div className="space-y-1 sm:col-span-3">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Target Career Roles (comma-separated)</label>
+                          <input
+                            type="text"
+                            value={(customFullProgram.careerRoles || []).join(", ")}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              careerRoles: e.target.value.split(",").map(s => s.trim()).filter(Boolean)
+                            })}
+                            placeholder="e.g. Software Architect, AI Specialist, Cloud Consultant"
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ──────────────── 2. HOD & LEADERSHIP ──────────────── */}
+                  {progEditorSubTab === "hod" && (
+                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-5">
+                      <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                        <div>
+                          <h4 className="text-sm font-black text-[#072A6C] uppercase">Head of Department (HOD) Leadership Profile</h4>
+                          <p className="text-xs text-gray-500">Configure Department Head credentials, message, contact details, and photo</p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">HOD Full Name</label>
+                          <input
+                            type="text"
+                            value={customFullProgram.hodMessage?.hodName || ""}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              hodMessage: { ...(customFullProgram.hodMessage || { designation: "", qualification: "", message: "" }), hodName: e.target.value }
+                            })}
+                            placeholder="e.g. Dr. K. Srinivasa Rao"
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Academic Designation</label>
+                          <input
+                            type="text"
+                            value={customFullProgram.hodMessage?.designation || ""}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              hodMessage: { ...(customFullProgram.hodMessage || { hodName: "", qualification: "", message: "" }), designation: e.target.value }
+                            })}
+                            placeholder="e.g. Professor & Head of the Department"
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Qualifications & Honors</label>
+                          <input
+                            type="text"
+                            value={customFullProgram.hodMessage?.qualification || ""}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              hodMessage: { ...(customFullProgram.hodMessage || { hodName: "", designation: "", message: "" }), qualification: e.target.value }
+                            })}
+                            placeholder="e.g. Ph.D. (IIT Madras), M.Tech., SMIEEE"
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Official Email Address</label>
+                          <input
+                            type="email"
+                            value={customFullProgram.hodMessage?.email || ""}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              hodMessage: { ...(customFullProgram.hodMessage || { hodName: "", designation: "", qualification: "", message: "" }), email: e.target.value }
+                            })}
+                            placeholder="e.g. hod.cse@city.ac.in"
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800"
+                          />
+                        </div>
+
+                        <div className="space-y-1 sm:col-span-2">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">HOD Photograph URL</label>
+                          <input
+                            type="text"
+                            value={customFullProgram.hodMessage?.image || ""}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              hodMessage: { ...(customFullProgram.hodMessage || { hodName: "", designation: "", qualification: "", message: "" }), image: e.target.value }
+                            })}
+                            placeholder="e.g. /faculty/hod_cse.jpg or https://..."
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800 font-mono"
+                          />
+                        </div>
+
+                        <div className="space-y-1 sm:col-span-2">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">HOD Welcome Message to Students</label>
+                          <textarea
+                            rows={4}
+                            value={customFullProgram.hodMessage?.message || ""}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              hodMessage: { ...(customFullProgram.hodMessage || { hodName: "", designation: "", qualification: "" }), message: e.target.value }
+                            })}
+                            placeholder="Message welcoming students to the branch, highlighting vision and research opportunities..."
+                            className="w-full p-2.5 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800 leading-relaxed"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ──────────────── 3. VISION, MISSION & PEOS ──────────────── */}
+                  {progEditorSubTab === "vision" && (
+                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+                      <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                        <div>
+                          <h4 className="text-sm font-black text-[#072A6C] uppercase">Department Vision, Mission & Outcomes</h4>
+                          <p className="text-xs text-gray-500">Formulate Outcome-Based Education (OBE) objectives, POs, and PSOs</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Department Vision Statement</label>
+                          <textarea
+                            rows={3}
+                            value={customFullProgram.visionMission?.vision || ""}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              visionMission: { ...(customFullProgram.visionMission || { mission: [], coreValues: [] }), vision: e.target.value }
+                            })}
+                            className="w-full p-2.5 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800"
+                          />
+                        </div>
+
+                        {/* Mission Statements */}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Department Mission Statements</label>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const mission = customFullProgram.visionMission?.mission || [];
+                                setCustomFullProgram({
+                                  ...customFullProgram,
+                                  visionMission: { ...(customFullProgram.visionMission || { vision: "", coreValues: [] }), mission: [...mission, "New mission statement"] }
+                                });
+                              }}
+                              className="text-[11px] font-bold text-[#072A6C] hover:underline flex items-center gap-1 cursor-pointer"
+                            >
+                              <Plus size={12} /> Add Mission Point
+                            </button>
+                          </div>
+                          {(customFullProgram.visionMission?.mission || []).map((m, idx) => (
+                            <div key={idx} className="flex items-center gap-2">
+                              <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-700 text-[10px] font-bold flex items-center justify-center shrink-0">
+                                M{idx + 1}
+                              </span>
+                              <input
+                                type="text"
+                                value={m}
+                                onChange={(e) => {
+                                  const updated = [...(customFullProgram.visionMission?.mission || [])];
+                                  updated[idx] = e.target.value;
+                                  setCustomFullProgram({
+                                    ...customFullProgram,
+                                    visionMission: { ...(customFullProgram.visionMission || { vision: "", coreValues: [] }), mission: updated }
+                                  });
+                                }}
+                                className="flex-1 h-8 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = (customFullProgram.visionMission?.mission || []).filter((_, i) => i !== idx);
+                                  setCustomFullProgram({
+                                    ...customFullProgram,
+                                    visionMission: { ...(customFullProgram.visionMission || { vision: "", coreValues: [] }), mission: updated }
+                                  });
+                                }}
+                                className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ──────────────── 4. SYLLABUS & CURRICULUM ──────────────── */}
+                  {progEditorSubTab === "syllabus" && (
+                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+                      <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                        <div>
+                          <h4 className="text-sm font-black text-[#072A6C] uppercase">Curriculum Downloads & Regulations</h4>
+                          <p className="text-xs text-gray-500">Provide official PDF syllabus downloads and regulation references</p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Curriculum / Syllabus PDF URL</label>
+                          <input
+                            type="text"
+                            value={customFullProgram.syllabus?.curriculumPdfUrl || ""}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              syllabus: { ...(customFullProgram.syllabus || { semesters: [], regulation: "R24" }), curriculumPdfUrl: e.target.value }
+                            })}
+                            placeholder="e.g. /downloads/syllabus_cse.pdf or https://..."
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800 font-mono"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Academic Regulation Framework</label>
+                          <input
+                            type="text"
+                            value={customFullProgram.syllabus?.regulation || "R24 Autonomous"}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              syllabus: { ...(customFullProgram.syllabus || { semesters: [] }), regulation: e.target.value }
+                            })}
+                            placeholder="e.g. R24 Autonomous Curriculum"
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800 font-bold"
+                          />
+                        </div>
+
+                        {/* Semesters Quick Summary */}
+                        <div className="sm:col-span-2 space-y-3 pt-2">
+                          <h5 className="text-xs font-bold text-gray-700 uppercase">Semester-Wise Structure ({customFullProgram.syllabus?.semesters?.length || 0} Semesters)</h5>
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                            {(customFullProgram.syllabus?.semesters || []).map((sem, sIdx) => (
+                              <div key={sIdx} className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                                <span className="text-[11px] font-extrabold text-[#072A6C] block">Sem {sem.semNumber}</span>
+                                <span className="text-[10px] text-gray-500 font-mono block">{sem.subjects?.length || 0} Courses • {sem.credits} Credits</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ──────────────── 5. FACULTY DIRECTORY ──────────────── */}
+                  {progEditorSubTab === "faculty" && (
+                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-5">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-3">
+                        <div>
+                          <h4 className="text-sm font-black text-[#072A6C] uppercase">
+                            Branch Faculty Directory ({customFullProgram.facultyList?.length || 0} Members)
+                          </h4>
+                          <p className="text-xs text-gray-500">Manage academic professors, assistant professors, and research mentors</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newFac = {
+                              name: "Dr. New Faculty",
+                              designation: "Assistant Professor",
+                              qualification: "Ph.D., M.Tech.",
+                              specialization: "Artificial Intelligence",
+                              experience: "5+ Years",
+                              email: "faculty@city.ac.in"
+                            };
+                            setCustomFullProgram({
+                              ...customFullProgram,
+                              facultyList: [newFac, ...(customFullProgram.facultyList || [])]
+                            });
+                          }}
+                          className="h-8 px-3 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer self-start sm:self-auto"
+                        >
+                          <Plus size={13} /> Add Faculty Member
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                        {(customFullProgram.facultyList || []).map((f, idx) => (
+                          <div key={idx} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+                            <div className="flex items-center justify-between">
+                              <input
+                                type="text"
+                                value={f.name}
+                                onChange={(e) => {
+                                  const updated = [...customFullProgram.facultyList];
+                                  updated[idx].name = e.target.value;
+                                  setCustomFullProgram({ ...customFullProgram, facultyList: updated });
+                                }}
+                                className="font-extrabold text-xs text-[#072A6C] bg-white border border-gray-200 px-2 py-1 rounded-lg w-3/4"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = customFullProgram.facultyList.filter((_, i) => i !== idx);
+                                  setCustomFullProgram({ ...customFullProgram, facultyList: updated });
+                                }}
+                                className="text-red-500 hover:text-red-700 p-1 cursor-pointer"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                              <input
+                                type="text"
+                                value={f.designation}
+                                onChange={(e) => {
+                                  const updated = [...customFullProgram.facultyList];
+                                  updated[idx].designation = e.target.value;
+                                  setCustomFullProgram({ ...customFullProgram, facultyList: updated });
+                                }}
+                                placeholder="Designation"
+                                className="px-2 py-1 bg-white border border-gray-200 rounded-lg text-gray-700"
+                              />
+                              <input
+                                type="text"
+                                value={f.qualification}
+                                onChange={(e) => {
+                                  const updated = [...customFullProgram.facultyList];
+                                  updated[idx].qualification = e.target.value;
+                                  setCustomFullProgram({ ...customFullProgram, facultyList: updated });
+                                }}
+                                placeholder="Qualification"
+                                className="px-2 py-1 bg-white border border-gray-200 rounded-lg text-gray-700"
+                              />
+                              <input
+                                type="text"
+                                value={f.specialization}
+                                onChange={(e) => {
+                                  const updated = [...customFullProgram.facultyList];
+                                  updated[idx].specialization = e.target.value;
+                                  setCustomFullProgram({ ...customFullProgram, facultyList: updated });
+                                }}
+                                placeholder="Specialization"
+                                className="px-2 py-1 bg-white border border-gray-200 rounded-lg text-gray-700"
+                              />
+                              <input
+                                type="email"
+                                value={f.email}
+                                onChange={(e) => {
+                                  const updated = [...customFullProgram.facultyList];
+                                  updated[idx].email = e.target.value;
+                                  setCustomFullProgram({ ...customFullProgram, facultyList: updated });
+                                }}
+                                placeholder="Email"
+                                className="px-2 py-1 bg-white border border-gray-200 rounded-lg text-gray-700 font-mono"
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ──────────────── 6. LABORATORIES ──────────────── */}
+                  {progEditorSubTab === "labs" && (
+                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-5">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-3">
+                        <div>
+                          <h4 className="text-sm font-black text-[#072A6C] uppercase">
+                            Department Laboratories & Infrastructure ({customFullProgram.laboratories?.length || 0})
+                          </h4>
+                          <p className="text-xs text-gray-500">Maintain laboratory facilities, computing clusters, and specialized research setups</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newLab = {
+                              name: "Advanced Research Computing Lab",
+                              capacity: "40 Students",
+                              area: "1200 Sq.Ft.",
+                              inCharge: "Dr. Faculty",
+                              equipment: ["High-Performance GPU Nodes", "Optical Network Switches"]
+                            };
+                            setCustomFullProgram({
+                              ...customFullProgram,
+                              laboratories: [newLab, ...(customFullProgram.laboratories || [])]
+                            });
+                          }}
+                          className="h-8 px-3 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer self-start sm:self-auto"
+                        >
+                          <Plus size={13} /> Add Laboratory
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                        {(customFullProgram.laboratories || []).map((lab, idx) => (
+                          <div key={idx} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
+                            <div className="flex items-center justify-between">
+                              <input
+                                type="text"
+                                value={lab.name}
+                                onChange={(e) => {
+                                  const updated = [...customFullProgram.laboratories];
+                                  updated[idx].name = e.target.value;
+                                  setCustomFullProgram({ ...customFullProgram, laboratories: updated });
+                                }}
+                                className="font-extrabold text-xs text-[#072A6C] bg-white border border-gray-200 px-2 py-1 rounded-lg w-3/4"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = customFullProgram.laboratories.filter((_, i) => i !== idx);
+                                  setCustomFullProgram({ ...customFullProgram, laboratories: updated });
+                                }}
+                                className="text-red-500 hover:text-red-700 p-1 cursor-pointer"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-2 text-xs">
+                              <input
+                                type="text"
+                                value={lab.capacity}
+                                onChange={(e) => {
+                                  const updated = [...customFullProgram.laboratories];
+                                  updated[idx].capacity = e.target.value;
+                                  setCustomFullProgram({ ...customFullProgram, laboratories: updated });
+                                }}
+                                placeholder="Capacity"
+                                className="px-2 py-1 bg-white border border-gray-200 rounded-lg text-gray-700"
+                              />
+                              <input
+                                type="text"
+                                value={lab.area || ""}
+                                onChange={(e) => {
+                                  const updated = [...customFullProgram.laboratories];
+                                  updated[idx].area = e.target.value;
+                                  setCustomFullProgram({ ...customFullProgram, laboratories: updated });
+                                }}
+                                placeholder="Area"
+                                className="px-2 py-1 bg-white border border-gray-200 rounded-lg text-gray-700"
+                              />
+                              <input
+                                type="text"
+                                value={lab.inCharge || ""}
+                                onChange={(e) => {
+                                  const updated = [...customFullProgram.laboratories];
+                                  updated[idx].inCharge = e.target.value;
+                                  setCustomFullProgram({ ...customFullProgram, laboratories: updated });
+                                }}
+                                placeholder="In-Charge"
+                                className="px-2 py-1 bg-white border border-gray-200 rounded-lg text-gray-700"
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ──────────────── 7. PLACEMENTS & CTC ──────────────── */}
+                  {progEditorSubTab === "placements" && (
+                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-5">
+                      <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                        <div>
+                          <h4 className="text-sm font-black text-[#072A6C] uppercase">Placement Outcomes & Salary Statistics</h4>
+                          <p className="text-xs text-gray-500">Configure package records and key recruiting partners for this degree</p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Highest CTC (LPA)</label>
+                          <input
+                            type="text"
+                            value={customFullProgram.placements?.highestPackage || ""}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              placements: { ...(customFullProgram.placements || { averagePackage: "", placementRate: "", topRecruiters: [], placedStudents: [] }), highestPackage: e.target.value }
+                            })}
+                            placeholder="e.g. ₹18.00 LPA"
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-emerald-700"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Average CTC (LPA)</label>
+                          <input
+                            type="text"
+                            value={customFullProgram.placements?.averagePackage || ""}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              placements: { ...(customFullProgram.placements || { highestPackage: "", placementRate: "", topRecruiters: [], placedStudents: [] }), averagePackage: e.target.value }
+                            })}
+                            placeholder="e.g. ₹6.50 LPA"
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Placement Success Rate (%)</label>
+                          <input
+                            type="text"
+                            value={customFullProgram.placements?.placementRate || ""}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              placements: { ...(customFullProgram.placements || { highestPackage: "", averagePackage: "", topRecruiters: [], placedStudents: [] }), placementRate: e.target.value }
+                            })}
+                            placeholder="e.g. 92.0%"
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-blue-700"
+                          />
+                        </div>
+
+                        <div className="space-y-1 sm:col-span-3">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Top Recruiters (comma-separated)</label>
+                          <input
+                            type="text"
+                            value={(customFullProgram.placements?.topRecruiters || []).join(", ")}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              placements: {
+                                ...(customFullProgram.placements || { highestPackage: "", averagePackage: "", placementRate: "", placedStudents: [] }),
+                                topRecruiters: e.target.value.split(",").map(s => s.trim()).filter(Boolean)
+                              }
+                            })}
+                            placeholder="e.g. Microsoft, Amazon, TCS, Infosys, Wipro, Cognizant, Tech Mahindra"
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ──────────────── 8. 19-SECTION ORDERING & VISIBILITY ──────────────── */}
+                  {progEditorSubTab === "sections" && (
+                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-sm font-black text-[#072A6C] uppercase">
+                            19 Program Modules (Order & Visibility for {currentProg?.title})
+                          </h3>
+                          <p className="text-xs text-gray-500">Reorder and toggle specific sections for this program detail page</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={saveProgramDetails}
+                          className="h-8 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer"
+                        >
+                          <Save size={13} /> Save Program
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                        {progSectionsOrder.map((sec, idx) => (
+                          <div
+                            key={sec.id}
+                            className={`flex items-center justify-between p-2.5 rounded-xl border text-xs ${
+                              sec.enabled ? "bg-white border-gray-200" : "bg-gray-50 border-gray-200 opacity-60"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-700 text-[10px] font-bold flex items-center justify-center">
+                                {idx + 1}
+                              </span>
+                              <span className="font-bold text-slate-800 truncate max-w-[150px]">{sec.title}</span>
+                            </div>
+
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = progSectionsOrder.map((s) => (s.id === sec.id ? { ...s, enabled: !s.enabled } : s));
+                                  setProgSectionsOrder(updated);
+                                }}
+                                className={`px-2 py-0.5 rounded text-[9px] font-bold cursor-pointer ${
+                                  sec.enabled ? "bg-emerald-50 text-emerald-700" : "bg-gray-200 text-gray-600"
+                                }`}
+                              >
+                                {sec.enabled ? "ON" : "OFF"}
+                              </button>
+                              <button
+                                type="button"
+                                disabled={idx === 0}
+                                onClick={() => {
+                                  const updated = [...progSectionsOrder];
+                                  const temp = updated[idx];
+                                  updated[idx] = updated[idx - 1];
+                                  updated[idx - 1] = temp;
+                                  setProgSectionsOrder(updated);
+                                }}
+                                className="p-1 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-30 cursor-pointer"
+                              >
+                                <ArrowUp size={11} />
+                              </button>
+                              <button
+                                type="button"
+                                disabled={idx === progSectionsOrder.length - 1}
+                                onClick={() => {
+                                  const updated = [...progSectionsOrder];
+                                  const temp = updated[idx];
+                                  updated[idx] = updated[idx + 1];
+                                  updated[idx + 1] = temp;
+                                  setProgSectionsOrder(updated);
+                                }}
+                                className="p-1 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-30 cursor-pointer"
+                              >
+                                <ArrowDown size={11} />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ═══════════════════════════════════════════════════════════════
+                  SUBTAB 3: SCHOOLS & ACADEMIC BRANCHES OVERVIEW
+              ═══════════════════════════════════════════════════════════════ */}
+              {academicsSubTab === "branches" && (
+                <div className="space-y-6 text-left">
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300">
+                        Academic Organization
+                      </span>
+                      <h3 className="text-base font-black text-[#072A6C] uppercase mt-1">
+                        🏛️ University Academic Schools & Departments
+                      </h3>
+                      <p className="text-xs text-gray-500">
+                        Overview of faculties, academic divisions, and degree distributions across the university
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsAddProgramOpen(true);
+                      }}
+                      className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+                    >
+                      <Plus size={13} /> Add Program to Branch
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {allDepartments.filter((d) => d !== "All").map((dept) => {
+                      const deptPrograms = programsList.filter((p) => p.department === dept);
+                      return (
+                        <div key={dept} className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs space-y-3 flex flex-col justify-between">
+                          <div className="space-y-2">
+                            <div className="w-10 h-10 rounded-xl bg-slate-100 text-[#072A6C] flex items-center justify-center font-black">
+                              <Building size={20} />
+                            </div>
+                            <h4 className="font-extrabold text-sm text-[#072A6C] leading-snug">
+                              {dept}
+                            </h4>
+                            <span className="text-[11px] font-mono font-bold text-gray-500 block">
+                              {deptPrograms.length} Active Degree {deptPrograms.length === 1 ? "Program" : "Programs"}
+                            </span>
+                            <div className="flex flex-wrap gap-1 pt-1">
+                              {deptPrograms.slice(0, 3).map((dp) => (
+                                <span key={dp.slug} className="text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md font-semibold truncate max-w-full">
+                                  {dp.degreeType}
+                                </span>
+                              ))}
+                              {deptPrograms.length > 3 && (
+                                <span className="text-[10px] text-gray-400 font-semibold self-center">
+                                  +{deptPrograms.length - 3} more
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setBranchFilter(dept);
+                                setAcademicsSubTab("directory");
+                              }}
+                              className="text-xs font-bold text-[#072A6C] hover:underline flex items-center gap-1 cursor-pointer"
+                            >
+                              <span>View All {deptPrograms.length} Programs</span>
+                              <ArrowRight size={12} />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
           {/* Subtab 2: Homepage Programs & Schools Explorer */}
           {academicsSubTab === "homepage" && (
