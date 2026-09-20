@@ -1606,274 +1606,293 @@ export default function Home() {
       </section>
 
       {/* ═══ DYNAMIC PLACEMENT SUCCESS STORIES SHOWCASE ═══ */}
-      <section className="bg-white py-10 relative overflow-hidden font-[var(--font-poppins)]">
-        {/* Soft Background Blobs */}
-        <div className="absolute top-10 left-10 w-72 h-72 rounded-full bg-blue-50/40 blur-3xl -z-10" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 rounded-full bg-yellow-50/30 blur-3xl -z-10" />
+      {(() => {
+        const placementsSection = (homepageSections || []).find((s) => s.id === "placements" || s.id === "certifications");
+        if (placementsSection && placementsSection.enabled === false) return null;
+        const placementsData = placementsSection?.extraData || {};
+        const storiesBadge = placementsData.storiesBadge || "PLACEMENT SUCCESS STORIES";
+        const storiesTitle = placementsData.storiesTitle || "Our Students. Top Careers. Bright Futures.";
+        const storiesSubtitle = placementsData.storiesSubtitle || "Real stories from Chalapathi students who achieved successful careers through campus placements.";
+        const partnersHeading = placementsData.partnersHeading || "Our Top Corporate Partners";
 
-        <div className="max-w-[1440px] mx-auto px-5">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <span className="text-[11px] font-[800] uppercase tracking-widest text-[#D4AF37] bg-amber-50 py-1.5 px-4 rounded-full inline-block mb-3">
-              PLACEMENT SUCCESS STORIES
-            </span>
-            <h2 className="text-2xl md:text-3.5xl font-[900] text-[#072A6C] mb-2">
-              Our Students. Top Careers. <span className="text-[#D4AF37]">Bright Futures.</span>
-            </h2>
-            <p className="text-xs text-gray-500 max-w-xl mx-auto font-light leading-relaxed">
-              Real stories from Chalapathi students who achieved successful careers through campus placements.
-            </p>
-          </div>
+        return (
+          <section className="bg-white py-10 relative overflow-hidden font-[var(--font-poppins)]">
+            {/* Soft Background Blobs */}
+            <div className="absolute top-10 left-10 w-72 h-72 rounded-full bg-blue-50/40 blur-3xl -z-10" />
+            <div className="absolute bottom-20 right-10 w-96 h-96 rounded-full bg-yellow-50/30 blur-3xl -z-10" />
 
-          {successStories && successStories.length > 0 && (() => {
-            const activeStudent = successStories[activeFeaturedStudent % successStories.length];
-            return (
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                {/* LEFT COLUMN: Student Image + Floating Badges (38-40% Width) */}
-                <div className="lg:col-span-5 flex justify-center relative">
-                  <div className="relative w-full max-w-[340px] h-[370px] rounded-[24px] overflow-hidden shadow-2xl group border border-gray-100 bg-gray-50">
-                    <img 
-                      src={activeStudent.studentImage} 
-                      alt={activeStudent.studentName} 
-                      className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
-                    />
-                    {/* Image Tint Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
-                  </div>
+            <div className="max-w-[1440px] mx-auto px-5">
+              {/* Header */}
+              <div className="text-center mb-8">
+                <span className="text-[11px] font-[800] uppercase tracking-widest text-[#D4AF37] bg-amber-50 py-1.5 px-4 rounded-full inline-block mb-3">
+                  {storiesBadge}
+                </span>
+                <h2 className="text-2xl md:text-3.5xl font-[900] text-[#072A6C] mb-2">
+                  {storiesTitle.includes("Bright Futures.") ? (
+                    <>
+                      {storiesTitle.replace("Bright Futures.", "")}
+                      <span className="text-[#D4AF37]">Bright Futures.</span>
+                    </>
+                  ) : (
+                    storiesTitle
+                  )}
+                </h2>
+                <p className="text-xs text-gray-500 max-w-xl mx-auto font-light leading-relaxed">
+                  {storiesSubtitle}
+                </p>
+              </div>
 
-                  {/* Floating Placed At badge */}
-                  <div className="absolute left-6 top-6 bg-white/85 backdrop-blur-md border border-white/40 rounded-xl p-2.5 flex items-center gap-2.5 shadow-md max-w-[160px] transition-transform duration-300 hover:scale-105">
-                    <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center p-1 shadow-sm shrink-0">
-                      <img 
-                        src={activeStudent.companyLogo} 
-                        alt={activeStudent.companyName} 
-                        className="w-full h-full object-contain"
-                      />
+              {successStories && successStories.length > 0 && (() => {
+                const activeStudent = successStories[activeFeaturedStudent % successStories.length];
+                return (
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                    {/* LEFT COLUMN: Student Image + Floating Badges (38-40% Width) */}
+                    <div className="lg:col-span-5 flex justify-center relative">
+                      <div className="relative w-full max-w-[340px] h-[370px] rounded-[24px] overflow-hidden shadow-2xl group border border-gray-100 bg-gray-50">
+                        <img 
+                          src={activeStudent.studentImage} 
+                          alt={activeStudent.studentName} 
+                          className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
+                        />
+                        {/* Image Tint Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
+                      </div>
+
+                      {/* Floating Placed At badge */}
+                      <div className="absolute left-6 top-6 bg-white/85 backdrop-blur-md border border-white/40 rounded-xl p-2.5 flex items-center gap-2.5 shadow-md max-w-[160px] transition-transform duration-300 hover:scale-105">
+                        <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center p-1 shadow-sm shrink-0">
+                          <img 
+                            src={activeStudent.companyLogo} 
+                            alt={activeStudent.companyName} 
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                        <div className="text-left min-w-0">
+                          <span className="text-[8px] text-gray-400 font-bold block uppercase tracking-wider">Placed at</span>
+                          <span className="text-[10.5px] font-black text-[#072A6C] block truncate">{activeStudent.companyName}</span>
+                        </div>
+                      </div>
+
+                      {/* Floating Package Offered badge */}
+                      <div className="absolute right-6 bottom-6 bg-white/85 backdrop-blur-md border border-white/40 rounded-xl p-2.5 shadow-md min-w-[120px] text-left transition-transform duration-300 hover:scale-105">
+                        <span className="text-[8px] text-gray-400 font-bold block uppercase tracking-wider">Package Offered</span>
+                        <span className="text-lg font-black text-[#D4AF37] block leading-none mt-0.5">{activeStudent.packageOffered}</span>
+                        <span className="text-[8px] text-gray-400 font-medium tracking-wide">PER ANNUM</span>
+                      </div>
                     </div>
-                    <div className="text-left min-w-0">
-                      <span className="text-[8px] text-gray-400 font-bold block uppercase tracking-wider">Placed at</span>
-                      <span className="text-[10.5px] font-black text-[#072A6C] block truncate">{activeStudent.companyName}</span>
-                    </div>
-                  </div>
 
-                  {/* Floating Package Offered badge */}
-                  <div className="absolute right-6 bottom-6 bg-white/85 backdrop-blur-md border border-white/40 rounded-xl p-2.5 shadow-md min-w-[120px] text-left transition-transform duration-300 hover:scale-105">
-                    <span className="text-[8px] text-gray-400 font-bold block uppercase tracking-wider">Package Offered</span>
-                    <span className="text-lg font-black text-[#D4AF37] block leading-none mt-0.5">{activeStudent.packageOffered}</span>
-                    <span className="text-[8px] text-gray-400 font-medium tracking-wide">PER ANNUM</span>
-                  </div>
-                </div>
-
-                {/* RIGHT COLUMN: Testimonial, Timeline, Skills & Achievements (60% Width) */}
-                <div className="lg:col-span-7 space-y-6 text-left">
-                  {/* Details Meta */}
-                  <div className="space-y-0.5">
-                    <span className="text-[9px] font-extrabold uppercase tracking-widest text-[#D4AF37]">Success Story</span>
-                    <h3 className="text-2xl font-[900] text-[#072A6C]">{activeStudent.studentName}</h3>
-                    <p className="text-[11px] text-gray-500 font-medium">
-                      {activeStudent.department} <span className="mx-1.5 text-gray-300">•</span> {activeStudent.batch}
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-                    {/* Left Sub-Column (md:col-span-7): Testimonial Quote & Timeline */}
-                    <div className="md:col-span-7 space-y-4">
-                      {/* Testimonial Quote */}
-                      <div className="relative pl-4 border-l-4 border-[#D4AF37]">
-                        <p className="text-[11px] text-gray-600 font-light italic leading-relaxed">
-                          "{activeStudent.description}"
+                    {/* RIGHT COLUMN: Testimonial, Timeline, Skills & Achievements (60% Width) */}
+                    <div className="lg:col-span-7 space-y-6 text-left">
+                      {/* Details Meta */}
+                      <div className="space-y-0.5">
+                        <span className="text-[9px] font-extrabold uppercase tracking-widest text-[#D4AF37]">Success Story</span>
+                        <h3 className="text-2xl font-[900] text-[#072A6C]">{activeStudent.studentName}</h3>
+                        <p className="text-[11px] text-gray-500 font-medium">
+                          {activeStudent.department} <span className="mx-1.5 text-gray-300">•</span> {activeStudent.batch}
                         </p>
                       </div>
 
-                      {/* SUCCESS TIMELINE */}
-                      <div className="space-y-2">
-                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider block">Journey Timeline</span>
-                        
-                        <div className="space-y-2">
-                          {/* Milestone 1 */}
-                          <div className="flex gap-2.5 bg-gray-50/40 p-2 rounded-xl border border-gray-100 hover:border-[#072A6C]/20 hover:shadow-sm transition-all duration-300">
-                            <div className="w-[18px] h-[18px] rounded-full bg-blue-50 text-[#072A6C] flex items-center justify-center text-[8.5px] font-bold shrink-0">1</div>
-                            <div>
-                              <span className="text-[10.5px] font-bold text-[#072A6C] block leading-tight">{activeStudent.milestones.learningTitle}</span>
-                              <span className="text-[9px] text-gray-500 font-light leading-normal block">{activeStudent.milestones.learningDesc}</span>
-                            </div>
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                        {/* Left Sub-Column (md:col-span-7): Testimonial Quote & Timeline */}
+                        <div className="md:col-span-7 space-y-4">
+                          {/* Testimonial Quote */}
+                          <div className="relative pl-4 border-l-4 border-[#D4AF37]">
+                            <p className="text-[11px] text-gray-600 font-light italic leading-relaxed">
+                              "{activeStudent.description}"
+                            </p>
                           </div>
 
-                          {/* Milestone 2 */}
-                          <div className="flex gap-2.5 bg-gray-50/40 p-2 rounded-xl border border-gray-100 hover:border-[#072A6C]/20 hover:shadow-sm transition-all duration-300">
-                            <div className="w-[18px] h-[18px] rounded-full bg-blue-50 text-[#072A6C] flex items-center justify-center text-[8.5px] font-bold shrink-0">2</div>
-                            <div>
-                              <span className="text-[10.5px] font-bold text-[#072A6C] block leading-tight">{activeStudent.milestones.internshipTitle}</span>
-                              <span className="text-[9px] text-gray-500 font-light leading-normal block">{activeStudent.milestones.internshipDesc}</span>
-                            </div>
-                          </div>
+                          {/* SUCCESS TIMELINE */}
+                          <div className="space-y-2">
+                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider block">Journey Timeline</span>
+                            
+                            <div className="space-y-2">
+                              {/* Milestone 1 */}
+                              <div className="flex gap-2.5 bg-gray-50/40 p-2 rounded-xl border border-gray-100 hover:border-[#072A6C]/20 hover:shadow-sm transition-all duration-300">
+                                <div className="w-[18px] h-[18px] rounded-full bg-blue-50 text-[#072A6C] flex items-center justify-center text-[8.5px] font-bold shrink-0">1</div>
+                                <div>
+                                  <span className="text-[10.5px] font-bold text-[#072A6C] block leading-tight">{activeStudent.milestones?.learningTitle || "Core Labs Work"}</span>
+                                  <span className="text-[9px] text-gray-500 font-light leading-normal block">{activeStudent.milestones?.learningDesc || "Hands-on chip design and circuit basics"}</span>
+                                </div>
+                              </div>
 
-                          {/* Milestone 3 */}
-                          <div className="flex gap-2.5 bg-gray-50/40 p-2 rounded-xl border border-gray-100 hover:border-[#072A6C]/20 hover:shadow-sm transition-all duration-300">
-                            <div className="w-[18px] h-[18px] rounded-full bg-blue-50 text-[#072A6C] flex items-center justify-center text-[8.5px] font-bold shrink-0">3</div>
-                            <div>
-                              <span className="text-[10.5px] font-bold text-[#072A6C] block leading-tight">{activeStudent.milestones.placementTitle}</span>
-                              <span className="text-[9px] text-gray-500 font-light leading-normal block">{activeStudent.milestones.placementDesc}</span>
-                            </div>
-                          </div>
+                              {/* Milestone 2 */}
+                              <div className="flex gap-2.5 bg-gray-50/40 p-2 rounded-xl border border-gray-100 hover:border-[#072A6C]/20 hover:shadow-sm transition-all duration-300">
+                                <div className="w-[18px] h-[18px] rounded-full bg-blue-50 text-[#072A6C] flex items-center justify-center text-[8.5px] font-bold shrink-0">2</div>
+                                <div>
+                                  <span className="text-[10.5px] font-bold text-[#072A6C] block leading-tight">{activeStudent.milestones?.internshipTitle || "IoT Prototype"}</span>
+                                  <span className="text-[9px] text-gray-500 font-light leading-normal block">{activeStudent.milestones?.internshipDesc || "IoT prototype design & microcontroller coding"}</span>
+                                </div>
+                              </div>
 
-                          {/* Milestone 4 */}
-                          <div className="flex gap-2.5 bg-gray-50/40 p-2 rounded-xl border border-gray-100 hover:border-[#072A6C]/20 hover:shadow-sm transition-all duration-300">
-                            <div className="w-[18px] h-[18px] rounded-full bg-blue-50 text-[#072A6C] flex items-center justify-center text-[8.5px] font-bold shrink-0">4</div>
-                            <div>
-                              <span className="text-[10.5px] font-bold text-[#072A6C] block leading-tight">{activeStudent.milestones.careerTitle}</span>
-                              <span className="text-[9px] text-gray-500 font-light leading-normal block">{activeStudent.milestones.careerDesc}</span>
+                              {/* Milestone 3 */}
+                              <div className="flex gap-2.5 bg-gray-50/40 p-2 rounded-xl border border-gray-100 hover:border-[#072A6C]/20 hover:shadow-sm transition-all duration-300">
+                                <div className="w-[18px] h-[18px] rounded-full bg-blue-50 text-[#072A6C] flex items-center justify-center text-[8.5px] font-bold shrink-0">3</div>
+                                <div>
+                                  <span className="text-[10.5px] font-bold text-[#072A6C] block leading-tight">{activeStudent.milestones?.placementTitle || "Internship Term"}</span>
+                                  <span className="text-[9px] text-gray-500 font-light leading-normal block">{activeStudent.milestones?.placementDesc || "Practical training at partner tech facility"}</span>
+                                </div>
+                              </div>
+
+                              {/* Milestone 4 */}
+                              <div className="flex gap-2.5 bg-gray-50/40 p-2 rounded-xl border border-gray-100 hover:border-[#072A6C]/20 hover:shadow-sm transition-all duration-300">
+                                <div className="w-[18px] h-[18px] rounded-full bg-blue-50 text-[#072A6C] flex items-center justify-center text-[8.5px] font-bold shrink-0">4</div>
+                                <div>
+                                  <span className="text-[10.5px] font-bold text-[#072A6C] block leading-tight">{activeStudent.milestones?.careerTitle || "Career Growth"}</span>
+                                  <span className="text-[9px] text-gray-500 font-light leading-normal block">{activeStudent.milestones?.careerDesc || "Onboarding as Systems Engineer"}</span>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
 
-                    {/* Right Sub-Column (md:col-span-5): Skills, Internship & Achievements */}
-                    <div className="md:col-span-5 space-y-4 bg-gray-50/50 border border-gray-100/85 rounded-[20px] p-4 shadow-sm h-fit">
-                      {/* Skills Learned */}
-                      <div className="space-y-1.5">
-                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider block font-sans">Skills Acquired</span>
-                        <div className="flex flex-wrap gap-1">
-                          {activeStudent.skills?.map((skill, sIdx) => (
-                            <span key={sIdx} className="text-[8.5px] font-semibold bg-white text-[#072A6C] px-2 py-0.5 border border-gray-150 rounded-md shadow-sm">
-                              {skill}
-                            </span>
+                        {/* Right Sub-Column (md:col-span-5): Skills, Internship & Achievements */}
+                        <div className="md:col-span-5 space-y-4 bg-gray-50/50 border border-gray-100/85 rounded-[20px] p-4 shadow-sm h-fit">
+                          {/* Skills Learned */}
+                          <div className="space-y-1.5">
+                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider block font-sans">Skills Acquired</span>
+                            <div className="flex flex-wrap gap-1">
+                              {activeStudent.skills?.map((skill, sIdx) => (
+                                <span key={sIdx} className="text-[8.5px] font-semibold bg-white text-[#072A6C] px-2 py-0.5 border border-gray-150 rounded-md shadow-sm">
+                                  {skill}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Internship Experience */}
+                          <div className="space-y-0.5 pt-2 border-t border-gray-200/60">
+                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider block font-sans">Internship Term</span>
+                            <span className="text-[11px] font-bold text-[#072A6C] block leading-tight">{activeStudent.internshipExp}</span>
+                          </div>
+
+                          {/* Career Achievement */}
+                          <div className="space-y-0.5 pt-2 border-t border-gray-200/60">
+                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider block font-sans">Top Achievement</span>
+                            <span className="text-[11px] font-bold text-emerald-600 block leading-tight">{activeStudent.achievement}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Slider Controls */}
+                      <div className="flex items-center justify-between pt-2">
+                        {/* Dots */}
+                        <div className="flex gap-1">
+                          {successStories.map((_, i) => (
+                            <button
+                              key={i}
+                              type="button"
+                              onClick={() => setActiveFeaturedStudent(i)}
+                              className={`w-1.5 h-1.5 rounded-full transition-all duration-300 border-none outline-none cursor-pointer ${
+                                i === (activeFeaturedStudent % successStories.length) ? "bg-[#D4AF37] w-5" : "bg-gray-300 hover:bg-gray-400"
+                              }`}
+                              aria-label={`Go to slide ${i + 1}`}
+                            />
                           ))}
                         </div>
-                      </div>
 
-                      {/* Internship Experience */}
-                      <div className="space-y-0.5 pt-2 border-t border-gray-200/60">
-                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider block font-sans">Internship Term</span>
-                        <span className="text-[11px] font-bold text-[#072A6C] block leading-tight">{activeStudent.internshipExp}</span>
-                      </div>
-
-                      {/* Career Achievement */}
-                      <div className="space-y-0.5 pt-2 border-t border-gray-200/60">
-                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider block font-sans">Top Achievement</span>
-                        <span className="text-[11px] font-bold text-emerald-600 block leading-tight">{activeStudent.achievement}</span>
+                        {/* Navigation Arrows */}
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setActiveFeaturedStudent((prev) => (prev - 1 + successStories.length) % successStories.length)}
+                            className="w-7 h-7 rounded-full border border-gray-200 hover:border-[#072A6C] flex items-center justify-center text-gray-400 hover:text-[#072A6C] transition-all bg-white cursor-pointer outline-none"
+                            aria-label="Previous story"
+                          >
+                            <ArrowRight size={12} className="rotate-180" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setActiveFeaturedStudent((prev) => (prev + 1) % successStories.length)}
+                            className="w-7 h-7 rounded-full border border-gray-200 hover:border-[#072A6C] flex items-center justify-center text-gray-400 hover:text-[#072A6C] transition-all bg-white cursor-pointer outline-none"
+                            aria-label="Next story"
+                          >
+                            <ArrowRight size={12} />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
+                );
+              })()}
 
-                  {/* Slider Controls */}
-                  <div className="flex items-center justify-between pt-2">
-                    {/* Dots */}
-                    <div className="flex gap-1">
-                      {successStories.map((_, i) => (
-                        <button
-                          key={i}
-                          type="button"
-                          onClick={() => setActiveFeaturedStudent(i)}
-                          className={`w-1.5 h-1.5 rounded-full transition-all duration-300 border-none outline-none cursor-pointer ${
-                            i === (activeFeaturedStudent % successStories.length) ? "bg-[#D4AF37] w-5" : "bg-gray-300 hover:bg-gray-400"
-                          }`}
-                          aria-label={`Go to slide ${i + 1}`}
-                        />
+              {/* INFINITE LOGO MARQUEE */}
+              {placementsContent.recruiters && placementsContent.recruiters.length > 0 && (
+                <div className="mt-20 pt-10 border-t border-gray-100/60 relative">
+                  <span className="text-[10px] font-bold text-[#072A6C] uppercase tracking-widest text-center block mb-6">
+                    {partnersHeading}
+                  </span>
+                  
+                  {/* Marquee Wrapper */}
+                  <div className="relative overflow-hidden w-full select-none py-1 group/marquee">
+                    <div className="flex gap-8 w-max animate-marquee group-hover/marquee:[animation-play-state:paused]">
+                      {/* First iteration */}
+                      {placementsContent.recruiters.map((r, i) => (
+                        <div 
+                          key={i} 
+                          onClick={() => navigate("/placements")}
+                          className="h-10 px-6 bg-white border border-gray-100 rounded-xl flex items-center justify-center shadow-sm cursor-pointer hover:shadow-md hover:border-[#072A6C]/20 transition-all duration-300"
+                        >
+                          <img src={r.logo} alt={r.name} className="h-6 w-auto object-contain max-w-[85px]" />
+                        </div>
+                      ))}
+                      {/* Duplicate iteration for seamless loop */}
+                      {placementsContent.recruiters.map((r, i) => (
+                        <div 
+                          key={`dup-${i}`} 
+                          onClick={() => navigate("/placements")}
+                          className="h-10 px-6 bg-white border border-gray-100 rounded-xl flex items-center justify-center shadow-sm cursor-pointer hover:shadow-md hover:border-[#072A6C]/20 transition-all duration-300"
+                        >
+                          <img src={r.logo} alt={r.name} className="h-6 w-auto object-contain max-w-[85px]" />
+                        </div>
                       ))}
                     </div>
-
-                    {/* Navigation Arrows */}
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => setActiveFeaturedStudent((prev) => (prev - 1 + successStories.length) % successStories.length)}
-                        className="w-7 h-7 rounded-full border border-gray-200 hover:border-[#072A6C] flex items-center justify-center text-gray-400 hover:text-[#072A6C] transition-all bg-white cursor-pointer outline-none"
-                        aria-label="Previous story"
-                      >
-                        <ArrowRight size={12} className="rotate-180" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setActiveFeaturedStudent((prev) => (prev + 1) % successStories.length)}
-                        className="w-7 h-7 rounded-full border border-gray-200 hover:border-[#072A6C] flex items-center justify-center text-gray-400 hover:text-[#072A6C] transition-all bg-white cursor-pointer outline-none"
-                        aria-label="Next story"
-                      >
-                        <ArrowRight size={12} />
-                      </button>
-                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })()}
+              )}
 
-          {/* INFINITE LOGO MARQUEE */}
-          {placementsContent.recruiters && placementsContent.recruiters.length > 0 && (
-            <div className="mt-20 pt-10 border-t border-gray-100/60 relative">
-              <span className="text-[10px] font-bold text-[#072A6C] uppercase tracking-widest text-center block mb-6">
-                Our Top Corporate Partners
-              </span>
-              
-              {/* Marquee Wrapper */}
-              <div className="relative overflow-hidden w-full select-none py-1 group/marquee">
-                <div className="flex gap-8 w-max animate-marquee group-hover/marquee:[animation-play-state:paused]">
-                  {/* First iteration */}
-                  {placementsContent.recruiters.map((r, i) => (
-                    <div 
-                      key={i} 
-                      onClick={() => navigate("/placements")}
-                      className="h-10 px-6 bg-white border border-gray-100 rounded-xl flex items-center justify-center shadow-sm cursor-pointer hover:shadow-md hover:border-[#072A6C]/20 transition-all duration-300"
-                    >
-                      <img src={r.logo} alt={r.name} className="h-6 w-auto object-contain max-w-[85px]" />
-                    </div>
-                  ))}
-                  {/* Duplicate iteration for seamless loop */}
-                  {placementsContent.recruiters.map((r, i) => (
-                    <div 
-                      key={`dup-${i}`} 
-                      onClick={() => navigate("/placements")}
-                      className="h-10 px-6 bg-white border border-gray-100 rounded-xl flex items-center justify-center shadow-sm cursor-pointer hover:shadow-md hover:border-[#072A6C]/20 transition-all duration-300"
-                    >
-                      <img src={r.logo} alt={r.name} className="h-6 w-auto object-contain max-w-[85px]" />
-                    </div>
-                  ))}
+              {/* BOTTOM STATISTICS (Dynamic from CMS) */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-16 pt-10 border-t border-gray-100/60">
+                {/* Stat Card 1 */}
+                <div className="bg-white border border-gray-100 rounded-[20px] p-6 shadow-sm flex flex-col items-center justify-center text-center transition-all duration-300 hover:shadow-md group">
+                  <div className="w-10 h-10 rounded-full bg-blue-50 text-[#072A6C] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                    <Users size={18} />
+                  </div>
+                  <AnimatedCounter value={placementsContent.stats?.[0]?.value || placementsContent.placementPercent || "92%"} />
+                  <span className="text-[10.5px] text-gray-500 font-medium block mt-1.5">{placementsContent.stats?.[0]?.label || "Students Placed"}</span>
+                </div>
+
+                {/* Stat Card 2 */}
+                <div className="bg-white border border-gray-100 rounded-[20px] p-6 shadow-sm flex flex-col items-center justify-center text-center transition-all duration-300 hover:shadow-md group">
+                  <div className="w-10 h-10 rounded-full bg-amber-50 text-[#D4AF37] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                    <Trophy size={18} />
+                  </div>
+                  <AnimatedCounter value={placementsContent.stats?.[1]?.value || placementsContent.highestPackage || "30 LPA"} />
+                  <span className="text-[10.5px] text-gray-500 font-medium block mt-1.5">{placementsContent.stats?.[1]?.label || "Highest Package"}</span>
+                </div>
+
+                {/* Stat Card 3 */}
+                <div className="bg-white border border-gray-100 rounded-[20px] p-6 shadow-sm flex flex-col items-center justify-center text-center transition-all duration-300 hover:shadow-md group">
+                  <div className="w-10 h-10 rounded-full bg-yellow-50 text-[#EAB308] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                    <Handshake size={18} />
+                  </div>
+                  <AnimatedCounter value={placementsContent.stats?.[2]?.value || placementsContent.corporatePartnersCount || "116+"} />
+                  <span className="text-[10.5px] text-gray-500 font-medium block mt-1.5">{placementsContent.stats?.[2]?.label || "Corporate Partners"}</span>
+                </div>
+
+                {/* Stat Card 4 */}
+                <div className="bg-white border border-gray-100 rounded-[20px] p-6 shadow-sm flex flex-col items-center justify-center text-center transition-all duration-300 hover:shadow-md group">
+                  <div className="w-10 h-10 rounded-full bg-green-50 text-[#10B981] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                    <GraduationCap size={18} />
+                  </div>
+                  <AnimatedCounter value={placementsContent.stats?.[3]?.value || placementsContent.placementAssistance || "100%"} />
+                  <span className="text-[10.5px] text-gray-500 font-medium block mt-1.5">{placementsContent.stats?.[3]?.label || "Placement Assistance"}</span>
                 </div>
               </div>
             </div>
-          )}
-
-          {/* BOTTOM STATISTICS (Dynamic from CMS) */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-16 pt-10 border-t border-gray-100/60">
-            {/* Stat Card 1 */}
-            <div className="bg-white border border-gray-100 rounded-[20px] p-6 shadow-sm flex flex-col items-center justify-center text-center transition-all duration-300 hover:shadow-md group">
-              <div className="w-10 h-10 rounded-full bg-blue-50 text-[#072A6C] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                <Users size={18} />
-              </div>
-              <AnimatedCounter value={placementsContent.stats?.[0]?.value || placementsContent.placementPercent || "92%"} />
-              <span className="text-[10.5px] text-gray-500 font-medium block mt-1.5">{placementsContent.stats?.[0]?.label || "Students Placed"}</span>
-            </div>
-
-            {/* Stat Card 2 */}
-            <div className="bg-white border border-gray-100 rounded-[20px] p-6 shadow-sm flex flex-col items-center justify-center text-center transition-all duration-300 hover:shadow-md group">
-              <div className="w-10 h-10 rounded-full bg-amber-50 text-[#D4AF37] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                <Trophy size={18} />
-              </div>
-              <AnimatedCounter value={placementsContent.stats?.[1]?.value || placementsContent.highestPackage || "30 LPA"} />
-              <span className="text-[10.5px] text-gray-500 font-medium block mt-1.5">{placementsContent.stats?.[1]?.label || "Highest Package"}</span>
-            </div>
-
-            {/* Stat Card 3 */}
-            <div className="bg-white border border-gray-100 rounded-[20px] p-6 shadow-sm flex flex-col items-center justify-center text-center transition-all duration-300 hover:shadow-md group">
-              <div className="w-10 h-10 rounded-full bg-yellow-50 text-[#EAB308] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                <Handshake size={18} />
-              </div>
-              <AnimatedCounter value={placementsContent.stats?.[2]?.value || placementsContent.corporatePartnersCount || "116+"} />
-              <span className="text-[10.5px] text-gray-500 font-medium block mt-1.5">{placementsContent.stats?.[2]?.label || "Corporate Partners"}</span>
-            </div>
-
-            {/* Stat Card 4 */}
-            <div className="bg-white border border-gray-100 rounded-[20px] p-6 shadow-sm flex flex-col items-center justify-center text-center transition-all duration-300 hover:shadow-md group">
-              <div className="w-10 h-10 rounded-full bg-green-50 text-[#10B981] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                <GraduationCap size={18} />
-              </div>
-              <AnimatedCounter value={placementsContent.stats?.[3]?.value || placementsContent.placementAssistance || "100%"} />
-              <span className="text-[10.5px] text-gray-500 font-medium block mt-1.5">{placementsContent.stats?.[3]?.label || "Placement Assistance"}</span>
-            </div>
-          </div>
-        </div>
-      </section>
+          </section>
+        );
+      })()}
 
       {/* ═══ ADMISSIONS OPEN 2026 STRIP ═══ */}
       {(() => {

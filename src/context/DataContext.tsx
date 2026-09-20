@@ -287,6 +287,56 @@ export interface PlacementsContent {
   recruiters: Recruiter[];
 }
 
+export interface DepartmentContact {
+  id: string;
+  name: string;
+  contactPerson?: string;
+  phones: string[];
+  emails: string[];
+  note?: string;
+  additionalPhones?: string[];
+}
+
+export interface ContactPageContent {
+  heroBadge?: string;
+  heroTitle?: string;
+  heroDescription?: string;
+
+  // Left Side: Get In Touch Cards Grid
+  getInTouchTitle?: string;
+  phoneTitle?: string;
+  phoneNumber?: string;
+  emailTitle?: string;
+  emailAddress?: string;
+  locationTitle?: string;
+  locationAddress?: string;
+  workingHoursTitle?: string;
+  workingHoursDays?: string;
+  workingHoursClosed?: string;
+
+  // Right Side: Form
+  formTitle?: string;
+  formSubmitButtonText?: string;
+  formSuccessMessage?: string;
+
+  // Department Helplines
+  departments: DepartmentContact[];
+
+  // Google Map Section
+  mapHeading?: string;
+  mapAddress?: string;
+  mapButtonText?: string;
+  mapExternalUrl?: string;
+  mapEmbedUrl?: string;
+
+  // Bottom Quick Nav & Helpdesk
+  quickNavTitle?: string;
+  helpdeskTitle?: string;
+  helpdeskDescription?: string;
+  helpdeskPhone?: string;
+  helpdeskButtonText?: string;
+}
+
 export interface EnquiryLead {
   id: string;
   name: string;
@@ -639,6 +689,9 @@ interface DataContextType {
 
   placementsContent: PlacementsContent;
   updatePlacementsContent: (data: PlacementsContent) => void;
+
+  contactPageContent: ContactPageContent;
+  updateContactPageContent: (data: ContactPageContent) => void;
 
   successStories: SuccessStory[];
   updateSuccessStories: (list: SuccessStory[]) => void;
@@ -2244,6 +2297,73 @@ export const INITIAL_PLACEMENTS_CONTENT: PlacementsContent = {
   ]
 };
 
+export const DEFAULT_CONTACT_PAGE_CONTENT: ContactPageContent = {
+  heroBadge: "CONTACT SUPPORT",
+  heroTitle: "CONTACT US",
+  heroDescription: "Whether you're a prospective student, parent, recruiter, alumnus, or visitor, we're here to help. Reach out to us for admissions, academic inquiries, placements, scholarships, or any assistance regarding campus life.",
+
+  getInTouchTitle: "GET IN TOUCH WITH US NOW!",
+  phoneTitle: "PHONE NUMBER",
+  phoneNumber: "+91 95055 05566",
+  emailTitle: "EMAIL",
+  emailAddress: "info@city.ac.in",
+  locationTitle: "LOCATION",
+  locationAddress: "A.R. Nagar, Mothadaka, Guntur, AP – 522016",
+  workingHoursTitle: "WORKING HOURS",
+  workingHoursDays: "Mon - Sat: 09:00 AM - 05:00 PM",
+  workingHoursClosed: "Sunday: Closed",
+
+  formTitle: "CONTACT US",
+  formSubmitButtonText: "SUBMIT REQUEST",
+  formSuccessMessage: "Message sent successfully! Our representative will contact you shortly.",
+
+  departments: [
+    {
+      id: "admissions",
+      name: "ADMISSIONS OFFICE",
+      phones: ["+91 88866 30340", "+91 88866 30341"],
+      emails: ["admissions@city.ac.in"]
+    },
+    {
+      id: "principal",
+      name: "PRINCIPAL'S OFFICE",
+      contactPerson: "Dr. Kolla Naga Sreenivasa Rao",
+      phones: ["+91 88866 30355", "+91 88866 30356"],
+      emails: ["principal@city.ac.in"]
+    },
+    {
+      id: "placements",
+      name: "TRAINING & PLACEMENTS",
+      phones: ["+91 88866 30342"],
+      emails: [
+        "jayachandra@city.ac.in",
+        "saipraveen@city.ac.in",
+        "paulpraveenn@city.ac.in"
+      ]
+    },
+    {
+      id: "exams",
+      name: "EXAMS & SCHOLARSHIPS",
+      phones: ["08645-326372"],
+      emails: ["exams@city.ac.in"],
+      note: "Scholarship Office",
+      additionalPhones: ["+91 98481 33748", "08645-326372"]
+    }
+  ],
+
+  mapHeading: "FIND US ON THE MAP",
+  mapAddress: "Chalapathi University (Autonomous), Abburi Raghavaiah Nagar, Mothadaka, Guntur, AP – 522016, India.",
+  mapButtonText: "Open in Google Maps",
+  mapExternalUrl: "https://www.google.com/maps/place/Chalapathi+Institute+of+Technology/@16.3752188,80.2858169,17z/data=!3m1!4b1!4m6!3m5!1s0x3a4a79679802cfad:0xe67e2a901bbd33fe!8m2!3d16.3752188!4d80.2858169!16s%2Fg%2F122r446z",
+  mapEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3826.974950454796!2d80.28581691486445!3d16.375218788685984!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a4a79679802cfad%3A0xe67e2a901bbd33fe!2sChalapathi%20Institute%20of%20Technology!5e0!3m2!1sen!2sin!4v1657523129846!5m2!1sen!2sin",
+
+  quickNavTitle: "QUICK NAVIGATION",
+  helpdeskTitle: "ADMISSION HELPDESK",
+  helpdeskDescription: "Have questions about registration, courses, or hostels? Reach our advisors directly.",
+  helpdeskPhone: "8886630355",
+  helpdeskButtonText: "Call Counselor"
+};
+
 export const INITIAL_SUCCESS_STORIES: SuccessStory[] = [
   {
     id: 1,
@@ -2655,6 +2775,25 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return local ? JSON.parse(local) : INITIAL_PLACEMENTS_CONTENT;
   });
 
+  // Contact Page Content
+  const [contactPageContent, setContactPageContent] = useState<ContactPageContent>(() => {
+    try {
+      const local = localStorage.getItem("chalapathi_contact_page");
+      if (local) {
+        return { ...DEFAULT_CONTACT_PAGE_CONTENT, ...JSON.parse(local) };
+      }
+    } catch (e) {
+      console.error("Failed to parse contact page content", e);
+    }
+    return DEFAULT_CONTACT_PAGE_CONTENT;
+  });
+
+  const updateContactPageContent = (data: ContactPageContent) => {
+    setContactPageContent(data);
+    localStorage.setItem("chalapathi_contact_page", JSON.stringify(data));
+    recordSave();
+  };
+
   // Success Stories
   const [successStories, setSuccessStories] = useState<SuccessStory[]>(() => {
     const local = localStorage.getItem("chalapathi_success_stories");
@@ -2755,6 +2894,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         const localPlacements = localStorage.getItem("chalapathi_placements");
         if (localPlacements) setPlacementsContent(JSON.parse(localPlacements));
+
+        const localContact = localStorage.getItem("chalapathi_contact_page");
+        if (localContact) setContactPageContent(JSON.parse(localContact));
 
         const localStories = localStorage.getItem("chalapathi_success_stories");
         if (localStories) setSuccessStories(JSON.parse(localStories));
@@ -3097,6 +3239,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setBoardData(INITIAL_BOARD_DATA);
       setStaffData(INITIAL_STAFF_DATA);
       setPlacementsContent(INITIAL_PLACEMENTS_CONTENT);
+      setContactPageContent(DEFAULT_CONTACT_PAGE_CONTENT);
       setSuccessStories(INITIAL_SUCCESS_STORIES);
       setHeroSlides(INITIAL_HERO_SLIDES);
       setEnquiries(INITIAL_ENQUIRIES);
@@ -3147,6 +3290,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       boardData,
       staffData,
       placementsContent,
+      contactPageContent,
       successStories,
       heroSlides,
       updateAnnouncements,
@@ -3159,6 +3303,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       updateBoardData,
       updateStaffData,
       updatePlacementsContent,
+      updateContactPageContent,
       updateSuccessStories,
       updateHeroSlides,
       showAnnouncementsDrawer,

@@ -75,6 +75,7 @@ import { PlacementsCMS } from "../components/admin/PlacementsCMS";
 import { ResearchCMS } from "../components/admin/ResearchCMS";
 import { FacultyCMS } from "../components/admin/FacultyCMS";
 import { AdmissionsCMS } from "../components/admin/AdmissionsCMS";
+import { ContactCMS } from "../components/admin/ContactCMS";
 import { 
   DEFAULT_PROGRAM_SECTIONS, 
   SectionMeta, 
@@ -468,19 +469,33 @@ export default function AdminPortal() {
   };
 
   // Placements Section
-  const placementsSection = sectionsList.find((s) => s.id === "placements");
+  const placementsSection = sectionsList.find((s) => s.id === "placements" || s.id === "certifications");
   const [placementsSectionData, setPlacementsSectionData] = useState(() => ({
     title: placementsSection?.title || "A Step Towards Success!",
     subtitle: placementsSection?.subtitle || "Building Careers. Creating Leaders.",
-    highestPackage: placementsContent.highestPackage || "₹44 LPA",
-    averagePackage: placementsContent.averagePackage || "₹6.5 LPA",
-    placementPercent: placementsContent.placementPercent || "95%",
+    highestPackage: placementsContent.highestPackage || "30 LPA",
+    averagePackage: placementsContent.averagePackage || "₹5.5 LPA",
+    placementPercent: placementsContent.placementPercent || "92%",
     buttonText: placementsSection?.buttonText || "Explore Placements",
-    buttonUrl: placementsSection?.buttonUrl || "/placements"
+    buttonUrl: placementsSection?.buttonUrl || "/placements",
+    storiesBadge: placementsSection?.extraData?.storiesBadge || "PLACEMENT SUCCESS STORIES",
+    storiesTitle: placementsSection?.extraData?.storiesTitle || "Our Students. Top Careers. Bright Futures.",
+    storiesSubtitle: placementsSection?.extraData?.storiesSubtitle || "Real stories from Chalapathi students who achieved successful careers through campus placements.",
+    partnersHeading: placementsSection?.extraData?.partnersHeading || "Our Top Corporate Partners"
   }));
 
   const savePlacementsSection = () => {
-    const updatedSections = sectionsList.map((s) => (s.id === "placements" ? { ...s, ...placementsSectionData } : s));
+    const updatedSections = sectionsList.map((s) => (s.id === "placements" || s.id === "certifications" ? { 
+      ...s, 
+      ...placementsSectionData,
+      extraData: {
+        ...(s.extraData || {}),
+        storiesBadge: placementsSectionData.storiesBadge,
+        storiesTitle: placementsSectionData.storiesTitle,
+        storiesSubtitle: placementsSectionData.storiesSubtitle,
+        partnersHeading: placementsSectionData.partnersHeading
+      }
+    } : s));
     setSectionsList(updatedSections);
     updateHomepageSections(updatedSections);
     updatePlacementsContent(placementsForm);
@@ -1206,31 +1221,45 @@ export default function AdminPortal() {
               {/* Quick Actions Card */}
               <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs text-left space-y-4">
                 <h3 className="text-sm font-black text-[#072A6C] uppercase tracking-wider">Quick Management Shortcuts</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                   <button
                     onClick={() => setActiveTab("homepage")}
-                    className="p-3.5 bg-slate-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 rounded-xl flex flex-col items-center justify-center gap-2 text-center transition-all cursor-pointer"
+                    className="p-3 bg-slate-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 rounded-xl flex flex-col items-center justify-center gap-2 text-center transition-all cursor-pointer"
                   >
                     <Sparkles size={20} className="text-[#072A6C]" />
                     <span className="text-xs font-bold text-slate-700">Homepage Sections</span>
                   </button>
                   <button
+                    onClick={() => { setActiveTab("homepage"); setActiveHomeSubTab("placements"); }}
+                    className="p-3 bg-slate-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 rounded-xl flex flex-col items-center justify-center gap-2 text-center transition-all cursor-pointer"
+                  >
+                    <Briefcase size={20} className="text-[#D4AF37]" />
+                    <span className="text-xs font-bold text-slate-700">Placement Stories</span>
+                  </button>
+                  <button
+                    onClick={() => { setActiveTab("homepage"); setActiveHomeSubTab("virtualTour"); }}
+                    className="p-3 bg-slate-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 rounded-xl flex flex-col items-center justify-center gap-2 text-center transition-all cursor-pointer"
+                  >
+                    <MapPin size={20} className="text-blue-600" />
+                    <span className="text-xs font-bold text-slate-700">Admissions & Map</span>
+                  </button>
+                  <button
                     onClick={() => setActiveTab("admissions")}
-                    className="p-3.5 bg-slate-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 rounded-xl flex flex-col items-center justify-center gap-2 text-center transition-all cursor-pointer"
+                    className="p-3 bg-slate-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 rounded-xl flex flex-col items-center justify-center gap-2 text-center transition-all cursor-pointer"
                   >
                     <UserPlus size={20} className="text-emerald-600" />
-                    <span className="text-xs font-bold text-slate-700">View Enquiries ({enquiries.length})</span>
+                    <span className="text-xs font-bold text-slate-700">Enquiries ({enquiries.length})</span>
                   </button>
                   <button
                     onClick={() => setActiveTab("news-events")}
-                    className="p-3.5 bg-slate-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 rounded-xl flex flex-col items-center justify-center gap-2 text-center transition-all cursor-pointer"
+                    className="p-3 bg-slate-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 rounded-xl flex flex-col items-center justify-center gap-2 text-center transition-all cursor-pointer"
                   >
                     <Newspaper size={20} className="text-amber-600" />
                     <span className="text-xs font-bold text-slate-700">Post News/Events</span>
                   </button>
                   <button
                     onClick={() => setActiveTab("academics")}
-                    className="p-3.5 bg-slate-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 rounded-xl flex flex-col items-center justify-center gap-2 text-center transition-all cursor-pointer"
+                    className="p-3 bg-slate-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 rounded-xl flex flex-col items-center justify-center gap-2 text-center transition-all cursor-pointer"
                   >
                     <GraduationCap size={20} className="text-purple-600" />
                     <span className="text-xs font-bold text-slate-700">Edit Programs</span>
@@ -1316,8 +1345,8 @@ export default function AdminPortal() {
                   { id: "newsEvents", label: "6. News & Events" },
                   { id: "campusLife", label: "7. Campus Life & Videos" },
                   { id: "chairman", label: "8. Chairman's Message" },
-                  { id: "placements", label: "9. Placements & Corporate Partners" },
-                  { id: "virtualTour", label: "10. Admissions Strip & Visit Us" },
+                  { id: "placements", label: "🌟 9. Placement Success Stories & Partners" },
+                  { id: "virtualTour", label: "📍 10. Admissions Open Banner & Visit Us" },
                   { id: "styling", label: "Homepage Colors & Style" }
                 ].map((st) => (
                   <button
@@ -2864,7 +2893,7 @@ export default function AdminPortal() {
                         <button
                           type="button"
                           onClick={() => {
-                            const defPlacements = DEFAULT_HOMEPAGE_SECTIONS.find((s) => s.id === "placements");
+                            const defPlacements = DEFAULT_HOMEPAGE_SECTIONS.find((s) => s.id === "placements" || s.id === "certifications");
                             setPlacementsSectionData({
                               title: defPlacements?.title || "A Step Towards Success!",
                               subtitle: defPlacements?.subtitle || "Building Careers. Creating Leaders.",
@@ -2872,7 +2901,11 @@ export default function AdminPortal() {
                               averagePackage: INITIAL_PLACEMENTS_CONTENT.averagePackage,
                               placementPercent: INITIAL_PLACEMENTS_CONTENT.placementPercent,
                               buttonText: defPlacements?.buttonText || "Explore Placements",
-                              buttonUrl: defPlacements?.buttonUrl || "/placements"
+                              buttonUrl: defPlacements?.buttonUrl || "/placements",
+                              storiesBadge: defPlacements?.extraData?.storiesBadge || "PLACEMENT SUCCESS STORIES",
+                              storiesTitle: defPlacements?.extraData?.storiesTitle || "Our Students. Top Careers. Bright Futures.",
+                              storiesSubtitle: defPlacements?.extraData?.storiesSubtitle || "Real stories from Chalapathi students who achieved successful careers through campus placements.",
+                              partnersHeading: defPlacements?.extraData?.partnersHeading || "Our Top Corporate Partners"
                             });
                             setStoriesList(INITIAL_SUCCESS_STORIES);
                             setPlacementsForm(INITIAL_PLACEMENTS_CONTENT);
@@ -2890,6 +2923,58 @@ export default function AdminPortal() {
                         >
                           <Save size={13} /> Save Placements & Stories
                         </button>
+                      </div>
+                    </div>
+
+                    {/* 1. Placement Section Main Headline & Subtitle Settings */}
+                    <div className="p-4 rounded-xl border border-gray-200 bg-slate-50/70 space-y-3">
+                      <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-1.5">
+                        <Sparkles size={14} className="text-[#D4AF37]" />
+                        Section Headers & Captions
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Top Badge Text</label>
+                          <input
+                            type="text"
+                            value={placementsSectionData.storiesBadge ?? "PLACEMENT SUCCESS STORIES"}
+                            onChange={(e) => setPlacementsSectionData({ ...placementsSectionData, storiesBadge: e.target.value })}
+                            className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold text-[#D4AF37]"
+                            placeholder="PLACEMENT SUCCESS STORIES"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Main Heading Title</label>
+                          <input
+                            type="text"
+                            value={placementsSectionData.storiesTitle ?? "Our Students. Top Careers. Bright Futures."}
+                            onChange={(e) => setPlacementsSectionData({ ...placementsSectionData, storiesTitle: e.target.value })}
+                            className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-black text-[#072A6C]"
+                            placeholder="Our Students. Top Careers. Bright Futures."
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Section Subtitle / Description</label>
+                          <input
+                            type="text"
+                            value={placementsSectionData.storiesSubtitle ?? "Real stories from Chalapathi students who achieved successful careers through campus placements."}
+                            onChange={(e) => setPlacementsSectionData({ ...placementsSectionData, storiesSubtitle: e.target.value })}
+                            className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-700"
+                            placeholder="Real stories from Chalapathi students..."
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Corporate Partners Marquee Heading</label>
+                          <input
+                            type="text"
+                            value={placementsSectionData.partnersHeading ?? "Our Top Corporate Partners"}
+                            onChange={(e) => setPlacementsSectionData({ ...placementsSectionData, partnersHeading: e.target.value })}
+                            className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold text-[#072A6C]"
+                            placeholder="Our Top Corporate Partners"
+                          />
+                        </div>
                       </div>
                     </div>
 
@@ -8634,79 +8719,7 @@ export default function AdminPortal() {
           {/* TAB 9: CONTACT US CMS                                */}
           {/* ════════════════════════════════════════════════════ */}
           {activeTab === "contact" && (
-            <div className="space-y-6 animate-fade-in text-left">
-              <SectionHeader
-                title="Contact Details & Google Maps"
-                subtitle="Edit university campus address, admission phone numbers, support emails, and map embed"
-                icon={Phone}
-                onSave={() => {
-                  updateSiteSettings(settingsForm);
-                  notifySave("Contact information updated!");
-                }}
-                saveSuccess={saveSuccess}
-                onReset={() => {
-                  setSettingsForm({
-                    ...settingsForm,
-                    contactAddress: DEFAULT_SITE_SETTINGS.contactAddress,
-                    contactPhone: DEFAULT_SITE_SETTINGS.contactPhone,
-                    contactEmail: DEFAULT_SITE_SETTINGS.contactEmail,
-                    googleMapEmbedUrl: DEFAULT_SITE_SETTINGS.googleMapEmbedUrl
-                  });
-                  updateSiteSettings({
-                    ...siteSettings,
-                    contactAddress: DEFAULT_SITE_SETTINGS.contactAddress,
-                    contactPhone: DEFAULT_SITE_SETTINGS.contactPhone,
-                    contactEmail: DEFAULT_SITE_SETTINGS.contactEmail,
-                    googleMapEmbedUrl: DEFAULT_SITE_SETTINGS.googleMapEmbedUrl
-                  });
-                  notifySave("Contact details reset to default!");
-                }}
-                resetLabel="Reset Contact"
-              />
-
-              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-gray-600 uppercase">Campus Postal Address</label>
-                  <textarea
-                    rows={2}
-                    value={settingsForm.contactAddress}
-                    onChange={(e) => setSettingsForm({ ...settingsForm, contactAddress: e.target.value })}
-                    className="w-full p-2.5 text-xs bg-slate-50 border border-gray-200 rounded-xl font-medium"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-gray-600 uppercase">Admissions Phone Numbers</label>
-                    <input
-                      type="text"
-                      value={settingsForm.contactPhone}
-                      onChange={(e) => setSettingsForm({ ...settingsForm, contactPhone: e.target.value })}
-                      className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-gray-600 uppercase">Admissions Email Address</label>
-                    <input
-                      type="email"
-                      value={settingsForm.contactEmail}
-                      onChange={(e) => setSettingsForm({ ...settingsForm, contactEmail: e.target.value })}
-                      className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-gray-600 uppercase">Google Maps Embed URL (Iframe src)</label>
-                  <input
-                    type="text"
-                    value={settingsForm.googleMapEmbedUrl}
-                    onChange={(e) => setSettingsForm({ ...settingsForm, googleMapEmbedUrl: e.target.value })}
-                    className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-mono text-gray-600"
-                  />
-                </div>
-              </div>
-            </div>
+            <ContactCMS notifySave={notifySave} />
           )}
 
           {/* ════════════════════════════════════════════════════ */}

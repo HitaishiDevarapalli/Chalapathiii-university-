@@ -6,7 +6,7 @@ import { useLocation, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, ChevronRight, ChevronDown, Home, Calendar, BookOpen, Landmark, Info, Phone, ShieldCheck, UserPlus, FileText, UploadCloud, CreditCard, Clock, ShieldAlert, UserCheck, Scale, CalendarRange, GraduationCap, Mail, User, X, Globe, QrCode, Award, ChevronLeft } from "lucide-react";
 import { ACADEMIC_PROGRAMS_STRUCTURE } from "../components/layout/Header";
-import { useData } from "../context/DataContext";
+import { useData, DEFAULT_CONTACT_PAGE_CONTENT } from "../context/DataContext";
 import GlobalCertifications from "../components/sections/GlobalCertifications";
 import { AdmissionsPortalView } from "../components/admissions/AdmissionsPortalView";
 import ProgramDetailPage from "../components/academics/ProgramDetailPage";
@@ -5032,6 +5032,9 @@ function PlacementsView() {
 }
 
 function ContactUsView() {
+  const { contactPageContent } = useData();
+  const content = contactPageContent || DEFAULT_CONTACT_PAGE_CONTENT;
+
   const [captchaText, setCaptchaText] = React.useState("p s t 5 s");
   const [formData, setFormData] = React.useState({ firstName: "", lastName: "", mobile: "", email: "", message: "", captcha: "" });
 
@@ -5050,7 +5053,7 @@ function ContactUsView() {
       alert("Invalid captcha text. Please try again.");
       return;
     }
-    alert("Message sent successfully! Our representative will contact you shortly.");
+    alert(content.formSuccessMessage || "Message sent successfully! Our representative will contact you shortly.");
     setFormData({ firstName: "", lastName: "", mobile: "", email: "", message: "", captcha: "" });
     handleCaptchaRefresh();
   };
@@ -5062,11 +5065,11 @@ function ContactUsView() {
         <div className="absolute inset-y-0 right-0 w-1/3 opacity-15 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white to-transparent pointer-events-none" />
         <div className="z-10 relative space-y-2">
           <div className="inline-flex items-center gap-2 px-2.5 py-0.5 bg-white/10 text-white rounded-lg font-bold text-[10px] uppercase tracking-wider">
-            Contact Support
+            {content.heroBadge || "CONTACT SUPPORT"}
           </div>
-          <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight">Contact Us</h1>
+          <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight">{content.heroTitle || "CONTACT US"}</h1>
           <p className="text-xs text-blue-100 font-light max-w-xl">
-            Whether you're a prospective student, parent, recruiter, alumnus, or visitor, we're here to help. Reach out to us for admissions, academic inquiries, placements, scholarships, or any assistance regarding campus life.
+            {content.heroDescription || "Whether you're a prospective student, parent, recruiter, alumnus, or visitor, we're here to help. Reach out to us for admissions, academic inquiries, placements, scholarships, or any assistance regarding campus life."}
           </p>
         </div>
       </div>
@@ -5077,7 +5080,7 @@ function ContactUsView() {
         {/* Left Side: Get In Touch Cards Grid */}
         <div className="lg:col-span-6 bg-white border border-gray-200/80 rounded-2xl overflow-hidden shadow-sm flex flex-col">
           <div className="bg-[#072A6C] text-white py-4 px-6 text-center font-extrabold text-sm uppercase tracking-wider">
-            Get In Touch With Us Now!
+            {content.getInTouchTitle || "GET IN TOUCH WITH US NOW!"}
           </div>
           
           <div className="grid grid-cols-2 gap-px bg-gray-100 flex-1">
@@ -5087,8 +5090,13 @@ function ContactUsView() {
               <span className="p-3 bg-[#072A6C]/5 text-[#072A6C] rounded-full">
                 <Phone size={20} />
               </span>
-              <span className="font-extrabold text-[#072A6C] text-xs uppercase tracking-wide">Phone Number</span>
-              <span className="text-xs font-semibold text-gray-700">+91 95055 05566</span>
+              <span className="font-extrabold text-[#072A6C] text-xs uppercase tracking-wide">{content.phoneTitle || "PHONE NUMBER"}</span>
+              <a 
+                href={`tel:${(content.phoneNumber || "+91 95055 05566").replace(/[^0-9+]/g, "")}`} 
+                className="text-xs font-semibold text-gray-700 hover:text-[#072A6C] hover:underline"
+              >
+                {content.phoneNumber || "+91 95055 05566"}
+              </a>
             </div>
 
             {/* Email */}
@@ -5096,8 +5104,13 @@ function ContactUsView() {
               <span className="p-3 bg-[#072A6C]/5 text-[#072A6C] rounded-full">
                 <Mail size={20} />
               </span>
-              <span className="font-extrabold text-[#072A6C] text-xs uppercase tracking-wide">Email</span>
-              <span className="text-xs font-semibold text-gray-700">info@city.ac.in</span>
+              <span className="font-extrabold text-[#072A6C] text-xs uppercase tracking-wide">{content.emailTitle || "EMAIL"}</span>
+              <a 
+                href={`mailto:${content.emailAddress || "info@city.ac.in"}`} 
+                className="text-xs font-semibold text-gray-700 hover:text-[#072A6C] hover:underline truncate max-w-[140px] md:max-w-[200px]"
+              >
+                {content.emailAddress || "info@city.ac.in"}
+              </a>
             </div>
 
             {/* Location */}
@@ -5105,9 +5118,9 @@ function ContactUsView() {
               <span className="p-3 bg-[#072A6C]/5 text-[#072A6C] rounded-full">
                 <Globe size={20} />
               </span>
-              <span className="font-extrabold text-[#072A6C] text-xs uppercase tracking-wide">Location</span>
-              <span className="text-[10px] text-gray-500 leading-normal font-light">
-                A.R. Nagar, Mothadaka,<br />Guntur, AP – 522016
+              <span className="font-extrabold text-[#072A6C] text-xs uppercase tracking-wide">{content.locationTitle || "LOCATION"}</span>
+              <span className="text-[10px] text-gray-500 leading-normal font-light whitespace-pre-line">
+                {content.locationAddress || "A.R. Nagar, Mothadaka,\nGuntur, AP – 522016"}
               </span>
             </div>
 
@@ -5116,10 +5129,10 @@ function ContactUsView() {
               <span className="p-3 bg-[#072A6C]/5 text-[#072A6C] rounded-full">
                 <Clock size={20} />
               </span>
-              <span className="font-extrabold text-[#072A6C] text-xs uppercase tracking-wide">Working Hours</span>
-              <span className="text-[10px] text-gray-500 font-semibold">
-                Mon - Sat: 09:00 AM - 05:00 PM<br />
-                <span className="text-[#D4AF37] font-normal">Sunday: Closed</span>
+              <span className="font-extrabold text-[#072A6C] text-xs uppercase tracking-wide">{content.workingHoursTitle || "WORKING HOURS"}</span>
+              <span className="text-[10px] text-gray-500 font-semibold leading-normal">
+                {content.workingHoursDays || "Mon - Sat: 09:00 AM - 05:00 PM"}<br />
+                <span className="text-[#D4AF37] font-normal">{content.workingHoursClosed || "Sunday: Closed"}</span>
               </span>
             </div>
 
@@ -5129,7 +5142,7 @@ function ContactUsView() {
         {/* Right Side: Message Submission Form */}
         <div className="lg:col-span-6 bg-white border border-gray-200/80 rounded-2xl overflow-hidden shadow-sm flex flex-col">
           <div className="bg-[#072A6C] text-white py-4 px-6 text-center font-extrabold text-sm uppercase tracking-wider">
-            Contact Us
+            {content.formTitle || "CONTACT US"}
           </div>
           
           <form onSubmit={handleSubmit} className="p-6 space-y-4 text-left bg-gray-50/55 flex-1">
@@ -5222,7 +5235,7 @@ function ContactUsView() {
               type="submit"
               className="w-full py-3 bg-[#D4AF37] hover:bg-[#C9A84C] text-white font-bold text-xs rounded-xl transition-colors uppercase tracking-wider flex items-center justify-center gap-2 mt-4 cursor-pointer outline-none border-none"
             >
-              Submit Request
+              {content.formSubmitButtonText || "SUBMIT REQUEST"}
             </button>
           </form>
         </div>
@@ -5231,74 +5244,53 @@ function ContactUsView() {
 
       {/* Grid of Department-wise helplines */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        
-        {/* Admissions Office */}
-        <div className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm space-y-3 flex flex-col justify-between hover:shadow-md transition-shadow">
-          <div>
-            <span className="font-extrabold text-[#072A6C] block uppercase tracking-wide text-xs border-b border-gray-100 pb-2 mb-2">Admissions Office</span>
-            <div className="space-y-1 text-xs text-gray-500 font-light">
-              <span className="block font-semibold text-gray-700">Helpline Numbers:</span>
-              <span className="block">+91 88866 30340</span>
-              <span className="block">+91 88866 30341</span>
+        {content.departments && content.departments.map((dept, idx) => (
+          <div key={dept.id || idx} className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm space-y-3 flex flex-col justify-between hover:shadow-md transition-shadow">
+            <div>
+              <span className="font-extrabold text-[#072A6C] block uppercase tracking-wide text-xs border-b border-gray-100 pb-2 mb-2">
+                {dept.name}
+              </span>
+              {dept.contactPerson && (
+                <div className="text-xs font-semibold text-[#D4AF37] mb-1">
+                  {dept.contactPerson}
+                </div>
+              )}
+              {dept.phones && dept.phones.length > 0 && (
+                <div className="space-y-1 text-xs text-gray-500 font-light">
+                  <span className="block font-semibold text-gray-700">Helpline Numbers:</span>
+                  {dept.phones.map((phone, pIdx) => (
+                    <a key={pIdx} href={`tel:${phone.replace(/[^0-9+]/g, "")}`} className="block text-gray-600 hover:text-[#072A6C] hover:underline">
+                      {phone}
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-1 text-xs text-gray-500 font-light pt-2">
+              {dept.emails && dept.emails.length > 0 && (
+                <>
+                  <span className="block font-semibold text-gray-700">Email:</span>
+                  {dept.emails.map((email, eIdx) => (
+                    <a key={eIdx} href={`mailto:${email}`} className="block text-[#D4AF37] font-medium hover:underline truncate">
+                      {email}
+                    </a>
+                  ))}
+                </>
+              )}
+              {dept.note && (
+                <div className="pt-2 border-t border-gray-100 text-xs text-gray-500 font-light">
+                  <span className="block font-semibold text-gray-700">{dept.note}:</span>
+                  {dept.additionalPhones && dept.additionalPhones.map((ap, apIdx) => (
+                    <a key={apIdx} href={`tel:${ap.replace(/[^0-9+]/g, "")}`} className="block text-gray-600 hover:text-[#072A6C] hover:underline">
+                      {ap}
+                    </a>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
-          <div className="space-y-0.5 text-xs text-gray-500 font-light pt-2">
-            <span className="block font-semibold text-gray-700">Email:</span>
-            <a href="mailto:admissions@city.ac.in" className="block text-[#D4AF37] font-semibold hover:underline truncate">admissions@city.ac.in</a>
-          </div>
-        </div>
-
-        {/* Principal's Office */}
-        <div className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm space-y-3 flex flex-col justify-between hover:shadow-md transition-shadow">
-          <div>
-            <span className="font-extrabold text-[#072A6C] block uppercase tracking-wide text-xs border-b border-gray-100 pb-2 mb-2">Principal's Office</span>
-            <div className="space-y-1 text-xs text-gray-500 font-light">
-              <span className="block font-medium text-[#D4AF37] font-semibold mb-1">Dr. Kolla Naga Sreenivasa Rao</span>
-              <span className="block font-semibold text-gray-700">Mobile Connections:</span>
-              <span className="block">+91 88866 30355</span>
-              <span className="block">+91 88866 30356</span>
-            </div>
-          </div>
-          <div className="space-y-0.5 text-xs text-gray-500 font-light pt-2">
-            <span className="block font-semibold text-gray-700">Email:</span>
-            <a href="mailto:principal@city.ac.in" className="block text-[#D4AF37] font-semibold hover:underline truncate">principal@city.ac.in</a>
-          </div>
-        </div>
-
-        {/* Placements Cell */}
-        <div className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm space-y-3 flex flex-col justify-between hover:shadow-md transition-shadow">
-          <div>
-            <span className="font-extrabold text-[#072A6C] block uppercase tracking-wide text-xs border-b border-gray-100 pb-2 mb-2">Training & Placements</span>
-            <div className="space-y-1 text-xs text-gray-500 font-light">
-              <span className="block font-semibold text-gray-700">Placement Cell Hotline:</span>
-              <span className="block">+91 88866 30342</span>
-            </div>
-          </div>
-          <div className="space-y-0.5 text-[11px] text-gray-500 font-light pt-2">
-            <span className="block font-semibold text-xs text-gray-700">Recruitment Team:</span>
-            <a href="mailto:jayachandra@city.ac.in" className="block text-[#D4AF37] hover:underline truncate">jayachandra@city.ac.in</a>
-            <a href="mailto:saipraveen@city.ac.in" className="block text-[#D4AF37] hover:underline truncate">saipraveen@city.ac.in</a>
-            <a href="mailto:paulpraveenn@city.ac.in" className="block text-[#D4AF37] hover:underline truncate">paulpraveenn@city.ac.in</a>
-          </div>
-        </div>
-
-        {/* Exam & Scholarship Section */}
-        <div className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm space-y-3 flex flex-col justify-between hover:shadow-md transition-shadow">
-          <div>
-            <span className="font-extrabold text-[#072A6C] block uppercase tracking-wide text-xs border-b border-gray-100 pb-2 mb-2">Exams & Scholarships</span>
-            <div className="space-y-1 text-xs text-gray-500 font-light">
-              <span className="block font-semibold text-gray-700">Examination Cell:</span>
-              <span className="block">08645-326372</span>
-              <a href="mailto:exams@city.ac.in" className="block text-[#D4AF37] hover:underline truncate">exams@city.ac.in</a>
-            </div>
-          </div>
-          <div className="space-y-0.5 text-xs text-gray-500 font-light pt-2 border-t border-gray-50 mt-1">
-            <span className="block font-semibold text-gray-700">Scholarship Office:</span>
-            <span className="block">+91 98481 33748</span>
-            <span className="block">08645-326372</span>
-          </div>
-        </div>
-
+        ))}
       </div>
 
       {/* Google Maps Container */}
@@ -5306,26 +5298,28 @@ function ContactUsView() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h3 className="text-sm font-extrabold text-[#072A6C] uppercase tracking-wider">
-              Find Us on the Map
+              {content.mapHeading || "FIND US ON THE MAP"}
             </h3>
             <p className="text-xs text-gray-400 font-light leading-normal">
-              Chalapathi University (Autonomous), Abburi Raghavaiah Nagar, Mothadaka, Guntur, AP – 522016, India.
+              {content.mapAddress || "Chalapathi University (Autonomous), Abburi Raghavaiah Nagar, Mothadaka, Guntur, AP – 522016, India."}
             </p>
           </div>
-          <a 
-            href="https://www.google.com/maps/place/Chalapathi+Institute+of+Technology/@16.3752188,80.2858169,17z/data=!3m1!4b1!4m6!3m5!1s0x3a4a79679802cfad:0xe67e2a901bbd33fe!8m2!3d16.3752188!4d80.2858169!16s%2Fg%2F122r446z" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="h-10 px-5 bg-[#072A6C] hover:bg-[#0c409c] text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-colors shrink-0 outline-none border-none text-center"
-          >
-            Open in Google Maps
-          </a>
+          {content.mapExternalUrl && (
+            <a 
+              href={content.mapExternalUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="h-10 px-5 bg-[#072A6C] hover:bg-[#0c409c] text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-colors shrink-0 outline-none border-none text-center"
+            >
+              {content.mapButtonText || "Open in Google Maps"}
+            </a>
+          )}
         </div>
         
         {/* Map iframe */}
         <div className="rounded-xl overflow-hidden border border-gray-200 h-64 md:h-80 shadow-inner">
           <iframe 
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3826.974950454796!2d80.28581691486445!3d16.375218788685984!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a4a79679802cfad%3A0xe67e2a901bbd33fe!2sChalapathi%20Institute%20of%20Technology!5e0!3m2!1sen!2sin!4v1657523129846!5m2!1sen!2sin" 
+            src={content.mapEmbedUrl || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3826.974950454796!2d80.28581691486445!3d16.375218788685984!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a4a79679802cfad%3A0xe67e2a901bbd33fe!2sChalapathi%20Institute%20of%20Technology!5e0!3m2!1sen!2sin!4v1657523129846!5m2!1sen!2sin"} 
             width="100%" 
             height="100%" 
             style={{ border: 0 }} 
