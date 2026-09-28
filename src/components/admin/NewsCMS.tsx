@@ -128,10 +128,10 @@ export function NewsCMS({
       {/* Subtabs Selector */}
       <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3">
         {[
-          { id: "pageSettings", label: "🌟 1. News Intro, Hero Spotlight & Highlights" },
-          { id: "articlesList", label: `📰 2. News Articles Directory & CRUD (${newsList.length})` },
-          { id: "announcements", label: `📢 3. Announcements Drawer (${announcementsList.length})` },
-          { id: "homepage", label: "🏠 4. Homepage News Slider & Feed" }
+          { id: "pageSettings", label: "1. News Intro, Hero Spotlight & Highlights" },
+          { id: "articlesList", label: `2. News Articles Directory & CRUD (${newsList.length})` },
+          { id: "announcements", label: `3. Announcements Drawer (${announcementsList.length})` },
+          { id: "homepage", label: "4. Homepage News Slider & Feed" }
         ].map((st) => (
           <button
             key={st.id}
@@ -843,7 +843,7 @@ export function NewsCMS({
                 <span className="text-xs text-gray-400 font-mono">Live on Home Page</span>
               </div>
               <h3 className="text-base font-black text-[#072A6C] uppercase">
-                🏠 Homepage News & Events Section Sync
+                Homepage News & Events Section Sync
               </h3>
               <p className="text-xs text-gray-500">
                 Directly configure what appears in the <strong>News & Events</strong> section on the homepage, including the main headline, subtitle, and featured articles in the carousel.
@@ -980,7 +980,7 @@ export function NewsCMS({
                           : "bg-white text-gray-600 border-gray-200 hover:bg-gray-100"
                       }`}
                     >
-                      {art.featured ? "⭐ Featured" : "+ Feature"}
+                      {art.featured ? "Featured" : "+ Feature"}
                     </button>
                   </div>
 

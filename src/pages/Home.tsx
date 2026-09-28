@@ -8,7 +8,7 @@ import {
   Compass, FileText, Award, Phone, MapPin, Mail, Sparkles, Building2, HelpCircle, Search, Globe,
   UserPlus, ShieldCheck, UploadCloud, CreditCard, Settings, Briefcase, Code, FlaskConical, Wrench, Atom, X, Calendar, Clock, Coffee, Bus,
   Brain, Database, Monitor, Cpu, Shield, CircuitBoard, Network, HardHat,
-  Share2, ChevronLeft, ChevronRight, ExternalLink
+  Share2, ChevronLeft, ChevronRight, ExternalLink, Volume2, VolumeX
 } from "lucide-react";
 import SEO from "../components/SEO";
 
@@ -479,8 +479,8 @@ export default function Home() {
           }
         `}} />
         <div className="marquee-inner">
-          <span className="px-4 whitespace-nowrap">🚨 Admissions Open for Academic Year 2026–27 • Applications Closing Soon • Apply Now • Scholarships Available for Meritorious Students • Limited Seats • Register Today • Highest Placement Opportunities • Admissions Open for 2026–27 •</span>
-          <span className="px-4 whitespace-nowrap" aria-hidden="true">🚨 Admissions Open for Academic Year 2026–27 • Applications Closing Soon • Apply Now • Scholarships Available for Meritorious Students • Limited Seats • Register Today • Highest Placement Opportunities • Admissions Open for 2026–27 •</span>
+          <span className="px-4 whitespace-nowrap">Admissions Open for Academic Year 2026–27 • Applications Closing Soon • Apply Now • Scholarships Available for Meritorious Students • Limited Seats • Register Today • Highest Placement Opportunities • Admissions Open for 2026–27 •</span>
+          <span className="px-4 whitespace-nowrap" aria-hidden="true">Admissions Open for Academic Year 2026–27 • Applications Closing Soon • Apply Now • Scholarships Available for Meritorious Students • Limited Seats • Register Today • Highest Placement Opportunities • Admissions Open for 2026–27 •</span>
         </div>
       </section>
 
@@ -622,43 +622,30 @@ export default function Home() {
             </h2>
             
             {/* Main Tabs (Schools) */}
-            {(() => {
-              const schoolIcons: Record<string, string> = {
-                "School of Computing Sciences": "💻",
-                "School of Engineering": "⚙️",
-                "School of Business & Management": "💼",
-                "School of Pharmacy": "⚕️",
-                "School of Law": "⚖️"
-              };
-              return (
-                <div className="flex flex-wrap justify-center gap-4 md:gap-6 w-full max-w-6xl mb-12">
-                  {schools.map((school) => {
-                    const isActive = activeSchoolTab === school;
-                    const icon = schoolIcons[school] || "🏫";
-                    return (
-                      <button
-                        key={school}
-                        onClick={() => setActiveSchoolTab(school)}
-                        className={`px-5 py-4 rounded-2xl flex items-center justify-center gap-2.5 text-[14px] sm:text-[16px] md:text-[22px] font-[700] tracking-[0.5px] border transition-all duration-300 transform active:scale-98 cursor-pointer relative ${
-                          isActive
-                            ? "bg-[#0B3D91] text-white border-transparent shadow-lg shadow-[#0B3D91]/25 scale-105 border-b-[3px] border-b-[#D4AF37]"
-                            : "bg-white text-[#0B3D91] border-[#0B3D91]/20 hover:bg-[#0B3D91] hover:text-white hover:border-transparent hover:shadow-md"
-                        }`}
-                      >
-                        <span className="text-[1.1em]">{icon}</span>
-                        <span>{school}</span>
-                        {isActive && (
-                          <motion.div
-                            layoutId="activeSchoolTabIndicator"
-                            className="absolute -bottom-1 left-8 right-8 h-[3px] bg-[#D4AF37] rounded-full"
-                          />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              );
-            })()}
+            <div className="flex flex-wrap justify-center gap-4 md:gap-6 w-full max-w-6xl mb-12">
+              {schools.map((school) => {
+                const isActive = activeSchoolTab === school;
+                return (
+                  <button
+                    key={school}
+                    onClick={() => setActiveSchoolTab(school)}
+                    className={`px-5 py-4 rounded-2xl flex items-center justify-center gap-2.5 text-[14px] sm:text-[16px] md:text-[22px] font-[700] tracking-[0.5px] border transition-all duration-300 transform active:scale-98 cursor-pointer relative ${
+                      isActive
+                        ? "bg-[#0B3D91] text-white border-transparent shadow-lg shadow-[#0B3D91]/25 scale-105 border-b-[3px] border-b-[#D4AF37]"
+                        : "bg-white text-[#0B3D91] border-[#0B3D91]/20 hover:bg-[#0B3D91] hover:text-white hover:border-transparent hover:shadow-md"
+                    }`}
+                  >
+                    <span>{school}</span>
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeSchoolTabIndicator"
+                        className="absolute -bottom-1 left-8 right-8 h-[3px] bg-[#D4AF37] rounded-full"
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
 
             {/* Sub Tabs (Departments) */}
             {activeSchoolTab && structure[activeSchoolTab] && (
@@ -1183,8 +1170,8 @@ export default function Home() {
                   }}
                   className="absolute top-4 right-4 w-7 h-7 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:bg-black/60 cursor-pointer outline-none z-10"
                 >
-                  <span className="text-[10px] font-bold">
-                    {isCampusTourMuted ? "🔇" : "🔊"}
+                  <span className="text-[10px] font-bold flex items-center justify-center">
+                    {isCampusTourMuted ? <VolumeX size={13} className="text-white" /> : <Volume2 size={13} className="text-white" />}
                   </span>
                 </button>
 

@@ -275,12 +275,12 @@ export const ResearchView: React.FC<ResearchViewProps> = ({ path = "/research" }
       <div id="research-content-block" className="space-y-4">
         <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100 rounded-2xl border border-gray-200">
           {[
-            { id: "all" as const, label: "🏛️ Complete Ecosystem", count: null },
-            { id: "thrust" as const, label: "🔬 Thrust Areas", count: data.thrustAreas.length },
-            { id: "projects" as const, label: "📑 Sponsored Projects", count: data.projects.length },
-            { id: "publications" as const, label: "📜 Publications & Patents", count: data.publications.length },
-            { id: "labs" as const, label: "🏢 Central Laboratories", count: CENTRAL_LABS.length },
-            { id: "phd" as const, label: "🎓 Ph.D. & Scholar Guidelines", count: null }
+            { id: "all" as const, label: "Complete Ecosystem", count: null },
+            { id: "thrust" as const, label: "Thrust Areas", count: data.thrustAreas.length },
+            { id: "projects" as const, label: "Sponsored Projects", count: data.projects.length },
+            { id: "publications" as const, label: "Publications & Patents", count: data.publications.length },
+            { id: "labs" as const, label: "Central Laboratories", count: CENTRAL_LABS.length },
+            { id: "phd" as const, label: "Ph.D. & Scholar Guidelines", count: null }
           ].map((tab) => {
             const isActive = activeTab === tab.id;
             return (
@@ -377,7 +377,7 @@ export const ResearchView: React.FC<ResearchViewProps> = ({ path = "/research" }
             </div>
             <div className="flex items-center gap-2">
               <span className="px-3 py-1 bg-emerald-50 text-emerald-800 text-xs font-bold rounded-lg border border-emerald-200">
-                ⭐ ₹1.09+ Crores Active Funding
+                ₹1.09+ Crores Active Funding
               </span>
             </div>
           </div>

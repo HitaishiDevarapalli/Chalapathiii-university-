@@ -347,7 +347,7 @@ export const ImageField: React.FC<ImageFieldProps> = ({
         </label>
         <div className="flex flex-wrap items-center gap-2">
           <span className="px-2 py-0.5 rounded-md bg-blue-50 text-[#072A6C] border border-blue-200/80 text-[10px] font-extrabold tracking-tight">
-            📐 Valid Size: {targetSize}
+            Target Size: {targetSize}
           </span>
           {(defaultValue || onReset) && (
             <button
@@ -474,7 +474,7 @@ export const ImageField: React.FC<ImageFieldProps> = ({
             </div>
           ) : (
             <div className="text-[10px] text-gray-500 bg-white/80 px-2.5 py-1 rounded-md border border-dashed border-gray-200 inline-flex items-center gap-2">
-              <span className="font-bold text-[#072A6C]">📐 Target Size: {targetSize}</span>
+              <span className="font-bold text-[#072A6C]">Target Size: {targetSize}</span>
               <span className="text-gray-400">• Max 8MB (PNG, JPG, WebP, SVG)</span>
             </div>
           )}
@@ -758,11 +758,11 @@ export const VideoField: React.FC<VideoFieldProps> = ({
     >
       <div className="flex flex-wrap items-center justify-between gap-1.5 pb-1 border-b border-gray-200/50">
         <label className="text-[11px] font-black text-[#072A6C] uppercase tracking-wider flex items-center gap-1.5">
-          🎬 {label}
+          {label}
         </label>
         <div className="flex items-center gap-2">
           <span className="px-2 py-0.5 rounded-md bg-blue-50 text-[#072A6C] border border-blue-200/80 text-[10px] font-extrabold tracking-tight">
-            📐 Video Limits: {recommendedLimit}
+            Video Limits: {recommendedLimit}
           </span>
           {value && (
             <button
@@ -847,7 +847,7 @@ export const VideoField: React.FC<VideoFieldProps> = ({
               videoStatus.isValid ? (
                 <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-lg text-[10.5px] font-bold text-emerald-800 shadow-xs">
                   <CheckCircle2 size={12} className="text-emerald-600 shrink-0" />
-                  <span>✅ Valid Video File</span>
+                  <span>Valid Video File</span>
                   {(videoStatus.sizeMbStr || sizeMb) && (
                     <span className="bg-emerald-100 text-emerald-900 px-1.5 py-0.5 rounded font-mono font-bold">
                       Size: {videoStatus.sizeMbStr || sizeMb}
@@ -865,7 +865,7 @@ export const VideoField: React.FC<VideoFieldProps> = ({
               )
             ) : (
               <div className="text-[10px] text-gray-500 bg-white/80 px-2.5 py-1 rounded-md border border-dashed border-gray-200">
-                <span className="font-bold text-[#072A6C]">📐 Target Limits:</span> Maximum {maxSizeMb}MB • MP4, WebM format
+                <span className="font-bold text-[#072A6C]">Target Limits:</span> Maximum {maxSizeMb}MB • MP4, WebM format
               </div>
             )}
           </div>

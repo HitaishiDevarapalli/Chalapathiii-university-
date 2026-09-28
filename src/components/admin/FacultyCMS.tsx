@@ -31,7 +31,7 @@ export const SCHOOL_DEFINITIONS: SchoolDefinition[] = [
     id: "computing",
     name: "School of Computing Sciences",
     route: "/management/faculty/computing",
-    iconName: "💻",
+    iconName: "",
     departments: [
       "Computer Science & Engineering",
       "Artificial Intelligence",
@@ -43,7 +43,7 @@ export const SCHOOL_DEFINITIONS: SchoolDefinition[] = [
     id: "engineering",
     name: "School of Engineering",
     route: "/management/faculty/engineering",
-    iconName: "⚙️",
+    iconName: "",
     departments: [
       "Electronics and Communication Engineering",
       "Civil Engineering",
@@ -54,7 +54,7 @@ export const SCHOOL_DEFINITIONS: SchoolDefinition[] = [
     id: "business",
     name: "School of Business & Management",
     route: "/management/faculty/business",
-    iconName: "📊",
+    iconName: "",
     departments: [
       "Business and Management"
     ]
@@ -214,7 +214,7 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
   };
 
   // ════════════════════════════════════════════════════════════
-  // ➕ SINGLE FACULTY ADDITION HANDLER
+  //  SINGLE FACULTY ADDITION HANDLER
   // ════════════════════════════════════════════════════════════
   const handleAddSingleFaculty = (e: React.FormEvent) => {
     e.preventDefault();
@@ -300,7 +300,7 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
   };
 
   // ════════════════════════════════════════════════════════════
-  // 🗑️ DELETE FACULTY HANDLER
+  //  DELETE FACULTY HANDLER
   // ════════════════════════════════════════════════════════════
   const handleDeleteFaculty = (dept: string, isHod: boolean, index: number, name: string) => {
     if (!window.confirm(`Are you sure you want to remove ${name} from ${dept}?`)) {
@@ -340,7 +340,7 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
   };
 
   // ════════════════════════════════════════════════════════════
-  // ✏️ SAVE EDITED FACULTY HANDLER
+  //  SAVE EDITED FACULTY HANDLER
   // ════════════════════════════════════════════════════════════
   const handleSaveEditedFaculty = () => {
     if (!editingFaculty) return;
@@ -362,7 +362,7 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
   };
 
   // ════════════════════════════════════════════════════════════
-  // 📥 EXCEL TEMPLATE DOWNLOAD HANDLER
+  //  EXCEL TEMPLATE DOWNLOAD HANDLER
   // ════════════════════════════════════════════════════════════
   const handleDownloadExcelTemplate = () => {
     const templateData = [
@@ -405,7 +405,7 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
   };
 
   // ════════════════════════════════════════════════════════════
-  // 📤 EXCEL FILE PARSER & PREVIEW HANDLER
+  //  EXCEL FILE PARSER & PREVIEW HANDLER
   // ════════════════════════════════════════════════════════════
   const handleExcelFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     setExcelError("");
@@ -483,7 +483,7 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
   };
 
   // ════════════════════════════════════════════════════════════
-  // 🚀 CONFIRM BULK EXCEL IMPORT
+  //  CONFIRM BULK EXCEL IMPORT
   // ════════════════════════════════════════════════════════════
   const handleConfirmExcelImport = () => {
     if (excelRows.length === 0) {
@@ -564,7 +564,7 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
   };
 
   // ════════════════════════════════════════════════════════════
-  // 📤 EXPORT CURRENT SCHOOL FACULTY TO EXCEL
+  //  EXPORT CURRENT SCHOOL FACULTY TO EXCEL
   // ════════════════════════════════════════════════════════════
   const handleExportCurrentSchoolToExcel = () => {
     const exportData: any[] = [];
@@ -663,7 +663,7 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
             }`}
           >
             <Award size={15} className={mainView === "homepage" ? "text-[#D4AF37]" : "text-amber-500"} />
-            <span>🏠 3. Homepage Faculty & Mentors Spotlight</span>
+            <span>3. Homepage Faculty & Mentors Spotlight</span>
           </button>
         </div>
 
@@ -755,7 +755,7 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
             })}
           </div>
 
-          {/* ➕ SINGLE FACULTY ADDITION FORM (COLLAPSIBLE / TOGGLE) */}
+          {/*  SINGLE FACULTY ADDITION FORM (COLLAPSIBLE / TOGGLE) */}
           {showSingleAddForm && (
             <form
               onSubmit={handleAddSingleFaculty}
@@ -1008,7 +1008,7 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
             </div>
           </div>
 
-          {/* 📋 FACULTY CARDS LIST */}
+          {/*  FACULTY CARDS LIST */}
           <div className="space-y-3">
             <div className="flex items-center justify-between px-1">
               <h3 className="text-xs font-black text-[#072A6C] uppercase tracking-wider">
@@ -1058,7 +1058,7 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
                               : "bg-blue-50 text-blue-800 border border-blue-100"
                           }`}
                         >
-                          {isHod ? "👑 Head of Dept (HOD)" : "Faculty"}
+                          {isHod ? "Head of Dept (HOD)" : "Faculty"}
                         </span>
                         <span className="text-[10px] text-gray-500 font-medium truncate max-w-[150px]" title={dept}>
                           {dept}
@@ -1068,24 +1068,30 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
                       {/* Main Faculty Info Row */}
                       <div className="flex items-start gap-3.5 mb-3">
                         {/* Avatar */}
-                        <div className="w-16 h-18 shrink-0 rounded-xl overflow-hidden bg-[#072A6C] border border-gray-200 shadow-inner flex items-center justify-center">
-                          {isInitials ? (
-                            <span className="text-sm font-black text-[#D4AF37] tracking-wider">
-                              {member.avatar}
-                            </span>
-                          ) : member.avatar ? (
+                        <div className="w-16 h-18 shrink-0 rounded-xl overflow-hidden bg-gradient-to-br from-slate-100 to-blue-50 border border-gray-200 shadow-inner flex flex-col items-center justify-center p-1 text-[#072A6C]">
+                          {member.avatar && (member.avatar.startsWith("data:image/") || member.avatar === "/chairman_v4.png" || (member.avatar.startsWith("http") && !member.avatar.includes("images.unsplash.com"))) ? (
                             <img
                               src={member.avatar}
                               alt={member.name}
                               className="w-full h-full object-cover"
                               onError={(e) => {
-                                (e.target as HTMLImageElement).src = `https://eu.ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=072A6C&color=fff`;
+                                (e.target as HTMLImageElement).style.display = "none";
                               }}
                             />
                           ) : (
-                            <span className="text-xs font-black text-white">
-                              {member.name.slice(0, 2).toUpperCase()}
-                            </span>
+                            <>
+                              <GraduationCap size={20} className="text-[#072A6C]/50 mb-0.5" />
+                              <span className="text-[10px] font-black font-mono tracking-wider text-[#072A6C] uppercase bg-white/90 px-1.5 py-0.5 rounded border border-[#072A6C]/10">
+                                {member.name
+                                  .replace(/^(Dr\.|Prof\.|Mr\.|Mrs\.|Smt\.|Sri)\s+/gi, "")
+                                  .split(" ")
+                                  .filter(Boolean)
+                                  .map(n => n[0])
+                                  .slice(0, 2)
+                                  .join("")
+                                  .toUpperCase() || "CU"}
+                              </span>
+                            </>
                           )}
                         </div>
 
@@ -1102,7 +1108,7 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
                           </p>
                           {member.interests && (
                             <p className="text-[10px] text-gray-500 truncate mt-1 italic" title={member.interests}>
-                              🔬 {member.interests}
+                              {member.interests}
                             </p>
                           )}
                         </div>
@@ -1157,7 +1163,7 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
       )}
 
       {/* ════════════════════════════════════════════════════════════ */}
-      {/* 🏛️ VIEW 2: BOARD OF GOVERNANCE & LEADERSHIP                 */}
+      {/*  VIEW 2: BOARD OF GOVERNANCE & LEADERSHIP                 */}
       {/* ════════════════════════════════════════════════════════════ */}
       {mainView === "board" && (
         <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
@@ -1292,7 +1298,7 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
       )}
 
       {/* ════════════════════════════════════════════════════════════ */}
-      {/* ✏️ EDIT FACULTY MODAL                                        */}
+      {/*  EDIT FACULTY MODAL                                        */}
       {/* ════════════════════════════════════════════════════════════ */}
       {editingFaculty && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
@@ -1456,7 +1462,7 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
       )}
 
       {/* ════════════════════════════════════════════════════════════ */}
-      {/* 📊 EXCEL / CSV BULK IMPORT MODAL                             */}
+      {/*  EXCEL / CSV BULK IMPORT MODAL                             */}
       {/* ════════════════════════════════════════════════════════════ */}
       {showExcelModal && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
@@ -1656,7 +1662,7 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
       )}
 
       {/* ════════════════════════════════════════════════════════════ */}
-      {/* 🏠 VIEW 3: HOMEPAGE FACULTY & MENTORS SPOTLIGHT              */}
+      {/*  VIEW 3: HOMEPAGE FACULTY & MENTORS SPOTLIGHT              */}
       {/* ════════════════════════════════════════════════════════════ */}
       {mainView === "homepage" && (
         <div className="space-y-6 text-left">
@@ -1670,7 +1676,7 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
                 <span className="text-xs text-gray-400 font-mono">Live on Home Page</span>
               </div>
               <h3 className="text-base font-black text-[#072A6C] uppercase">
-                🏠 Homepage Faculty & Mentors Spotlight
+                Homepage Faculty & Mentors Spotlight
               </h3>
               <p className="text-xs text-gray-500">
                 Configure the faculty excellence counters, spotlighted Deans/HODs, and academic leadership highlights shown on the main homepage.

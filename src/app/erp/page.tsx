@@ -103,7 +103,7 @@ export default function ErpSimulator() {
                   className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-primary-gold focus:bg-white"
                 />
                 <span className="block text-[10px] text-zinc-400 font-semibold leading-normal mt-1">
-                  💡 Hint: Enter <strong>ST-101</strong> for Student, <strong>FA-101</strong> for Faculty, <strong>PA-101</strong> for Parent, or <strong>AD-101</strong> for Admin dashboards.
+                  Hint: Enter <strong>ST-101</strong> for Student, <strong>FA-101</strong> for Faculty, <strong>PA-101</strong> for Parent, or <strong>AD-101</strong> for Admin dashboards.
                 </span>
               </div>
 

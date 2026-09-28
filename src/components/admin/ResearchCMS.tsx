@@ -111,11 +111,11 @@ export const ResearchCMS: React.FC<ResearchCMSProps> = ({ notifySave }) => {
       {/* Subtab Navigation */}
       <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-gray-200">
         {[
-          { id: "overview" as const, label: "🌟 1. Overview & Metrics", icon: Sparkles },
-          { id: "thrustAreas" as const, label: `🔬 2. Thrust Areas (${researchData.thrustAreas.length})`, icon: Microscope },
-          { id: "projects" as const, label: `📑 3. Sponsored Projects (${researchData.projects.length})`, icon: FileText },
-          { id: "publications" as const, label: `📜 4. Publications & Patents (${researchData.publications.length})`, icon: BookOpen },
-          { id: "homepage" as const, label: "🏠 5. Homepage Research Showcase & Metrics", icon: Award }
+          { id: "overview" as const, label: "1. Overview & Metrics", icon: Sparkles },
+          { id: "thrustAreas" as const, label: `2. Thrust Areas (${researchData.thrustAreas.length})`, icon: Microscope },
+          { id: "projects" as const, label: `3. Sponsored Projects (${researchData.projects.length})`, icon: FileText },
+          { id: "publications" as const, label: `4. Publications & Patents (${researchData.publications.length})`, icon: BookOpen },
+          { id: "homepage" as const, label: "5. Homepage Research Showcase & Metrics", icon: Award }
         ].map((sub) => {
           const Icon = sub.icon;
           const isActive = activeSubTab === sub.id;
@@ -596,7 +596,7 @@ export const ResearchCMS: React.FC<ResearchCMSProps> = ({ notifySave }) => {
                     key={idx}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50/70 border border-blue-200 text-[#072A6C] rounded-xl text-xs font-bold"
                   >
-                    🔬 {t.title}
+                    {t.title}
                   </span>
                 ))}
               </div>

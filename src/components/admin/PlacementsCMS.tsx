@@ -78,12 +78,12 @@ export const PlacementsCMS: React.FC<PlacementsCMSProps> = ({
       {/* Subtab Navigation - Real Page on Top, Homepage at Bottom */}
       <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-gray-200">
         {[
-          { id: "pageOverview" as const, label: "🌟 1. Page Hero & Stats (Top)", icon: Sparkles },
-          { id: "placedStudents" as const, label: `🎓 2. Placed Students (${placementsForm.placedStudents?.length || 0})`, icon: GraduationCap },
-          { id: "industries" as const, label: `🏭 3. Industries We Cater (${(placementsForm.industries || []).length})`, icon: Building },
-          { id: "programsCell" as const, label: "📋 4. Programs, Connect & Cell", icon: Layers },
-          { id: "recruiters" as const, label: `🏢 5. Recruiters Marquee (${(placementsForm.recruiters || []).length})`, icon: Handshake },
-          { id: "homepage" as const, label: "🏠 6. Homepage Placement Content (Bottom)", icon: LayoutDashboard }
+          { id: "pageOverview" as const, label: "1. Page Hero & Stats (Top)", icon: Sparkles },
+          { id: "placedStudents" as const, label: `2. Placed Students (${placementsForm.placedStudents?.length || 0})`, icon: GraduationCap },
+          { id: "industries" as const, label: `3. Industries We Cater (${(placementsForm.industries || []).length})`, icon: Building },
+          { id: "programsCell" as const, label: "4. Programs, Connect & Cell", icon: Layers },
+          { id: "recruiters" as const, label: `5. Recruiters Marquee (${(placementsForm.recruiters || []).length})`, icon: Handshake },
+          { id: "homepage" as const, label: "6. Homepage Placement Content (Bottom)", icon: LayoutDashboard }
         ].map((sub) => {
           const Icon = sub.icon;
           const isActive = placementsSubTab === sub.id;

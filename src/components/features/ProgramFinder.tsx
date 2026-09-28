@@ -275,7 +275,7 @@ export default function ProgramFinder({ onClose }: ProgramFinderProps) {
 
             {grades === "high" && (
               <div className="bg-amber-50 border border-amber-100 rounded-lg p-3 text-[11px] text-amber-800 font-medium">
-                🔥 <strong>Merit Scholarship Alert:</strong> Your score qualifies you for up to a <strong>100% Tuition Waiver</strong>. Make sure to apply soon!
+                <strong>Merit Scholarship Alert:</strong> Your score qualifies you for up to a <strong>100% Tuition Waiver</strong>. Make sure to apply soon!
               </div>
             )}
           </div>

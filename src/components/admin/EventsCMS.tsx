@@ -156,10 +156,10 @@ export function EventsCMS({
       {/* Subtabs Selector */}
       <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3">
         {[
-          { id: "eventsList", label: `📅 1. Campus Events Directory & Editor (${eventsList.length})` },
-          { id: "attendeesCRM", label: `🎟️ 2. Event Registrations & Attendees CRM (${registrationsList.length})` },
-          { id: "pageBanner", label: "🌟 3. Events Page Banner & Overview" },
-          { id: "homepage", label: "🏠 4. Homepage Events Feed & Drawer" }
+          { id: "eventsList", label: `1. Campus Events Directory & Editor (${eventsList.length})` },
+          { id: "attendeesCRM", label: `2. Event Registrations & Attendees CRM (${registrationsList.length})` },
+          { id: "pageBanner", label: "3. Events Page Banner & Overview" },
+          { id: "homepage", label: "4. Homepage Events Feed & Drawer" }
         ].map((st) => (
           <button
             key={st.id}
@@ -443,7 +443,7 @@ export function EventsCMS({
                             className="w-4 h-4 rounded text-[#072A6C] focus:ring-[#072A6C]"
                           />
                           <span className="text-xs font-bold text-gray-800">
-                            {event.registrationOpen !== false ? "🟢 Registration Active (Open)" : "🔴 Registration Closed"}
+                            {event.registrationOpen !== false ? "Registration Active (Open)" : "Registration Closed"}
                           </span>
                         </label>
                       </div>
@@ -958,7 +958,7 @@ export function EventsCMS({
                 <span className="text-xs text-gray-400 font-mono">Live on Home Page</span>
               </div>
               <h3 className="text-base font-black text-[#072A6C] uppercase">
-                🏠 Homepage Events Feed & Interactive Drawer
+                Homepage Events Feed & Interactive Drawer
               </h3>
               <p className="text-xs text-gray-500">
                 Manage the live upcoming events feed displayed on the homepage, along with the interactive full-screen event details drawer and RSVP integration.

@@ -287,11 +287,11 @@ export function SettingsCMS({
       {/* Subtabs Selector */}
       <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3">
         {[
-          { id: "appearance", label: "🎨 1. Main Website Appearance & Theme Presets" },
-          { id: "preview", label: "📱 2. Live Website Theme Preview" },
-          { id: "branding", label: "🏛️ 3. Global Branding & Identity" },
-          { id: "controls", label: "⚙️ 4. Global Website Controls" },
-          { id: "search", label: "🔍 5. Search Bar & Search Icon CMS" }
+          { id: "appearance", label: "1. Main Website Appearance & Theme Presets" },
+          { id: "preview", label: "2. Live Website Theme Preview" },
+          { id: "branding", label: "3. Global Branding & Identity" },
+          { id: "controls", label: "4. Global Website Controls" },
+          { id: "search", label: "5. Search Bar & Search Icon CMS" }
         ].map((st) => (
           <button
             key={st.id}
@@ -928,7 +928,7 @@ export function SettingsCMS({
             {/* Quick Palette Presets */}
             <div className="space-y-2">
               <label className="text-[11px] font-bold text-gray-700 uppercase tracking-wider block">
-                ⚡ Quick Harmonious Color Presets
+                Quick Harmonious Color Presets
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
                 {[

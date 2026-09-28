@@ -1150,7 +1150,7 @@ export const DEFAULT_ADMISSIONS_CONTENT: AdmissionsContent = {
         desc: "Support programs for female advancement in technology (Pragati) and differently-abled students (Saksham)."
       }
     ],
-    nspTipText: "💡 Our dedicated student support team assists eligible candidates throughout the entire application and documentation process on the National Scholarship Portal (NSP) schemes.",
+    nspTipText: "Our dedicated student support team assists eligible candidates throughout the entire application and documentation process on the National Scholarship Portal (NSP) schemes.",
     rewardsTitle: "Rewards for Academic Excellence",
     rewardsDescription: "Academic excellence is celebrated and encouraged through various recognition programs.",
     academicRewards: [
@@ -1159,7 +1159,7 @@ export const DEFAULT_ADMISSIONS_CONTENT: AdmissionsContent = {
       { title: "University Rank Recognition", subtitle: "BOS and senate felicitations" },
       { title: "Performance-Based Incentives", subtitle: "Project grants and waivers" }
     ],
-    excellenceFooterText: "★ Special Recognition for Outstanding Achievements in a Unique Way! ★"
+    excellenceFooterText: "Special Recognition for Outstanding Achievements in a Unique Way!"
   },
   enquiryPopup: {
     enabled: true,
@@ -1444,7 +1444,7 @@ export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionConfig[] = [
     name: "Admissions Alert Marquee",
     enabled: true,
     order: 2,
-    title: "🚨 Admissions Open for Academic Year 2026–27 • Applications Closing Soon • Apply Now • Scholarships Available for Meritorious Students • Limited Seats • Register Today • Highest Placement Opportunities • Admissions Open for 2026–27 •",
+    title: "Admissions Open for Academic Year 2026–27 • Applications Closing Soon • Apply Now • Scholarships Available for Meritorious Students • Limited Seats • Register Today • Highest Placement Opportunities • Admissions Open for 2026–27 •",
     bgColor: "#F4B400",
     textColor: "#0A2D6D"
   },
@@ -2773,121 +2773,107 @@ export const INITIAL_SUCCESS_STORIES: SuccessStory[] = [
 
 export const INITIAL_FACULTY_DATA: Record<string, DirectoryData> = {
   "Computer Science & Engineering": {
-    hod: { name: "Prof. P. V. Ramana", title: "HOD & Professor", edu: "Ph.D - Indian Institute of Technology Madras, India", interests: "Algorithms, Distributed Networks, Database Optimization", phone: "0863 2345432", email: "hod.cse@city.ac.in", avatar: "PVR", age: "52 Years", experience: "24 Years of Teaching & Research", idNo: "CCIT-CSE-001", department: "Computer Science & Engineering" },
+    hod: { name: "Prof. P. V. Ramana", title: "HOD & Professor", edu: "Ph.D - Indian Institute of Technology Madras, India", interests: "Algorithms, Distributed Networks, Database Optimization", phone: "0863 2345432", email: "hod.cse@city.ac.in", avatar: "", age: "52 Years", experience: "24 Years of Teaching & Research", idNo: "CCIT-CSE-001", department: "Computer Science & Engineering" },
     others: [
-      { name: "Dr. A. Kiran Kumar", title: "Professor", edu: "Ph.D - National Institute of Technology Warangal, India", interests: "Cyber Security, Network Architectures & Trust Models", phone: "0863 2345433", email: "kiran.cse@city.ac.in", avatar: "AKK", age: "45 Years", experience: "16 Years", idNo: "CCIT-CSE-002", department: "Computer Science & Engineering" },
-      { name: "Mrs. K. Jhansi", title: "Assistant Professor", edu: "M.Tech - JNTU, Kakinada", interests: "Software Engineering & Object Oriented Designs", phone: "0863 2345434", email: "jhansi.cse@city.ac.in", avatar: "KJ", age: "34 Years", experience: "8 Years", idNo: "CCIT-CSE-003", department: "Computer Science & Engineering" },
-      { name: "Dr. B. Satyanarayana", title: "Associate Professor", edu: "Ph.D - Osmania University, Hyderabad", interests: "Cloud Computing, Grid Virtualization, Distributing Computing", phone: "0863 2345435", email: "satyanarayana.cse@city.ac.in", avatar: "BS", age: "41 Years", experience: "13 Years", idNo: "CCIT-CSE-004", department: "Computer Science & Engineering" }
+      { name: "Dr. A. Kiran Kumar", title: "Professor", edu: "Ph.D - National Institute of Technology Warangal, India", interests: "Cyber Security, Network Architectures & Trust Models", phone: "0863 2345433", email: "kiran.cse@city.ac.in", avatar: "", age: "45 Years", experience: "16 Years", idNo: "CCIT-CSE-002", department: "Computer Science & Engineering" },
+      { name: "Mrs. K. Jhansi", title: "Assistant Professor", edu: "M.Tech - JNTU, Kakinada", interests: "Software Engineering & Object Oriented Designs", phone: "0863 2345434", email: "jhansi.cse@city.ac.in", avatar: "", age: "34 Years", experience: "8 Years", idNo: "CCIT-CSE-003", department: "Computer Science & Engineering" },
+      { name: "Dr. B. Satyanarayana", title: "Associate Professor", edu: "Ph.D - Osmania University, Hyderabad", interests: "Cloud Computing, Grid Virtualization, Distributing Computing", phone: "0863 2345435", email: "satyanarayana.cse@city.ac.in", avatar: "", age: "41 Years", experience: "13 Years", idNo: "CCIT-CSE-004", department: "Computer Science & Engineering" },
+      { name: "Dr. M. Himaja", title: "Assistant Professor", edu: "Ph.D - JNTU Hyderabad", interests: "Information Retrieval, Web Mining & Data Architectures", phone: "0863 2345436", email: "himaja.cse@city.ac.in", avatar: "", age: "36 Years", experience: "9 Years", idNo: "CCIT-CSE-005", department: "Computer Science & Engineering" }
     ]
   },
   "Artificial Intelligence & ML": {
-    hod: { name: "Dr. S. Mallikharjuna Rao", title: "HOD & Associate Professor", edu: "Ph.D - Andhra University", interests: "Machine Learning, Neural Networks, Natural Language Processing", phone: "0863 2345440", email: "hod.ai@city.ac.in", avatar: "SMR", age: "43 Years", experience: "15 Years", idNo: "CCIT-AI-001", department: "Artificial Intelligence & ML" },
+    hod: { name: "Dr. S. Mallikharjuna Rao", title: "HOD & Associate Professor", edu: "Ph.D - Andhra University", interests: "Machine Learning, Neural Networks, Natural Language Processing", phone: "0863 2345440", email: "hod.ai@city.ac.in", avatar: "", age: "43 Years", experience: "15 Years", idNo: "CCIT-AI-001", department: "Artificial Intelligence & ML" },
     others: [
-      { name: "Dr. K. Swetha", title: "Professor", edu: "Ph.D - University of Hyderabad", interests: "Computer Vision, Cognitive Robotics, Automation", phone: "0863 2345441", email: "swetha.ai@city.ac.in", avatar: "KS", age: "46 Years", experience: "17 Years", idNo: "CCIT-AI-002", department: "Artificial Intelligence & ML" },
-      { name: "Mr. P. Ravi", title: "Assistant Professor", edu: "M.Tech - JNTU Hyderabad", interests: "Deep Learning, Python ML frameworks, TensorFlow operations", phone: "0863 2345442", email: "ravi.ai@city.ac.in", avatar: "PR", age: "32 Years", experience: "6 Years", idNo: "CCIT-AI-003", department: "Artificial Intelligence & ML" }
+      { name: "Dr. K. Swetha", title: "Professor", edu: "Ph.D - University of Hyderabad", interests: "Computer Vision, Cognitive Robotics, Automation", phone: "0863 2345441", email: "swetha.ai@city.ac.in", avatar: "", age: "46 Years", experience: "17 Years", idNo: "CCIT-AI-002", department: "Artificial Intelligence & ML" },
+      { name: "Mr. P. Ravi", title: "Assistant Professor", edu: "M.Tech - JNTU Hyderabad", interests: "Deep Learning, Python ML frameworks, TensorFlow operations", phone: "0863 2345442", email: "ravi.ai@city.ac.in", avatar: "", age: "32 Years", experience: "6 Years", idNo: "CCIT-AI-003", department: "Artificial Intelligence & ML" },
+      { name: "Dr. R. Karthik", title: "Associate Professor", edu: "Ph.D - NIT Trichy", interests: "Reinforcement Learning, Generative AI & Robotics", phone: "0863 2345443", email: "karthik.ai@city.ac.in", avatar: "", age: "40 Years", experience: "13 Years", idNo: "CCIT-AI-004", department: "Artificial Intelligence & ML" },
+      { name: "Mrs. V. Kalyani", title: "Assistant Professor", edu: "M.Tech - JNTU Kakinada", interests: "Natural Language Processing, Sentiment Analysis", phone: "0863 2345444", email: "kalyani.ai@city.ac.in", avatar: "", age: "35 Years", experience: "8 Years", idNo: "CCIT-AI-005", department: "Artificial Intelligence & ML" }
     ]
   },
   "Data Science": {
-    hod: { name: "Dr. G. Srinivasa Rao", title: "HOD & Associate Professor", edu: "Ph.D - Acharya Nagarjuna University", interests: "Data Analytics, Big Data ecosystems, Hadoop clusters setup", phone: "0863 2345450", email: "hod.ds@city.ac.in", avatar: "GSR", age: "44 Years", experience: "16 Years", idNo: "CCIT-DS-001", department: "Data Science" },
+    hod: { name: "Dr. G. Srinivasa Rao", title: "HOD & Associate Professor", edu: "Ph.D - Acharya Nagarjuna University", interests: "Data Analytics, Big Data ecosystems, Hadoop clusters setup", phone: "0863 2345450", email: "hod.ds@city.ac.in", avatar: "", age: "44 Years", experience: "16 Years", idNo: "CCIT-DS-001", department: "Data Science" },
     others: [
-      { name: "Smt. T. Kavitha", title: "Assistant Professor", edu: "M.Tech - JNTU Kakinada", interests: "Statistical Analytics, R programming, data warehousing", phone: "0863 2345451", email: "kavitha.ds@city.ac.in", avatar: "TK", age: "35 Years", experience: "9 Years", idNo: "CCIT-DS-002", department: "Data Science" }
+      { name: "Smt. T. Kavitha", title: "Assistant Professor", edu: "M.Tech - JNTU Kakinada", interests: "Statistical Analytics, R programming, data warehousing", phone: "0863 2345451", email: "kavitha.ds@city.ac.in", avatar: "", age: "35 Years", experience: "9 Years", idNo: "CCIT-DS-002", department: "Data Science" },
+      { name: "Dr. V. Rajesh", title: "Associate Professor", edu: "Ph.D - Osmania University", interests: "Big Data Systems, Predictive Modeling & Cloud ETL", phone: "0863 2345452", email: "rajesh.ds@city.ac.in", avatar: "", age: "42 Years", experience: "14 Years", idNo: "CCIT-DS-003", department: "Data Science" },
+      { name: "Mr. K. Suresh", title: "Assistant Professor", edu: "M.Tech - ANU", interests: "Data Visualization, Tableau, Python for Data Science", phone: "0863 2345453", email: "suresh.ds@city.ac.in", avatar: "", age: "33 Years", experience: "7 Years", idNo: "CCIT-DS-004", department: "Data Science" },
+      { name: "Dr. N. Sandhya", title: "Professor", edu: "Ph.D - Andhra University", interests: "High Performance Analytics, Distributed Datastores", phone: "0863 2345454", email: "sandhya.ds@city.ac.in", avatar: "", age: "48 Years", experience: "20 Years", idNo: "CCIT-DS-005", department: "Data Science" }
     ]
   },
   "Cyber Security": {
-    hod: { name: "Dr. B. Rajesh Kumar", title: "HOD & Professor", edu: "Ph.D - IIT Kharagpur", interests: "Cryptography, Network Security, Cyber Forensics", phone: "0863 2345455", email: "hod.cyber@city.ac.in", avatar: "BRK", age: "47 Years", experience: "18 Years", idNo: "CCIT-CS-001", department: "Cyber Security" },
+    hod: { name: "Dr. B. Rajesh Kumar", title: "HOD & Professor", edu: "Ph.D - IIT Kharagpur", interests: "Cryptography, Network Security, Cyber Forensics", phone: "0863 2345455", email: "hod.cyber@city.ac.in", avatar: "", age: "47 Years", experience: "18 Years", idNo: "CCIT-CS-001", department: "Cyber Security" },
     others: [
-      { name: "Mr. K. V. Satish", title: "Assistant Professor", edu: "M.Tech - JNTU Hyderabad", interests: "Ethical Hacking, Cloud Security, Blockchain", phone: "0863 2345456", email: "satish.cyber@city.ac.in", avatar: "KVS", age: "33 Years", experience: "7 Years", idNo: "CCIT-CS-002", department: "Cyber Security" }
+      { name: "Mr. K. V. Satish", title: "Assistant Professor", edu: "M.Tech - JNTU Hyderabad", interests: "Ethical Hacking, Cloud Security, Blockchain", phone: "0863 2345456", email: "satish.cyber@city.ac.in", avatar: "", age: "33 Years", experience: "7 Years", idNo: "CCIT-CS-002", department: "Cyber Security" },
+      { name: "Dr. S. Praveen", title: "Associate Professor", edu: "Ph.D - JNTUK", interests: "Malware Analysis, Intrusion Prevention Systems", phone: "0863 2345457", email: "praveen.cyber@city.ac.in", avatar: "", age: "41 Years", experience: "12 Years", idNo: "CCIT-CS-003", department: "Cyber Security" },
+      { name: "Mrs. M. Lakshmi", title: "Assistant Professor", edu: "M.Tech - BITS Pilani", interests: "Identity Management, Information Security Governance", phone: "0863 2345458", email: "lakshmi.cyber@city.ac.in", avatar: "", age: "36 Years", experience: "9 Years", idNo: "CCIT-CS-004", department: "Cyber Security" },
+      { name: "Mr. T. Venkatesh", title: "Assistant Professor", edu: "M.Tech - JNTU", interests: "Penetration Testing, Wireless & IoT Security", phone: "0863 2345459", email: "venkatesh.cyber@city.ac.in", avatar: "", age: "34 Years", experience: "8 Years", idNo: "CCIT-CS-005", department: "Cyber Security" }
     ]
   },
   "Electronics & Communication Engineering": {
-    hod: { name: "Dr. V. Radha Krishna", title: "HOD & Professor", edu: "Ph.D - JNTU Hyderabad", interests: "VLSI Design, Embedded Systems, IoT", phone: "0863 2345460", email: "hod.ece@city.ac.in", avatar: "VRK", age: "48 Years", experience: "20 Years", idNo: "CCIT-ECE-001", department: "Electronics & Communication Engineering" },
+    hod: { name: "Dr. V. Radha Krishna", title: "HOD & Professor", edu: "Ph.D - JNTU Hyderabad", interests: "VLSI Design, Embedded Systems, IoT", phone: "0863 2345460", email: "hod.ece@city.ac.in", avatar: "", age: "48 Years", experience: "20 Years", idNo: "CCIT-ECE-001", department: "Electronics & Communication Engineering" },
     others: [
-      { name: "Mr. B. Naveen", title: "Assistant Professor", edu: "M.Tech - NIT Trichy", interests: "Signal Processing, Wireless Communications", phone: "0863 2345461", email: "naveen.ece@city.ac.in", avatar: "BN", age: "35 Years", experience: "10 Years", idNo: "CCIT-ECE-002", department: "Electronics & Communication Engineering" },
-      { name: "Dr. P. S. Rao", title: "Associate Professor", edu: "Ph.D - IIT Madras", interests: "Microstrip Antennas, Microwave Circuitry", phone: "0863 2345462", email: "psrao.ece@city.ac.in", avatar: "PSR", age: "42 Years", experience: "14 Years", idNo: "CCIT-ECE-003", department: "Electronics & Communication Engineering" }
+      { name: "Mr. B. Naveen", title: "Assistant Professor", edu: "M.Tech - NIT Trichy", interests: "Signal Processing, Wireless Communications", phone: "0863 2345461", email: "naveen.ece@city.ac.in", avatar: "", age: "35 Years", experience: "10 Years", idNo: "CCIT-ECE-002", department: "Electronics & Communication Engineering" },
+      { name: "Dr. P. S. Rao", title: "Associate Professor", edu: "Ph.D - IIT Madras", interests: "Microstrip Antennas, Microwave Circuitry", phone: "0863 2345462", email: "psrao.ece@city.ac.in", avatar: "", age: "42 Years", experience: "14 Years", idNo: "CCIT-ECE-003", department: "Electronics & Communication Engineering" },
+      { name: "Dr. K. Madhavi", title: "Professor", edu: "Ph.D - Andhra University", interests: "Digital Signal Processing, FPGA Design Systems", phone: "0863 2345463", email: "madhavi.ece@city.ac.in", avatar: "", age: "49 Years", experience: "21 Years", idNo: "CCIT-ECE-004", department: "Electronics & Communication Engineering" },
+      { name: "Mr. Ch. Srinivas", title: "Assistant Professor", edu: "M.Tech - JNTUA", interests: "Optical Communications, Sensor Architectures", phone: "0863 2345464", email: "srinivas.ece@city.ac.in", avatar: "", age: "34 Years", experience: "8 Years", idNo: "CCIT-ECE-005", department: "Electronics & Communication Engineering" }
     ]
   },
   "Civil Engineering": {
-    hod: { name: "Dr. K. Venkateswara Rao", title: "HOD & Professor", edu: "Ph.D - IIT Madras", interests: "Structural Dynamics, Earthquake Resistance, Advanced Concrete Tech", phone: "0863 2345465", email: "hod.civil@city.ac.in", avatar: "KVR", age: "51 Years", experience: "22 Years", idNo: "CCIT-CIVIL-001", department: "Civil Engineering" },
+    hod: { name: "Dr. K. Venkateswara Rao", title: "HOD & Professor", edu: "Ph.D - IIT Madras", interests: "Structural Dynamics, Earthquake Resistance, Advanced Concrete Tech", phone: "0863 2345465", email: "hod.civil@city.ac.in", avatar: "", age: "51 Years", experience: "22 Years", idNo: "CCIT-CIVIL-001", department: "Civil Engineering" },
     others: [
-      { name: "Dr. M. Ramesh", title: "Associate Professor", edu: "Ph.D - NIT Warangal", interests: "Geotechnical Engineering, Soil Mechanics, Foundation Design", phone: "0863 2345466", email: "ramesh.civil@city.ac.in", avatar: "MR", age: "43 Years", experience: "15 Years", idNo: "CCIT-CIVIL-002", department: "Civil Engineering" },
-      { name: "Mr. P. Suresh", title: "Assistant Professor", edu: "M.Tech - JNTU Kakinada", interests: "Transportation Engineering, Structural CAD Modeling", phone: "0863 2345467", email: "suresh.civil@city.ac.in", avatar: "PS", age: "34 Years", experience: "8 Years", idNo: "CCIT-CIVIL-003", department: "Civil Engineering" }
+      { name: "Dr. M. Ramesh", title: "Associate Professor", edu: "Ph.D - NIT Warangal", interests: "Geotechnical Engineering, Soil Mechanics, Foundation Design", phone: "0863 2345466", email: "ramesh.civil@city.ac.in", avatar: "", age: "43 Years", experience: "15 Years", idNo: "CCIT-CIVIL-002", department: "Civil Engineering" },
+      { name: "Mr. P. Suresh", title: "Assistant Professor", edu: "M.Tech - JNTU Kakinada", interests: "Transportation Engineering, Structural CAD Modeling", phone: "0863 2345467", email: "suresh.civil@city.ac.in", avatar: "", age: "34 Years", experience: "8 Years", idNo: "CCIT-CIVIL-003", department: "Civil Engineering" },
+      { name: "Dr. G. Divya", title: "Associate Professor", edu: "Ph.D - IIT Roorkee", interests: "Hydraulics & Water Resource Management", phone: "0863 2345468", email: "divya.civil@city.ac.in", avatar: "", age: "39 Years", experience: "11 Years", idNo: "CCIT-CIVIL-004", department: "Civil Engineering" },
+      { name: "Mr. B. Kishore", title: "Assistant Professor", edu: "M.Tech - SVU", interests: "Environmental Engineering, Green Construction Materials", phone: "0863 2345469", email: "kishore.civil@city.ac.in", avatar: "", age: "32 Years", experience: "6 Years", idNo: "CCIT-CIVIL-005", department: "Civil Engineering" }
     ]
   },
   "Basic Science & Humanities": {
-    hod: { name: "Dr. T. V. Subba Rao", title: "HOD & Professor", edu: "Ph.D - Andhra University", interests: "Applied Mathematics, Fluid Dynamics, Differential Equations", phone: "0863 2345468", email: "hod.bsh@city.ac.in", avatar: "TVS", age: "53 Years", experience: "24 Years", idNo: "CCIT-BSH-001", department: "Basic Science & Humanities" },
+    hod: { name: "Dr. T. V. Subba Rao", title: "HOD & Professor", edu: "Ph.D - Andhra University", interests: "Applied Mathematics, Fluid Dynamics, Differential Equations", phone: "0863 2345468", email: "hod.bsh@city.ac.in", avatar: "", age: "53 Years", experience: "24 Years", idNo: "CCIT-BSH-001", department: "Basic Science & Humanities" },
     others: [
-      { name: "Dr. S. Lakshmi", title: "Professor of English", edu: "Ph.D - Osmania University", interests: "Professional Communication, ELT, Phonetics", phone: "0863 2345469", email: "lakshmi.english@city.ac.in", avatar: "SL", age: "46 Years", experience: "17 Years", idNo: "CCIT-BSH-002", department: "Basic Science & Humanities" },
-      { name: "Dr. N. V. Prasad", title: "Associate Professor of Physics", edu: "Ph.D - University of Hyderabad", interests: "Materials Science, Solid State Physics, Nanomaterials", phone: "0863 2345473", email: "prasad.physics@city.ac.in", avatar: "NVP", age: "41 Years", experience: "13 Years", idNo: "CCIT-BSH-003", department: "Basic Science & Humanities" },
-      { name: "Dr. Ch. Radhika", title: "Assistant Professor of Chemistry", edu: "Ph.D - Acharya Nagarjuna University", interests: "Polymer Chemistry, Environmental Analysis", phone: "0863 2345474", email: "radhika.chem@city.ac.in", avatar: "CR", age: "36 Years", experience: "10 Years", idNo: "CCIT-BSH-004", department: "Basic Science & Humanities" }
+      { name: "Dr. S. Lakshmi", title: "Professor of English", edu: "Ph.D - Osmania University", interests: "Professional Communication, ELT, Phonetics", phone: "0863 2345469", email: "lakshmi.english@city.ac.in", avatar: "", age: "46 Years", experience: "17 Years", idNo: "CCIT-BSH-002", department: "Basic Science & Humanities" },
+      { name: "Dr. N. V. Prasad", title: "Associate Professor of Physics", edu: "Ph.D - University of Hyderabad", interests: "Materials Science, Solid State Physics, Nanomaterials", phone: "0863 2345473", email: "prasad.physics@city.ac.in", avatar: "", age: "41 Years", experience: "13 Years", idNo: "CCIT-BSH-003", department: "Basic Science & Humanities" },
+      { name: "Dr. Ch. Radhika", title: "Assistant Professor of Chemistry", edu: "Ph.D - Acharya Nagarjuna University", interests: "Polymer Chemistry, Environmental Analysis", phone: "0863 2345474", email: "radhika.chem@city.ac.in", avatar: "", age: "36 Years", experience: "10 Years", idNo: "CCIT-BSH-004", department: "Basic Science & Humanities" },
+      { name: "Dr. K. Anitha", title: "Associate Professor of Mathematics", edu: "Ph.D - ANU", interests: "Numerical Methods, Complex Variables & Linear Algebra", phone: "0863 2345475", email: "anitha.maths@city.ac.in", avatar: "", age: "43 Years", experience: "15 Years", idNo: "CCIT-BSH-005", department: "Basic Science & Humanities" }
     ]
   },
   "School of Pharmacy": {
-    hod: { name: "Prof. Dr. A. Narendra", title: "Principal & Professor", edu: "Ph.D - Indian Institute of Chemical Technology (IICT), Hyderabad", interests: "Pharmaceutics, Target-oriented Drug Delivery Systems, Nano-carriers", phone: "0863 2345470", email: "principal.pharmacy@city.ac.in", avatar: "AN", age: "55 Years", experience: "26 Years of Research", idNo: "CCIT-PH-001", department: "School of Pharmacy" },
+    hod: { name: "Prof. Dr. A. Narendra", title: "Principal & Professor", edu: "Ph.D - Indian Institute of Chemical Technology (IICT), Hyderabad", interests: "Pharmaceutics, Target-oriented Drug Delivery Systems, Nano-carriers", phone: "0863 2345470", email: "principal.pharmacy@city.ac.in", avatar: "", age: "55 Years", experience: "26 Years of Research", idNo: "CCIT-PH-001", department: "School of Pharmacy" },
     others: [
-      { name: "Dr. P. Kavitha", title: "Professor", edu: "Ph.D - JNTU Anantapur", interests: "Pharmacology, clinical drug safety audits, toxicity metrics", phone: "0863 2345471", email: "kavitha.pharmacy@city.ac.in", avatar: "PK", age: "47 Years", experience: "18 Years", idNo: "CCIT-PH-002", department: "School of Pharmacy" },
-      { name: "Smt. G. Swathi", title: "Assistant Professor", edu: "M.Pharm - Acharya Nagarjuna University", interests: "Pharmaceutical analysis, quality control procedures", phone: "0863 2345472", email: "swathi.pharmacy@city.ac.in", avatar: "GS", age: "33 Years", experience: "7 Years", idNo: "CCIT-PH-003", department: "School of Pharmacy" }
+      { name: "Dr. P. Kavitha", title: "Professor", edu: "Ph.D - JNTU Anantapur", interests: "Pharmacology, clinical drug safety audits, toxicity metrics", phone: "0863 2345471", email: "kavitha.pharmacy@city.ac.in", avatar: "", age: "47 Years", experience: "18 Years", idNo: "CCIT-PH-002", department: "School of Pharmacy" },
+      { name: "Smt. G. Swathi", title: "Assistant Professor", edu: "M.Pharm - Acharya Nagarjuna University", interests: "Pharmaceutical analysis, quality control procedures", phone: "0863 2345472", email: "swathi.pharmacy@city.ac.in", avatar: "", age: "33 Years", experience: "7 Years", idNo: "CCIT-PH-003", department: "School of Pharmacy" },
+      { name: "Dr. M. V. Ramana", title: "Associate Professor", edu: "Ph.D - Andhra University", interests: "Pharmacognosy, Herbal Formulations & Quality Metrics", phone: "0863 2345476", email: "ramana.pharmacy@city.ac.in", avatar: "", age: "44 Years", experience: "16 Years", idNo: "CCIT-PH-004", department: "School of Pharmacy" },
+      { name: "Mr. K. Prakash", title: "Assistant Professor", edu: "M.Pharm - Kakatiya University", interests: "Hospital & Clinical Pharmacy Practices", phone: "0863 2345477", email: "prakash.pharmacy@city.ac.in", avatar: "", age: "35 Years", experience: "8 Years", idNo: "CCIT-PH-005", department: "School of Pharmacy" }
     ]
   },
   "School of Management": {
-    hod: { name: "Dr. K. S. Rao", title: "Principal & Professor", edu: "Ph.D - Andhra University, Visakhapatnam", interests: "Financial Management, Corporate governance, accounting practices", phone: "0863 2345480", email: "director.mba@city.ac.in", avatar: "KSR", age: "50 Years", experience: "22 Years", idNo: "CCIT-MGMT-001", department: "School of Management" },
+    hod: { name: "Dr. K. S. Rao", title: "Principal & Professor", edu: "Ph.D - Andhra University, Visakhapatnam", interests: "Financial Management, Corporate governance, accounting practices", phone: "0863 2345480", email: "director.mba@city.ac.in", avatar: "", age: "50 Years", experience: "22 Years", idNo: "CCIT-MGMT-001", department: "School of Management" },
     others: [
-      { name: "Dr. P. S. R. Murthy", title: "Associate Professor", edu: "Ph.D - Andhra University", interests: "Marketing Management, Consumer Behaviour, Digital Retail", phone: "0863 2345482", email: "murthy.mba@city.ac.in", avatar: "PSM", age: "44 Years", experience: "17 Years", idNo: "CCIT-MGMT-003", department: "School of Management" },
-      { name: "Mr. G. Ravindra", title: "Assistant Professor", edu: "MBA - Acharya Nagarjuna University", interests: "Operations Management, Supply Chain Logistics, Quality Auditing", phone: "0863 2345483", email: "ravi.mba@city.ac.in", avatar: "GR", age: "33 Years", experience: "8 Years", idNo: "CCIT-MGMT-004", department: "School of Management" }
+      { name: "Dr. P. S. R. Murthy", title: "Associate Professor", edu: "Ph.D - Andhra University", interests: "Marketing Management, Consumer Behaviour, Digital Retail", phone: "0863 2345482", email: "murthy.mba@city.ac.in", avatar: "", age: "44 Years", experience: "17 Years", idNo: "CCIT-MGMT-003", department: "School of Management" },
+      { name: "Mr. G. Ravindra", title: "Assistant Professor", edu: "MBA - Acharya Nagarjuna University", interests: "Operations Management, Supply Chain Logistics, Quality Auditing", phone: "0863 2345483", email: "ravi.mba@city.ac.in", avatar: "", age: "33 Years", experience: "8 Years", idNo: "CCIT-MGMT-004", department: "School of Management" },
+      { name: "Dr. T. Swapna", title: "Associate Professor", edu: "Ph.D - Osmania University", interests: "Human Resource Management, Talent Analytics & OB", phone: "0863 2345484", email: "swapna.mba@city.ac.in", avatar: "", age: "41 Years", experience: "13 Years", idNo: "CCIT-MGMT-005", department: "School of Management" },
+      { name: "Mrs. V. Geetha", title: "Assistant Professor", edu: "MBA - JNTU", interests: "Business Analytics, Financial Modeling & Fintech", phone: "0863 2345485", email: "geetha.mba@city.ac.in", avatar: "", age: "34 Years", experience: "7 Years", idNo: "CCIT-MGMT-006", department: "School of Management" }
     ]
   }
 };
 
 export const INITIAL_BOARD_DATA: Record<string, DirectoryData> = {
   "Governing Council": {
-    hod: { name: "Sri Y. V. Anjaneyulu", title: "Chairman & President", edu: "Graduate in Engineering & Humanities", interests: "Administration, institutional strategy, policy planning, and infrastructure development.", phone: "0863 2345401", email: "chairman@city.ac.in", avatar: "YVA", age: "65 Years", experience: "35 Years of Administrative Leadership", idNo: "CUB-GC-001", department: "Governing Council" },
+    hod: { name: "Sri Y. V. Anjaneyulu", title: "Chairman & President", edu: "Graduate in Engineering & Humanities", interests: "Administration, institutional strategy, policy planning, and infrastructure development.", phone: "0863 2345401", email: "chairman@city.ac.in", avatar: "/chairman_v4.png", age: "65 Years", experience: "35 Years of Administrative Leadership", idNo: "CUB-GC-001", department: "Governing Council" },
     others: []
   },
   "Chancellor": {
-    hod: { name: "Sri Y. V. Anjaneyulu", title: "Chancellor", edu: "Renowned Educationist & Founder Sponsor Representative", interests: "Strategic leadership, academic governance, public relations, and legal policies.", phone: "0863 2345401", email: "chancellor@city.ac.in", avatar: "YVA", age: "65 Years", experience: "35 Years", idNo: "CUB-CH-001", department: "Office of the Chancellor" },
+    hod: { name: "Sri Y. V. Anjaneyulu", title: "Chancellor", edu: "Renowned Educationist & Founder Sponsor Representative", interests: "Strategic leadership, academic governance, public relations, and legal policies.", phone: "0863 2345401", email: "chancellor@city.ac.in", avatar: "/chairman_v4.png", age: "65 Years", experience: "35 Years", idNo: "CUB-CH-001", department: "Office of the Chancellor" },
     others: []
   },
   "Pro Chancellor": {
-    hod: { name: "Sri Y. Sujit Kumar", title: "Pro Chancellor", edu: "M.Tech & MBA - Executive Education", interests: "Institutional progress planning, modernization initiatives, and industry collaborations.", phone: "0863 2345402", email: "prochan@city.ac.in", avatar: "YSK", age: "42 Years", experience: "18 Years", idNo: "CUB-PC-001", department: "Office of the Pro Chancellor" },
+    hod: { name: "Sri Y. Sujit Kumar", title: "Pro Chancellor", edu: "M.Tech & MBA - Executive Education", interests: "Institutional progress planning, modernization initiatives, and industry collaborations.", phone: "0863 2345402", email: "prochan@city.ac.in", avatar: "", age: "42 Years", experience: "18 Years", idNo: "CUB-PC-001", department: "Office of the Pro Chancellor" },
     others: []
   },
   "Vice Chancellor": {
-    hod: { name: "Dr. K. Prasad Rao", title: "Vice Chancellor", edu: "Ph.D., Former Senior Professor - Administration & Research", interests: "Curriculum planning coordination, academic excellence, and international relations.", phone: "0863 2345403", email: "vc@city.ac.in", avatar: "KPR", age: "58 Years", experience: "30 Years", idNo: "CUB-VC-001", department: "Office of the Vice Chancellor" },
+    hod: { name: "Dr. K. Prasad Rao", title: "Vice Chancellor", edu: "Ph.D., Former Senior Professor - Administration & Research", interests: "Curriculum planning coordination, academic excellence, and international relations.", phone: "0863 2345403", email: "vc@city.ac.in", avatar: "", age: "58 Years", experience: "30 Years", idNo: "CUB-VC-001", department: "Office of the Vice Chancellor" },
     others: []
   },
   "Registrar": {
-    hod: { name: "Prof. T. Sivaramaiah", title: "Registrar", edu: "M.Tech, Ph.D. - Computer Networks", interests: "General administration, statutory records management, and legal affairs compliance.", phone: "0863 2345404", email: "registrar@city.ac.in", avatar: "TS", age: "53 Years", experience: "25 Years", idNo: "CUB-RG-001", department: "Registrar Office" },
-    others: []
-  },
-  "Dean – Academic Affairs": {
-    hod: { name: "Prof. P. V. Ramana", title: "Dean – Academic Affairs", edu: "Ph.D - Indian Institute of Technology Madras, India", interests: "Academic planning, curriculum development, and examinations coordination.", phone: "0863 2345432", email: "dean.academics@city.ac.in", avatar: "PVR", age: "52 Years", experience: "24 Years", idNo: "CUB-DA-001", department: "Academic Affairs Office" },
-    others: []
-  },
-  "Dean – Research & Innovation": {
-    hod: { name: "Dr. K. Chandrasekhar", title: "Dean – Research & Innovation", edu: "Ph.D - Indian Institute of Technology Delhi, India", interests: "Research ecosystem governance, patent filing, sponsored grants, and innovations.", phone: "0863 2345430", email: "dean.research@city.ac.in", avatar: "KC", age: "48 Years", experience: "20 Years", idNo: "CUB-DR-001", department: "Research & Development Cell" },
-    others: []
-  },
-  "Dean – Student Affairs": {
-    hod: { name: "Dr. G. Madhavi", title: "Dean – Student Affairs", edu: "Ph.D - Andhra University", interests: "Student welfare guidelines, professional clubs, and hostel supervision.", phone: "0863 2345460", email: "dean.students@city.ac.in", avatar: "GM", age: "42 Years", experience: "15 Years", idNo: "CUB-DS-001", department: "Student Affairs Cell" },
-    others: []
-  },
-  "Dean – Faculty Affairs": {
-    hod: { name: "Dr. T. Anuradha", title: "Dean – Faculty Affairs", edu: "Ph.D - BITS Pilani", interests: "Faculty recruitment, performance reviews, and professional development programs.", phone: "0863 2345470", email: "dean.faculty@city.ac.in", avatar: "TA", age: "47 Years", experience: "18 Years", idNo: "CUB-DF-001", department: "Faculty Affairs Office" },
-    others: []
-  },
-  "Dean – Admissions": {
-    hod: { name: "Dr. L. Rama Krishna", title: "Dean – Admissions", edu: "Ph.D - Osmania University", interests: "Admissions operations, merit scholarships, and student enrollment support.", phone: "0863 2345480", email: "dean.admissions@city.ac.in", avatar: "LRK", age: "51 Years", experience: "22 Years", idNo: "CUB-DAD-001", department: "Admissions Office" },
-    others: []
-  },
-  "Dean – Placements & Relations": {
-    hod: { name: "Dr. R. Karthik", title: "Dean – Placements & Relations", edu: "Ph.D - NIT Trichy", interests: "Industry relations, placements campaigns, and placement coordinates.", phone: "0863 2345461", email: "dean.placements@city.ac.in", avatar: "RK", age: "40 Years", experience: "13 Years", idNo: "CUB-DP-001", department: "Placement Office" },
-    others: []
-  },
-  "Finance Officer": {
-    hod: { name: "Sri G. Ravindra", title: "Finance Officer", edu: "MBA & Chartered Accountant", interests: "Finance supervision, budgeting audits, cash logs, and payroll systems.", phone: "0863 2345483", email: "finance@city.ac.in", avatar: "GR", age: "33 Years", experience: "8 Years", idNo: "CUB-FO-001", department: "Finance & Accounts Department" },
-    others: []
-  },
-  "Controller of Examinations": {
-    hod: { name: "Dr. V. Satish", title: "Controller of Examinations", edu: "Ph.D - JNTU Hyderabad", interests: "Examinations conduction, grading papers, and degree certification.", phone: "0863 2345471", email: "coe@city.ac.in", avatar: "VS", age: "38 Years", experience: "11 Years", idNo: "CUB-COE-001", department: "Examination Cell" },
+    hod: { name: "Prof. T. Sivaramaiah", title: "Registrar", edu: "M.Tech, Ph.D. - Computer Networks", interests: "General administration, statutory records management, and legal affairs compliance.", phone: "0863 2345404", email: "registrar@city.ac.in", avatar: "", age: "53 Years", experience: "25 Years", idNo: "CUB-RG-001", department: "Registrar Office" },
     others: []
   }
 };
@@ -3131,13 +3117,43 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Directories
   const [facultyData, setFacultyData] = useState<Record<string, DirectoryData>>(() => {
-    const local = localStorage.getItem("chalapathi_faculty_data_v2");
-    return local ? JSON.parse(local) : INITIAL_FACULTY_DATA;
+    const local = localStorage.getItem("chalapathi_faculty_data_v3");
+    if (local) {
+      try {
+        const parsed = JSON.parse(local);
+        // Ensure no unsplash urls remain
+        Object.keys(parsed).forEach(dept => {
+          if (parsed[dept]?.hod?.avatar && parsed[dept].hod.avatar.includes("images.unsplash.com")) {
+            parsed[dept].hod.avatar = "";
+          }
+          if (Array.isArray(parsed[dept]?.others)) {
+            parsed[dept].others.forEach((o: any) => {
+              if (o?.avatar && o.avatar.includes("images.unsplash.com")) {
+                o.avatar = "";
+              }
+            });
+          }
+        });
+        return parsed;
+      } catch (e) {}
+    }
+    return INITIAL_FACULTY_DATA;
   });
 
   const [boardData, setBoardData] = useState<Record<string, DirectoryData>>(() => {
-    const local = localStorage.getItem("chalapathi_board_data");
-    return local ? JSON.parse(local) : INITIAL_BOARD_DATA;
+    const local = localStorage.getItem("chalapathi_board_data_v3");
+    if (local) {
+      try {
+        const parsed = JSON.parse(local);
+        Object.keys(parsed).forEach(dept => {
+          if (parsed[dept]?.hod?.avatar && parsed[dept].hod.avatar.includes("images.unsplash.com")) {
+            parsed[dept].hod.avatar = "";
+          }
+        });
+        return parsed;
+      } catch (e) {}
+    }
+    return INITIAL_BOARD_DATA;
   });
 
   const [staffData, setStaffData] = useState<Record<string, DirectoryData>>(() => {
@@ -3487,13 +3503,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateFacultyData = (data: Record<string, DirectoryData>) => {
     setFacultyData(data);
-    localStorage.setItem("chalapathi_faculty_data_v2", JSON.stringify(data));
+    localStorage.setItem("chalapathi_faculty_data_v3", JSON.stringify(data));
     recordSave();
   };
 
   const updateBoardData = (data: Record<string, DirectoryData>) => {
     setBoardData(data);
-    localStorage.setItem("chalapathi_board_data", JSON.stringify(data));
+    localStorage.setItem("chalapathi_board_data_v3", JSON.stringify(data));
     recordSave();
   };
 

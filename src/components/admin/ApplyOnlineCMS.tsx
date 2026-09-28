@@ -285,14 +285,14 @@ export const ApplyOnlineCMS: React.FC<ApplyOnlineCMSProps> = ({ notifySave }) =>
       {/* Sub-panels Navigation Tabs */}
       <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3">
         {[
-          { id: "global", label: "🌟 Page & Global Fee", icon: Sparkles },
-          { id: "step1", label: "1️⃣ Step 1: REGISTER", icon: UserPlus },
-          { id: "step2", label: "2️⃣ Step 2: VERIFY OTP", icon: ShieldCheck },
-          { id: "step3", label: "3️⃣ Step 3: FORM DETAILS", icon: FileText },
-          { id: "step4", label: "4️⃣ Step 4: DOCUMENTS", icon: UploadCloud },
-          { id: "step5", label: "5️⃣ Step 5: PAYMENT", icon: CreditCard },
-          { id: "enquiry", label: "💬 Floating Enquiry Badge", icon: Phone },
-          { id: "preview", label: "👁️ Interactive Live Preview", icon: Eye }
+          { id: "global", label: "Page & Global Fee", icon: Sparkles },
+          { id: "step1", label: "Step 1: REGISTER", icon: UserPlus },
+          { id: "step2", label: "Step 2: VERIFY OTP", icon: ShieldCheck },
+          { id: "step3", label: "Step 3: FORM DETAILS", icon: FileText },
+          { id: "step4", label: "Step 4: DOCUMENTS", icon: UploadCloud },
+          { id: "step5", label: "Step 5: PAYMENT", icon: CreditCard },
+          { id: "enquiry", label: "Floating Enquiry Badge", icon: Phone },
+          { id: "preview", label: "Interactive Live Preview", icon: Eye }
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeSubPanel === tab.id;

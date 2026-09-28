@@ -71,13 +71,13 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
       {/* Subtab Navigation matching live page layout */}
       <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-gray-200">
         {[
-          { id: "hero" as const, label: "🌟 1. Hero Banner", icon: Sparkles },
-          { id: "getInTouch" as const, label: "📞 2. Get In Touch (4 Boxes)", icon: Phone },
-          { id: "form" as const, label: "✉️ 3. Contact Form Settings", icon: Mail },
-          { id: "departments" as const, label: `🏢 4. Department Helplines (${formState.departments?.length || 0})`, icon: Building },
-          { id: "map" as const, label: "🗺️ 5. Google Maps & Location", icon: MapPin },
-          { id: "helpdesk" as const, label: "🧭 6. Quick Nav & Helpdesk", icon: Layers },
-          { id: "homepage" as const, label: "🏠 7. Homepage Directions, Helplines & Map", icon: MapPin }
+          { id: "hero" as const, label: "1. Hero Banner", icon: Sparkles },
+          { id: "getInTouch" as const, label: "2. Get In Touch (4 Boxes)", icon: Phone },
+          { id: "form" as const, label: "3. Contact Form Settings", icon: Mail },
+          { id: "departments" as const, label: `4. Department Helplines (${formState.departments?.length || 0})`, icon: Building },
+          { id: "map" as const, label: "5. Google Maps & Location", icon: MapPin },
+          { id: "helpdesk" as const, label: "6. Quick Nav & Helpdesk", icon: Layers },
+          { id: "homepage" as const, label: "7. Homepage Directions, Helplines & Map", icon: MapPin }
         ].map((sub) => {
           const Icon = sub.icon;
           const isActive = activeSubTab === sub.id;
@@ -772,7 +772,7 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                 <span className="text-xs text-gray-400 font-mono">Live on Home Page</span>
               </div>
               <h3 className="text-base font-black text-[#072A6C] uppercase">
-                🏠 Homepage Directions, Helplines & Map Sync
+                Homepage Directions, Helplines & Map Sync
               </h3>
               <p className="text-xs text-gray-500">
                 Configure the "Find Your Way" route search bar, campus helplines, and Google Maps destination pinned at the bottom of the Chalapathi University homepage.

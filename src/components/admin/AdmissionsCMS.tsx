@@ -250,13 +250,13 @@ export const AdmissionsCMS: React.FC<AdmissionsCMSProps> = ({ notifySave }) => {
       <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3">
         {[
           { id: "portal", label: "Admissions Portal Overview", icon: Sparkles, count: `${formData.portal.steps.length} Steps` },
-          { id: "apply_online", label: "📝 Apply Online (5-Step Form CMS)", icon: UserPlus, count: "All 5 Steps" },
+          { id: "apply_online", label: "Apply Online (5-Step Form CMS)", icon: UserPlus, count: "All 5 Steps" },
           { id: "fees", label: "Academic Fee Structure", icon: FileText, count: `${formData.feeStructure.length} Streams` },
           { id: "scholarships", label: "Scholarships & Merit Schemes", icon: Award, count: "CMST & Aid" },
           { id: "popup", label: "Admission Enquiry Popup & Tab", icon: Sliders, count: "Popup CMS" },
           { id: "leads", label: "Enquiries & Lead Management", icon: Users, count: `${enquiries.length} Leads` },
           { id: "applications", label: "Online Student Applications", icon: GraduationCap, count: `${onlineApplications?.length || 0} Apps` },
-          { id: "homepage", label: "🏠 8. Homepage Admissions Strip, Ticker & Visit Us", icon: Sliders, count: "Homepage" }
+          { id: "homepage", label: "8. Homepage Admissions Strip, Ticker & Visit Us", icon: Sliders, count: "Homepage" }
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -2672,7 +2672,7 @@ export const AdmissionsCMS: React.FC<AdmissionsCMSProps> = ({ notifySave }) => {
                 <span className="text-xs text-gray-400 font-mono">Live on Home Page</span>
               </div>
               <h3 className="text-base font-black text-[#072A6C] uppercase">
-                🏠 Homepage Admissions Strip, Alert Ticker & Visit Card
+                Homepage Admissions Strip, Alert Ticker & Visit Card
               </h3>
               <p className="text-xs text-gray-500">
                 Directly configure what appears on the Chalapathi University homepage for admissions notices, the marquee alert ticker, and the campus visit block.
@@ -2688,7 +2688,7 @@ export const AdmissionsCMS: React.FC<AdmissionsCMSProps> = ({ notifySave }) => {
                     if (s.id === "ticker") {
                       return {
                         ...s,
-                        title: "🚨 Admissions Open for Academic Year 2026–27 • Applications Closing Soon • Apply Now • Scholarships Available for Meritorious Students • Limited Seats • Register Today • Highest Placement Opportunities • Admissions Open for 2026–27 •"
+                        title: "Admissions Open for Academic Year 2026–27 • Applications Closing Soon • Apply Now • Scholarships Available for Meritorious Students • Limited Seats • Register Today • Highest Placement Opportunities • Admissions Open for 2026–27 •"
                       };
                     }
                     if (s.id === "virtualTour" || s.id === "admissionsStrip") {
@@ -2733,7 +2733,7 @@ export const AdmissionsCMS: React.FC<AdmissionsCMSProps> = ({ notifySave }) => {
                 rows={3}
                 value={
                   (homepageSections || []).find((s) => s.id === "ticker")?.title ||
-                  "🚨 Admissions Open for Academic Year 2026–27 • Applications Closing Soon • Apply Now • Scholarships Available for Meritorious Students • Limited Seats • Register Today • Highest Placement Opportunities • Admissions Open for 2026–27 •"
+                  "Admissions Open for Academic Year 2026–27 • Applications Closing Soon • Apply Now • Scholarships Available for Meritorious Students • Limited Seats • Register Today • Highest Placement Opportunities • Admissions Open for 2026–27 •"
                 }
                 onChange={(e) => {
                   const newText = e.target.value;
@@ -2757,7 +2757,7 @@ export const AdmissionsCMS: React.FC<AdmissionsCMSProps> = ({ notifySave }) => {
               <div className="h-[42px] bg-[#F4B400] text-[#0A2D6D] rounded-xl flex items-center px-4 overflow-hidden font-bold text-xs shadow-inner">
                 <div className="animate-pulse flex items-center gap-2 truncate">
                   {(homepageSections || []).find((s) => s.id === "ticker")?.title ||
-                    "🚨 Admissions Open for Academic Year 2026–27 • Applications Closing Soon • Apply Now"}
+                    "Admissions Open for Academic Year 2026–27 • Applications Closing Soon • Apply Now"}
                 </div>
               </div>
             </div>

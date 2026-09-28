@@ -332,13 +332,13 @@ export default function LinksCMS({ notifySave }: { notifySave?: (msg: string) =>
       {/* Subtabs Selector */}
       <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3 bg-white p-3 rounded-2xl border shadow-2xs">
         {[
-          { id: "headerNav", label: "🧭 1. Header Main Navigation Menu", count: navItems.length },
-          { id: "quickLinks", label: "⚡ 2. Quick Links & Important Portals", count: quickPortals.length },
-          { id: "admissionsLinks", label: "📝 3. Admissions & Action Links" },
-          { id: "mediaLinks", label: "📰 4. News & Highlights Links" },
-          { id: "footerColumns", label: "👣 5. Footer Link Columns (4 Sets + Legal)" },
-          { id: "socialLinks", label: "🌐 6. Social Media & Channels" },
-          { id: "routeTester", label: "🔍 7. Universal Route Validator (45+ Pages)" }
+          { id: "headerNav", label: "1. Header Main Navigation Menu", count: navItems.length },
+          { id: "quickLinks", label: "2. Quick Links & Important Portals", count: quickPortals.length },
+          { id: "admissionsLinks", label: "3. Admissions & Action Links" },
+          { id: "mediaLinks", label: "4. News & Highlights Links" },
+          { id: "footerColumns", label: "5. Footer Link Columns (4 Sets + Legal)" },
+          { id: "socialLinks", label: "6. Social Media & Channels" },
+          { id: "routeTester", label: "7. Universal Route Validator (45+ Pages)" }
         ].map((st) => (
           <button
             key={st.id}

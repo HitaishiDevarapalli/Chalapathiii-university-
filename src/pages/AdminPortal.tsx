@@ -1780,8 +1780,8 @@ export default function AdminPortal() {
                   { id: "newsEvents", label: "6. News & Events" },
                   { id: "campusLife", label: "7. Campus Life & Videos" },
                   { id: "chairman", label: "8. Chairman's Message" },
-                  { id: "placements", label: "🌟 9. Placement Success Stories & Partners" },
-                  { id: "virtualTour", label: "📍 10. Admissions Open Banner & Visit Us" },
+                  { id: "placements", label: "9. Placement Success Stories & Partners" },
+                  { id: "virtualTour", label: "10. Admissions Open Banner & Visit Us" },
                   { id: "styling", label: "Homepage Colors & Style" }
                 ].map((st) => (
                   <button
@@ -3059,7 +3059,7 @@ export default function AdminPortal() {
                     <div className="flex items-center justify-between pb-2 border-b border-gray-200/60">
                       <div>
                         <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-1.5">
-                          ✍️ Chairman Official Signature & Identity Block
+                          Chairman Official Signature & Identity Block
                         </h4>
                         <p className="text-[11px] text-gray-500">
                           Upload custom signature image (transparent PNG/SVG) or use the classic cursive SVG signature with custom ink color.
@@ -3306,7 +3306,7 @@ export default function AdminPortal() {
                   <div className="p-5 rounded-2xl border border-blue-200 bg-blue-50/40 space-y-4">
                     <div className="flex items-center justify-between pb-2 border-b border-blue-100">
                       <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider flex items-center gap-2">
-                        🎬 2. Campus Tour Video Player & Media
+                        2. Campus Tour Video Player & Media
                       </h4>
                       <span className="text-[10.5px] font-bold text-[#072A6C] bg-white px-2.5 py-0.5 rounded-md border border-blue-200">
                         Max Recommended Limit: 50.0 MB
@@ -4414,7 +4414,7 @@ export default function AdminPortal() {
                         onClick={() => setActiveTab("placements")}
                         className="px-3 py-1.5 bg-[#072A6C] text-white text-xs font-bold rounded-lg cursor-pointer hover:bg-[#051c4a]"
                       >
-                        Go to Placements CMS ➔
+                        Go to Placements CMS &rarr;
                       </button>
                     </div>
                   </div>
@@ -4697,7 +4697,7 @@ export default function AdminPortal() {
                             <div className="flex flex-wrap items-center gap-2 pt-1">
                               {tourData.btn1Text && (
                                 <span className="h-8 px-3 bg-white text-[#072A6C] text-[10px] font-bold rounded-md inline-flex items-center gap-1 shadow-xs">
-                                  {tourData.btn1Text} ➔
+                                  {tourData.btn1Text} &rarr;
                                 </span>
                               )}
                               {tourData.btn2Text && (
@@ -5091,7 +5091,7 @@ export default function AdminPortal() {
                   { id: "vision", label: "2. Vision & Mission" },
                   { id: "leadership", label: "3. Leadership & Chairman" },
                   { id: "advantage", label: "4. Chalapathi Advantage" },
-                  { id: "homepage", label: "🏠 5. Homepage Why Choose Us, Chairman & Journey" }
+                  { id: "homepage", label: "5. Homepage Why Choose Us, Chairman & Journey" }
                 ].map((st) => (
                   <button
                     key={st.id}
@@ -6378,7 +6378,7 @@ export default function AdminPortal() {
                             interests: "Institutional planning & research governance",
                             phone: "0863 2345499",
                             email: "member@city.ac.in",
-                            avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
+                            avatar: "",
                             age: "45 Years",
                             experience: "15 Years",
                             idNo: `CUB-M-${Date.now().toString().slice(-4)}`,
@@ -6698,7 +6698,7 @@ export default function AdminPortal() {
                         <span className="text-xs text-gray-400 font-mono">Live on Home Page</span>
                       </div>
                       <h3 className="text-base font-black text-[#072A6C] uppercase">
-                        🏠 Homepage Why Choose Us, Chairman & Journey Sync
+                        Homepage Why Choose Us, Chairman & Journey Sync
                       </h3>
                       <p className="text-xs text-gray-500">
                         Edit the 6 "Why Choose Us" feature cards, Chairman's leadership spotlight, and the 30-year journey milestones that appear on the homepage.
@@ -6915,10 +6915,10 @@ export default function AdminPortal() {
               {/* Subtabs Selector */}
               <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3">
                 {[
-                  { id: "directory", label: `🎓 1. All Programs & Branches (${programsList.length})` },
-                  { id: "editor", label: `✏️ 2. Program Details & Content Editor (${currentProg?.title ? currentProg.title.split(" ")[0] : "Active"})` },
-                  { id: "branches", label: `🏛️ 3. Schools & Academic Branches (${allDepartments.length - 1})` },
-                  { id: "homepage", label: "🏠 4. Homepage Programs Explorer" }
+                  { id: "directory", label: `1. All Programs & Branches (${programsList.length})` },
+                  { id: "editor", label: `2. Program Details & Content Editor (${currentProg?.title ? currentProg.title.split(" ")[0] : "Active"})` },
+                  { id: "branches", label: `3. Schools & Academic Branches (${allDepartments.length - 1})` },
+                  { id: "homepage", label: "4. Homepage Programs Explorer" }
                 ].map((st) => (
                   <button
                     key={st.id}
@@ -7342,25 +7342,25 @@ export default function AdminPortal() {
                   {/* Program Editor Sub-Navigation Tabs */}
                   <div className="flex flex-wrap gap-1.5 bg-white p-2.5 rounded-2xl border border-gray-200 shadow-xs">
                     {[
-                      { id: "general", label: "🏷️ 1. Identity & Hero" },
-                      { id: "hod", label: "👤 2. HOD & Leadership" },
-                      { id: "vision", label: "🎯 3. Vision, Mission & PEOs" },
-                      { id: "syllabus", label: "📚 4. Syllabus & Curriculum" },
-                      { id: "faculty", label: `👨‍🏫 5. Faculty (${customFullProgram.facultyList?.length || 0})` },
-                      { id: "labs", label: `🔬 6. Laboratories (${customFullProgram.laboratories?.length || 0})` },
-                      { id: "placements", label: "💼 7. Placements & CTC" },
-                      { id: "achievements", label: `🏆 8. Achievements (${customFullProgram.achievements?.length || 0})` },
-                      { id: "library", label: "📖 10. Dept Library" },
-                      { id: "newsletters", label: `📰 11. Newsletters (${customFullProgram.newsletters?.length || 0})` },
-                      { id: "magazines", label: `📑 12. Magazines (${customFullProgram.magazines?.length || 0})` },
-                      { id: "mous", label: `🤝 13. MoUs (${customFullProgram.mous?.length || 0})` },
-                      { id: "research", label: "🔬 14. Research & Dev" },
-                      { id: "societies", label: `🌐 15. Societies (${customFullProgram.professionalSocieties?.length || 0})` },
-                      { id: "rollOfHonour", label: `🎖️ 16. Roll of Honour (${customFullProgram.rollOfHonour?.length || 0})` },
-                      { id: "funding", label: `💰 17. Grants (${customFullProgram.fundingProjects?.length || 0})` },
-                      { id: "teaching", label: `💡 18. Teaching Innovations (${customFullProgram.teachingInnovations?.length || 0})` },
-                      { id: "events", label: "🎉 19. Events & Association" },
-                      { id: "sections", label: "⚙️ 20. 19 Dimensions Order" }
+                      { id: "general", label: "1. Identity & Hero" },
+                      { id: "hod", label: "2. HOD & Leadership" },
+                      { id: "vision", label: "3. Vision, Mission & PEOs" },
+                      { id: "syllabus", label: "4. Syllabus & Curriculum" },
+                      { id: "faculty", label: `5. Faculty (${customFullProgram.facultyList?.length || 0})` },
+                      { id: "labs", label: `6. Laboratories (${customFullProgram.laboratories?.length || 0})` },
+                      { id: "placements", label: "7. Placements & CTC" },
+                      { id: "achievements", label: `8. Achievements (${customFullProgram.achievements?.length || 0})` },
+                      { id: "library", label: "10. Dept Library" },
+                      { id: "newsletters", label: `11. Newsletters (${customFullProgram.newsletters?.length || 0})` },
+                      { id: "magazines", label: `12. Magazines (${customFullProgram.magazines?.length || 0})` },
+                      { id: "mous", label: `13. MoUs (${customFullProgram.mous?.length || 0})` },
+                      { id: "research", label: "14. Research & Dev" },
+                      { id: "societies", label: `15. Societies (${customFullProgram.professionalSocieties?.length || 0})` },
+                      { id: "rollOfHonour", label: `16. Roll of Honour (${customFullProgram.rollOfHonour?.length || 0})` },
+                      { id: "funding", label: `17. Grants (${customFullProgram.fundingProjects?.length || 0})` },
+                      { id: "teaching", label: `18. Teaching Innovations (${customFullProgram.teachingInnovations?.length || 0})` },
+                      { id: "events", label: "19. Events & Association" },
+                      { id: "sections", label: "20. 19 Dimensions Order" }
                     ].map((st) => (
                       <button
                         key={st.id}
@@ -9442,7 +9442,7 @@ export default function AdminPortal() {
                         Academic Organization
                       </span>
                       <h3 className="text-base font-black text-[#072A6C] uppercase mt-1">
-                        🏛️ University Academic Schools & Departments
+                        University Academic Schools & Departments
                       </h3>
                       <p className="text-xs text-gray-500">
                         Overview of faculties, academic divisions, and degree distributions across the university
@@ -9622,7 +9622,7 @@ export default function AdminPortal() {
                     <span className="text-xs text-gray-400 font-mono">Live on Home Page</span>
                   </div>
                   <h3 className="text-base font-black text-[#072A6C] uppercase">
-                    🏠 Homepage Schools & Programs Explorer Sync
+                    Homepage Schools & Programs Explorer Sync
                   </h3>
                   <p className="text-xs text-gray-500">
                     Configure school tabs, department categories, and program cards shown on the university homepage explorer. Add, rename, or delete any section.
@@ -10146,7 +10146,7 @@ export default function AdminPortal() {
                   <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
                     <div className="flex items-center justify-between pb-2 border-b border-gray-100">
                       <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider flex items-center gap-2">
-                        <span>🖼️ 1. Hero Banner Header & Background</span>
+                        <span>1. Hero Banner Header & Background</span>
                       </h4>
                     </div>
 
@@ -10186,7 +10186,7 @@ export default function AdminPortal() {
                   <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
                     <div className="flex items-center justify-between pb-2 border-b border-gray-100">
                       <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider flex items-center gap-2">
-                        <span>🎬 2. Campus Guided Tour Video Player</span>
+                        <span>2. Campus Guided Tour Video Player</span>
                       </h4>
                       <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-gray-700">
                         <input
@@ -10253,7 +10253,7 @@ export default function AdminPortal() {
                     <div className="flex items-center justify-between pb-2 border-b border-gray-100">
                       <div>
                         <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider">
-                          ✨ 3. Campus Highlight Cards ({currentCampusPage.highlights?.length || 0})
+                          3. Campus Highlight Cards ({currentCampusPage.highlights?.length || 0})
                         </h4>
                         <p className="text-[11px] text-gray-400">Cards shown at the top of the page with gold accent trim</p>
                       </div>
@@ -10324,7 +10324,7 @@ export default function AdminPortal() {
                     <div className="flex items-center justify-between pb-2 border-b border-gray-100">
                       <div>
                         <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider">
-                          📊 4. Numerical Stats Counters ({currentCampusPage.stats?.length || 0})
+                          4. Numerical Stats Counters ({currentCampusPage.stats?.length || 0})
                         </h4>
                         <p className="text-[11px] text-gray-400">Prominent blue numbers bar with key metrics</p>
                       </div>
@@ -10395,7 +10395,7 @@ export default function AdminPortal() {
                     <div className="flex items-center justify-between pb-2 border-b border-gray-100">
                       <div>
                         <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider">
-                          🏛️ 5. Detailed Facility Sections ({currentCampusPage.sections?.length || 0})
+                          5. Detailed Facility Sections ({currentCampusPage.sections?.length || 0})
                         </h4>
                         <p className="text-[11px] text-gray-400">Large content rows with photography and in-depth descriptions</p>
                       </div>
@@ -10502,7 +10502,7 @@ export default function AdminPortal() {
                       <div>
                         <div className="flex items-center gap-2">
                           <h4 className="text-sm font-black text-[#072A6C] uppercase tracking-wider">
-                            📸 6. Bottom Photo Gallery ({currentCampusPage.gallery?.length || 0} Photos)
+                            6. Bottom Photo Gallery ({currentCampusPage.gallery?.length || 0} Photos)
                           </h4>
                           <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
                             Synced Live to Website
@@ -10795,7 +10795,7 @@ export default function AdminPortal() {
                   <div className="p-6 rounded-2xl border border-blue-200 bg-blue-50/40 shadow-xs space-y-4">
                     <div className="flex items-center justify-between pb-2 border-b border-blue-100">
                       <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider flex items-center gap-2">
-                        🎬 2. Campus Tour Video Player & Media
+                        2. Campus Tour Video Player & Media
                       </h4>
                       <span className="text-[10.5px] font-bold text-[#072A6C] bg-white px-2.5 py-0.5 rounded-md border border-blue-200">
                         Max Recommended Limit: 50.0 MB
@@ -10899,7 +10899,7 @@ export default function AdminPortal() {
                   }`}
                 >
                   <Newspaper size={14} className={newsEventsModuleTab === "news" ? "text-[#D4AF37]" : "text-gray-400"} />
-                  <span>📰 News & Articles CMS ({news.length})</span>
+                  <span>News & Articles CMS ({news.length})</span>
                 </button>
                 <button
                   type="button"
@@ -10911,7 +10911,7 @@ export default function AdminPortal() {
                   }`}
                 >
                   <Calendar size={14} className={newsEventsModuleTab === "events" ? "text-[#D4AF37]" : "text-gray-400"} />
-                  <span>📅 Events & Registrations CMS ({events.length})</span>
+                  <span>Events & Registrations CMS ({events.length})</span>
                 </button>
               </div>
 
@@ -10954,8 +10954,8 @@ export default function AdminPortal() {
               {/* Subtabs Selector */}
               <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3">
                 {[
-                  { id: "moments", label: `🖼️ 1. Photo Memories & Categories (${campusGalleryList.length})` },
-                  { id: "homepage", label: "🏠 2. Homepage Photo Memories & Tour Videos" }
+                  { id: "moments", label: `1. Photo Memories & Categories (${campusGalleryList.length})` },
+                  { id: "homepage", label: "2. Homepage Photo Memories & Tour Videos" }
                 ].map((st) => (
                   <button
                     key={st.id}
@@ -11186,7 +11186,7 @@ export default function AdminPortal() {
                         <span className="text-xs text-gray-400 font-mono">Live on Home Page</span>
                       </div>
                       <h3 className="text-base font-black text-[#072A6C] uppercase">
-                        🏠 Homepage Moments & Campus Tour Video Sync
+                        Homepage Moments & Campus Tour Video Sync
                       </h3>
                       <p className="text-xs text-gray-500">
                         Manage the "Moments that Make Memories" marquee carousel and featured campus tour video cards displayed on the homepage.

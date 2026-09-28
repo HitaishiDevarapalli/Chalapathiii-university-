@@ -104,6 +104,44 @@ const CYBER_SECTORS: CyberSector[] = [
   }
 ];
 
+interface SectorTheme {
+  border: string;
+  hoverBorder: string;
+  hoverShadow: string;
+  badgeBg: string;
+  iconBg: string;
+  iconHoverBg: string;
+  numberBg: string;
+  accentColor: string;
+  arrowBg: string;
+  cardHoverBg: string;
+  filterPillInactive: string;
+}
+
+const UNIFIED_BOX_THEME: SectorTheme = {
+  border: "border-[2.5px] border-[#072A6C]",
+  hoverBorder: "hover:border-[#051C4A]",
+  hoverShadow: "hover:shadow-xl hover:shadow-[#072A6C]/15",
+  badgeBg: "bg-blue-50/90 text-[#072A6C] border-2 border-[#072A6C]/30 group-hover:bg-[#072A6C] group-hover:text-white group-hover:border-[#072A6C]",
+  iconBg: "bg-blue-50/90 text-[#072A6C] border-2 border-[#072A6C]/40",
+  iconHoverBg: "group-hover:bg-[#072A6C] group-hover:text-white group-hover:border-[#072A6C]",
+  numberBg: "bg-blue-50/70 border-2 border-[#072A6C]/30 text-[#072A6C] font-black group-hover:bg-[#072A6C] group-hover:text-white",
+  accentColor: "text-[#072A6C]",
+  arrowBg: "bg-blue-50 text-[#072A6C] border border-[#072A6C]/30 group-hover:bg-[#072A6C] group-hover:text-white",
+  cardHoverBg: "hover:bg-blue-50/30",
+  filterPillInactive: "bg-white text-[#072A6C] border-[2px] border-[#072A6C]/30 hover:border-[#072A6C] hover:bg-blue-50/50"
+};
+
+const SECTOR_THEMES: Record<string, SectorTheme> = {
+  "sector-overview": UNIFIED_BOX_THEME,
+  "sector-academics": UNIFIED_BOX_THEME,
+  "sector-labs": UNIFIED_BOX_THEME,
+  "sector-placements": UNIFIED_BOX_THEME,
+  "sector-community": UNIFIED_BOX_THEME
+};
+
+const DEFAULT_THEME: SectorTheme = UNIFIED_BOX_THEME;
+
 interface ProgramDetailPageProps {
   slug: string;
   defaultData?: any;
@@ -380,6 +418,7 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
                 {CYBER_SECTORS.map((sector) => {
                   const SectorIcon = sector.icon;
                   const isCurrentSector = activeSectorId === sector.id;
+                  const theme = SECTOR_THEMES[sector.id] || DEFAULT_THEME;
                   const count = sector.id === "sector-all" 
                     ? enabledSections.length 
                     : enabledSections.filter(s => sector.sectionIds.includes(s.id)).length;
@@ -390,14 +429,14 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
                       onClick={() => setActiveSectorId(sector.id)}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap flex items-center gap-2 transition-all cursor-pointer ${
                         isCurrentSector
-                          ? "bg-[#072A6C] text-white shadow-sm ring-1 ring-[#072A6C]"
-                          : "bg-slate-100 hover:bg-slate-200/80 text-slate-700 border border-slate-200/80"
+                          ? "bg-[#072A6C] text-white shadow-md ring-2 ring-[#072A6C] border-[2.5px] border-[#072A6C]"
+                          : theme.filterPillInactive
                       }`}
                     >
-                      <SectorIcon size={13} className={isCurrentSector ? "text-[#D4AF37]" : "text-slate-500"} />
+                      <SectorIcon size={13} className={isCurrentSector ? "text-[#D4AF37]" : "text-slate-600"} />
                       <span>{sector.shortTitle}</span>
                       <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full ${
-                        isCurrentSector ? "bg-white/20 text-[#D4AF37]" : "bg-slate-200 text-slate-600"
+                        isCurrentSector ? "bg-white/20 text-[#D4AF37]" : "bg-slate-200/80 text-slate-700"
                       }`}>
                         {count}
                       </span>
@@ -541,6 +580,7 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
                   const Icon = SECTION_ICONS[sec.id] || BookOpen;
                   const sector = CYBER_SECTORS.find(s => s.sectionIds.includes(sec.id));
                   const globalIdx = enabledSections.findIndex(s => s.id === sec.id);
+                  const theme = (sector && SECTOR_THEMES[sector.id]) || DEFAULT_THEME;
 
                   return (
                     <motion.div
@@ -548,19 +588,19 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
                       whileHover={{ y: -4, scale: 1.01 }}
                       transition={{ duration: 0.2 }}
                       onClick={() => selectModule(sec.id)}
-                      className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs hover:shadow-lg hover:border-[#072A6C]/40 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between group"
+                      className={`bg-white rounded-2xl ${theme.border} ${theme.hoverBorder} ${theme.hoverShadow} ${theme.cardHoverBg} p-5 shadow-xs transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between group`}
                     >
                       <div className="space-y-3.5 relative z-10">
                         {/* Card Header: Icon + Category Badge + Module Number */}
                         <div className="flex items-center justify-between gap-2">
-                          <div className="w-11 h-11 rounded-xl bg-slate-100 text-[#072A6C] group-hover:bg-[#072A6C] group-hover:text-white flex items-center justify-center transition-all duration-200 shadow-xs">
+                          <div className={`w-11 h-11 rounded-xl ${theme.iconBg} ${theme.iconHoverBg} flex items-center justify-center transition-all duration-200 shadow-xs`}>
                             <Icon size={20} className="group-hover:scale-105 transition-transform" />
                           </div>
                           <div className="flex items-center gap-1.5">
-                            <span className="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-slate-100 text-[#072A6C] border border-slate-200/90 group-hover:bg-[#072A6C] group-hover:text-white group-hover:border-[#072A6C] transition-all shadow-2xs">
+                            <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${theme.badgeBg} transition-all shadow-2xs`}>
                               {sector?.shortTitle || "MODULE"}
                             </span>
-                            <span className="w-6 h-6 rounded-md bg-slate-50 border border-slate-200 text-slate-700 group-hover:text-[#072A6C] group-hover:border-[#072A6C]/40 text-[11px] font-mono font-bold flex items-center justify-center transition-colors">
+                            <span className={`w-6 h-6 rounded-md ${theme.numberBg} text-[11px] font-mono font-bold flex items-center justify-center transition-colors`}>
                               {globalIdx < 9 ? `0${globalIdx + 1}` : globalIdx + 1}
                             </span>
                           </div>
@@ -568,7 +608,7 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
 
                         {/* Title & Hint */}
                         <div>
-                          <h3 className="text-sm sm:text-base font-black text-[#072A6C] group-hover:text-[#0B3D91] transition-colors leading-snug">
+                          <h3 className={`text-sm sm:text-base font-black text-[#072A6C] group-hover:${theme.accentColor} transition-colors leading-snug`}>
                             {sec.title}
                           </h3>
                           <p className="text-xs text-slate-500 mt-1 line-clamp-2 font-normal leading-relaxed">
@@ -578,11 +618,11 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
                       </div>
 
                       {/* Card Footer: View Details CTA */}
-                      <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-700 group-hover:text-[#072A6C] font-bold relative z-10">
-                        <span className="flex items-center gap-1.5 font-semibold text-slate-600 group-hover:text-[#072A6C] transition-colors">
+                      <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-700 font-bold relative z-10">
+                        <span className={`flex items-center gap-1.5 font-semibold text-slate-600 group-hover:${theme.accentColor} transition-colors`}>
                           <BookOpen size={13} className="text-[#072A6C]" /> View Details
                         </span>
-                        <div className="w-6 h-6 rounded-md bg-slate-100 group-hover:bg-[#072A6C] group-hover:text-white text-slate-600 flex items-center justify-center transition-all">
+                        <div className={`w-6 h-6 rounded-md ${theme.arrowBg} flex items-center justify-center transition-all`}>
                           <ArrowRight size={12} className="transform group-hover:translate-x-0.5 transition-transform" />
                         </div>
                       </div>
@@ -616,88 +656,96 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
           <div id="academic-dimension-screen" className="space-y-6 scroll-mt-24">
             
             {/* Top Module Header Bar */}
-            <div className="bg-white/90 backdrop-blur-md rounded-2xl border border-slate-200/90 p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4 shadow-xs">
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={backToMatrix}
-                  className="w-10 h-10 rounded-xl bg-[#072A6C] hover:bg-[#051c4a] text-white flex items-center justify-center hover:scale-105 transition-all shadow-sm shrink-0 cursor-pointer group"
-                  title="Return to All Modules"
-                >
-                  <ChevronLeft size={20} className="group-hover:-translate-x-0.5 transition-transform text-[#D4AF37]" />
-                </button>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono font-bold text-[#072A6C] uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded-md">
-                      MODULE 0{currentSectionIndex + 1} OF {enabledSections.length}
-                    </span>
-                    <span className="text-slate-300">•</span>
-                    <span className="text-[10px] font-bold text-slate-500 uppercase">
-                      {CYBER_SECTORS.find(s => s.sectionIds.includes(activeSection.id))?.title || "ACADEMICS"}
-                    </span>
+            {(() => {
+              const activeSector = CYBER_SECTORS.find(s => s.sectionIds.includes(activeSection.id));
+              const activeTheme = (activeSector && SECTOR_THEMES[activeSector.id]) || DEFAULT_THEME;
+              return (
+                <>
+                  <div className={`bg-white/95 backdrop-blur-md rounded-2xl ${activeTheme.border} p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4 shadow-xs`}>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={backToMatrix}
+                        className="w-10 h-10 rounded-xl bg-[#072A6C] hover:bg-[#051c4a] text-white flex items-center justify-center hover:scale-105 transition-all shadow-sm shrink-0 cursor-pointer group"
+                        title="Return to All Modules"
+                      >
+                        <ChevronLeft size={20} className="group-hover:-translate-x-0.5 transition-transform text-[#D4AF37]" />
+                      </button>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-[10px] font-mono font-bold uppercase tracking-wider ${activeTheme.badgeBg} px-2 py-0.5 rounded-md`}>
+                            MODULE 0{currentSectionIndex + 1} OF {enabledSections.length}
+                          </span>
+                          <span className="text-slate-300">•</span>
+                          <span className="text-[10px] font-bold text-slate-500 uppercase">
+                            {activeSector?.title || "ACADEMICS"}
+                          </span>
+                        </div>
+                        <h2 className="text-xl sm:text-2xl font-black text-[#072A6C] tracking-tight flex items-center gap-2">
+                          {activeSection.title}
+                        </h2>
+                      </div>
+                    </div>
+
+                    {/* Prev / Next & Back Controls */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={goToPrevSection}
+                        disabled={currentSectionIndex === 0}
+                        className={`h-8 px-3 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                          currentSectionIndex === 0
+                            ? "opacity-40 cursor-not-allowed bg-slate-100 text-slate-400"
+                            : "bg-white border border-slate-200 text-slate-700 hover:bg-[#072A6C] hover:text-white shadow-xs"
+                        }`}
+                      >
+                        <ChevronLeft size={13} /> Prev
+                      </button>
+
+                      <div className="px-2.5 py-1 bg-slate-100 rounded-lg text-[11px] font-mono font-black text-[#072A6C]">
+                        {currentSectionIndex + 1} / {enabledSections.length}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={goToNextSection}
+                        disabled={currentSectionIndex === enabledSections.length - 1}
+                        className={`h-8 px-3 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                          currentSectionIndex === enabledSections.length - 1
+                            ? "opacity-40 cursor-not-allowed bg-slate-100 text-slate-400"
+                            : "bg-[#072A6C] text-white hover:bg-[#0B3D91] shadow-sm"
+                        }`}
+                      >
+                        Next <ChevronRight size={13} />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={backToMatrix}
+                        className="h-8 px-3 rounded-xl text-xs font-bold bg-[#072A6C]/10 hover:bg-[#072A6C]/20 text-[#072A6C] border border-[#072A6C]/20 flex items-center gap-1.5 transition-all cursor-pointer ml-1"
+                      >
+                        <LayoutGrid size={13} className="text-[#072A6C]" /> All Modules
+                      </button>
+                    </div>
                   </div>
-                  <h2 className="text-xl sm:text-2xl font-black text-[#072A6C] tracking-tight flex items-center gap-2">
-                    {activeSection.title}
-                  </h2>
-                </div>
-              </div>
 
-              {/* Prev / Next & Back Controls */}
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={goToPrevSection}
-                  disabled={currentSectionIndex === 0}
-                  className={`h-8 px-3 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                    currentSectionIndex === 0
-                      ? "opacity-40 cursor-not-allowed bg-slate-100 text-slate-400"
-                      : "bg-white border border-slate-200 text-slate-700 hover:bg-[#072A6C] hover:text-white shadow-xs"
-                  }`}
-                >
-                  <ChevronLeft size={13} /> Prev
-                </button>
-
-                <div className="px-2.5 py-1 bg-slate-100 rounded-lg text-[11px] font-mono font-black text-[#072A6C]">
-                  {currentSectionIndex + 1} / {enabledSections.length}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={goToNextSection}
-                  disabled={currentSectionIndex === enabledSections.length - 1}
-                  className={`h-8 px-3 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                    currentSectionIndex === enabledSections.length - 1
-                      ? "opacity-40 cursor-not-allowed bg-slate-100 text-slate-400"
-                      : "bg-[#072A6C] text-white hover:bg-[#0B3D91] shadow-sm"
-                  }`}
-                >
-                  Next <ChevronRight size={13} />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={backToMatrix}
-                  className="h-8 px-3 rounded-xl text-xs font-bold bg-[#072A6C]/10 hover:bg-[#072A6C]/20 text-[#072A6C] border border-[#072A6C]/20 flex items-center gap-1.5 transition-all cursor-pointer ml-1"
-                >
-                  <LayoutGrid size={13} className="text-[#072A6C]" /> All Modules
-                </button>
-              </div>
-            </div>
-
-            {/* Dedicated Module Screen */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeSection.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-                className="bg-white rounded-2xl border border-slate-200/90 p-6 sm:p-8 shadow-sm relative text-left"
-              >
-                {/* Render the Active Module Content */}
-                {renderModuleContent(activeSection.id, programData, peoTab, setPeoTab, syllabusSem, setSyllabusSem, facultyFilter, setFacultyFilter, facultySearch, setFacultySearch, filteredFaculty, activeLabIndex, setActiveLabIndex)}
-              </motion.div>
-            </AnimatePresence>
+                  {/* Dedicated Module Screen Content */}
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={activeSection.id}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                      className={`bg-white rounded-2xl ${activeTheme.border} p-6 sm:p-8 shadow-sm relative text-left`}
+                    >
+                      {/* Render the Active Module Content */}
+                      {renderModuleContent(activeSection.id, programData, peoTab, setPeoTab, syllabusSem, setSyllabusSem, facultyFilter, setFacultyFilter, facultySearch, setFacultySearch, filteredFaculty, activeLabIndex, setActiveLabIndex)}
+                    </motion.div>
+                  </AnimatePresence>
+                </>
+              );
+            })()}
 
             {/* Bottom Navigation Bar */}
             <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
@@ -858,7 +906,7 @@ function renderModuleContent(
             <div className="flex flex-wrap gap-2">
               {programData.careerRoles.map((role, i) => (
                 <span key={i} className="text-xs font-bold text-[#072A6C] bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-xs hover:border-[#D4AF37] transition-colors">
-                  💼 {role}
+                  {role}
                 </span>
               ))}
             </div>
@@ -955,7 +1003,7 @@ function renderModuleContent(
             <div className="flex flex-wrap gap-2">
               {programData.visionMission.coreValues.map((v, i) => (
                 <span key={i} className="px-4 py-2 bg-white border border-slate-200 text-slate-800 text-xs font-bold rounded-xl shadow-xs">
-                  ⭐ {v}
+                  {v}
                 </span>
               ))}
             </div>
@@ -1126,7 +1174,7 @@ function renderModuleContent(
             <div className="flex flex-wrap gap-2.5">
               {programData.placements.topRecruiters.map((comp, i) => (
                 <span key={i} className="px-4 py-2 bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold rounded-xl shadow-2xs hover:border-[#072A6C] transition-colors">
-                  🏢 {comp}
+                  {comp}
                 </span>
               ))}
             </div>
@@ -1316,10 +1364,10 @@ function renderModuleContent(
           <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-3">
             <span className="text-[10px] text-slate-400 font-mono font-black uppercase tracking-wider block">Physical Holdings</span>
             <div className="space-y-2 text-xs text-slate-700 font-medium">
-              <p>📚 <strong className="text-[#072A6C] font-black">{programData.library.volumesCount}</strong></p>
-              <p>📖 <strong className="text-[#072A6C] font-black">{programData.library.titlesCount}</strong></p>
-              <p>📰 <strong className="text-[#072A6C] font-black">{programData.library.nationalJournals}</strong></p>
-              <p>🌐 <strong className="text-[#072A6C] font-black">{programData.library.internationalJournals}</strong></p>
+              <p><span className="text-slate-500 font-normal">Volumes:</span> <strong className="text-[#072A6C] font-black">{programData.library.volumesCount}</strong></p>
+              <p><span className="text-slate-500 font-normal">Titles:</span> <strong className="text-[#072A6C] font-black">{programData.library.titlesCount}</strong></p>
+              <p><span className="text-slate-500 font-normal">National Journals:</span> <strong className="text-[#072A6C] font-black">{programData.library.nationalJournals}</strong></p>
+              <p><span className="text-slate-500 font-normal">International Journals:</span> <strong className="text-[#072A6C] font-black">{programData.library.internationalJournals}</strong></p>
             </div>
           </div>
 
@@ -1456,7 +1504,7 @@ function renderModuleContent(
             <div className="flex flex-wrap gap-2">
               {programData.research.thrustAreas.map((t, i) => (
                 <span key={i} className="px-3.5 py-1.5 bg-[#072A6C]/5 text-[#072A6C] text-xs font-bold rounded-xl border border-[#072A6C]/10">
-                  🔬 {t}
+                  {t}
                 </span>
               ))}
             </div>
@@ -1572,7 +1620,7 @@ function renderModuleContent(
                 <p className="text-[11px] text-slate-500"><strong>Faculty:</strong> {ti.faculty}</p>
                 <p className="text-xs text-slate-600 font-light leading-relaxed">{ti.methodology}</p>
                 <div className="p-2.5 bg-emerald-50 rounded-xl border border-emerald-100 text-[11px] text-emerald-800 font-medium">
-                  📈 Impact: {ti.impact}
+                  Impact: {ti.impact}
                 </div>
               </div>
             ))
@@ -1620,7 +1668,7 @@ function renderModuleContent(
                     </div>
                     <h4 className="text-xs sm:text-sm font-black text-[#072A6C]">{ev.title}</h4>
                     <p className="text-xs text-slate-600 font-light leading-relaxed">{ev.description}</p>
-                    <span className="text-[11px] text-slate-400 font-medium block">📍 Venue: {ev.venue}</span>
+                    <span className="text-[11px] text-slate-400 font-medium block">Venue: {ev.venue}</span>
                   </div>
                 ))
               ) : (

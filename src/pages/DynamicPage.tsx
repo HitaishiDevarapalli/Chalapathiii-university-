@@ -1232,7 +1232,7 @@ function InteractiveCalendarWidget({ year, courseKey }: { year: string; courseKe
           onClick={() => alert(`Academic Calendar PDF for ${year} is queued for download.`)}
           className="text-[10px] font-bold text-[#D4AF37] hover:text-[#072A6C] transition-colors"
         >
-          📥 Download Calendar PDF
+          Download Calendar PDF
         </button>
       </div>
 
@@ -1827,7 +1827,7 @@ function AwardOfDegrees() {
               </p>
               {grade.note && (
                 <div className="mt-3 pt-3 border-t border-amber-200/50 text-[10px] text-[#C9A84C] font-medium leading-relaxed">
-                  ⚠️ <strong>Note:</strong> {grade.note}
+                  <strong>Note:</strong> {grade.note}
                 </div>
               )}
             </div>
@@ -1838,7 +1838,7 @@ function AwardOfDegrees() {
       {/* Interactive CGPA Classification Slider */}
       <div className="bg-[#072A6C]/5 border border-[#072A6C]/10 rounded-2xl p-5 shadow-sm space-y-4 mt-6">
         <h5 className="text-xs font-extrabold text-[#072A6C] uppercase tracking-wider">
-          🎓 Interactive Degree Classifier
+          Interactive Degree Classifier
         </h5>
         <p className="text-[11.5px] text-gray-500 font-light">
           Drag the slider to select a target CGPA and view your expected graduation classification.
@@ -2609,60 +2609,68 @@ interface FacultyMember {
   department: string;
 }
 
-const getAvatarUrl = (initials: string): string => {
-  if (initials && (initials.startsWith("data:") || initials.startsWith("http") || initials.startsWith("/"))) {
-    return initials;
+const isRealUploadedImage = (url?: string): boolean => {
+  if (!url || typeof url !== "string") return false;
+  const trimmed = url.trim();
+  if (!trimmed) return false;
+  if (trimmed === "/chairman_v4.png") return true;
+  if (trimmed.startsWith("data:image/")) return true;
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || (trimmed.startsWith("/") && !trimmed.includes(" "))) {
+    if (trimmed.includes("images.unsplash.com") || trimmed.includes("ui-avatars.com")) {
+      return false;
+    }
+    return true;
   }
-  const avatarMap: Record<string, string> = {
-    "YVA": "/chairman_v4.png",
-    "YSK": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop&crop=face",
-    "KPR": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
-    "TS": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
-    "PVR": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=face",
-    "AKK": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop&crop=face",
-    "KJ": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop&crop=face",
-    "BS": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop&crop=face",
-    "DSR": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=face",
-    "KC": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop&crop=face",
-    "SV": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
-    "PR": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
-    "SK": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&fit=crop&crop=face",
-    "MH": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=face",
-    "GM": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop&crop=face",
-    "RK": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop&crop=face",
-    "YVK": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop&crop=face",
-    "TA": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop&crop=face",
-    "VS": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
-    "SKR": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
-    "NL": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop&crop=face",
-    "LRK": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=face",
-    "SL": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&fit=crop&crop=face",
-    "PSM": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop&crop=face",
-    "GR": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
-    "MSR": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=face",
-    "KR": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
-    "VP": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop&crop=face",
-    "GS": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop&crop=face",
-    "PN": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
-    "KSR": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=face",
-    "KA": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&fit=crop&crop=face",
-    "MR": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
-    "PK": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop&crop=face",
-    "KHP": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop&crop=face",
-    "KS": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop&crop=face",
-    "TK": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
-    "KV": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
-    "MRK": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop&crop=face",
-    "BR": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=face",
-    "PSR": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
-    "KN": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
-    "TP": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop&crop=face",
-    "SR": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&fit=crop&crop=face",
-    "KP": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face"
-  };
-
-  return avatarMap[initials] || `https://eu.ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=072A6C&color=fff&size=256&font-size=0.35&bold=true`;
+  return false;
 };
+
+function MemberAvatar({
+  avatar,
+  name,
+  className = "w-full h-full object-cover",
+  fallbackClassName = "w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-100 to-blue-50/70 text-[#072A6C] p-2"
+}: {
+  avatar?: string;
+  name?: string;
+  className?: string;
+  fallbackClassName?: string;
+}) {
+  const [hasError, setHasError] = React.useState(false);
+
+  const canShowImage = !hasError && isRealUploadedImage(avatar);
+
+  if (canShowImage && avatar) {
+    return (
+      <img
+        src={avatar}
+        alt={name || "Member"}
+        className={className}
+        onError={() => setHasError(true)}
+      />
+    );
+  }
+
+  const initials = name
+    ? name.replace(/^(Dr\.|Prof\.|Mr\.|Mrs\.|Smt\.|Sri)\s+/gi, "")
+          .split(" ")
+          .filter(Boolean)
+          .map(n => n[0])
+          .slice(0, 2)
+          .join("")
+          .toUpperCase()
+    : "CU";
+
+  return (
+    <div className={fallbackClassName}>
+      <div className="w-12 h-12 rounded-full bg-[#072A6C]/10 flex items-center justify-center text-[#072A6C] mb-1">
+        <User className="w-6 h-6 text-[#072A6C]" />
+      </div>
+      <span className="text-[10px] font-black text-[#072A6C] tracking-wider font-mono uppercase bg-white/90 px-2 py-0.5 rounded shadow-2xs border border-[#072A6C]/10">
+        {initials || "CU"}
+      </span>
+    </div>
+  );
+}
 
 // FACULTY_DATA is managed dynamically from DataContext
 
@@ -2671,15 +2679,7 @@ const BOARD_DEPARTMENTS = [
   "Chancellor",
   "Pro Chancellor",
   "Vice Chancellor",
-  "Registrar",
-  "Dean – Academic Affairs",
-  "Dean – Research & Innovation",
-  "Dean – Student Affairs",
-  "Dean – Faculty Affairs",
-  "Dean – Admissions",
-  "Dean – Placements & Relations",
-  "Finance Officer",
-  "Controller of Examinations"
+  "Registrar"
 ];
 
 // BOARD_DATA is managed dynamically from DataContext
@@ -2844,13 +2844,13 @@ function BoardDirectory() {
             className="flex flex-col bg-[#f8f9fa] shadow-sm hover:shadow-lg transition-shadow cursor-pointer group"
           >
             {/* Avatar / Photo */}
-            <div className="w-full aspect-[4/5] bg-gray-200 overflow-hidden relative">
-              <img 
-                src={getAvatarUrl(member.avatar)} 
-                alt={member.name} 
+            <div className="w-full aspect-[4/5] bg-gray-100 overflow-hidden relative flex items-center justify-center">
+              <MemberAvatar 
+                avatar={member.avatar} 
+                name={member.name} 
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out" 
               />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 pointer-events-none"></div>
             </div>
 
             {/* Details */}
@@ -2890,11 +2890,11 @@ function BoardDirectory() {
             </div>
 
             <div className="p-8 relative bg-white bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
-              <div className="w-56 h-auto md:w-64 mx-auto shadow-md border-4 border-white">
-                <img 
-                  src={getAvatarUrl(selectedFaculty.avatar)} 
-                  alt={selectedFaculty.name} 
-                  className="w-full h-auto object-cover"
+              <div className="w-56 h-64 md:w-64 md:h-72 mx-auto shadow-md border-4 border-white bg-gray-100 overflow-hidden flex items-center justify-center">
+                <MemberAvatar 
+                  avatar={selectedFaculty.avatar} 
+                  name={selectedFaculty.name} 
+                  className="w-full h-full object-cover"
                 />
               </div>
               
@@ -2987,8 +2987,8 @@ function StaffDirectory() {
                 Head
               </div>
 
-              <div className="w-48 h-48 rounded-lg border-2 border-gray-100 bg-[#072A6C]/5 flex items-center justify-center font-black text-4xl text-[#072A6C] shadow-inner mb-4 group-hover:border-[#D4AF37] transition-all select-none overflow-hidden">
-                <img src={getAvatarUrl(activeDept.hod.avatar)} alt={activeDept.hod.name} className="w-full h-full object-cover" />
+              <div className="w-48 h-48 rounded-lg border-2 border-gray-100 bg-[#072A6C]/5 flex items-center justify-center shadow-inner mb-4 group-hover:border-[#D4AF37] transition-all select-none overflow-hidden">
+                <MemberAvatar avatar={activeDept.hod.avatar} name={activeDept.hod.name} className="w-full h-full object-cover" />
               </div>
 
               <h5 className="font-extrabold text-[#072A6C] text-sm leading-snug tracking-tight">
@@ -3012,8 +3012,8 @@ function StaffDirectory() {
                   onClick={() => setSelectedFaculty(faculty)}
                   className="bg-white border border-gray-200/80 rounded-[16px] p-6 shadow-sm hover:border-[#D4AF37] hover:shadow-lg transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer group min-h-[260px]"
                 >
-                  <div className="w-40 h-40 rounded-lg border-2 border-gray-100 bg-[#072A6C]/5 flex items-center justify-center font-black text-3xl text-[#072A6C] shadow-inner mb-4 group-hover:border-[#D4AF37] transition-all select-none overflow-hidden">
-                    <img src={getAvatarUrl(faculty.avatar)} alt={faculty.name} className="w-full h-full object-cover" />
+                  <div className="w-40 h-40 rounded-lg border-2 border-gray-100 bg-[#072A6C]/5 flex items-center justify-center shadow-inner mb-4 group-hover:border-[#D4AF37] transition-all select-none overflow-hidden">
+                    <MemberAvatar avatar={faculty.avatar} name={faculty.name} className="w-full h-full object-cover" />
                   </div>
 
                   <h5 className="font-extrabold text-[#072A6C] text-xs leading-snug tracking-tight">
@@ -3047,8 +3047,8 @@ function StaffDirectory() {
             </button>
 
             <div className="bg-[#072A6C] text-white py-8 px-6 text-center relative border-b-4 border-[#D4AF37]">
-              <div className="w-20 h-20 rounded-lg border-2 border-[#D4AF37] bg-white text-[#072A6C] flex items-center justify-center font-black text-2xl shadow-md mx-auto mb-3 select-none overflow-hidden">
-                <img src={getAvatarUrl(selectedFaculty.avatar)} alt={selectedFaculty.name} className="w-full h-full object-cover" />
+              <div className="w-20 h-20 rounded-lg border-2 border-[#D4AF37] bg-white text-[#072A6C] flex items-center justify-center shadow-md mx-auto mb-3 select-none overflow-hidden">
+                <MemberAvatar avatar={selectedFaculty.avatar} name={selectedFaculty.name} className="w-full h-full object-cover" />
               </div>
               <h3 className="text-lg md:text-xl font-black tracking-tight">{selectedFaculty.name}</h3>
               <p className="text-[10px] text-[#D4AF37] mt-1 font-black uppercase tracking-widest">{selectedFaculty.title}</p>
@@ -3203,11 +3203,11 @@ function FacultyDirectory() {
               key={fIdx}
               className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center gap-5 group min-h-[140px]"
             >
-              {/* Photo */}
+              {/* Photo / Icon */}
               <div className="w-[100px] h-[110px] shrink-0 rounded-lg overflow-hidden bg-[#072A6C]/5 border border-gray-100 shadow-inner flex items-center justify-center">
-                <img 
-                  src={getAvatarUrl(faculty.avatar)} 
-                  alt={faculty.name} 
+                <MemberAvatar 
+                  avatar={faculty.avatar} 
+                  name={faculty.name} 
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                 />
               </div>
@@ -3878,7 +3878,7 @@ function AdmissionsApplyFlow() {
         <div className="space-y-4 animate-fade-in">
           <h3 className="text-base font-extrabold text-[#072A6C] uppercase tracking-wide">Verify Mobile / Email</h3>
           <div className="bg-amber-50 border-l-4 border-[#D4AF37] p-3.5 rounded-r-xl text-[11.5px] text-amber-900 font-semibold mb-2 flex items-center justify-between shadow-sm">
-            <span>📲 Demo Mode: Use OTP <strong className="text-base text-[#D4AF37] tracking-wider font-extrabold">123456</strong></span>
+            <span>Demo Mode: Use OTP <strong className="text-base text-[#D4AF37] tracking-wider font-extrabold">123456</strong></span>
             <button 
               type="button"
               onClick={() => setFormData({ ...formData, otp: "123456" })}
@@ -4247,7 +4247,7 @@ function AdmissionsApplyFlow() {
               onClick={handleDownloadReceipt}
               className="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl transition-colors uppercase tracking-wider"
             >
-              📥 Download Receipt PDF
+              Download Receipt PDF
             </button>
             <Link 
               to="/" 
@@ -4353,7 +4353,7 @@ function ScholarshipsView() {
       { title: "Post-Matric Scholarships", desc: "State and national scholarship programs for reserved and minority categories." },
       { title: "AICTE Pragati & Saksham", desc: "Support programs for female advancement in technology (Pragati) and differently-abled students (Saksham)." }
     ],
-    nspTipText: "💡 Our dedicated student support team assists eligible candidates throughout the entire application and documentation process on the National Scholarship Portal (NSP) schemes.",
+    nspTipText: "Our dedicated student support team assists eligible candidates throughout the entire application and documentation process on the National Scholarship Portal (NSP) schemes.",
     rewardsTitle: "Rewards for Academic Excellence",
     rewardsDescription: "Academic excellence is celebrated and encouraged through various recognition programs.",
     academicRewards: [
@@ -4362,7 +4362,7 @@ function ScholarshipsView() {
       { title: "University Rank Recognition", subtitle: "BOS and senate felicitations" },
       { title: "Performance-Based Incentives", subtitle: "Project grants and waivers" }
     ],
-    excellenceFooterText: "★ Special Recognition for Outstanding Achievements in a Unique Way! ★"
+    excellenceFooterText: "Special Recognition for Outstanding Achievements in a Unique Way!"
   };
 
   return (
@@ -4458,7 +4458,7 @@ function ScholarshipsView() {
           </div>
 
           <div className="bg-blue-50 border-l-4 border-blue-500 p-4.5 rounded-r-xl text-xs text-blue-900 font-medium">
-            {sc.nspTipText || "💡 Our dedicated student support team assists eligible candidates throughout the entire application and documentation process on the National Scholarship Portal (NSP) schemes."}
+            {sc.nspTipText || "Our dedicated student support team assists eligible candidates throughout the entire application and documentation process on the National Scholarship Portal (NSP) schemes."}
           </div>
         </div>
       </div>
@@ -4487,7 +4487,7 @@ function ScholarshipsView() {
               ))}
             </div>
             <p className="text-[11px] text-[#D4AF37] italic font-extrabold mt-4 text-center leading-normal uppercase tracking-wider">
-              {sc.excellenceFooterText || "★ Special Recognition for Outstanding Achievements in a Unique Way! ★"}
+              {sc.excellenceFooterText || "Special Recognition for Outstanding Achievements in a Unique Way!"}
             </p>
           </div>
         </div>
@@ -4860,7 +4860,7 @@ function PlacementsView() {
           <ul className="space-y-2.5 text-xs text-gray-500 font-light">
             {placementsContent.industryConnectItems.map((item, idx) => (
               <li key={idx} className="flex items-center gap-2">
-                <span className="text-[#D4AF37] font-bold">★</span>
+                <span className="text-[#D4AF37] font-bold">•</span>
                 <span>{item}</span>
               </li>
             ))}

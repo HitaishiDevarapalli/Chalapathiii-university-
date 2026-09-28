@@ -22,7 +22,7 @@ export default function AboutPage() {
             As the Best University in Andhra Pradesh, Chalapathy University stands as a beacon of academic rigor and transformative education.
           </p>
           <div className="text-[11px] text-zinc-400 font-medium max-w-2xl border-t border-white/10 pt-3 leading-relaxed">
-            🎓 <strong>Branding Heritage:</strong> Chalapathy, being the name of the "Lord Venkateswara" in his adolescence, suggests the noble restlessness of questioning minds who advance humanity in their search for answers. Every institution promoted by our society proudly bears "Chalapathy" as its prefix.
+            <strong>Branding Heritage:</strong> Chalapathy, being the name of the "Lord Venkateswara" in his adolescence, suggests the noble restlessness of questioning minds who advance humanity in their search for answers. Every institution promoted by our society proudly bears "Chalapathy" as its prefix.
           </div>
         </div>
       </section>
