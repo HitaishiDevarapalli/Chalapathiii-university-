@@ -12,8 +12,6 @@ import { AdmissionsPortalView } from "../components/admissions/AdmissionsPortalV
 import { ApplyOnlineView } from "../components/admissions/ApplyOnlineView";
 import ProgramDetailPage from "../components/academics/ProgramDetailPage";
 import { ResearchView } from "../components/research/ResearchView";
-import { DynamicSectionRenderer } from "../components/common/DynamicSectionRenderer";
-
 
 
 const getProgramTimeline = (title: string) => {
@@ -2272,53 +2270,22 @@ function LatestNewsView() {
 }
 
 export default function DynamicPage() {
-  const { pathname, search } = useLocation();
-  const { programs, campusLifeContent, newsPageConfig, cmsPages } = useData();
-  const cleanPath = pathname.toLowerCase().replace(/\/$/, "");
-  const isPreview = search.includes("preview=true");
-
-  // Check for dynamic CMS page match (Single Source of Truth)
-  const matchedCmsPage = (cmsPages || []).find(
-    (p) => p.slug.toLowerCase().replace(/\/$/, "") === cleanPath
-  );
-
-  useEffect(() => {
-    if (matchedCmsPage) {
-      document.title = `${matchedCmsPage.seoTitle || matchedCmsPage.title} | Chalapathi University`;
-    }
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [pathname, matchedCmsPage]);
-
-  // If matching published CMS page is found, render its dynamic sections!
-  if (matchedCmsPage && (matchedCmsPage.status === "published" || isPreview)) {
-    return (
-      <div className="flex-grow w-full bg-white font-[var(--font-poppins)] overflow-hidden">
-        {(matchedCmsPage.sections || []).map((sec, idx) => (
-          <DynamicSectionRenderer
-            key={sec.id || idx}
-            section={sec}
-            index={idx}
-            previewMode={isPreview}
-          />
-        ))}
-      </div>
-    );
-  }
-
+  const { pathname } = useLocation();
+  const { programs, campusLifeContent, newsPageConfig } = useData();
   const content = getPageContent(pathname, programs, newsPageConfig);
   const isManagement = pathname.toLowerCase().startsWith("/management");
   const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
   const [playingVideo, setPlayingVideo] = React.useState<string | null>(null);
 
   useEffect(() => {
-    if (!matchedCmsPage && content?.title) {
-      document.title = `${content.title} | Chalapathi University`;
-    }
-  }, [pathname, content?.title, matchedCmsPage]);
+    document.title = `${content.title} | Chalapathi University`;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [pathname, content.title]);
 
+  const cleanPath = pathname.toLowerCase().replace(/\/$/, "");
   const isCampusLife = cleanPath.startsWith("/campus-life");
-  const campusPage = campusLifeContent ? (campusLifeContent[cleanPath] || campusLifeContent["/campus-life"]) : undefined;
 
+  const campusPage = campusLifeContent ? (campusLifeContent[cleanPath] || campusLifeContent["/campus-life"]) : undefined;
 
   // Dedicated Full-Bleed Academic Program View (Prevents duplicate outer breadcrumbs & duplicate title cards)
   if ((content as any).isProgramDetail) {

@@ -82,6 +82,7 @@ import FooterCMS from "../components/admin/FooterCMS";
 import LinksCMS from "../components/admin/LinksCMS";
 import { SettingsCMS } from "../components/admin/SettingsCMS";
 import { PagesCMS } from "../components/admin/PagesCMS";
+import { CertificationsCMS } from "../components/admin/CertificationsCMS";
 
 import { 
   DEFAULT_PROGRAM_SECTIONS, 
@@ -163,7 +164,7 @@ export default function AdminPortal() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    "dashboard" | "pages" | "homepage" | "about" | "academics" | "admissions" | 
+    "dashboard" | "pages" | "homepage" | "about" | "academics" | "certifications" | "admissions" | 
     "research" | "directories" | "campus-life" | "placements" | "news" | "events" | "news-events" | 
     "contact" | "links" | "gallery" | "footer" | "settings"
   >("dashboard");
@@ -1396,7 +1397,7 @@ export default function AdminPortal() {
   }
 
   const navItems: {
-    id: "dashboard" | "pages" | "homepage" | "about" | "academics" | "admissions" | "research" | "directories" | "campus-life" | "placements" | "news" | "events" | "news-events" | "contact" | "links" | "gallery" | "footer" | "settings";
+    id: "dashboard" | "pages" | "homepage" | "about" | "academics" | "certifications" | "admissions" | "research" | "directories" | "campus-life" | "placements" | "news" | "events" | "news-events" | "contact" | "links" | "gallery" | "footer" | "settings";
     label: string;
     icon: any;
     badge?: string;
@@ -1411,8 +1412,9 @@ export default function AdminPortal() {
     // MAIN WEBSITE PAGES
     { id: "about", label: "Genesis & About Us", icon: Building, section: "MAIN WEBSITE PAGES" },
     { id: "academics", label: "Academics", icon: GraduationCap },
+    { id: "certifications", label: "Global Certifications", icon: Award },
     { id: "admissions", label: "Admissions & Leads", icon: UserPlus, badge: `${enquiries.filter(e => e.status === "New").length || ""}` },
-    { id: "research", label: "Research & Innovation", icon: Award },
+    { id: "research", label: "Research & Innovation", icon: Trophy },
     { id: "directories", label: "Faculty & Directories", icon: Users },
     { id: "campus-life", label: "Campus Life", icon: Library },
     { id: "placements", label: "Placements", icon: Briefcase },
@@ -10029,6 +10031,13 @@ export default function AdminPortal() {
           )}
         </div>
       )}
+
+          {/* ════════════════════════════════════════════════════ */}
+          {/* TAB: GLOBAL CERTIFICATIONS CMS                      */}
+          {/* ════════════════════════════════════════════════════ */}
+          {activeTab === "certifications" && (
+            <CertificationsCMS notifySave={notifySave} />
+          )}
 
           {/* ════════════════════════════════════════════════════ */}
           {/* TAB 5: ADMISSIONS & LEADS MANAGEMENT                */}

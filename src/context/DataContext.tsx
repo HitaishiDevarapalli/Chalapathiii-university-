@@ -3,7 +3,9 @@ import { PROGRAMS_DATA, ProgramDetail } from "../data/programsData";
 import { CmsPage } from "../types/cms";
 import { INITIAL_CMS_PAGES } from "../data/initialCmsPages";
 import { CmsApiService } from "../services/cmsApi";
+import { certifications, Certification } from "../data/certifications";
 import imgComputerScience from "../assets/illustrations/computer_science.png";
+
 
 import imgMtechCSE from "../assets/illustrations/mtech_cse.png";
 import imgMCA from "../assets/illustrations/mca.png";
@@ -866,9 +868,13 @@ interface DataContextType {
   restorePageVersion: (pageId: string, versionId: string) => void;
   syncCmsWithBackend: () => Promise<void>;
 
+  certificationsData: Certification[];
+  updateCertificationsData: (data: Certification[]) => void;
+
   resetToDefaults: () => void;
   lastSavedTime: string | null;
 }
+
 
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -3842,6 +3848,26 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     saveCmsPage(restoredPage, `Restored from version ${new Date(targetVersion.timestamp).toLocaleString()}`);
   };
 
+  // Global Certifications CMS
+  const [certificationsData, setCertificationsData] = useState<Certification[]>(() => {
+    try {
+      const local = localStorage.getItem("chalapathi_certifications_v1");
+      if (local) {
+        const parsed = JSON.parse(local);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.error("Failed to parse local certifications", e);
+    }
+    return certifications;
+  });
+
+  const updateCertificationsData = (data: Certification[]) => {
+    setCertificationsData(data);
+    localStorage.setItem("chalapathi_certifications_v1", JSON.stringify(data));
+    recordSave();
+  };
+
   const syncCmsWithBackend = async () => {
     try {
       await CmsApiService.saveAll({
@@ -3854,7 +3880,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         collections: {
           announcements,
           news,
-          events
+          events,
+          certifications: certificationsData
         }
       });
       recordSave();
@@ -3897,6 +3924,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setEventRegistrations(INITIAL_EVENT_REGISTRATIONS);
       setOnlineApplications(INITIAL_ONLINE_APPLICATIONS);
       setCmsPages(INITIAL_CMS_PAGES);
+      setCertificationsData(certifications);
       recordSave();
     }
   };
@@ -3952,6 +3980,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       duplicateCmsPage,
       restorePageVersion,
       syncCmsWithBackend,
+      certificationsData,
+      updateCertificationsData,
       aboutContent,
       calendarData,
       facultyData,
@@ -3982,6 +4012,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       {children}
     </DataContext.Provider>
   );
+
 };
 
 

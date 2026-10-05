@@ -4,11 +4,15 @@ import { motion, useScroll, AnimatePresence } from "framer-motion";
 import { Award, ChevronRight, ArrowLeft, CheckCircle2, ShieldCheck, Briefcase, Zap, Globe, ArrowRight, X } from "lucide-react";
 
 import { certifications, Certification } from "../../data/certifications";
+import { useData } from "../../context/DataContext";
 import FullscreenModal from "../certifications/FullscreenModal";
 
 export default function GlobalCertifications() {
+  const { certificationsData } = useData();
+  const certList = certificationsData && certificationsData.length > 0 ? certificationsData : certifications;
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedCert, setSelectedCert] = useState<Certification | null>(null);
+
 
   // Prevent scrolling when modal is open
   useEffect(() => {
@@ -66,8 +70,9 @@ export default function GlobalCertifications() {
 
         {/* Certifications Grid - 4 Columns */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10 relative">
-          {certifications.map((cert, index) => {
+          {certList.map((cert, index) => {
             return (
+
               <motion.div
                 key={cert.name}
                 initial={{ opacity: 0, y: 40 }}
