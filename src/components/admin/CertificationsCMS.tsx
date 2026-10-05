@@ -3,12 +3,13 @@ import {
   Plus, Trash2, Edit3, Copy, Eye, Award, CheckCircle2, 
   Search, ExternalLink, Image as ImageIcon, Zap, Sparkles, Layers,
   Save, RotateCcw, X, Globe, Briefcase, TrendingUp, ChevronRight,
-  BookOpen, Building2, Check, ArrowRight, Palette, Layout, ShieldCheck
+  BookOpen, Building2, Check, ArrowRight, ArrowLeft, Palette, Layout, 
+  ShieldCheck, HelpCircle, Code, Server, Cpu, Database, Cloud, Star
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Certification, GlobalCertificationsPageConfig } from "../../data/certifications";
 import { useData } from "../../context/DataContext";
-import { ImageField, SectionHeader } from "./AdminComponents";
+import FullscreenModal from "../certifications/FullscreenModal";
 
 interface CertificationsCMSProps {
   notifySave?: (msg?: string) => void;
@@ -24,9 +25,16 @@ export const CertificationsCMS: React.FC<CertificationsCMSProps> = ({ notifySave
 
   const [activeSubTab, setActiveSubTab] = useState<"certs" | "header" | "worldStage">("certs");
   const [searchQuery, setSearchQuery] = useState("");
+  
+  // PAGE-BASED EDITOR STATE (No popup modal)
   const [editingCert, setEditingCert] = useState<Certification | null>(null);
-  const [modalTab, setModalTab] = useState<"general" | "journey" | "skillsCareer" | "projectsStats" | "featuresIndustries">("general");
-  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isCreatingNew, setIsCreatingNew] = useState(false);
+  const [editorSectionTab, setEditorSectionTab] = useState<
+    "overview" | "journey" | "features" | "skills" | "industries" | "roadmap" | "projectsStats"
+  >("overview");
+  
+  // Live Preview Modal Toggle
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Form state for Page Config
@@ -77,7 +85,7 @@ export const CertificationsCMS: React.FC<CertificationsCMSProps> = ({ notifySave
     }
     updateCertificationsData(updated);
     setEditingCert(null);
-    setIsAddOpen(false);
+    setIsCreatingNew(false);
     showToast(`✓ Certification "${cert.name}" saved live!`);
   };
 
@@ -85,6 +93,10 @@ export const CertificationsCMS: React.FC<CertificationsCMSProps> = ({ notifySave
     if (window.confirm("Are you sure you want to delete this certification?")) {
       const updated = certificationsData.filter(c => c.id !== id);
       updateCertificationsData(updated);
+      if (editingCert?.id === id) {
+        setEditingCert(null);
+        setIsCreatingNew(false);
+      }
       showToast("✓ Certification deleted successfully");
     }
   };
@@ -99,8 +111,855 @@ export const CertificationsCMS: React.FC<CertificationsCMSProps> = ({ notifySave
     showToast(`✓ Duplicated "${cert.name}"`);
   };
 
+  // ──────────────────────────────────────────────────────────────────────────
+  // IF IN EDITING MODE -> RENDER FULL DEDICATED EDITING PAGE
+  // ──────────────────────────────────────────────────────────────────────────
+  if (editingCert) {
+    return (
+      <div className="space-y-6 text-left font-[var(--font-poppins)] animate-fade-in pb-16">
+        {/* Toast */}
+        <AnimatePresence>
+          {toastMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="fixed top-4 right-4 z-[99999] bg-emerald-600 text-white px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2 text-xs font-bold"
+            >
+              <CheckCircle2 size={16} />
+              {toastMessage}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Top Breadcrumb & Actions Bar */}
+        <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 sticky top-4 z-40">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                setEditingCert(null);
+                setIsCreatingNew(false);
+              }}
+              className="h-9 px-3.5 bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs font-bold rounded-xl border border-gray-200 flex items-center gap-2 transition-colors cursor-pointer"
+            >
+              <ArrowLeft size={14} />
+              <span>Back to Certifications</span>
+            </button>
+            <div className="h-5 w-[1px] bg-gray-200 hidden sm:block"></div>
+            <div>
+              <div className="flex items-center gap-2">
+                <div 
+                  className="w-3.5 h-3.5 rounded-full ring-2 ring-white shadow-xs" 
+                  style={{ backgroundColor: editingCert.color || "#072A6C" }}
+                />
+                <h2 className="text-base font-black text-[#072A6C]">
+                  {isCreatingNew ? "Create New Global Certification" : `Editing: ${editingCert.name}`}
+                </h2>
+                <span className="text-[10px] font-bold px-2 py-0.5 bg-blue-50 text-[#072A6C] rounded-full uppercase tracking-wider hidden sm:inline-block">
+                  {editingCert.domain}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsPreviewOpen(true)}
+              className="h-9 px-3.5 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold rounded-xl border border-amber-200 flex items-center gap-1.5 transition-colors cursor-pointer"
+              title="Preview Modal as seen on the public website"
+            >
+              <Eye size={14} />
+              <span>Preview Live Modal</span>
+            </button>
+            <button
+              onClick={() => {
+                setEditingCert(null);
+                setIsCreatingNew(false);
+              }}
+              className="h-9 px-3.5 bg-gray-50 hover:bg-gray-100 text-gray-600 text-xs font-bold rounded-xl border border-gray-200 cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => handleSaveCert(editingCert)}
+              className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+            >
+              <Save size={14} />
+              <span>Save & Publish Live</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Section Tabs */}
+        <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3">
+          {[
+            { id: "overview", label: "1. Overview & Hero Banner", icon: Layout },
+            { id: "journey", label: `2. The Journey (${editingCert.timeline?.length || 0} Milestones)`, icon: Award },
+            { id: "features", label: `3. Why This Certification (${editingCert.features?.length || 0} Cards)`, icon: Zap },
+            { id: "skills", label: `4. Technical Arsenal (${editingCert.skills?.length || 0} Skills)`, icon: Sparkles },
+            { id: "industries", label: `5. Industry Applications (${editingCert.industries?.length || 0})`, icon: Building2 },
+            { id: "roadmap", label: `6. Career Progression (${editingCert.roadmap?.length || 0} Stages)`, icon: TrendingUp },
+            { id: "projectsStats", label: "7. Capstone Projects & Global Stats", icon: Globe },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = editorSectionTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setEditorSectionTab(tab.id as any)}
+                className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-2 cursor-pointer ${
+                  isActive
+                    ? "bg-[#072A6C] text-white shadow-xs"
+                    : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
+                }`}
+              >
+                <Icon size={14} />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {/* SECTION 1: OVERVIEW & HERO BANNER                              */}
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {editorSectionTab === "overview" && (
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+            <div className="pb-3 border-b border-gray-100 flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-black text-[#072A6C] uppercase tracking-wider">
+                  Partner Overview & Modal Hero Header
+                </h3>
+                <p className="text-xs text-gray-500">
+                  Configures the top hero banner inside the detail modal, partner badges, and course card details.
+                </p>
+              </div>
+              <span className="text-xs font-bold text-gray-400">ID: {editingCert.id}</span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
+              <div>
+                <label className="font-bold text-gray-700 block mb-1">
+                  Partner Name (e.g. SAP, ServiceNow, AWS):
+                </label>
+                <input
+                  type="text"
+                  value={editingCert.name}
+                  onChange={(e) => setEditingCert({ ...editingCert, name: e.target.value })}
+                  className="w-full h-10 px-3 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-gray-700 block mb-1">
+                  Domain / Category (e.g. Enterprise Resource Planning):
+                </label>
+                <input
+                  type="text"
+                  value={editingCert.domain}
+                  onChange={(e) => setEditingCert({ ...editingCert, domain: e.target.value })}
+                  className="w-full h-10 px-3 border border-gray-200 rounded-xl"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="font-bold text-gray-700 block mb-1">
+                  Modal Hero Headline / Tagline (e.g. Transforming Enterprise Operations):
+                </label>
+                <input
+                  type="text"
+                  value={editingCert.tagline}
+                  onChange={(e) => setEditingCert({ ...editingCert, tagline: e.target.value })}
+                  className="w-full h-10 px-3 border border-gray-200 rounded-xl font-bold text-base text-[#072A6C]"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="font-bold text-gray-700 block mb-1">
+                  Detailed Course Description (Appears on Card & inside Modal Hero):
+                </label>
+                <textarea
+                  rows={3}
+                  value={editingCert.description}
+                  onChange={(e) => setEditingCert({ ...editingCert, description: e.target.value })}
+                  className="w-full p-3 border border-gray-200 rounded-xl text-xs leading-relaxed"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-gray-700 block mb-1">
+                  Duration (e.g. 3-6 Months):
+                </label>
+                <input
+                  type="text"
+                  value={editingCert.duration}
+                  onChange={(e) => setEditingCert({ ...editingCert, duration: e.target.value })}
+                  className="w-full h-10 px-3 border border-gray-200 rounded-xl"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-gray-700 block mb-1">
+                  Difficulty Level (e.g. Advanced, Intermediate, Foundation):
+                </label>
+                <input
+                  type="text"
+                  value={editingCert.difficulty}
+                  onChange={(e) => setEditingCert({ ...editingCert, difficulty: e.target.value })}
+                  className="w-full h-10 px-3 border border-gray-200 rounded-xl"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-gray-700 block mb-1">
+                  Brand Theme Color (Accent Hex):
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={editingCert.color || "#072A6C"}
+                    onChange={(e) => setEditingCert({ ...editingCert, color: e.target.value })}
+                    className="w-10 h-10 rounded-xl border border-gray-200 cursor-pointer p-0.5"
+                  />
+                  <input
+                    type="text"
+                    value={editingCert.color}
+                    onChange={(e) => setEditingCert({ ...editingCert, color: e.target.value })}
+                    className="flex-1 h-10 px-3 border border-gray-200 rounded-xl font-mono uppercase text-xs"
+                  />
+                  <div 
+                    className="px-3 py-2 rounded-xl text-[10px] font-bold text-white uppercase" 
+                    style={{ backgroundColor: editingCert.color }}
+                  >
+                    Color Preview
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-gray-700 block mb-1">
+                  Interactive Layout Mode:
+                </label>
+                <select
+                  value={editingCert.layoutMode}
+                  onChange={(e) => setEditingCert({ ...editingCert, layoutMode: e.target.value as any })}
+                  className="w-full h-10 px-3 border border-gray-200 rounded-xl bg-white text-xs font-semibold"
+                >
+                  {["dashboard", "pipeline", "topology", "journey", "shield", "pcb", "factory", "code", "roadmap", "cloud", "global", "database", "lifecycle", "funnel"].map((m) => (
+                    <option key={m} value={m}>{m.toUpperCase()}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="font-bold text-gray-700 block mb-1">
+                  Partner Brand Logos (One URL per line):
+                </label>
+                <textarea
+                  rows={2}
+                  value={(editingCert.images || []).join("\n")}
+                  onChange={(e) => setEditingCert({
+                    ...editingCert,
+                    images: e.target.value.split("\n").map(s => s.trim()).filter(Boolean)
+                  })}
+                  className="w-full p-3 border border-gray-200 rounded-xl font-mono text-[11px]"
+                  placeholder="https://www.vectorlogo.zone/logos/sap/sap-ar21.svg"
+                />
+                <div className="flex flex-wrap gap-3 mt-2">
+                  {editingCert.images.map((img, idx) => (
+                    <div key={idx} className="p-2 bg-gray-50 border border-gray-200 rounded-lg flex items-center gap-2">
+                      <img src={img} alt="Logo" className="h-6 w-auto object-contain max-w-[80px]" />
+                      <span className="text-[10px] text-gray-400 font-mono truncate max-w-[120px]">{img}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {/* SECTION 2: THE JOURNEY (MILESTONES)                            */}
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {editorSectionTab === "journey" && (
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+              <div>
+                <h3 className="text-sm font-black text-[#072A6C] uppercase tracking-wider">
+                  The Learning Journey — "How You'll Get There"
+                </h3>
+                <p className="text-xs text-gray-500">
+                  Step-by-step milestone progression nodes rendered horizontally across the page.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  const newTimeline = [
+                    ...(editingCert.timeline || []),
+                    { milestone: `Milestone ${editingCert.timeline.length + 1}`, desc: "Comprehensive step description and lab work." }
+                  ];
+                  setEditingCert({ ...editingCert, timeline: newTimeline });
+                }}
+                className="h-8 px-3.5 bg-[#072A6C] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <Plus size={13} /> Add Milestone Step
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {editingCert.timeline.map((step, sIdx) => (
+                <div 
+                  key={sIdx} 
+                  className="p-4 bg-gray-50/80 border border-gray-200 rounded-2xl flex items-start gap-4 hover:border-gray-300 transition-colors"
+                >
+                  <div 
+                    className="w-8 h-8 rounded-full text-white font-bold flex items-center justify-center shrink-0 text-xs shadow-xs"
+                    style={{ backgroundColor: editingCert.color || "#072A6C" }}
+                  >
+                    {sIdx + 1}
+                  </div>
+                  <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <label className="text-[10px] font-bold text-gray-400 block uppercase mb-1">Milestone Name:</label>
+                      <input
+                        type="text"
+                        value={step.milestone}
+                        onChange={(e) => {
+                          const tl = [...editingCert.timeline];
+                          tl[sIdx].milestone = e.target.value;
+                          setEditingCert({ ...editingCert, timeline: tl });
+                        }}
+                        className="w-full h-9 px-3 bg-white border border-gray-200 rounded-xl font-bold text-[#072A6C] text-xs"
+                        placeholder="e.g. Foundation, Core Concepts..."
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="text-[10px] font-bold text-gray-400 block uppercase mb-1">Step Description:</label>
+                      <input
+                        type="text"
+                        value={step.desc}
+                        onChange={(e) => {
+                          const tl = [...editingCert.timeline];
+                          tl[sIdx].desc = e.target.value;
+                          setEditingCert({ ...editingCert, timeline: tl });
+                        }}
+                        className="w-full h-9 px-3 bg-white border border-gray-200 rounded-xl text-gray-700 text-xs"
+                        placeholder="Understanding the fundamentals and architectural components"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const tl = editingCert.timeline.filter((_, i) => i !== sIdx);
+                      setEditingCert({ ...editingCert, timeline: tl });
+                    }}
+                    className="p-2 text-gray-400 hover:text-red-600 rounded-lg transition-colors cursor-pointer mt-5"
+                    title="Remove step"
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {/* SECTION 3: WHY THIS CERTIFICATION (FEATURE CARDS)              */}
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {editorSectionTab === "features" && (
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+              <div>
+                <h3 className="text-sm font-black text-[#072A6C] uppercase tracking-wider">
+                  Why This Certification — "Unlock Your Potential"
+                </h3>
+                <p className="text-xs text-gray-500">
+                  Value proposition cards highlighting employability, industry readiness, salary potential, and global scope.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  const newFeatures = [
+                    ...(editingCert.features || []),
+                    { icon: "Zap", title: "New Advantage", desc: "Gain unique practical expertise and industry readiness." }
+                  ];
+                  setEditingCert({ ...editingCert, features: newFeatures });
+                }}
+                className="h-8 px-3.5 bg-[#072A6C] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <Plus size={13} /> Add Benefit Card
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {editingCert.features.map((feat, fIdx) => (
+                <div key={fIdx} className="p-4 bg-gray-50/80 border border-gray-200 rounded-2xl space-y-3 relative">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase text-gray-400">Card #{fIdx + 1}</span>
+                    <button
+                      onClick={() => {
+                        const updated = editingCert.features.filter((_, i) => i !== fIdx);
+                        setEditingCert({ ...editingCert, features: updated });
+                      }}
+                      className="p-1 text-gray-400 hover:text-red-600 rounded transition-colors"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="col-span-2">
+                      <label className="text-[10px] font-bold text-gray-400 block uppercase mb-1">Title:</label>
+                      <input
+                        type="text"
+                        value={feat.title}
+                        onChange={(e) => {
+                          const updated = [...editingCert.features];
+                          updated[fIdx].title = e.target.value;
+                          setEditingCert({ ...editingCert, features: updated });
+                        }}
+                        className="w-full h-8 px-2.5 bg-white border border-gray-200 rounded-lg font-bold text-[#072A6C] text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-gray-400 block uppercase mb-1">Icon:</label>
+                      <select
+                        value={feat.icon}
+                        onChange={(e) => {
+                          const updated = [...editingCert.features];
+                          updated[fIdx].icon = e.target.value;
+                          setEditingCert({ ...editingCert, features: updated });
+                        }}
+                        className="w-full h-8 px-2 bg-white border border-gray-200 rounded-lg text-xs"
+                      >
+                        <option value="Briefcase">Briefcase</option>
+                        <option value="Zap">Zap</option>
+                        <option value="TrendingUp">TrendingUp</option>
+                        <option value="Globe">Globe</option>
+                        <option value="Award">Award</option>
+                        <option value="ShieldCheck">ShieldCheck</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-gray-400 block uppercase mb-1">Description:</label>
+                    <textarea
+                      rows={2}
+                      value={feat.desc}
+                      onChange={(e) => {
+                        const updated = [...editingCert.features];
+                        updated[fIdx].desc = e.target.value;
+                        setEditingCert({ ...editingCert, features: updated });
+                      }}
+                      className="w-full p-2 bg-white border border-gray-200 rounded-lg text-xs"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {/* SECTION 4: SKILLS YOU'LL MASTER (TECHNICAL ARSENAL)            */}
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {editorSectionTab === "skills" && (
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+            <div className="pb-3 border-b border-gray-100">
+              <h3 className="text-sm font-black text-[#072A6C] uppercase tracking-wider">
+                Skills You'll Master — "Your Technical Arsenal"
+              </h3>
+              <p className="text-xs text-gray-500">
+                Interactive pill badges displayed in the center of the page.
+              </p>
+            </div>
+
+            <div>
+              <label className="font-bold text-gray-700 block mb-2 text-xs">
+                Skills List (Comma-separated or manage chips below):
+              </label>
+              <textarea
+                rows={3}
+                value={(editingCert.skills || []).join(", ")}
+                onChange={(e) => setEditingCert({
+                  ...editingCert,
+                  skills: e.target.value.split(",").map(s => s.trim()).filter(Boolean)
+                })}
+                className="w-full p-3 border border-gray-200 rounded-xl text-xs"
+                placeholder="Cloud Computing, Architecture, Security, DevOps, Networking, Database, Analytics, AI/ML..."
+              />
+            </div>
+
+            <div className="pt-2">
+              <label className="font-bold text-gray-500 block mb-2 text-xs uppercase tracking-wider">
+                Active Skill Chips Preview ({editingCert.skills.length}):
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {editingCert.skills.map((skill, sIdx) => (
+                  <div 
+                    key={sIdx}
+                    className="px-3.5 py-1.5 bg-gray-50 border border-gray-200 rounded-full text-xs font-bold text-gray-700 flex items-center gap-2 hover:border-[#072A6C] transition-colors"
+                  >
+                    <span>{skill}</span>
+                    <button
+                      onClick={() => {
+                        const updated = editingCert.skills.filter((_, i) => i !== sIdx);
+                        setEditingCert({ ...editingCert, skills: updated });
+                      }}
+                      className="text-gray-400 hover:text-red-500 cursor-pointer"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {/* SECTION 5: WHERE IS IT USED? (INDUSTRY APPLICATIONS)          */}
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {editorSectionTab === "industries" && (
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+              <div>
+                <h3 className="text-sm font-black text-[#072A6C] uppercase tracking-wider">
+                  Where Is It Used? — "Industry Applications"
+                </h3>
+                <p className="text-xs text-gray-500">
+                  Target industry verticals where this credential has strong commercial application.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  const updated = [
+                    ...(editingCert.industries || []),
+                    { name: "New Industry", desc: "Automating enterprise and sector workflows" }
+                  ];
+                  setEditingCert({ ...editingCert, industries: updated });
+                }}
+                className="h-8 px-3.5 bg-[#072A6C] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <Plus size={13} /> Add Industry
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {editingCert.industries.map((ind, iIdx) => (
+                <div key={iIdx} className="p-4 bg-gray-50 border border-gray-200 rounded-2xl space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-gray-400 uppercase">Industry #{iIdx + 1}</span>
+                    <button
+                      onClick={() => {
+                        const updated = editingCert.industries.filter((_, i) => i !== iIdx);
+                        setEditingCert({ ...editingCert, industries: updated });
+                      }}
+                      className="p-1 text-gray-400 hover:text-red-600 rounded"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-gray-400 block uppercase mb-1">Industry Name:</label>
+                    <input
+                      type="text"
+                      value={ind.name}
+                      onChange={(e) => {
+                        const updated = [...editingCert.industries];
+                        updated[iIdx].name = e.target.value;
+                        setEditingCert({ ...editingCert, industries: updated });
+                      }}
+                      className="w-full h-8 px-2.5 bg-white border border-gray-200 rounded-lg font-bold text-[#072A6C] text-xs"
+                      placeholder="e.g. Manufacturing, Banking..."
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-gray-400 block uppercase mb-1">Application Scope:</label>
+                    <textarea
+                      rows={2}
+                      value={ind.desc}
+                      onChange={(e) => {
+                        const updated = [...editingCert.industries];
+                        updated[iIdx].desc = e.target.value;
+                        setEditingCert({ ...editingCert, industries: updated });
+                      }}
+                      className="w-full p-2 bg-white border border-gray-200 rounded-lg text-xs"
+                      placeholder="Automating supply chains"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {/* SECTION 6: CAREER PROGRESSION ROADMAP                          */}
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {editorSectionTab === "roadmap" && (
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+              <div>
+                <h3 className="text-sm font-black text-[#072A6C] uppercase tracking-wider">
+                  Career Roadmap — "Your Progression"
+                </h3>
+                <p className="text-xs text-gray-500">
+                  Career growth timeline steps from Student to Lead/Architect with experience milestones.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  const updated = [
+                    ...(editingCert.roadmap || []),
+                    { role: "Senior Consultant", exp: "5-8 Yrs" }
+                  ];
+                  setEditingCert({ ...editingCert, roadmap: updated });
+                }}
+                className="h-8 px-3.5 bg-[#072A6C] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <Plus size={13} /> Add Career Stage
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {editingCert.roadmap.map((rm, rIdx) => (
+                <div key={rIdx} className="p-3.5 bg-gray-50 border border-gray-200 rounded-xl flex items-center gap-3">
+                  <span className="w-6 h-6 rounded-full bg-[#072A6C] text-white text-[10px] font-bold flex items-center justify-center shrink-0">
+                    {rIdx + 1}
+                  </span>
+                  <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <input
+                      type="text"
+                      value={rm.role}
+                      onChange={(e) => {
+                        const updated = [...editingCert.roadmap];
+                        updated[rIdx].role = e.target.value;
+                        setEditingCert({ ...editingCert, roadmap: updated });
+                      }}
+                      className="h-9 px-3 bg-white border border-gray-200 rounded-xl font-bold text-[#072A6C] text-xs"
+                      placeholder="Role Title (e.g. Junior Engineer, Architect)"
+                    />
+                    <input
+                      type="text"
+                      value={rm.exp}
+                      onChange={(e) => {
+                        const updated = [...editingCert.roadmap];
+                        updated[rIdx].exp = e.target.value;
+                        setEditingCert({ ...editingCert, roadmap: updated });
+                      }}
+                      className="h-9 px-3 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-gray-700"
+                      placeholder="Experience (e.g. 0-2 Yrs, 3-5 Yrs)"
+                    />
+                  </div>
+                  <button
+                    onClick={() => {
+                      const updated = editingCert.roadmap.filter((_, i) => i !== rIdx);
+                      setEditingCert({ ...editingCert, roadmap: updated });
+                    }}
+                    className="p-2 text-gray-400 hover:text-red-600 rounded"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {/* SECTION 7: CAPSTONE PROJECTS & GLOBAL STATS                    */}
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {editorSectionTab === "projectsStats" && (
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+            <div className="pb-3 border-b border-gray-100">
+              <h3 className="text-sm font-black text-[#072A6C] uppercase tracking-wider">
+                Capstone Projects, Hiring Companies & Global Impact
+              </h3>
+              <p className="text-xs text-gray-500">
+                Hands-on practical projects, marquee companies hiring for this skill, and global demand metrics.
+              </p>
+            </div>
+
+            {/* Global Recognition Stats */}
+            <div className="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-4">
+              <h4 className="font-black text-[#072A6C] text-xs uppercase tracking-wider">
+                Global Impact Metrics
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                <div>
+                  <label className="font-bold text-gray-600 block mb-1">Countries Count:</label>
+                  <input
+                    type="number"
+                    value={editingCert.stats?.countries || 140}
+                    onChange={(e) => setEditingCert({
+                      ...editingCert,
+                      stats: { ...editingCert.stats, countries: parseInt(e.target.value) || 0 }
+                    })}
+                    className="w-full h-9 px-3 bg-white border border-gray-200 rounded-xl font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-gray-600 block mb-1">Jobs Open (e.g. 500K+):</label>
+                  <input
+                    type="text"
+                    value={editingCert.stats?.jobs || "500K+"}
+                    onChange={(e) => setEditingCert({
+                      ...editingCert,
+                      stats: { ...editingCert.stats, jobs: e.target.value }
+                    })}
+                    className="w-full h-9 px-3 bg-white border border-gray-200 rounded-xl font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-gray-600 block mb-1">Demand Growth (e.g. Growing 25% YoY):</label>
+                  <input
+                    type="text"
+                    value={editingCert.stats?.demand || "Growing 25% YoY"}
+                    onChange={(e) => setEditingCert({
+                      ...editingCert,
+                      stats: { ...editingCert.stats, demand: e.target.value }
+                    })}
+                    className="w-full h-9 px-3 bg-white border border-gray-200 rounded-xl font-bold"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Top Hiring Companies */}
+            <div>
+              <label className="font-bold text-gray-700 block mb-1 text-xs">
+                Top Hiring Companies (Comma-separated):
+              </label>
+              <textarea
+                rows={2}
+                value={(editingCert.companies || []).join(", ")}
+                onChange={(e) => setEditingCert({
+                  ...editingCert,
+                  companies: e.target.value.split(",").map(s => s.trim()).filter(Boolean)
+                })}
+                className="w-full p-3 border border-gray-200 rounded-xl text-xs"
+                placeholder="Amazon, Google, Microsoft, TCS, Infosys, Deloitte, Wipro..."
+              />
+            </div>
+
+            {/* Capstone Projects */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="font-bold text-gray-700 text-xs">Hands-on Capstone Projects:</label>
+                <button
+                  onClick={() => {
+                    const pj = [
+                      ...(editingCert.projects || []),
+                      { name: "New Real-World Capstone Project", duration: "3 Weeks", difficulty: "Medium" }
+                    ];
+                    setEditingCert({ ...editingCert, projects: pj });
+                  }}
+                  className="h-7 px-3 bg-blue-50 text-[#072A6C] text-[11px] font-bold rounded-lg flex items-center gap-1"
+                >
+                  <Plus size={12} /> Add Capstone Project
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {editingCert.projects.map((proj, pIdx) => (
+                  <div key={pIdx} className="flex gap-2 items-center bg-gray-50 p-2.5 rounded-xl border border-gray-200">
+                    <input
+                      type="text"
+                      value={proj.name}
+                      onChange={(e) => {
+                        const updated = [...editingCert.projects];
+                        updated[pIdx].name = e.target.value;
+                        setEditingCert({ ...editingCert, projects: updated });
+                      }}
+                      className="flex-1 h-8 px-2.5 bg-white border border-gray-200 rounded-lg font-bold text-xs"
+                      placeholder="Project Name"
+                    />
+                    <input
+                      type="text"
+                      value={proj.duration}
+                      onChange={(e) => {
+                        const updated = [...editingCert.projects];
+                        updated[pIdx].duration = e.target.value;
+                        setEditingCert({ ...editingCert, projects: updated });
+                      }}
+                      className="w-24 h-8 px-2.5 bg-white border border-gray-200 rounded-lg text-center text-xs"
+                      placeholder="4 Weeks"
+                    />
+                    <input
+                      type="text"
+                      value={proj.difficulty}
+                      onChange={(e) => {
+                        const updated = [...editingCert.projects];
+                        updated[pIdx].difficulty = e.target.value;
+                        setEditingCert({ ...editingCert, projects: updated });
+                      }}
+                      className="w-24 h-8 px-2.5 bg-white border border-gray-200 rounded-lg text-center text-xs"
+                      placeholder="Hard"
+                    />
+                    <button
+                      onClick={() => {
+                        const updated = editingCert.projects.filter((_, i) => i !== pIdx);
+                        setEditingCert({ ...editingCert, projects: updated });
+                      }}
+                      className="p-1.5 text-gray-400 hover:text-red-600 rounded"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Bottom Save Action Bar */}
+        <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between gap-4">
+          <button
+            onClick={() => {
+              setEditingCert(null);
+              setIsCreatingNew(false);
+            }}
+            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl cursor-pointer"
+          >
+            ← Cancel & Back to List
+          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsPreviewOpen(true)}
+              className="px-4 py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold rounded-xl border border-amber-200 flex items-center gap-1.5 cursor-pointer"
+            >
+              <Eye size={14} />
+              <span>Preview Live Modal</span>
+            </button>
+            <button
+              onClick={() => handleSaveCert(editingCert)}
+              className="px-6 py-2.5 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl flex items-center gap-2 shadow-xs cursor-pointer"
+            >
+              <Save size={15} />
+              <span>Save & Publish Live</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Live Interactive Preview Modal */}
+        <AnimatePresence>
+          {isPreviewOpen && editingCert && (
+            <FullscreenModal
+              cert={editingCert}
+              onClose={() => setIsPreviewOpen(false)}
+            />
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // MAIN CERTIFICATIONS LIST VIEW (When not in full-page editing mode)
+  // ──────────────────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-6 text-left font-[var(--font-poppins)]">
+    <div className="space-y-6 text-left font-[var(--font-poppins)] animate-fade-in">
       {/* Toast */}
       <AnimatePresence>
         {toastMessage && (
@@ -121,11 +980,11 @@ export const CertificationsCMS: React.FC<CertificationsCMSProps> = ({ notifySave
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-[#D4AF37] uppercase tracking-wider mb-1">
             <Award size={16} />
-            <span>Industry-Recognized Credentials</span>
+            <span>Industry-Recognized Credentials CMS</span>
           </div>
-          <h2 className="text-xl font-black text-[#072A6C]">Global Certifications CMS</h2>
+          <h2 className="text-xl font-black text-[#072A6C]">Global Certifications Management</h2>
           <p className="text-xs text-gray-500 mt-1">
-            Manage all 14+ global certification cards, inside modal content, partner logos, learning roadmaps, skills, and page banners.
+            Manage all 14+ global certification courses, inside learning journeys, skills arsenal, roadmap milestones, and page banners.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -168,7 +1027,7 @@ export const CertificationsCMS: React.FC<CertificationsCMSProps> = ({ notifySave
       </div>
 
       {/* ═══════════════════════════════════════════════════════════════ */}
-      {/* SUBTAB 1: ALL CERTIFICATIONS LIST & FULL INSIDE MODAL CMS      */}
+      {/* SUBTAB 1: ALL CERTIFICATIONS LIST                             */}
       {/* ═══════════════════════════════════════════════════════════════ */}
       {activeSubTab === "certs" && (
         <div className="space-y-6">
@@ -199,12 +1058,12 @@ export const CertificationsCMS: React.FC<CertificationsCMSProps> = ({ notifySave
                   duration: "3-6 Months",
                   difficulty: "Advanced",
                   timeline: [
-                    { milestone: "Foundation", desc: "Core fundamental principles and architecture overview" },
-                    { milestone: "Core Concepts", desc: "In-depth module study and practical system administration" },
-                    { milestone: "Hands-on Labs", desc: "Live real-world cloud deployment simulations" },
-                    { milestone: "Industry Projects", desc: "Full-scale capstone implementation" },
-                    { milestone: "Assessment", desc: "Mock testing and validation" },
-                    { milestone: "Certification", desc: "Official examination and global credential award" }
+                    { milestone: "Foundation", desc: "Understanding fundamental architecture and baseline workflows" },
+                    { milestone: "Core Concepts", desc: "In-depth module study and practical system design" },
+                    { milestone: "Hands-on Labs", desc: "Live practical scenarios and cloud deployment simulations" },
+                    { milestone: "Industry Projects", desc: "Real-world capstone project implementation" },
+                    { milestone: "Assessment", desc: "Mock examinations, evaluations, and rubrics" },
+                    { milestone: "Certification", desc: "Earning the official global credential" }
                   ],
                   features: [
                     { icon: "Briefcase", title: "Increase Employability", desc: "Gain globally recognized skills valued by top recruiters." },
@@ -212,19 +1071,25 @@ export const CertificationsCMS: React.FC<CertificationsCMSProps> = ({ notifySave
                     { icon: "TrendingUp", title: "Higher Salary Potential", desc: "Develop specialized expertise that increases career opportunities." },
                     { icon: "Globe", title: "Global Opportunities", desc: "Recognized across multiple countries and industries." }
                   ],
-                  skills: ["Cloud Computing", "Enterprise Systems", "Security", "DevOps"],
+                  skills: ["Cloud Computing", "Architecture", "Security", "DevOps", "Networking", "Database", "Analytics", "AI/ML"],
                   industries: [
-                    { name: "IT & Tech", desc: "Building scalable platforms" },
-                    { name: "Banking & Finance", desc: "Securing financial infrastructure" }
+                    { name: "Manufacturing", desc: "Automating supply chains" },
+                    { name: "Banking", desc: "Securing financial data" },
+                    { name: "Healthcare", desc: "Managing patient systems" },
+                    { name: "IT & Tech", desc: "Building scalable platforms" }
                   ],
                   roadmap: [
                     { role: "Student", exp: "0 Yrs" },
-                    { role: "Certified Specialist", exp: "0-1 Yrs" },
-                    { role: "Senior Engineer", exp: "3-5 Yrs" }
+                    { role: "Certified Professional", exp: "0-1 Yrs" },
+                    { role: "Junior Engineer", exp: "1-3 Yrs" },
+                    { role: "Senior Engineer", exp: "3-5 Yrs" },
+                    { role: "Architect", exp: "5-8 Yrs" },
+                    { role: "Consultant / Lead", exp: "8+ Yrs" }
                   ],
                   companies: ["Amazon", "Google", "Microsoft", "TCS", "Infosys", "Deloitte"],
                   projects: [
-                    { name: "Enterprise Systems Deployment", duration: "4 Weeks", difficulty: "Hard" }
+                    { name: "Enterprise Systems Deployment", duration: "4 Weeks", difficulty: "Hard" },
+                    { name: "Cloud Infrastructure Setup", duration: "3 Weeks", difficulty: "Medium" }
                   ],
                   stats: {
                     countries: 140,
@@ -232,8 +1097,8 @@ export const CertificationsCMS: React.FC<CertificationsCMSProps> = ({ notifySave
                     demand: "Growing 25% YoY"
                   }
                 });
-                setModalTab("general");
-                setIsAddOpen(true);
+                setIsCreatingNew(true);
+                setEditorSectionTab("overview");
               }}
               className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
             >
@@ -267,10 +1132,11 @@ export const CertificationsCMS: React.FC<CertificationsCMSProps> = ({ notifySave
                       <button
                         onClick={() => {
                           setEditingCert(cert);
-                          setModalTab("general");
+                          setIsCreatingNew(false);
+                          setEditorSectionTab("overview");
                         }}
                         className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
-                        title="Edit Full Inside Content"
+                        title="Edit Full Page CMS"
                       >
                         <Edit3 size={14} />
                       </button>
@@ -313,7 +1179,8 @@ export const CertificationsCMS: React.FC<CertificationsCMSProps> = ({ notifySave
                   <button
                     onClick={() => {
                       setEditingCert(cert);
-                      setModalTab("general");
+                      setIsCreatingNew(false);
+                      setEditorSectionTab("overview");
                     }}
                     className="w-full py-2 bg-gray-50 hover:bg-[#072A6C] text-gray-700 hover:text-white text-xs font-bold rounded-xl border border-gray-200 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                   >
@@ -448,554 +1315,8 @@ export const CertificationsCMS: React.FC<CertificationsCMSProps> = ({ notifySave
           </div>
         </div>
       )}
-
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      {/* FULL INSIDE MODAL & DETAILED CONTENT EDITOR                    */}
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      <AnimatePresence>
-        {(editingCert || isAddOpen) && (
-          <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-3xl p-6 max-w-4xl w-full shadow-2xl border border-gray-100 space-y-5 my-8 text-left max-h-[90vh] flex flex-col"
-            >
-              {/* Modal Top Header */}
-              <div className="flex items-center justify-between pb-4 border-b border-gray-100 shrink-0">
-                <div className="flex items-center gap-2">
-                  <div 
-                    className="w-4 h-4 rounded-full" 
-                    style={{ backgroundColor: editingCert?.color || "#072A6C" }}
-                  />
-                  <h3 className="text-lg font-black text-[#072A6C]">
-                    {editingCert ? `Edit "${editingCert.name}" (Full Content & Modal)` : "Add New Global Certification"}
-                  </h3>
-                </div>
-                <button
-                  onClick={() => { setEditingCert(null); setIsAddOpen(false); }}
-                  className="p-1.5 text-gray-400 hover:text-gray-700 rounded-lg cursor-pointer"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* Modal Subtabs */}
-              <div className="flex flex-wrap gap-1.5 border-b border-gray-100 pb-2 shrink-0">
-                {[
-                  { id: "general", label: "1. General & Hero" },
-                  { id: "journey", label: "2. The Journey (Milestones)" },
-                  { id: "skillsCareer", label: "3. Skills & Career Roadmap" },
-                  { id: "projectsStats", label: "4. Projects & Global Stats" },
-                  { id: "featuresIndustries", label: "5. Value Props & Industries" }
-                ].map((t) => (
-                  <button
-                    key={t.id}
-                    onClick={() => setModalTab(t.id as any)}
-                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                      modalTab === t.id
-                        ? "bg-[#072A6C] text-white shadow-xs"
-                        : "bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200"
-                    }`}
-                  >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Modal Tab Body */}
-              <div className="flex-1 overflow-y-auto space-y-4 pr-1 text-xs">
-                {editingCert && (
-                  <>
-                    {/* TAB 1: GENERAL & HERO */}
-                    {modalTab === "general" && (
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="font-bold text-gray-700 block mb-1">Certification Name (e.g. SAP, AWS):</label>
-                            <input
-                              type="text"
-                              value={editingCert.name}
-                              onChange={(e) => setEditingCert({ ...editingCert, name: e.target.value })}
-                              className="w-full h-9 px-3 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="font-bold text-gray-700 block mb-1">Domain (e.g. Workflow Automation):</label>
-                            <input
-                              type="text"
-                              value={editingCert.domain}
-                              onChange={(e) => setEditingCert({ ...editingCert, domain: e.target.value })}
-                              className="w-full h-9 px-3 border border-gray-200 rounded-xl"
-                            />
-                          </div>
-
-                          <div className="md:col-span-2">
-                            <label className="font-bold text-gray-700 block mb-1">Hero Tagline / Partner Headline (e.g. Transforming Enterprise Operations):</label>
-                            <input
-                              type="text"
-                              value={editingCert.tagline}
-                              onChange={(e) => setEditingCert({ ...editingCert, tagline: e.target.value })}
-                              className="w-full h-9 px-3 border border-gray-200 rounded-xl font-bold"
-                            />
-                          </div>
-
-                          <div className="md:col-span-2">
-                            <label className="font-bold text-gray-700 block mb-1">Detailed Description:</label>
-                            <textarea
-                              rows={3}
-                              value={editingCert.description}
-                              onChange={(e) => setEditingCert({ ...editingCert, description: e.target.value })}
-                              className="w-full p-3 border border-gray-200 rounded-xl"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="font-bold text-gray-700 block mb-1">Duration (e.g. 3-6 Months):</label>
-                            <input
-                              type="text"
-                              value={editingCert.duration}
-                              onChange={(e) => setEditingCert({ ...editingCert, duration: e.target.value })}
-                              className="w-full h-9 px-3 border border-gray-200 rounded-xl"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="font-bold text-gray-700 block mb-1">Difficulty Level (e.g. Advanced, Intermediate):</label>
-                            <input
-                              type="text"
-                              value={editingCert.difficulty}
-                              onChange={(e) => setEditingCert({ ...editingCert, difficulty: e.target.value })}
-                              className="w-full h-9 px-3 border border-gray-200 rounded-xl"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="font-bold text-gray-700 block mb-1">Theme Accent Hex Color (e.g. #0FAFFF):</label>
-                            <div className="flex items-center gap-2">
-                              <input
-                                type="color"
-                                value={editingCert.color || "#072A6C"}
-                                onChange={(e) => setEditingCert({ ...editingCert, color: e.target.value })}
-                                className="w-9 h-9 rounded-lg border border-gray-200 cursor-pointer p-0.5"
-                              />
-                              <input
-                                type="text"
-                                value={editingCert.color}
-                                onChange={(e) => setEditingCert({ ...editingCert, color: e.target.value })}
-                                className="flex-1 h-9 px-3 border border-gray-200 rounded-xl uppercase font-mono"
-                              />
-                            </div>
-                          </div>
-
-                          <div>
-                            <label className="font-bold text-gray-700 block mb-1">Layout Mode:</label>
-                            <select
-                              value={editingCert.layoutMode}
-                              onChange={(e) => setEditingCert({ ...editingCert, layoutMode: e.target.value as any })}
-                              className="w-full h-9 px-3 border border-gray-200 rounded-xl bg-white"
-                            >
-                              {["dashboard", "pipeline", "topology", "journey", "shield", "pcb", "factory", "code", "roadmap", "cloud", "global", "database", "lifecycle", "funnel"].map((m) => (
-                                <option key={m} value={m}>{m.toUpperCase()}</option>
-                              ))}
-                            </select>
-                          </div>
-
-                          <div className="md:col-span-2">
-                            <label className="font-bold text-gray-700 block mb-1">Partner Logo URLs (Comma separated):</label>
-                            <textarea
-                              rows={2}
-                              value={(editingCert.images || []).join("\n")}
-                              onChange={(e) => setEditingCert({
-                                ...editingCert,
-                                images: e.target.value.split("\n").map(s => s.trim()).filter(Boolean)
-                              })}
-                              className="w-full p-2.5 border border-gray-200 rounded-xl font-mono text-[11px]"
-                              placeholder="https://www.vectorlogo.zone/logos/sap/sap-ar21.svg"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* TAB 2: THE JOURNEY (MILESTONES) */}
-                    {modalTab === "journey" && (
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <h4 className="font-black text-[#072A6C] uppercase tracking-wider">
-                            The Learning Journey Milestones ({editingCert.timeline.length} Steps)
-                          </h4>
-                          <button
-                            onClick={() => {
-                              const newTimeline = [
-                                ...(editingCert.timeline || []),
-                                { milestone: "New Milestone", desc: "Detailed step description" }
-                              ];
-                              setEditingCert({ ...editingCert, timeline: newTimeline });
-                            }}
-                            className="h-7 px-3 bg-blue-50 hover:bg-blue-100 text-[#072A6C] text-[11px] font-bold rounded-lg flex items-center gap-1"
-                          >
-                            <Plus size={12} /> Add Milestone
-                          </button>
-                        </div>
-
-                        <div className="space-y-3">
-                          {editingCert.timeline.map((step, sIdx) => (
-                            <div key={sIdx} className="p-3.5 bg-gray-50 border border-gray-200 rounded-xl flex items-start gap-3">
-                              <span className="w-6 h-6 rounded-full bg-[#072A6C] text-white font-bold flex items-center justify-center shrink-0 mt-1 text-[10px]">
-                                {sIdx + 1}
-                              </span>
-                              <div className="flex-1 space-y-2">
-                                <input
-                                  type="text"
-                                  value={step.milestone}
-                                  onChange={(e) => {
-                                    const tl = [...editingCert.timeline];
-                                    tl[sIdx].milestone = e.target.value;
-                                    setEditingCert({ ...editingCert, timeline: tl });
-                                  }}
-                                  className="w-full h-8 px-2.5 bg-white border border-gray-200 rounded-lg font-bold text-[#072A6C]"
-                                  placeholder="Milestone Title"
-                                />
-                                <input
-                                  type="text"
-                                  value={step.desc}
-                                  onChange={(e) => {
-                                    const tl = [...editingCert.timeline];
-                                    tl[sIdx].desc = e.target.value;
-                                    setEditingCert({ ...editingCert, timeline: tl });
-                                  }}
-                                  className="w-full h-8 px-2.5 bg-white border border-gray-200 rounded-lg text-gray-600"
-                                  placeholder="Step Description"
-                                />
-                              </div>
-                              <button
-                                onClick={() => {
-                                  const tl = editingCert.timeline.filter((_, i) => i !== sIdx);
-                                  setEditingCert({ ...editingCert, timeline: tl });
-                                }}
-                                className="p-1.5 text-gray-400 hover:text-red-600 rounded"
-                              >
-                                <Trash2 size={14} />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* TAB 3: SKILLS & CAREER ROADMAP */}
-                    {modalTab === "skillsCareer" && (
-                      <div className="space-y-5">
-                        {/* Skills Chips */}
-                        <div>
-                          <label className="font-bold text-gray-700 block mb-1">
-                            Skills Acquired (Comma separated tags):
-                          </label>
-                          <textarea
-                            rows={2}
-                            value={(editingCert.skills || []).join(", ")}
-                            onChange={(e) => setEditingCert({
-                              ...editingCert,
-                              skills: e.target.value.split(",").map(s => s.trim()).filter(Boolean)
-                            })}
-                            className="w-full p-2.5 border border-gray-200 rounded-xl"
-                            placeholder="Cloud Computing, Security, DevOps, Architecture..."
-                          />
-                        </div>
-
-                        {/* Hiring Companies */}
-                        <div>
-                          <label className="font-bold text-gray-700 block mb-1">
-                            Top Hiring Companies (Comma separated):
-                          </label>
-                          <textarea
-                            rows={2}
-                            value={(editingCert.companies || []).join(", ")}
-                            onChange={(e) => setEditingCert({
-                              ...editingCert,
-                              companies: e.target.value.split(",").map(s => s.trim()).filter(Boolean)
-                            })}
-                            className="w-full p-2.5 border border-gray-200 rounded-xl"
-                            placeholder="Amazon, Google, Microsoft, TCS, Infosys, Deloitte..."
-                          />
-                        </div>
-
-                        {/* Career Roadmap */}
-                        <div>
-                          <div className="flex items-center justify-between mb-2">
-                            <label className="font-bold text-gray-700">Career Progression Roles:</label>
-                            <button
-                              onClick={() => {
-                                const rm = [...(editingCert.roadmap || []), { role: "New Role", exp: "1-3 Yrs" }];
-                                setEditingCert({ ...editingCert, roadmap: rm });
-                              }}
-                              className="h-6 px-2.5 bg-blue-50 text-[#072A6C] text-[10px] font-bold rounded-lg flex items-center gap-1"
-                            >
-                              <Plus size={11} /> Add Role
-                            </button>
-                          </div>
-                          <div className="space-y-2">
-                            {editingCert.roadmap.map((rm, rIdx) => (
-                              <div key={rIdx} className="flex gap-2 items-center">
-                                <input
-                                  type="text"
-                                  value={rm.role}
-                                  onChange={(e) => {
-                                    const updated = [...editingCert.roadmap];
-                                    updated[rIdx].role = e.target.value;
-                                    setEditingCert({ ...editingCert, roadmap: updated });
-                                  }}
-                                  className="flex-1 h-8 px-2.5 border border-gray-200 rounded-lg font-bold"
-                                  placeholder="Role Title"
-                                />
-                                <input
-                                  type="text"
-                                  value={rm.exp}
-                                  onChange={(e) => {
-                                    const updated = [...editingCert.roadmap];
-                                    updated[rIdx].exp = e.target.value;
-                                    setEditingCert({ ...editingCert, roadmap: updated });
-                                  }}
-                                  className="w-28 h-8 px-2.5 border border-gray-200 rounded-lg text-center"
-                                  placeholder="0-2 Yrs"
-                                />
-                                <button
-                                  onClick={() => {
-                                    const updated = editingCert.roadmap.filter((_, i) => i !== rIdx);
-                                    setEditingCert({ ...editingCert, roadmap: updated });
-                                  }}
-                                  className="p-1.5 text-gray-400 hover:text-red-600 rounded"
-                                >
-                                  <Trash2 size={13} />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* TAB 4: PROJECTS & GLOBAL STATS */}
-                    {modalTab === "projectsStats" && (
-                      <div className="space-y-5">
-                        {/* Stats */}
-                        <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3">
-                          <h4 className="font-bold text-[#072A6C] uppercase text-[11px]">Global Recognition Stats</h4>
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <div>
-                              <label className="font-bold text-gray-600 block mb-1">Countries Count:</label>
-                              <input
-                                type="number"
-                                value={editingCert.stats?.countries || 140}
-                                onChange={(e) => setEditingCert({
-                                  ...editingCert,
-                                  stats: { ...editingCert.stats, countries: parseInt(e.target.value) || 0 }
-                                })}
-                                className="w-full h-8 px-2.5 bg-white border border-gray-200 rounded-lg"
-                              />
-                            </div>
-                            <div>
-                              <label className="font-bold text-gray-600 block mb-1">Jobs Open (e.g. 500K+):</label>
-                              <input
-                                type="text"
-                                value={editingCert.stats?.jobs || "500K+"}
-                                onChange={(e) => setEditingCert({
-                                  ...editingCert,
-                                  stats: { ...editingCert.stats, jobs: e.target.value }
-                                })}
-                                className="w-full h-8 px-2.5 bg-white border border-gray-200 rounded-lg"
-                              />
-                            </div>
-                            <div>
-                              <label className="font-bold text-gray-600 block mb-1">Demand Growth (e.g. 25% YoY):</label>
-                              <input
-                                type="text"
-                                value={editingCert.stats?.demand || "Growing 25% YoY"}
-                                onChange={(e) => setEditingCert({
-                                  ...editingCert,
-                                  stats: { ...editingCert.stats, demand: e.target.value }
-                                })}
-                                className="w-full h-8 px-2.5 bg-white border border-gray-200 rounded-lg"
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Projects */}
-                        <div>
-                          <div className="flex items-center justify-between mb-2">
-                            <label className="font-bold text-gray-700">Hands-on Capstone Projects:</label>
-                            <button
-                              onClick={() => {
-                                const pj = [...(editingCert.projects || []), { name: "New Capstone Project", duration: "3 Weeks", difficulty: "Medium" }];
-                                setEditingCert({ ...editingCert, projects: pj });
-                              }}
-                              className="h-6 px-2.5 bg-blue-50 text-[#072A6C] text-[10px] font-bold rounded-lg flex items-center gap-1"
-                            >
-                              <Plus size={11} /> Add Project
-                            </button>
-                          </div>
-                          <div className="space-y-2">
-                            {editingCert.projects.map((proj, pIdx) => (
-                              <div key={pIdx} className="flex gap-2 items-center">
-                                <input
-                                  type="text"
-                                  value={proj.name}
-                                  onChange={(e) => {
-                                    const updated = [...editingCert.projects];
-                                    updated[pIdx].name = e.target.value;
-                                    setEditingCert({ ...editingCert, projects: updated });
-                                  }}
-                                  className="flex-1 h-8 px-2.5 border border-gray-200 rounded-lg font-bold"
-                                  placeholder="Project Name"
-                                />
-                                <input
-                                  type="text"
-                                  value={proj.duration}
-                                  onChange={(e) => {
-                                    const updated = [...editingCert.projects];
-                                    updated[pIdx].duration = e.target.value;
-                                    setEditingCert({ ...editingCert, projects: updated });
-                                  }}
-                                  className="w-24 h-8 px-2.5 border border-gray-200 rounded-lg text-center"
-                                  placeholder="4 Weeks"
-                                />
-                                <input
-                                  type="text"
-                                  value={proj.difficulty}
-                                  onChange={(e) => {
-                                    const updated = [...editingCert.projects];
-                                    updated[pIdx].difficulty = e.target.value;
-                                    setEditingCert({ ...editingCert, projects: updated });
-                                  }}
-                                  className="w-24 h-8 px-2.5 border border-gray-200 rounded-lg text-center"
-                                  placeholder="Hard"
-                                />
-                                <button
-                                  onClick={() => {
-                                    const updated = editingCert.projects.filter((_, i) => i !== pIdx);
-                                    setEditingCert({ ...editingCert, projects: updated });
-                                  }}
-                                  className="p-1.5 text-gray-400 hover:text-red-600 rounded"
-                                >
-                                  <Trash2 size={13} />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* TAB 5: FEATURES & TARGET INDUSTRIES */}
-                    {modalTab === "featuresIndustries" && (
-                      <div className="space-y-5">
-                        {/* Features */}
-                        <div>
-                          <label className="font-bold text-gray-700 block mb-2">Key Value Props & Benefits:</label>
-                          <div className="space-y-2">
-                            {editingCert.features.map((feat, fIdx) => (
-                              <div key={fIdx} className="p-3 bg-gray-50 border border-gray-200 rounded-xl space-y-1.5">
-                                <div className="flex gap-2">
-                                  <input
-                                    type="text"
-                                    value={feat.title}
-                                    onChange={(e) => {
-                                      const updated = [...editingCert.features];
-                                      updated[fIdx].title = e.target.value;
-                                      setEditingCert({ ...editingCert, features: updated });
-                                    }}
-                                    className="flex-1 h-8 px-2.5 bg-white border border-gray-200 rounded-lg font-bold text-[#072A6C]"
-                                    placeholder="Feature Title"
-                                  />
-                                  <input
-                                    type="text"
-                                    value={feat.icon}
-                                    onChange={(e) => {
-                                      const updated = [...editingCert.features];
-                                      updated[fIdx].icon = e.target.value;
-                                      setEditingCert({ ...editingCert, features: updated });
-                                    }}
-                                    className="w-28 h-8 px-2.5 bg-white border border-gray-200 rounded-lg text-center"
-                                    placeholder="Icon Name"
-                                  />
-                                </div>
-                                <input
-                                  type="text"
-                                  value={feat.desc}
-                                  onChange={(e) => {
-                                    const updated = [...editingCert.features];
-                                    updated[fIdx].desc = e.target.value;
-                                    setEditingCert({ ...editingCert, features: updated });
-                                  }}
-                                  className="w-full h-8 px-2.5 bg-white border border-gray-200 rounded-lg text-gray-600"
-                                  placeholder="Feature Description"
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Industries */}
-                        <div>
-                          <label className="font-bold text-gray-700 block mb-2">Target Industries & Applications:</label>
-                          <div className="space-y-2">
-                            {editingCert.industries.map((ind, iIdx) => (
-                              <div key={iIdx} className="flex gap-2 items-center">
-                                <input
-                                  type="text"
-                                  value={ind.name}
-                                  onChange={(e) => {
-                                    const updated = [...editingCert.industries];
-                                    updated[iIdx].name = e.target.value;
-                                    setEditingCert({ ...editingCert, industries: updated });
-                                  }}
-                                  className="w-1/3 h-8 px-2.5 border border-gray-200 rounded-lg font-bold"
-                                  placeholder="Industry"
-                                />
-                                <input
-                                  type="text"
-                                  value={ind.desc}
-                                  onChange={(e) => {
-                                    const updated = [...editingCert.industries];
-                                    updated[iIdx].desc = e.target.value;
-                                    setEditingCert({ ...editingCert, industries: updated });
-                                  }}
-                                  className="flex-1 h-8 px-2.5 border border-gray-200 rounded-lg"
-                                  placeholder="Application Description"
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-
-              {/* Modal Bottom Actions */}
-              <div className="pt-3 border-t border-gray-100 flex justify-end gap-2 shrink-0">
-                <button
-                  onClick={() => { setEditingCert(null); setIsAddOpen(false); }}
-                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => editingCert && handleSaveCert(editingCert)}
-                  className="px-5 py-2 bg-[#072A6C] hover:bg-[#051c4a] text-white font-bold rounded-xl flex items-center gap-1.5 shadow-xs cursor-pointer"
-                >
-                  <Save size={14} /> Save Certification
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };
+
 export default CertificationsCMS;
