@@ -477,7 +477,11 @@ function AppContent() {
             
             {/* Admin Portal Route */}
             <Route path="/admin" element={<AdminPortal />} />
+
+            {/* Dynamic CMS Page Wildcard Catch-All Route */}
+            <Route path="/*" element={<DynamicPage />} />
           </Routes>
+
         </main>
         {!isAdminPage && <Footer />}
       </div>

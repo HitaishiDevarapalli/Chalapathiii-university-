@@ -81,6 +81,8 @@ import { NewsCMS } from "../components/admin/NewsCMS";
 import FooterCMS from "../components/admin/FooterCMS";
 import LinksCMS from "../components/admin/LinksCMS";
 import { SettingsCMS } from "../components/admin/SettingsCMS";
+import { PagesCMS } from "../components/admin/PagesCMS";
+
 import { 
   DEFAULT_PROGRAM_SECTIONS, 
   SectionMeta, 
@@ -143,6 +145,7 @@ export default function AdminPortal() {
     updateSuccessStories,
     heroSlides,
     updateHeroSlides,
+    cmsPages,
     resetToDefaults,
     lastSavedTime
   } = useData();
@@ -160,10 +163,11 @@ export default function AdminPortal() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    "dashboard" | "homepage" | "about" | "academics" | "admissions" | 
+    "dashboard" | "pages" | "homepage" | "about" | "academics" | "admissions" | 
     "research" | "directories" | "campus-life" | "placements" | "news" | "events" | "news-events" | 
     "contact" | "links" | "gallery" | "footer" | "settings"
   >("dashboard");
+
   const [newsEventsModuleTab, setNewsEventsModuleTab] = useState<"news" | "events">("news");
 
   // Notification / Save feedback
@@ -1392,7 +1396,7 @@ export default function AdminPortal() {
   }
 
   const navItems: {
-    id: "dashboard" | "homepage" | "about" | "academics" | "admissions" | "research" | "directories" | "campus-life" | "placements" | "news" | "events" | "news-events" | "contact" | "links" | "gallery" | "footer" | "settings";
+    id: "dashboard" | "pages" | "homepage" | "about" | "academics" | "admissions" | "research" | "directories" | "campus-life" | "placements" | "news" | "events" | "news-events" | "contact" | "links" | "gallery" | "footer" | "settings";
     label: string;
     icon: any;
     badge?: string;
@@ -1400,6 +1404,9 @@ export default function AdminPortal() {
   }[] = [
     // Dashboard
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, badge: `${enquiries.length}` },
+
+    // PAGE MANAGER
+    { id: "pages", label: "Pages & Page Builder", icon: Layers, badge: `${cmsPages.length}` },
 
     // MAIN WEBSITE PAGES
     { id: "about", label: "Genesis & About Us", icon: Building, section: "MAIN WEBSITE PAGES" },
@@ -1417,6 +1424,7 @@ export default function AdminPortal() {
     { id: "footer", label: "Footer", icon: Layers },
     { id: "settings", label: "Website Settings", icon: Settings },
   ];
+
 
   return (
     <div className="min-h-screen bg-[#F1F5F9] font-[var(--font-poppins)] text-slate-800 flex flex-col antialiased">
@@ -1748,9 +1756,19 @@ export default function AdminPortal() {
           )}
 
           {/* ════════════════════════════════════════════════════ */}
+          {/* TAB: PAGES & PAGE BUILDER                            */}
+          {/* ════════════════════════════════════════════════════ */}
+          {activeTab === "pages" && (
+            <div className="animate-fade-in">
+              <PagesCMS />
+            </div>
+          )}
+
+          {/* ════════════════════════════════════════════════════ */}
           {/* TAB 2: HOMEPAGE CMS                                  */}
           {/* ════════════════════════════════════════════════════ */}
           {activeTab === "homepage" && (
+
             <div className="space-y-6 animate-fade-in">
               <SectionHeader
                 title="Homepage CMS & Section Controls"

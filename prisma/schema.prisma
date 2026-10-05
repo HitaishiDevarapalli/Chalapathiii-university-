@@ -35,3 +35,46 @@ model NewsItem {
   description String
   createdAt   DateTime @default(now())
 }
+
+model CmsPageRecord {
+  id               String   @id @default(uuid())
+  slug             String   @unique
+  name             String
+  title            String
+  type             String   @default("sections")
+  shortDescription String?
+  seoTitle         String?
+  seoDescription   String?
+  seoKeywords      String?
+  status           String   @default("published")
+  displayOrder     Int      @default(0)
+  showInNav        Boolean  @default(false)
+  parentNav        String?
+  dataJson         String   // JSON string containing sections, dynamic tables, components
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model CmsSettingRecord {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  valueJson String
+  updatedAt DateTime @updatedAt
+}
+
+model CmsVersionRecord {
+  id           String   @id @default(uuid())
+  pageSlug     String
+  author       String   @default("Admin")
+  note         String?
+  snapshotJson String
+  createdAt    DateTime @default(now())
+}
+
+model CmsCollectionRecord {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  itemsJson   String
+  updatedAt   DateTime @updatedAt
+}
+

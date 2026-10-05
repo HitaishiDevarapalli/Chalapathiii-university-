@@ -1,6 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { PROGRAMS_DATA, ProgramDetail } from "../data/programsData";
+import { CmsPage } from "../types/cms";
+import { INITIAL_CMS_PAGES } from "../data/initialCmsPages";
+import { CmsApiService } from "../services/cmsApi";
 import imgComputerScience from "../assets/illustrations/computer_science.png";
+
 import imgMtechCSE from "../assets/illustrations/mtech_cse.png";
 import imgMCA from "../assets/illustrations/mca.png";
 import imgPhdCSE from "../assets/illustrations/phd_cse.png";
@@ -854,9 +858,18 @@ interface DataContextType {
   searchConfig: SearchBarConfig;
   updateSearchConfig: (config: SearchBarConfig) => void;
 
+  cmsPages: CmsPage[];
+  updateCmsPages: (pages: CmsPage[]) => void;
+  saveCmsPage: (page: CmsPage, note?: string) => void;
+  deleteCmsPage: (id: string) => void;
+  duplicateCmsPage: (id: string) => void;
+  restorePageVersion: (pageId: string, versionId: string) => void;
+  syncCmsWithBackend: () => Promise<void>;
+
   resetToDefaults: () => void;
   lastSavedTime: string | null;
 }
+
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
@@ -3698,6 +3711,158 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     recordSave();
   };
 
+  // Dynamic CMS Pages (Single Source of Truth)
+  const [cmsPages, setCmsPages] = useState<CmsPage[]>(() => {
+    try {
+      const local = localStorage.getItem("chalapathi_cms_pages_v3");
+      if (local) {
+        const parsed = JSON.parse(local);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.error("Failed to parse local CMS pages", e);
+    }
+    return INITIAL_CMS_PAGES;
+  });
+
+  // Fetch from backend API on initial mount
+  useEffect(() => {
+    const initCmsFromApi = async () => {
+      try {
+        const res = await CmsApiService.fetchAll();
+        if (res && res.success && Array.isArray(res.pages) && res.pages.length > 0) {
+          setCmsPages(res.pages);
+          localStorage.setItem("chalapathi_cms_pages_v3", JSON.stringify(res.pages));
+        }
+      } catch (err) {
+        console.warn("Initial CMS API sync:", err);
+      }
+    };
+    initCmsFromApi();
+  }, []);
+
+  const updateCmsPages = (pages: CmsPage[]) => {
+    setCmsPages(pages);
+    localStorage.setItem("chalapathi_cms_pages_v3", JSON.stringify(pages));
+    recordSave();
+  };
+
+  const saveCmsPage = (page: CmsPage, note = "Page updated from Admin CMS") => {
+    setCmsPages((prev) => {
+      const existingIdx = prev.findIndex((p) => p.id === page.id || p.slug === page.slug);
+      let updatedList: CmsPage[];
+
+      const versionEntry = {
+        id: `v_${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        author: "Admin",
+        note,
+        snapshot: JSON.parse(JSON.stringify(page))
+      };
+
+      const updatedPage: CmsPage = {
+        ...page,
+        updatedAt: new Date().toISOString(),
+        versionHistory: [versionEntry, ...(page.versionHistory || []).slice(0, 25)]
+      };
+
+      if (existingIdx >= 0) {
+        updatedList = [...prev];
+        updatedList[existingIdx] = updatedPage;
+      } else {
+        updatedList = [...prev, updatedPage];
+      }
+
+      localStorage.setItem("chalapathi_cms_pages_v3", JSON.stringify(updatedList));
+      // Asynchronously sync to backend API / database
+      CmsApiService.savePage(updatedPage, note).catch((e) => console.warn("API sync save error:", e));
+
+      return updatedList;
+    });
+    recordSave();
+  };
+
+  const deleteCmsPage = (id: string) => {
+    setCmsPages((prev) => {
+      const targetPage = prev.find((p) => p.id === id);
+      const filtered = prev.filter((p) => p.id !== id);
+      localStorage.setItem("chalapathi_cms_pages_v3", JSON.stringify(filtered));
+      if (targetPage) {
+        CmsApiService.deletePage(targetPage.slug, targetPage.id).catch((e) => console.warn("API delete error:", e));
+      }
+      return filtered;
+    });
+    recordSave();
+  };
+
+  const duplicateCmsPage = (id: string) => {
+    const target = cmsPages.find((p) => p.id === id);
+    if (!target) return;
+
+    const baseSlug = target.slug.replace(/\/$/, "");
+    let newSlug = `${baseSlug}-copy`;
+    let count = 1;
+    while (cmsPages.some((p) => p.slug === newSlug)) {
+      count++;
+      newSlug = `${baseSlug}-copy-${count}`;
+    }
+
+    const duplicatedPage: CmsPage = {
+      ...JSON.parse(JSON.stringify(target)),
+      id: `page_${Date.now()}`,
+      name: `${target.name} (Copy)`,
+      title: `${target.title} (Copy)`,
+      slug: newSlug,
+      status: "draft",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      displayOrder: cmsPages.length + 1
+    };
+
+    saveCmsPage(duplicatedPage, `Duplicated from ${target.name}`);
+  };
+
+  const restorePageVersion = (pageId: string, versionId: string) => {
+    const target = cmsPages.find((p) => p.id === pageId);
+    if (!target || !target.versionHistory) return;
+
+    const targetVersion = target.versionHistory.find((v) => v.id === versionId);
+    if (!targetVersion || !targetVersion.snapshot) return;
+
+    const restoredPage: CmsPage = {
+      ...target,
+      ...targetVersion.snapshot,
+      id: target.id,
+      slug: target.slug,
+      updatedAt: new Date().toISOString()
+    };
+
+    saveCmsPage(restoredPage, `Restored from version ${new Date(targetVersion.timestamp).toLocaleString()}`);
+  };
+
+  const syncCmsWithBackend = async () => {
+    try {
+      await CmsApiService.saveAll({
+        pages: cmsPages,
+        settings: {
+          siteSettings,
+          themeColors,
+          searchConfig
+        },
+        collections: {
+          announcements,
+          news,
+          events
+        }
+      });
+      recordSave();
+    } catch (e) {
+      console.warn("Manual backend sync error:", e);
+    }
+  };
+
   const resetToDefaults = () => {
     if (window.confirm("Are you sure you want to reset all CMS content to original university defaults? This will restore original website content.")) {
       localStorage.clear();
@@ -3731,6 +3896,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setAdmissionsContent(DEFAULT_ADMISSIONS_CONTENT);
       setEventRegistrations(INITIAL_EVENT_REGISTRATIONS);
       setOnlineApplications(INITIAL_ONLINE_APPLICATIONS);
+      setCmsPages(INITIAL_CMS_PAGES);
       recordSave();
     }
   };
@@ -3779,6 +3945,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       updateCampusBanners,
       searchConfig,
       updateSearchConfig,
+      cmsPages,
+      updateCmsPages,
+      saveCmsPage,
+      deleteCmsPage,
+      duplicateCmsPage,
+      restorePageVersion,
+      syncCmsWithBackend,
       aboutContent,
       calendarData,
       facultyData,
@@ -3810,6 +3983,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     </DataContext.Provider>
   );
 };
+
 
 export const useData = () => {
   const context = useContext(DataContext);
