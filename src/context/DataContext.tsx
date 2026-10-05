@@ -171,12 +171,19 @@ export interface CalendarEvent {
   eventText: string;
 }
 
+export interface CalendarEventDetail {
+  eventName: string;
+  color?: string;
+  category?: string;
+  notes?: string;
+}
+
 export interface MonthCalendarData {
   name: string;
   yearOffset: number;
   startDay: number;
   totalDays: number;
-  events: Record<number, string>;
+  events: Record<number, string | CalendarEventDetail>;
 }
 
 export interface MilestoneItem {
@@ -2566,13 +2573,124 @@ export const INITIAL_ABOUT_CONTENT: AboutUsContent = {
 };
 
 export const INITIAL_CALENDAR_DATA: MonthCalendarData[] = [
-  { name: "July", yearOffset: 0, startDay: 2, totalDays: 31, events: { 15: "Commencement of Classwork" } },
-  { name: "August", yearOffset: 0, startDay: 5, totalDays: 31, events: {} },
-  { name: "September", yearOffset: 0, startDay: 1, totalDays: 30, events: { 5: "First Mid-Term Examinations" } },
-  { name: "October", yearOffset: 0, startDay: 3, totalDays: 31, events: {} },
-  { name: "November", yearOffset: 0, startDay: 6, totalDays: 30, events: { 14: "Second Mid-Term Examinations" } },
-  { name: "December", yearOffset: 0, startDay: 1, totalDays: 31, events: { 3: "Practical Examinations", 15: "End Semester Theory Exams" } },
-  { name: "January", yearOffset: 1, startDay: 4, totalDays: 31, events: { 5: "Commencement of Next Semester" } }
+  {
+    name: "July",
+    yearOffset: 0,
+    startDay: 2,
+    totalDays: 31,
+    events: {
+      15: { eventName: "Commencement of Classwork", color: "#10B981", category: "Commencement", notes: "Instruction begins for Odd Semester" },
+      25: { eventName: "Course Registration Closes", color: "#EF4444", category: "Academics", notes: "Deadline for elective course selection" }
+    }
+  },
+  {
+    name: "August",
+    yearOffset: 0,
+    startDay: 5,
+    totalDays: 31,
+    events: {
+      15: { eventName: "Independence Day Celebration", color: "#F59E0B", category: "Holidays", notes: "Campus flag hoisting & cultural events" },
+      29: { eventName: "National Sports Day", color: "#D4AF37", category: "Sports & Cultural", notes: "Inter-department sports tournament" }
+    }
+  },
+  {
+    name: "September",
+    yearOffset: 0,
+    startDay: 1,
+    totalDays: 30,
+    events: {
+      5: { eventName: "First Mid-Term Examinations", color: "#EF4444", category: "Examinations", notes: "Mid-Term 1 continuous assessment" },
+      15: { eventName: "Engineers' Day Symposium", color: "#072A6C", category: "Academics", notes: "Technical paper presentations" }
+    }
+  },
+  {
+    name: "October",
+    yearOffset: 0,
+    startDay: 3,
+    totalDays: 31,
+    events: {
+      2: { eventName: "Gandhi Jayanti", color: "#F59E0B", category: "Holidays", notes: "National Holiday" },
+      20: { eventName: "Dussehra Break", color: "#8B5CF6", category: "Holidays", notes: "Festival break begins" }
+    }
+  },
+  {
+    name: "November",
+    yearOffset: 0,
+    startDay: 6,
+    totalDays: 30,
+    events: {
+      14: { eventName: "Second Mid-Term Examinations", color: "#EF4444", category: "Examinations", notes: "Mid-Term 2 continuous assessment" },
+      28: { eventName: "Last Day of Instruction", color: "#10B981", category: "Academics", notes: "End of odd semester syllabus" }
+    }
+  },
+  {
+    name: "December",
+    yearOffset: 0,
+    startDay: 1,
+    totalDays: 31,
+    events: {
+      3: { eventName: "Practical Examinations", color: "#072A6C", category: "Examinations", notes: "Laboratory & Viva Voce sessions" },
+      15: { eventName: "End Semester Theory Exams", color: "#EF4444", category: "Examinations", notes: "University regular examinations" },
+      25: { eventName: "Winter Vacation", color: "#8B5CF6", category: "Holidays", notes: "Semester break until Jan 04" }
+    }
+  },
+  {
+    name: "January",
+    yearOffset: 1,
+    startDay: 4,
+    totalDays: 31,
+    events: {
+      5: { eventName: "Commencement of Even Semester", color: "#10B981", category: "Commencement", notes: "Instruction begins for Even Semester" },
+      26: { eventName: "Republic Day", color: "#F59E0B", category: "Holidays", notes: "National flag hoisting ceremony" }
+    }
+  },
+  {
+    name: "February",
+    yearOffset: 1,
+    startDay: 0,
+    totalDays: 28,
+    events: {
+      18: { eventName: "Annual Tech Fest - Genesis", color: "#D4AF37", category: "Sports & Cultural", notes: "National level project expo & hackathon" }
+    }
+  },
+  {
+    name: "March",
+    yearOffset: 1,
+    startDay: 0,
+    totalDays: 31,
+    events: {
+      10: { eventName: "Even Semester Mid-1 Exams", color: "#EF4444", category: "Examinations", notes: "Continuous assessment test 1" }
+    }
+  },
+  {
+    name: "April",
+    yearOffset: 1,
+    startDay: 3,
+    totalDays: 30,
+    events: {
+      14: { eventName: "Dr. B.R. Ambedkar Jayanti", color: "#F59E0B", category: "Holidays", notes: "Public holiday" },
+      25: { eventName: "Even Semester Mid-2 Exams", color: "#EF4444", category: "Examinations", notes: "Continuous assessment test 2" }
+    }
+  },
+  {
+    name: "May",
+    yearOffset: 1,
+    startDay: 5,
+    totalDays: 31,
+    events: {
+      10: { eventName: "End Semester Labs & Viva", color: "#072A6C", category: "Examinations", notes: "Practical tests" },
+      20: { eventName: "Even Semester Theory Finals", color: "#EF4444", category: "Examinations", notes: "End semester examinations" }
+    }
+  },
+  {
+    name: "June",
+    yearOffset: 1,
+    startDay: 1,
+    totalDays: 30,
+    events: {
+      1: { eventName: "Summer Internship & Projects", color: "#10B981", category: "Academics", notes: "Industry internship phase starts" }
+    }
+  }
 ];
 
 export const DEFAULT_INDUSTRIES: IndustryCaterItem[] = [

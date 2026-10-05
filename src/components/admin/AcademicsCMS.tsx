@@ -3,10 +3,11 @@ import {
   GraduationCap, Award, Calendar, Layers, CheckCircle2, Plus, Trash2, 
   Edit3, Save, RotateCcw, Search, ExternalLink, ChevronDown, ChevronUp,
   Clock, ShieldAlert, Scale, UserCheck, CalendarRange, BookOpen, 
-  Sparkles, FileText, Check, Copy, ArrowRight, Table, Percent, HelpCircle
+  Sparkles, FileText, Check, Copy, ArrowRight, Table, Percent, HelpCircle,
+  Palette, Tag, Info
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useData } from "../../context/DataContext";
+import { useData, CalendarEventDetail, MonthCalendarData, INITIAL_CALENDAR_DATA } from "../../context/DataContext";
 import { 
   AcademicFlexibilityItem, 
   GradingRow, 
@@ -40,7 +41,9 @@ export const AcademicsCMS: React.FC<AcademicsCMSProps> = ({ notifySave, defaultS
     teachingEvaluationData,
     updateTeachingEvaluationData,
     academicCalendarTerms,
-    updateAcademicCalendarTerms
+    updateAcademicCalendarTerms,
+    calendarData,
+    updateCalendarData
   } = useData();
 
   const [activeModule, setActiveModule] = useState<
@@ -239,10 +242,132 @@ export const AcademicsCMS: React.FC<AcademicsCMSProps> = ({ notifySave, defaultS
   };
 
   // ──────────────────────────────────────────────────────────────────────────
-  // 6. ACADEMIC CALENDAR STATE & HANDLERS
+  // 6. ACADEMIC CALENDAR & DATES MANAGER STATE & HANDLERS
   // ──────────────────────────────────────────────────────────────────────────
   const [editingCalendarTerm, setEditingCalendarTerm] = useState<AcademicCalendarTerm | null>(null);
   const [isAddCalOpen, setIsAddCalOpen] = useState(false);
+  const [selectedCalMonthIdx, setSelectedCalMonthIdx] = useState<number>(0);
+  const [calSubView, setCalSubView] = useState<"visual" | "terms">("visual");
+
+  const activeMonths = calendarData && calendarData.length > 0 ? calendarData : INITIAL_CALENDAR_DATA;
+  const currentMonthData = activeMonths[selectedCalMonthIdx] || activeMonths[0];
+
+  const [dateFormDay, setDateFormDay] = useState<number>(15);
+  const [dateFormTitle, setDateFormTitle] = useState<string>("");
+  const [dateFormCategory, setDateFormCategory] = useState<string>("Academics");
+  const [dateFormColor, setDateFormColor] = useState<string>("#10B981");
+  const [dateFormNotes, setDateFormNotes] = useState<string>("");
+  const [editingDayNum, setEditingDayNum] = useState<number | null>(null);
+
+  const CALENDAR_COLOR_PRESETS = [
+    { label: "Emerald Green", value: "#10B981", tag: "Commencement" },
+    { label: "University Gold", value: "#D4AF37", tag: "Cultural & Sports" },
+    { label: "Crimson Red", value: "#EF4444", tag: "Examinations & Deadlines" },
+    { label: "Deep Navy Blue", value: "#072A6C", tag: "Labs & Practicals" },
+    { label: "Royal Purple", value: "#8B5CF6", tag: "Breaks & Vacations" },
+    { label: "Amber Orange", value: "#F59E0B", tag: "National Holidays" },
+    { label: "Cyan Teal", value: "#06B6D4", tag: "Conferences & Workshops" },
+    { label: "Rose Pink", value: "#EC4899", tag: "Student Events" }
+  ];
+
+  const CALENDAR_CATEGORIES = [
+    "Commencement",
+    "Examinations",
+    "Academics",
+    "Holidays",
+    "Sports & Cultural",
+    "Assessment",
+    "Orientation",
+    "Admissions",
+    "Workshops & Seminars"
+  ];
+
+  const handleSelectDayToEdit = (day: number) => {
+    setDateFormDay(day);
+    setEditingDayNum(day);
+    const existing = currentMonthData.events[day];
+    if (existing) {
+      if (typeof existing === "object") {
+        setDateFormTitle(existing.eventName || "");
+        setDateFormCategory(existing.category || "Academics");
+        setDateFormColor(existing.color || "#10B981");
+        setDateFormNotes(existing.notes || "");
+      } else {
+        setDateFormTitle(String(existing));
+        setDateFormCategory("Academics");
+        setDateFormColor("#10B981");
+        setDateFormNotes("");
+      }
+    } else {
+      setDateFormTitle("");
+      setDateFormCategory("Academics");
+      setDateFormColor("#10B981");
+      setDateFormNotes("");
+    }
+  };
+
+  const handleSaveDateEvent = () => {
+    if (!dateFormTitle.trim()) {
+      alert("Please enter an Event Title / Milestone Name.");
+      return;
+    }
+
+    const updatedMonths = activeMonths.map((m, idx) => {
+      if (idx !== selectedCalMonthIdx) return m;
+      const updatedEvents = { ...m.events };
+      
+      if (editingDayNum !== null && editingDayNum !== dateFormDay) {
+        delete updatedEvents[editingDayNum];
+      }
+
+      updatedEvents[dateFormDay] = {
+        eventName: dateFormTitle.trim(),
+        category: dateFormCategory,
+        color: dateFormColor,
+        notes: dateFormNotes.trim()
+      };
+
+      return {
+        ...m,
+        events: updatedEvents
+      };
+    });
+
+    updateCalendarData(updatedMonths);
+    showToast(`✓ Scheduled "${dateFormTitle.trim()}" on ${currentMonthData.name} ${dateFormDay}!`);
+    setEditingDayNum(null);
+    setDateFormTitle("");
+    setDateFormNotes("");
+  };
+
+  const handleDeleteDateEvent = (day: number) => {
+    if (window.confirm(`Remove event on ${currentMonthData.name} ${day}?`)) {
+      const updatedMonths = activeMonths.map((m, idx) => {
+        if (idx !== selectedCalMonthIdx) return m;
+        const updatedEvents = { ...m.events };
+        delete updatedEvents[day];
+        return {
+          ...m,
+          events: updatedEvents
+        };
+      });
+
+      updateCalendarData(updatedMonths);
+      if (editingDayNum === day) {
+        setEditingDayNum(null);
+        setDateFormTitle("");
+        setDateFormNotes("");
+      }
+      showToast(`✓ Removed event for ${currentMonthData.name} ${day}`);
+    }
+  };
+
+  const handleResetCalendarDefaults = () => {
+    if (window.confirm("Reset all 12 calendar months to official Chalapathi University defaults?")) {
+      updateCalendarData(INITIAL_CALENDAR_DATA);
+      showToast("✓ Reset calendar to official defaults!");
+    }
+  };
 
   const handleSaveCalendarTerm = (term: AcademicCalendarTerm) => {
     const exists = academicCalendarTerms.some(t => t.id === term.id);
@@ -401,86 +526,519 @@ export const AcademicsCMS: React.FC<AcademicsCMSProps> = ({ notifySave, defaultS
       )}
 
       {/* ═══════════════════════════════════════════════════════════════ */}
-      {/* 3. ACADEMIC CALENDAR CMS                                       */}
+      {/* 3. ACADEMIC CALENDAR & DATES CMS                                */}
       {/* ═══════════════════════════════════════════════════════════════ */}
       {activeModule === "calendar" && (
         <div className="space-y-6">
-          <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          {/* Main Calendar Header */}
+          <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
-              <h3 className="text-sm font-black text-[#072A6C] uppercase tracking-wider">Academic Calendar Management</h3>
-              <p className="text-xs text-gray-500">Configure academic year schedules, assessment dates, instruction timelines, and download links</p>
+              <div className="flex items-center gap-2">
+                <Calendar className="text-[#072A6C]" size={20} />
+                <h3 className="text-sm font-black text-[#072A6C] uppercase tracking-wider">Academic Calendar & Milestones</h3>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Manage month-by-month key dates with dynamic colors on the public website, and configure term exam schedules
+              </p>
             </div>
-            <button
-              onClick={() => {
-                setEditingCalendarTerm({
-                  id: `cal-${Date.now()}`,
-                  year: "2027-28",
-                  title: "Academic Calendar 2027-28",
-                  commencementDate: "July 15, 2027",
-                  midTerm1Date: "September 15 - 20, 2027",
-                  midTerm2Date: "November 10 - 15, 2027",
-                  lastInstructionDay: "November 28, 2027",
-                  practicalExamsDate: "December 01 - 08, 2027",
-                  theoryExamsDate: "December 10 - 24, 2027",
-                  vacationDate: "December 25, 2027 - January 05, 2028",
-                  pdfUrl: "/academic-calendar.pdf"
-                });
-                setIsAddCalOpen(true);
-              }}
-              className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
-            >
-              <Plus size={14} />
-              <span>+ Add Calendar Term</span>
-            </button>
+
+            <div className="flex flex-wrap items-center gap-2">
+              {/* View Switcher Pills */}
+              <div className="flex bg-gray-100 p-1 rounded-xl">
+                <button
+                  onClick={() => setCalSubView("visual")}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    calSubView === "visual"
+                      ? "bg-white text-[#072A6C] shadow-xs"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  Visual Dates & Colors
+                </button>
+                <button
+                  onClick={() => setCalSubView("terms")}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    calSubView === "terms"
+                      ? "bg-white text-[#072A6C] shadow-xs"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  Term Schedules ({academicCalendarTerms.length})
+                </button>
+              </div>
+
+              {calSubView === "visual" && (
+                <button
+                  onClick={handleResetCalendarDefaults}
+                  className="h-9 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer transition-colors"
+                  title="Reset all 12 months to official university defaults"
+                >
+                  <RotateCcw size={13} />
+                  <span>Reset Defaults</span>
+                </button>
+              )}
+
+              {calSubView === "terms" && (
+                <button
+                  onClick={() => {
+                    setEditingCalendarTerm({
+                      id: `cal-${Date.now()}`,
+                      year: "2027-28",
+                      title: "Academic Calendar 2027-28",
+                      commencementDate: "July 15, 2027",
+                      midTerm1Date: "September 15 - 20, 2027",
+                      midTerm2Date: "November 10 - 15, 2027",
+                      lastInstructionDay: "November 28, 2027",
+                      practicalExamsDate: "December 01 - 08, 2027",
+                      theoryExamsDate: "December 10 - 24, 2027",
+                      vacationDate: "December 25, 2027 - January 05, 2028",
+                      pdfUrl: "/academic-calendar.pdf"
+                    });
+                    setIsAddCalOpen(true);
+                  }}
+                  className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                >
+                  <Plus size={14} />
+                  <span>+ Add Term</span>
+                </button>
+              )}
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {academicCalendarTerms.map((term) => (
-              <div key={term.id} className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <span className="text-[10px] font-black px-2.5 py-1 bg-amber-50 text-amber-800 rounded-full uppercase">
-                      Academic Year: {term.year}
-                    </span>
-                    <h4 className="text-sm font-black text-[#072A6C] mt-2">{term.title}</h4>
+          {/* VIEW 1: VISUAL MONTH & DATE MILESTONES WITH COLORS */}
+          {calSubView === "visual" && (
+            <div className="space-y-6">
+              {/* 12 Academic Month Pills */}
+              <div className="bg-white p-3 rounded-2xl border border-gray-200 shadow-xs overflow-x-auto custom-scrollbar">
+                <div className="flex gap-2 min-w-max">
+                  {activeMonths.map((m, idx) => {
+                    const isSelected = selectedCalMonthIdx === idx;
+                    const eventCount = Object.keys(m.events || {}).length;
+                    return (
+                      <button
+                        key={m.name}
+                        onClick={() => {
+                          setSelectedCalMonthIdx(idx);
+                          setEditingDayNum(null);
+                          setDateFormTitle("");
+                          setDateFormNotes("");
+                        }}
+                        className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer outline-none ${
+                          isSelected
+                            ? "bg-[#072A6C] text-white shadow-md scale-[1.02]"
+                            : "bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200"
+                        }`}
+                      >
+                        <span>{m.name}</span>
+                        {eventCount > 0 && (
+                          <span
+                            className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                              isSelected
+                                ? "bg-[#D4AF37] text-white"
+                                : "bg-blue-100 text-blue-900"
+                            }`}
+                          >
+                            {eventCount}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Split Editor Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* Left Side: Month Grid & Existing Events List (7 Cols) */}
+                <div className="lg:col-span-7 space-y-6">
+                  {/* Visual Calendar Grid Card */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs">
+                    <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+                      <div>
+                        <h4 className="text-sm font-black text-[#072A6C] uppercase tracking-wider">
+                          {currentMonthData.name} Calendar Grid
+                        </h4>
+                        <span className="text-[11px] text-gray-500">
+                          Total Days: {currentMonthData.totalDays} | Click any date below to edit or color it
+                        </span>
+                      </div>
+                      <span className="text-xs font-extrabold text-[#D4AF37] bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
+                        Academic Year Offset: {currentMonthData.yearOffset === 0 ? "Odd Sem" : "Even Sem"}
+                      </span>
+                    </div>
+
+                    {/* Weekday headers */}
+                    <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">
+                      <span>Sun</span>
+                      <span>Mon</span>
+                      <span>Tue</span>
+                      <span>Wed</span>
+                      <span>Thu</span>
+                      <span>Fri</span>
+                      <span>Sat</span>
+                    </div>
+
+                    {/* Day Cells Grid */}
+                    <div className="grid grid-cols-7 gap-1.5 text-center">
+                      {Array.from({ length: currentMonthData.startDay }).map((_, i) => (
+                        <div key={`empty-${i}`} className="h-10 rounded-xl bg-gray-50/50" />
+                      ))}
+
+                      {Array.from({ length: currentMonthData.totalDays }).map((_, i) => {
+                        const day = i + 1;
+                        const rawEv = currentMonthData.events[day];
+                        const hasEvent = !!rawEv;
+                        const eventDetail = typeof rawEv === "object" ? rawEv : rawEv ? { eventName: String(rawEv), color: "#10B981" } : null;
+                        const isEditingThis = editingDayNum === day;
+                        const evColor = eventDetail?.color || "#10B981";
+
+                        return (
+                          <button
+                            key={`day-${day}`}
+                            onClick={() => handleSelectDayToEdit(day)}
+                            style={{
+                              borderColor: hasEvent ? evColor : undefined,
+                              backgroundColor: isEditingThis 
+                                ? "#072A6C" 
+                                : hasEvent 
+                                  ? `${evColor}15` 
+                                  : undefined
+                            }}
+                            className={`h-11 rounded-xl flex flex-col items-center justify-center relative transition-all cursor-pointer outline-none ${
+                              isEditingThis
+                                ? "text-white shadow-md ring-2 ring-[#D4AF37]"
+                                : hasEvent
+                                  ? "border-2 shadow-xs hover:scale-105"
+                                  : "border border-gray-100 hover:border-gray-300 hover:bg-gray-50 text-gray-700"
+                            }`}
+                            title={hasEvent ? `${eventDetail?.eventName} (Day ${day})` : `Click to add event for Day ${day}`}
+                          >
+                            <span className={`text-xs font-bold ${isEditingThis ? "text-white" : hasEvent ? "font-black" : ""}`} style={{ color: !isEditingThis && hasEvent ? evColor : undefined }}>
+                              {day}
+                            </span>
+                            {hasEvent && (
+                              <span 
+                                className="w-1.5 h-1.5 rounded-full mt-0.5" 
+                                style={{ backgroundColor: isEditingThis ? "#D4AF37" : evColor }} 
+                              />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <div className="flex gap-1.5">
-                    <button
-                      onClick={() => setEditingCalendarTerm(term)}
-                      className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg cursor-pointer"
-                    >
-                      <Edit3 size={14} />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteCalendarTerm(term.id)}
-                      className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg cursor-pointer"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+
+                  {/* Scheduled Events List for this Month */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                      <h4 className="text-sm font-black text-[#072A6C] uppercase tracking-wider flex items-center gap-2">
+                        <span>Milestones Scheduled in {currentMonthData.name}</span>
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-800 font-bold">
+                          {Object.keys(currentMonthData.events || {}).length}
+                        </span>
+                      </h4>
+                      <span className="text-[11px] text-gray-500">Live preview on main website</span>
+                    </div>
+
+                    <div className="space-y-3">
+                      {Object.keys(currentMonthData.events || {}).length > 0 ? (
+                        Object.entries(currentMonthData.events).map(([dayStr, rawEv]) => {
+                          const dayNum = parseInt(dayStr);
+                          const evDetail = typeof rawEv === "object" 
+                            ? rawEv 
+                            : { eventName: String(rawEv), color: "#10B981", category: "Academics", notes: "" };
+                          const evColor = evDetail.color || "#10B981";
+
+                          return (
+                            <div
+                              key={dayStr}
+                              className="p-4 rounded-xl border border-gray-200 hover:border-blue-200 hover:shadow-xs transition-all flex items-start justify-between gap-3 bg-white"
+                            >
+                              <div className="flex items-start gap-3.5">
+                                <div 
+                                  className="w-11 h-11 rounded-xl flex flex-col items-center justify-center text-white shrink-0 shadow-xs"
+                                  style={{ backgroundColor: evColor }}
+                                >
+                                  <span className="text-[9px] font-bold uppercase leading-none opacity-90">{currentMonthData.name.substring(0, 3)}</span>
+                                  <span className="text-sm font-black leading-none mt-0.5">{dayNum}</span>
+                                </div>
+                                <div className="space-y-1">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <h5 className="text-xs font-black text-[#072A6C]">{evDetail.eventName}</h5>
+                                    {evDetail.category && (
+                                      <span 
+                                        className="text-[9px] font-black uppercase px-2 py-0.5 rounded text-white"
+                                        style={{ backgroundColor: evColor }}
+                                      >
+                                        {evDetail.category}
+                                      </span>
+                                    )}
+                                  </div>
+                                  {evDetail.notes && (
+                                    <p className="text-[11px] text-gray-600 font-normal leading-relaxed">
+                                      {evDetail.notes}
+                                    </p>
+                                  )}
+                                  <div className="flex items-center gap-2 text-[10px] text-gray-400">
+                                    <span className="flex items-center gap-1 font-bold">
+                                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: evColor }} />
+                                      Hex Color: {evColor}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-1 shrink-0">
+                                <button
+                                  onClick={() => handleSelectDayToEdit(dayNum)}
+                                  className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg cursor-pointer transition-colors"
+                                  title="Edit this event"
+                                >
+                                  <Edit3 size={15} />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteDateEvent(dayNum)}
+                                  className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg cursor-pointer transition-colors"
+                                  title="Delete event"
+                                >
+                                  <Trash2 size={15} />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <div className="text-center py-8 bg-gray-50 rounded-xl border border-dashed border-gray-200 space-y-2">
+                          <Calendar className="mx-auto text-gray-400" size={28} />
+                          <p className="text-xs font-bold text-gray-600">No events scheduled in {currentMonthData.name}</p>
+                          <p className="text-[11px] text-gray-400">Use the form on the right to select a day and assign an event name with color.</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 text-xs pt-2 border-t border-gray-100">
-                  <div className="bg-gray-50 p-2.5 rounded-xl">
-                    <span className="text-[10px] text-gray-400 font-bold block uppercase">Commencement:</span>
-                    <span className="font-semibold text-gray-700">{term.commencementDate}</span>
-                  </div>
-                  <div className="bg-gray-50 p-2.5 rounded-xl">
-                    <span className="text-[10px] text-gray-400 font-bold block uppercase">Mid-Term 1:</span>
-                    <span className="font-semibold text-gray-700">{term.midTerm1Date}</span>
-                  </div>
-                  <div className="bg-gray-50 p-2.5 rounded-xl">
-                    <span className="text-[10px] text-gray-400 font-bold block uppercase">Mid-Term 2:</span>
-                    <span className="font-semibold text-gray-700">{term.midTerm2Date}</span>
-                  </div>
-                  <div className="bg-gray-50 p-2.5 rounded-xl">
-                    <span className="text-[10px] text-gray-400 font-bold block uppercase">Final Exams:</span>
-                    <span className="font-semibold text-gray-700">{term.theoryExamsDate}</span>
+                {/* Right Side: Add / Edit Date Event Form (5 Cols) */}
+                <div className="lg:col-span-5 space-y-6">
+                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-5 sticky top-6">
+                    <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                      <div>
+                        <span className="text-[10px] font-black uppercase tracking-wider text-[#D4AF37] block">
+                          {editingDayNum !== null ? "Edit Scheduled Milestone" : "Add New Milestone Date"}
+                        </span>
+                        <h4 className="text-sm font-black text-[#072A6C]">
+                          {currentMonthData.name} — Day {dateFormDay}
+                        </h4>
+                      </div>
+                      <span
+                        className="w-4 h-4 rounded-full border-2 border-white shadow-xs"
+                        style={{ backgroundColor: dateFormColor }}
+                        title="Selected Highlight Color"
+                      />
+                    </div>
+
+                    {/* Day Selector */}
+                    <div>
+                      <label className="text-xs font-bold text-gray-700 block mb-1.5 flex items-center justify-between">
+                        <span>Select Date (Day of {currentMonthData.name}):</span>
+                        <span className="text-[#072A6C] font-black text-xs">Day {dateFormDay}</span>
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={dateFormDay}
+                          onChange={(e) => handleSelectDayToEdit(parseInt(e.target.value))}
+                          className="w-full h-10 px-3 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none"
+                        >
+                          {Array.from({ length: currentMonthData.totalDays }).map((_, i) => (
+                            <option key={i + 1} value={i + 1}>
+                              {currentMonthData.name} {i + 1} {currentMonthData.events[i + 1] ? "• (Has Event)" : ""}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Event Title */}
+                    <div>
+                      <label className="text-xs font-bold text-gray-700 block mb-1.5">
+                        Event Title / Milestone Name <span className="text-red-500">*</span>:
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Commencement of Classwork, First Mid-Term Exams"
+                        value={dateFormTitle}
+                        onChange={(e) => setDateFormTitle(e.target.value)}
+                        className="w-full h-10 px-3 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 focus:border-blue-500 focus:outline-none"
+                      />
+                    </div>
+
+                    {/* Category Selector */}
+                    <div>
+                      <label className="text-xs font-bold text-gray-700 block mb-1.5">
+                        Category:
+                      </label>
+                      <select
+                        value={dateFormCategory}
+                        onChange={(e) => setDateFormCategory(e.target.value)}
+                        className="w-full h-10 px-3 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 bg-gray-50 focus:bg-white focus:border-blue-500 focus:outline-none"
+                      >
+                        {CALENDAR_CATEGORIES.map((cat) => (
+                          <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Color Highlight Picker */}
+                    <div>
+                      <label className="text-xs font-bold text-gray-700 block mb-2 flex items-center justify-between">
+                        <span className="flex items-center gap-1.5">
+                          <Palette size={14} className="text-[#072A6C]" />
+                          Date Highlight Color on Main Website:
+                        </span>
+                        <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded text-white" style={{ backgroundColor: dateFormColor }}>
+                          {dateFormColor}
+                        </span>
+                      </label>
+
+                      {/* Preset color swatches */}
+                      <div className="grid grid-cols-4 gap-2 mb-3">
+                        {CALENDAR_COLOR_PRESETS.map((preset) => (
+                          <button
+                            key={preset.value}
+                            type="button"
+                            onClick={() => setDateFormColor(preset.value)}
+                            className={`p-2 rounded-xl border flex flex-col items-center gap-1 transition-all cursor-pointer ${
+                              dateFormColor.toLowerCase() === preset.value.toLowerCase()
+                                ? "border-[#072A6C] bg-blue-50/50 shadow-xs ring-2 ring-[#072A6C]/20"
+                                : "border-gray-200 hover:border-gray-300 bg-white"
+                            }`}
+                          >
+                            <span 
+                              className="w-5 h-5 rounded-full shadow-xs border border-white"
+                              style={{ backgroundColor: preset.value }}
+                            />
+                            <span className="text-[9px] font-bold text-gray-600 truncate w-full text-center">
+                              {preset.tag}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Custom Hex input */}
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={dateFormColor}
+                          onChange={(e) => setDateFormColor(e.target.value)}
+                          className="w-10 h-10 rounded-xl border border-gray-200 cursor-pointer p-0.5 bg-white"
+                        />
+                        <input
+                          type="text"
+                          value={dateFormColor}
+                          onChange={(e) => setDateFormColor(e.target.value)}
+                          placeholder="#10B981"
+                          className="flex-1 h-10 px-3 border border-gray-200 rounded-xl text-xs font-mono font-bold text-gray-800 uppercase focus:border-blue-500 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Notes / Description */}
+                    <div>
+                      <label className="text-xs font-bold text-gray-700 block mb-1.5">
+                        Notes / Extra Details (Displayed in drawer):
+                      </label>
+                      <textarea
+                        rows={3}
+                        placeholder="e.g. Applicable for B.Tech & MCA odd semester students. Reporting time 9:30 AM."
+                        value={dateFormNotes}
+                        onChange={(e) => setDateFormNotes(e.target.value)}
+                        className="w-full p-3 border border-gray-200 rounded-xl text-xs text-gray-800 focus:border-blue-500 focus:outline-none"
+                      />
+                    </div>
+
+                    {/* Form Action Buttons */}
+                    <div className="pt-2 flex items-center gap-2 border-t border-gray-100">
+                      <button
+                        type="button"
+                        onClick={handleSaveDateEvent}
+                        className="flex-1 h-11 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 shadow-sm cursor-pointer transition-colors"
+                      >
+                        <Save size={15} />
+                        <span>Save & Apply Color</span>
+                      </button>
+                      
+                      {(editingDayNum !== null || dateFormTitle) && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingDayNum(null);
+                            setDateFormTitle("");
+                            setDateFormNotes("");
+                          }}
+                          className="h-11 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl cursor-pointer transition-colors"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          )}
+
+          {/* VIEW 2: ACADEMIC CALENDAR TERMS (SEMESTER SCHEDULES & PDFS) */}
+          {calSubView === "terms" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {academicCalendarTerms.map((term) => (
+                <div key={term.id} className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <span className="text-[10px] font-black px-2.5 py-1 bg-amber-50 text-amber-800 rounded-full uppercase">
+                        Academic Year: {term.year}
+                      </span>
+                      <h4 className="text-sm font-black text-[#072A6C] mt-2">{term.title}</h4>
+                    </div>
+                    <div className="flex gap-1.5">
+                      <button
+                        onClick={() => setEditingCalendarTerm(term)}
+                        className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg cursor-pointer"
+                        title="Edit Term"
+                      >
+                        <Edit3 size={14} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteCalendarTerm(term.id)}
+                        className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg cursor-pointer"
+                        title="Delete Term"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-xs pt-2 border-t border-gray-100">
+                    <div className="bg-gray-50 p-2.5 rounded-xl">
+                      <span className="text-[10px] text-gray-400 font-bold block uppercase">Commencement:</span>
+                      <span className="font-semibold text-gray-700">{term.commencementDate}</span>
+                    </div>
+                    <div className="bg-gray-50 p-2.5 rounded-xl">
+                      <span className="text-[10px] text-gray-400 font-bold block uppercase">Mid-Term 1:</span>
+                      <span className="font-semibold text-gray-700">{term.midTerm1Date}</span>
+                    </div>
+                    <div className="bg-gray-50 p-2.5 rounded-xl">
+                      <span className="text-[10px] text-gray-400 font-bold block uppercase">Mid-Term 2:</span>
+                      <span className="font-semibold text-gray-700">{term.midTerm2Date}</span>
+                    </div>
+                    <div className="bg-gray-50 p-2.5 rounded-xl">
+                      <span className="text-[10px] text-gray-400 font-bold block uppercase">Final Exams:</span>
+                      <span className="font-semibold text-gray-700">{term.theoryExamsDate}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

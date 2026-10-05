@@ -1191,12 +1191,18 @@ function AcademicCalendar() {
 
 function InteractiveCalendarWidget({ year, courseKey }: { year: string; courseKey: string }) {
   const { calendarData } = useData();
-  const monthsData = calendarData;
+  const monthsData = calendarData && calendarData.length > 0 ? calendarData : [];
 
   const [monthIndex, setMonthIndex] = React.useState(0);
   const [selectedDay, setSelectedDay] = React.useState<number | null>(15);
 
-  const currentMonth = monthsData[monthIndex];
+  const currentMonth = monthsData[monthIndex] || {
+    name: "July",
+    yearOffset: 0,
+    startDay: 2,
+    totalDays: 31,
+    events: {}
+  };
   
   const yStart = parseInt(year.split("-")[0]);
   const yEnd = parseInt("20" + year.split("-")[1]);
@@ -1212,6 +1218,25 @@ function InteractiveCalendarWidget({ year, courseKey }: { year: string; courseKe
     setSelectedDay(null);
   };
 
+  // Helper to extract rich event details from raw event
+  const getEventDetail = (raw: any) => {
+    if (!raw) return null;
+    if (typeof raw === "object") {
+      return {
+        eventName: raw.eventName || "Scheduled Event",
+        color: raw.color || "#D4AF37",
+        category: raw.category || "Academic Event",
+        notes: raw.notes || ""
+      };
+    }
+    return {
+      eventName: String(raw),
+      color: "#D4AF37",
+      category: "Academic Event",
+      notes: ""
+    };
+  };
+
   // Generate day cells including empty offsets
   const dayCells = [];
   for (let i = 0; i < currentMonth.startDay; i++) {
@@ -1222,7 +1247,8 @@ function InteractiveCalendarWidget({ year, courseKey }: { year: string; courseKe
   }
 
   // Get active event for selected day
-  const activeEvent = selectedDay && currentMonth.events[selectedDay as keyof typeof currentMonth.events];
+  const rawActiveEvent = selectedDay ? currentMonth.events[selectedDay as keyof typeof currentMonth.events] : null;
+  const activeEvent = getEventDetail(rawActiveEvent);
 
   return (
     <div className="p-4 bg-gray-50/70 border-t border-gray-100 animate-slide-down">
@@ -1230,7 +1256,7 @@ function InteractiveCalendarWidget({ year, courseKey }: { year: string; courseKe
         <span className="text-[10px] font-bold text-[#072A6C] uppercase tracking-wider">Visual Academic Calendar ({year})</span>
         <button 
           onClick={() => alert(`Academic Calendar PDF for ${year} is queued for download.`)}
-          className="text-[10px] font-bold text-[#D4AF37] hover:text-[#072A6C] transition-colors"
+          className="text-[10px] font-bold text-[#D4AF37] hover:text-[#072A6C] transition-colors cursor-pointer"
         >
           Download Calendar PDF
         </button>
@@ -1239,18 +1265,32 @@ function InteractiveCalendarWidget({ year, courseKey }: { year: string; courseKe
       {/* Main split box matching reference visual styling */}
       <div className="flex flex-col md:flex-row rounded-3xl border border-gray-200 overflow-hidden shadow-md">
         {/* Left Side: Calendar Grid */}
-        <div className="w-full md:w-3/5 bg-gray-50/80 p-6 flex flex-col justify-between min-h-[320px]">
+        <div className="w-full md:w-3/5 bg-gray-50/90 p-6 flex flex-col justify-between min-h-[340px]">
           {/* Header Month/Year Selection */}
           <div className="flex justify-between items-center mb-6">
             <span className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-widest">{displayYear - 1}</span>
-            <h5 className="text-sm font-extrabold text-[#072A6C] uppercase tracking-widest">
-              {currentMonth.name}, {displayYear}
-            </h5>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={prevMonth}
+                className="w-6 h-6 rounded-full bg-white border border-gray-200 hover:bg-gray-100 flex items-center justify-center text-[10px] text-[#072A6C] shadow-xs cursor-pointer outline-none"
+              >
+                ◀
+              </button>
+              <h5 className="text-sm font-extrabold text-[#072A6C] uppercase tracking-widest px-2">
+                {currentMonth.name}, {displayYear}
+              </h5>
+              <button 
+                onClick={nextMonth}
+                className="w-6 h-6 rounded-full bg-white border border-gray-200 hover:bg-gray-100 flex items-center justify-center text-[10px] text-[#072A6C] shadow-xs cursor-pointer outline-none"
+              >
+                ▶
+              </button>
+            </div>
             <span className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-widest">{displayYear + 1}</span>
           </div>
 
           {/* Weekday headers */}
-          <div className="grid grid-cols-7 gap-y-2 text-center text-[10px] font-bold text-[#072A6C]/70 uppercase mb-4 tracking-wider">
+          <div className="grid grid-cols-7 gap-y-2 text-center text-[10px] font-bold text-[#072A6C]/70 uppercase mb-3 tracking-wider">
             <span>Sun</span>
             <span>Mon</span>
             <span>Tue</span>
@@ -1261,108 +1301,174 @@ function InteractiveCalendarWidget({ year, courseKey }: { year: string; courseKe
           </div>
 
           {/* Grid Cells */}
-          <div className="grid grid-cols-7 gap-y-2 text-center items-center relative">
-            {/* Left Month navigation arrow */}
-            <button 
-              onClick={prevMonth}
-              className="absolute left-[-16px] top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white border border-gray-100 hover:bg-gray-50 flex items-center justify-center shadow-sm text-[#072A6C] hover:text-[#D4AF37] transition-colors cursor-pointer outline-none"
-            >
-              ◀
-            </button>
-
+          <div className="grid grid-cols-7 gap-y-2.5 text-center items-center relative">
             {dayCells.map((day, idx) => {
               if (day === null) return <div key={`empty-${idx}`} />;
               
-              const hasEvent = currentMonth.events[day as keyof typeof currentMonth.events] !== undefined;
+              const rawEv = currentMonth.events[day as keyof typeof currentMonth.events];
+              const eventInfo = getEventDetail(rawEv);
+              const hasEvent = !!eventInfo;
               const isSelected = selectedDay === day;
+              const itemColor = eventInfo?.color || "#D4AF37";
 
               return (
                 <button
                   key={`day-${day}`}
                   onClick={() => setSelectedDay(day)}
-                  className={`w-8 h-8 mx-auto rounded-full flex flex-col items-center justify-center text-[13px] font-bold transition-all relative cursor-pointer outline-none ${
-                    isSelected 
-                      ? "bg-[#D4AF37] text-white shadow-sm scale-110" 
+                  style={{
+                    backgroundColor: isSelected 
+                      ? (hasEvent ? itemColor : "#D4AF37") 
                       : hasEvent 
-                        ? "text-[#072A6C] border-2 border-[#D4AF37] hover:bg-[#D4AF37]/10"
-                        : "text-[#072A6C] hover:bg-[#072A6C]/10"
+                        ? `${itemColor}18` 
+                        : "transparent",
+                    borderColor: hasEvent ? itemColor : "transparent",
+                    color: isSelected 
+                      ? "#ffffff" 
+                      : hasEvent 
+                        ? itemColor 
+                        : "#072A6C"
+                  }}
+                  className={`w-9 h-9 mx-auto rounded-full flex flex-col items-center justify-center text-[12px] font-bold transition-all relative cursor-pointer outline-none ${
+                    isSelected 
+                      ? "shadow-md scale-110 ring-2 ring-white/60" 
+                      : hasEvent 
+                        ? "border-2 hover:scale-105 shadow-xs font-black" 
+                        : "hover:bg-gray-200/60"
                   }`}
+                  title={hasEvent ? `${eventInfo.eventName} (${eventInfo.category})` : `Day ${day}`}
                 >
-                  <span>{day}</span>
+                  <span className="leading-none">{day}</span>
+                  {hasEvent && !isSelected && (
+                    <span 
+                      className="w-1.5 h-1.5 rounded-full absolute bottom-1"
+                      style={{ backgroundColor: itemColor }}
+                    />
+                  )}
                 </button>
               );
             })}
-
-            {/* Right Month navigation arrow */}
-            <button 
-              onClick={nextMonth}
-              className="absolute right-[-16px] top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white border border-gray-100 hover:bg-gray-50 flex items-center justify-center shadow-sm text-[#072A6C] hover:text-[#D4AF37] transition-colors cursor-pointer outline-none"
-            >
-              ▶
-            </button>
           </div>
 
-          {/* Bottom actions */}
-          <div className="flex gap-2 mt-6">
-            <button 
-              onClick={() => alert(`Full events roster for ${currentMonth.name} is displayed on the sidebar.`)}
-              className="flex-1 py-2.5 bg-[#072A6C] hover:bg-[#072A6C]/90 text-white text-[9.5px] font-bold rounded-lg tracking-widest uppercase transition-colors outline-none cursor-pointer"
-            >
-              See Planned Events
-            </button>
-            <button 
-              onClick={() => alert("Notification reminder has been registered successfully.")}
-              className="flex-1 py-2.5 bg-[#D4AF37] hover:bg-[#D4AF37]/95 text-white text-[9.5px] font-bold rounded-lg tracking-widest uppercase transition-colors outline-none cursor-pointer"
-            >
-              Set Reminder
-            </button>
+          {/* Color Legend & Bottom Actions */}
+          <div className="mt-5 pt-3 border-t border-gray-200/70 space-y-3">
+            <div className="flex flex-wrap items-center justify-center gap-3 text-[9px] font-bold text-gray-500">
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#10B981]"></span> Commencement / Starts</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#EF4444]"></span> Exams & Deadlines</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#F59E0B]"></span> Holidays</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#D4AF37]"></span> Cultural & Fests</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#8B5CF6]"></span> Vacations</span>
+            </div>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => alert(`Full academic schedule for ${currentMonth.name} is displayed in the sidebar.`)}
+                className="flex-1 py-2 bg-[#072A6C] hover:bg-[#072A6C]/90 text-white text-[9.5px] font-bold rounded-lg tracking-widest uppercase transition-colors outline-none cursor-pointer"
+              >
+                View Month Schedule
+              </button>
+              <button 
+                onClick={() => alert(`Reminder registered for ${currentMonth.name} events.`)}
+                className="flex-1 py-2 bg-[#D4AF37] hover:bg-[#D4AF37]/95 text-white text-[9.5px] font-bold rounded-lg tracking-widest uppercase transition-colors outline-none cursor-pointer"
+              >
+                Set Reminder
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Right Side: University Blue Events Panel */}
-        <div className="w-full md:w-2/5 bg-[#072A6C] p-6 text-white flex flex-col justify-between min-h-[320px]">
+        <div className="w-full md:w-2/5 bg-[#072A6C] p-6 text-white flex flex-col justify-between min-h-[340px]">
           <div>
-            <span className="text-[10px] font-extrabold text-[#D4AF37] uppercase tracking-widest block mb-1">Schedule</span>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] font-extrabold text-[#D4AF37] uppercase tracking-widest">Schedule & Details</span>
+              <span className="text-[9px] font-bold bg-white/10 px-2 py-0.5 rounded text-white/80">{currentMonth.name} {displayYear}</span>
+            </div>
             <h5 className="text-xs font-extrabold uppercase tracking-widest pb-2 border-b border-white/10 mb-4">
-              Events
+              Academic Milestones
             </h5>
 
             <div className="space-y-4">
               {/* Display specific event if selected date has one */}
               {activeEvent ? (
-                <div className="space-y-1.5 animate-slide-down">
-                  <div className="text-yellow-300 text-[11px] font-extrabold uppercase tracking-wider leading-snug">
-                    {activeEvent}
+                <div className="space-y-2 animate-slide-down bg-white/5 p-3.5 rounded-xl border border-white/10">
+                  <div className="flex items-center justify-between">
+                    <span 
+                      className="text-[9px] font-black uppercase px-2 py-0.5 rounded text-white shadow-xs"
+                      style={{ backgroundColor: activeEvent.color }}
+                    >
+                      {activeEvent.category}
+                    </span>
+                    <span className="text-[9px] font-bold text-gray-300">
+                      {currentMonth.name} {selectedDay}, {displayYear}
+                    </span>
                   </div>
-                  <div className="w-16 h-[2px] bg-[#D4AF37] rounded" />
-                  <div className="text-[9.5px] text-gray-300 font-light">
-                    Scheduled on {currentMonth.name} {selectedDay}, {displayYear}
+                  <div 
+                    className="text-[13px] font-black uppercase tracking-wide leading-snug"
+                    style={{ color: activeEvent.color === "#072A6C" ? "#93C5FD" : activeEvent.color }}
+                  >
+                    {activeEvent.eventName}
                   </div>
+                  <div className="w-12 h-[2px] rounded" style={{ backgroundColor: activeEvent.color }} />
+                  {activeEvent.notes ? (
+                    <div className="text-[10px] text-gray-200 font-normal leading-relaxed pt-1">
+                      {activeEvent.notes}
+                    </div>
+                  ) : (
+                    <div className="text-[9.5px] text-gray-300 font-light">
+                      Scheduled official university academic milestone.
+                    </div>
+                  )}
                 </div>
               ) : selectedDay ? (
-                <div className="text-gray-300 text-xs font-light italic">
-                  No academic events scheduled on {currentMonth.name} {selectedDay}.
+                <div className="text-gray-300 text-xs font-light italic bg-white/5 p-3 rounded-xl">
+                  No events scheduled on {currentMonth.name} {selectedDay}. Click on a colored date in the calendar to see details.
                 </div>
               ) : (
-                <div className="text-gray-300 text-xs font-light italic">
-                  Click a highlighted date in the calendar to view scheduled milestones.
+                <div className="text-gray-300 text-xs font-light italic bg-white/5 p-3 rounded-xl">
+                  Click any highlighted colored date in the calendar grid to inspect its details.
                 </div>
               )}
             </div>
           </div>
 
-          <div className="pt-4 border-t border-white/5 space-y-2">
-            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Month Summary:</span>
-            {Object.keys(currentMonth.events).length > 0 ? (
-              Object.entries(currentMonth.events).map(([day, evName]) => (
-                <div key={day} className="text-[10px] text-gray-200 flex items-center justify-between">
-                  <span>• {evName}</span>
-                  <span className="text-gray-400 shrink-0 ml-2">{currentMonth.name.substring(0, 3)} {day}</span>
-                </div>
-              ))
-            ) : (
-              <div className="text-[10px] text-gray-400 italic">No events scheduled in {currentMonth.name}.</div>
-            )}
+          <div className="pt-4 border-t border-white/10 space-y-2">
+            <span className="text-[9px] font-bold text-amber-300 uppercase tracking-widest block">
+              {currentMonth.name} Events ({Object.keys(currentMonth.events).length}):
+            </span>
+            <div className="max-h-36 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
+              {Object.keys(currentMonth.events).length > 0 ? (
+                Object.entries(currentMonth.events).map(([dayStr, rawEv]) => {
+                  const evDay = parseInt(dayStr);
+                  const evDetail = getEventDetail(rawEv);
+                  if (!evDetail) return null;
+                  const isCurSelected = selectedDay === evDay;
+                  return (
+                    <div 
+                      key={dayStr}
+                      onClick={() => setSelectedDay(evDay)}
+                      className={`text-[10px] p-1.5 rounded-lg flex items-center justify-between cursor-pointer transition-all ${
+                        isCurSelected ? "bg-white/20 text-white font-bold" : "hover:bg-white/10 text-gray-200"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 truncate">
+                        <span 
+                          className="w-2.5 h-2.5 rounded-full shrink-0 shadow-xs" 
+                          style={{ backgroundColor: evDetail.color }} 
+                        />
+                        <span className="truncate">{evDetail.eventName}</span>
+                      </div>
+                      <span 
+                        className="text-[9px] px-1.5 py-0.5 rounded shrink-0 ml-2 font-bold"
+                        style={{ backgroundColor: `${evDetail.color}33`, color: evDetail.color === "#072A6C" ? "#93C5FD" : evDetail.color }}
+                      >
+                        {currentMonth.name.substring(0, 3)} {evDay}
+                      </span>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="text-[10px] text-gray-400 italic">No events scheduled in {currentMonth.name}.</div>
+              )}
+            </div>
           </div>
         </div>
       </div>
