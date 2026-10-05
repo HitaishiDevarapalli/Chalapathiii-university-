@@ -5127,14 +5127,6 @@ export default function AdminPortal() {
                     </button>
                   ))}
                 </div>
-
-                <button
-                  onClick={() => setActiveTab("pages")}
-                  className="px-3.5 py-1.5 bg-[#D4AF37] hover:bg-[#b5952f] text-slate-900 font-extrabold text-xs rounded-lg shadow-xs flex items-center gap-1.5 transition-all cursor-pointer"
-                >
-                  <Layers size={14} />
-                  <span>+ Dynamic Page & Section Builder</span>
-                </button>
               </div>
 
 
