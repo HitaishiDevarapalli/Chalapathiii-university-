@@ -83,6 +83,7 @@ import LinksCMS from "../components/admin/LinksCMS";
 import { SettingsCMS } from "../components/admin/SettingsCMS";
 import { PagesCMS } from "../components/admin/PagesCMS";
 import { CertificationsCMS } from "../components/admin/CertificationsCMS";
+import { AcademicsCMS } from "../components/admin/AcademicsCMS";
 
 import { 
   DEFAULT_PROGRAM_SECTIONS, 
@@ -825,7 +826,7 @@ export default function AdminPortal() {
 
   // ----------------------------------------------------
   // 7. ACADEMICS & PROGRAM BUILDER (FULL ADMIN)
-  const [academicsSubTab, setAcademicsSubTab] = useState<"directory" | "editor" | "branches" | "homepage">("directory");
+  const [academicsSubTab, setAcademicsSubTab] = useState<"modules" | "directory" | "editor" | "branches" | "homepage">("modules");
   const [progEditorSubTab, setProgEditorSubTab] = useState<
     | "general"
     | "hod"
@@ -6938,6 +6939,7 @@ export default function AdminPortal() {
               {/* Subtabs Selector */}
               <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3">
                 {[
+                  { id: "modules", label: "★ Academics Menu Pages (Calendar, Flexibilities, Grading, Degrees, Rules, Teaching, Certs)" },
                   { id: "directory", label: `1. All Programs & Branches (${programsList.length})` },
                   { id: "editor", label: `2. Program Details & Content Editor (${currentProg?.title ? currentProg.title.split(" ")[0] : "Active"})` },
                   { id: "branches", label: `3. Schools & Academic Branches (${allDepartments.length - 1})` },
@@ -6956,6 +6958,13 @@ export default function AdminPortal() {
                   </button>
                 ))}
               </div>
+
+              {/* ═══════════════════════════════════════════════════════════════
+                  SUBTAB 0: ACADEMICS MENU SUB-MODULES SUITE
+              ═══════════════════════════════════════════════════════════════ */}
+              {academicsSubTab === "modules" && (
+                <AcademicsCMS notifySave={notifySave} />
+              )}
 
               {/* ═══════════════════════════════════════════════════════════════
                   SUBTAB 1: ALL PROGRAMS & BRANCHES DIRECTORY

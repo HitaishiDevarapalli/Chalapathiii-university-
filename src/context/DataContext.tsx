@@ -4,6 +4,20 @@ import { CmsPage } from "../types/cms";
 import { INITIAL_CMS_PAGES } from "../data/initialCmsPages";
 import { CmsApiService } from "../services/cmsApi";
 import { certifications, Certification } from "../data/certifications";
+import {
+  AcademicFlexibilityItem,
+  INITIAL_ACADEMIC_FLEXIBILITIES,
+  GradingSystemConfig,
+  INITIAL_GRADING_SYSTEM,
+  AwardOfDegreesConfig,
+  INITIAL_AWARD_OF_DEGREES,
+  AcademicRuleItem,
+  INITIAL_ACADEMIC_RULES,
+  TeachingEvaluationConfig,
+  INITIAL_TEACHING_EVALUATION,
+  AcademicCalendarTerm,
+  INITIAL_ACADEMIC_CALENDAR_TERMS
+} from "../data/academicsData";
 import imgComputerScience from "../assets/illustrations/computer_science.png";
 
 
@@ -870,6 +884,24 @@ interface DataContextType {
 
   certificationsData: Certification[];
   updateCertificationsData: (data: Certification[]) => void;
+
+  academicFlexibilities: AcademicFlexibilityItem[];
+  updateAcademicFlexibilities: (data: AcademicFlexibilityItem[]) => void;
+
+  gradingSystemData: GradingSystemConfig;
+  updateGradingSystemData: (data: GradingSystemConfig) => void;
+
+  awardOfDegreesData: AwardOfDegreesConfig;
+  updateAwardOfDegreesData: (data: AwardOfDegreesConfig) => void;
+
+  academicRulesData: AcademicRuleItem[];
+  updateAcademicRulesData: (data: AcademicRuleItem[]) => void;
+
+  teachingEvaluationData: TeachingEvaluationConfig;
+  updateTeachingEvaluationData: (data: TeachingEvaluationConfig) => void;
+
+  academicCalendarTerms: AcademicCalendarTerm[];
+  updateAcademicCalendarTerms: (data: AcademicCalendarTerm[]) => void;
 
   resetToDefaults: () => void;
   lastSavedTime: string | null;
@@ -3868,6 +3900,126 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     recordSave();
   };
 
+  // Academic Flexibilities CMS
+  const [academicFlexibilities, setAcademicFlexibilities] = useState<AcademicFlexibilityItem[]>(() => {
+    try {
+      const local = localStorage.getItem("chalapathi_flexibilities_v1");
+      if (local) {
+        const parsed = JSON.parse(local);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.error("Failed to parse local flexibilities", e);
+    }
+    return INITIAL_ACADEMIC_FLEXIBILITIES;
+  });
+
+  const updateAcademicFlexibilities = (data: AcademicFlexibilityItem[]) => {
+    setAcademicFlexibilities(data);
+    localStorage.setItem("chalapathi_flexibilities_v1", JSON.stringify(data));
+    recordSave();
+  };
+
+  // Grading System CMS
+  const [gradingSystemData, setGradingSystemData] = useState<GradingSystemConfig>(() => {
+    try {
+      const local = localStorage.getItem("chalapathi_grading_config");
+      if (local) {
+        const parsed = JSON.parse(local);
+        if (parsed && typeof parsed === "object") return parsed;
+      }
+    } catch (e) {
+      console.error("Failed to parse local grading system", e);
+    }
+    return INITIAL_GRADING_SYSTEM;
+  });
+
+  const updateGradingSystemData = (data: GradingSystemConfig) => {
+    setGradingSystemData(data);
+    localStorage.setItem("chalapathi_grading_config", JSON.stringify(data));
+    recordSave();
+  };
+
+  // Award of Degrees CMS
+  const [awardOfDegreesData, setAwardOfDegreesData] = useState<AwardOfDegreesConfig>(() => {
+    try {
+      const local = localStorage.getItem("chalapathi_award_degrees_v1");
+      if (local) {
+        const parsed = JSON.parse(local);
+        if (parsed && typeof parsed === "object") return parsed;
+      }
+    } catch (e) {
+      console.error("Failed to parse local award of degrees", e);
+    }
+    return INITIAL_AWARD_OF_DEGREES;
+  });
+
+  const updateAwardOfDegreesData = (data: AwardOfDegreesConfig) => {
+    setAwardOfDegreesData(data);
+    localStorage.setItem("chalapathi_award_degrees_v1", JSON.stringify(data));
+    recordSave();
+  };
+
+  // Academic Rules & Regulations CMS
+  const [academicRulesData, setAcademicRulesData] = useState<AcademicRuleItem[]>(() => {
+    try {
+      const local = localStorage.getItem("chalapathi_rules_regulations_v1");
+      if (local) {
+        const parsed = JSON.parse(local);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.error("Failed to parse local rules", e);
+    }
+    return INITIAL_ACADEMIC_RULES;
+  });
+
+  const updateAcademicRulesData = (data: AcademicRuleItem[]) => {
+    setAcademicRulesData(data);
+    localStorage.setItem("chalapathi_rules_regulations_v1", JSON.stringify(data));
+    recordSave();
+  };
+
+  // Teaching & Evaluation CMS
+  const [teachingEvaluationData, setTeachingEvaluationData] = useState<TeachingEvaluationConfig>(() => {
+    try {
+      const local = localStorage.getItem("chalapathi_teaching_evaluation_v1");
+      if (local) {
+        const parsed = JSON.parse(local);
+        if (parsed && typeof parsed === "object") return parsed;
+      }
+    } catch (e) {
+      console.error("Failed to parse local teaching evaluation", e);
+    }
+    return INITIAL_TEACHING_EVALUATION;
+  });
+
+  const updateTeachingEvaluationData = (data: TeachingEvaluationConfig) => {
+    setTeachingEvaluationData(data);
+    localStorage.setItem("chalapathi_teaching_evaluation_v1", JSON.stringify(data));
+    recordSave();
+  };
+
+  // Academic Calendar Terms CMS
+  const [academicCalendarTerms, setAcademicCalendarTerms] = useState<AcademicCalendarTerm[]>(() => {
+    try {
+      const local = localStorage.getItem("chalapathi_calendar_terms_v1");
+      if (local) {
+        const parsed = JSON.parse(local);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.error("Failed to parse local calendar terms", e);
+    }
+    return INITIAL_ACADEMIC_CALENDAR_TERMS;
+  });
+
+  const updateAcademicCalendarTerms = (data: AcademicCalendarTerm[]) => {
+    setAcademicCalendarTerms(data);
+    localStorage.setItem("chalapathi_calendar_terms_v1", JSON.stringify(data));
+    recordSave();
+  };
+
   const syncCmsWithBackend = async () => {
     try {
       await CmsApiService.saveAll({
@@ -3925,6 +4077,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setOnlineApplications(INITIAL_ONLINE_APPLICATIONS);
       setCmsPages(INITIAL_CMS_PAGES);
       setCertificationsData(certifications);
+      setAcademicFlexibilities(INITIAL_ACADEMIC_FLEXIBILITIES);
+      setGradingSystemData(INITIAL_GRADING_SYSTEM);
+      setAwardOfDegreesData(INITIAL_AWARD_OF_DEGREES);
+      setAcademicRulesData(INITIAL_ACADEMIC_RULES);
+      setTeachingEvaluationData(INITIAL_TEACHING_EVALUATION);
+      setAcademicCalendarTerms(INITIAL_ACADEMIC_CALENDAR_TERMS);
       recordSave();
     }
   };
@@ -3982,6 +4140,18 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       syncCmsWithBackend,
       certificationsData,
       updateCertificationsData,
+      academicFlexibilities,
+      updateAcademicFlexibilities,
+      gradingSystemData,
+      updateGradingSystemData,
+      awardOfDegreesData,
+      updateAwardOfDegreesData,
+      academicRulesData,
+      updateAcademicRulesData,
+      teachingEvaluationData,
+      updateTeachingEvaluationData,
+      academicCalendarTerms,
+      updateAcademicCalendarTerms,
       aboutContent,
       calendarData,
       facultyData,
