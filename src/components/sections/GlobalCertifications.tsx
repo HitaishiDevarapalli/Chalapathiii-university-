@@ -8,11 +8,20 @@ import { useData } from "../../context/DataContext";
 import FullscreenModal from "../certifications/FullscreenModal";
 
 export default function GlobalCertifications() {
-  const { certificationsData } = useData();
+  const { certificationsData, certificationsPageConfig } = useData();
   const certList = certificationsData && certificationsData.length > 0 ? certificationsData : certifications;
+  const pageConfig = certificationsPageConfig || {
+    badgeText: "Global Certifications",
+    headline: "Adding Global Value\nTo Your Degree.",
+    description1: "At Chalapathi University, we believe a degree alone isn't enough to stand out in today's competitive world — industry-recognized certifications give students the extra edge employers look for.",
+    description2: "Students are provided opportunities to earn globally acclaimed certifications alongside their academic curriculum, boosting their skills, credibility, and career readiness.",
+    worldStageHeadline: "Ready for the World Stage.",
+    worldStageDescription: "These certifications, combined with academic learning, ensure students graduate as globally competent, industry-ready professionals — confident to compete not just in national markets, but anywhere in the world.",
+    worldStageButtonText: "View Curriculum",
+    worldStageButtonLink: "/academics/programmes"
+  };
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedCert, setSelectedCert] = useState<Certification | null>(null);
-
 
   // Prevent scrolling when modal is open
   useEffect(() => {
@@ -45,10 +54,10 @@ export default function GlobalCertifications() {
           >
             <div className="flex items-center gap-3 mb-4">
               <span className="h-[2px] w-12 bg-[#072A6C] block"></span>
-              <span className="text-[#072A6C] font-bold tracking-widest uppercase text-sm">Global Certifications</span>
+              <span className="text-[#072A6C] font-bold tracking-widest uppercase text-sm">{pageConfig.badgeText}</span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-black text-[#072A6C] leading-[1.1] tracking-tight">
-              Adding Global Value<br/>To Your Degree.
+            <h2 className="text-4xl md:text-5xl font-black text-[#072A6C] leading-[1.1] tracking-tight whitespace-pre-line">
+              {pageConfig.headline}
             </h2>
           </motion.div>
 
@@ -60,11 +69,13 @@ export default function GlobalCertifications() {
             className="md:w-1/2 text-gray-600 text-[15px] leading-relaxed"
           >
             <p>
-              At Chalapathi University, we believe a degree alone isn't enough to stand out in today's competitive world — industry-recognized certifications give students the extra edge employers look for. 
+              {pageConfig.description1}
             </p>
-            <p className="mt-4">
-              Students are provided opportunities to earn globally acclaimed certifications alongside their academic curriculum, boosting their skills, credibility, and career readiness.
-            </p>
+            {pageConfig.description2 && (
+              <p className="mt-4">
+                {pageConfig.description2}
+              </p>
+            )}
           </motion.div>
         </div>
 
@@ -135,18 +146,21 @@ export default function GlobalCertifications() {
         >
           <div className="md:w-2/3">
             <h3 className="text-3xl font-black text-[#072A6C] mb-4">
-              Ready for the World Stage.
+              {pageConfig.worldStageHeadline || "Ready for the World Stage."}
             </h3>
             <p className="text-gray-600 text-lg leading-relaxed max-w-2xl">
-              These certifications, combined with academic learning, ensure students graduate as globally competent, industry-ready professionals — confident to compete not just in national markets, but anywhere in the world.
+              {pageConfig.worldStageDescription || "These certifications, combined with academic learning, ensure students graduate as globally competent, industry-ready professionals — confident to compete not just in national markets, but anywhere in the world."}
             </p>
           </div>
 
           <div className="md:w-1/3 flex justify-end">
-            <button className="bg-[#072A6C] hover:bg-[#051d4d] text-white px-8 py-4 rounded font-bold shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-3 w-full sm:w-auto justify-center">
-              <span>View Curriculum</span>
+            <a 
+              href={pageConfig.worldStageButtonLink || "/academics/programmes"}
+              className="bg-[#072A6C] hover:bg-[#051d4d] text-white px-8 py-4 rounded font-bold shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-3 w-full sm:w-auto justify-center cursor-pointer"
+            >
+              <span>{pageConfig.worldStageButtonText || "View Curriculum"}</span>
               <ChevronRight className="w-5 h-5" />
-            </button>
+            </a>
           </div>
         </motion.div>
 

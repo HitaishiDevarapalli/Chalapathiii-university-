@@ -19,6 +19,28 @@ export interface Certification {
   stats: { countries: number; jobs: string; demand: string };
 }
 
+export interface GlobalCertificationsPageConfig {
+  badgeText: string;
+  headline: string;
+  description1: string;
+  description2: string;
+  worldStageHeadline: string;
+  worldStageDescription: string;
+  worldStageButtonText: string;
+  worldStageButtonLink: string;
+}
+
+export const DEFAULT_CERTIFICATIONS_PAGE_CONFIG: GlobalCertificationsPageConfig = {
+  badgeText: "Global Certifications",
+  headline: "Adding Global Value\nTo Your Degree.",
+  description1: "At Chalapathi University, we believe a degree alone isn't enough to stand out in today's competitive world — industry-recognized certifications give students the extra edge employers look for.",
+  description2: "Students are provided opportunities to earn globally acclaimed certifications alongside their academic curriculum, boosting their skills, credibility, and career readiness.",
+  worldStageHeadline: "Ready for the World Stage.",
+  worldStageDescription: "These certifications, combined with academic learning, ensure students graduate as globally competent, industry-ready professionals — confident to compete not just in national markets, but anywhere in the world.",
+  worldStageButtonText: "View Curriculum",
+  worldStageButtonLink: "/academics/programmes"
+};
+
 const baseCerts = [
   { id: "sap", name: "SAP", desc: "Enterprise Resource Planning (ERP), business processes, supply chain, finance, and analytics.", img: ["https://www.vectorlogo.zone/logos/sap/sap-ar21.svg"], color: "#0FAFFF", domain: "Enterprise Resource Planning", tagline: "Transforming Enterprise Operations", mode: "dashboard" },
   { id: "servicenow", name: "ServiceNow", desc: "AI-powered workflow automation, IT service management, and digital operations.", img: ["https://upload.wikimedia.org/wikipedia/commons/5/57/ServiceNow_logo.svg"], color: "#81B5A1", domain: "Workflow Automation", tagline: "Mastering the Workflow Pipeline", mode: "pipeline" },

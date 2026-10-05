@@ -1413,7 +1413,6 @@ export default function AdminPortal() {
     // MAIN WEBSITE PAGES
     { id: "about", label: "Genesis & About Us", icon: Building, section: "MAIN WEBSITE PAGES" },
     { id: "academics", label: "Academics", icon: GraduationCap },
-    { id: "certifications", label: "Global Certifications", icon: Award },
     { id: "admissions", label: "Admissions & Leads", icon: UserPlus, badge: `${enquiries.filter(e => e.status === "New").length || ""}` },
     { id: "research", label: "Research & Innovation", icon: Trophy },
     { id: "directories", label: "Faculty & Directories", icon: Users },

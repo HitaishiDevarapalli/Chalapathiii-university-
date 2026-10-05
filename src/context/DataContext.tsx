@@ -3,7 +3,7 @@ import { PROGRAMS_DATA, ProgramDetail } from "../data/programsData";
 import { CmsPage } from "../types/cms";
 import { INITIAL_CMS_PAGES } from "../data/initialCmsPages";
 import { CmsApiService } from "../services/cmsApi";
-import { certifications, Certification } from "../data/certifications";
+import { certifications, Certification, GlobalCertificationsPageConfig, DEFAULT_CERTIFICATIONS_PAGE_CONFIG } from "../data/certifications";
 import {
   AcademicFlexibilityItem,
   INITIAL_ACADEMIC_FLEXIBILITIES,
@@ -884,6 +884,9 @@ interface DataContextType {
 
   certificationsData: Certification[];
   updateCertificationsData: (data: Certification[]) => void;
+
+  certificationsPageConfig: GlobalCertificationsPageConfig;
+  updateCertificationsPageConfig: (config: GlobalCertificationsPageConfig) => void;
 
   academicFlexibilities: AcademicFlexibilityItem[];
   updateAcademicFlexibilities: (data: AcademicFlexibilityItem[]) => void;
@@ -3900,6 +3903,26 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     recordSave();
   };
 
+  // Global Certifications Page Config CMS
+  const [certificationsPageConfig, setCertificationsPageConfig] = useState<GlobalCertificationsPageConfig>(() => {
+    try {
+      const local = localStorage.getItem("chalapathi_certifications_page_config_v1");
+      if (local) {
+        const parsed = JSON.parse(local);
+        if (parsed && typeof parsed === "object") return parsed;
+      }
+    } catch (e) {
+      console.error("Failed to parse local certifications page config", e);
+    }
+    return DEFAULT_CERTIFICATIONS_PAGE_CONFIG;
+  });
+
+  const updateCertificationsPageConfig = (config: GlobalCertificationsPageConfig) => {
+    setCertificationsPageConfig(config);
+    localStorage.setItem("chalapathi_certifications_page_config_v1", JSON.stringify(config));
+    recordSave();
+  };
+
   // Academic Flexibilities CMS
   const [academicFlexibilities, setAcademicFlexibilities] = useState<AcademicFlexibilityItem[]>(() => {
     try {
@@ -4077,6 +4100,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setOnlineApplications(INITIAL_ONLINE_APPLICATIONS);
       setCmsPages(INITIAL_CMS_PAGES);
       setCertificationsData(certifications);
+      setCertificationsPageConfig(DEFAULT_CERTIFICATIONS_PAGE_CONFIG);
       setAcademicFlexibilities(INITIAL_ACADEMIC_FLEXIBILITIES);
       setGradingSystemData(INITIAL_GRADING_SYSTEM);
       setAwardOfDegreesData(INITIAL_AWARD_OF_DEGREES);
@@ -4140,6 +4164,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       syncCmsWithBackend,
       certificationsData,
       updateCertificationsData,
+      certificationsPageConfig,
+      updateCertificationsPageConfig,
       academicFlexibilities,
       updateAcademicFlexibilities,
       gradingSystemData,
