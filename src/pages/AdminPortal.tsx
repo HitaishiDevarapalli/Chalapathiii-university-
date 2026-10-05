@@ -5103,27 +5103,38 @@ export default function AdminPortal() {
               />
 
               {/* Sub-tabs */}
-              <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3">
-                {[
-                  { id: "genesis", label: "1. Genesis & Heritage" },
-                  { id: "vision", label: "2. Vision & Mission" },
-                  { id: "leadership", label: "3. Leadership & Chairman" },
-                  { id: "advantage", label: "4. Chalapathi Advantage" },
-                  { id: "homepage", label: "5. Homepage Why Choose Us, Chairman & Journey" }
-                ].map((st) => (
-                  <button
-                    key={st.id}
-                    onClick={() => setActiveAboutSubTab(st.id as any)}
-                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                      activeAboutSubTab === st.id
-                        ? "bg-[#072A6C] text-white shadow-xs"
-                        : "bg-white text-gray-600 hover:bg-gray-100"
-                    }`}
-                  >
-                    {st.label}
-                  </button>
-                ))}
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-200 pb-3">
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { id: "genesis", label: "1. Genesis & Heritage" },
+                    { id: "vision", label: "2. Vision & Mission" },
+                    { id: "leadership", label: "3. Leadership & Chairman" },
+                    { id: "advantage", label: "4. Chalapathi Advantage" },
+                    { id: "homepage", label: "5. Homepage Why Choose Us, Chairman & Journey" }
+                  ].map((st) => (
+                    <button
+                      key={st.id}
+                      onClick={() => setActiveAboutSubTab(st.id as any)}
+                      className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                        activeAboutSubTab === st.id
+                          ? "bg-[#072A6C] text-white shadow-xs"
+                          : "bg-white text-gray-600 hover:bg-gray-100"
+                      }`}
+                    >
+                      {st.label}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => setActiveTab("pages")}
+                  className="px-3.5 py-1.5 bg-[#D4AF37] hover:bg-[#b5952f] text-slate-900 font-extrabold text-xs rounded-lg shadow-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                >
+                  <Layers size={14} />
+                  <span>+ Dynamic Page & Section Builder</span>
+                </button>
               </div>
+
 
               {/* 1. Sub-tab: Genesis */}
               {activeAboutSubTab === "genesis" && (
