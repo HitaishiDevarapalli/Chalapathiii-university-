@@ -1246,7 +1246,6 @@ export default function AdminPortal() {
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-[1.12]">
               <span className="font-serif font-normal block text-2xl sm:text-3xl text-gray-200 mb-1">Welcome to</span>
               Chalapathi University
-              <span className="block text-[#D4AF37] mt-1.5 drop-shadow-sm font-black">Admin Portal</span>
             </h1>
             <p className="mt-5 text-sm sm:text-base text-blue-100/80 font-normal leading-relaxed max-w-md">
               Empowering excellence in education through technology, real-time CMS controls, and innovation.
@@ -3082,7 +3081,7 @@ export default function AdminPortal() {
                           Chairman Official Signature & Identity Block
                         </h4>
                         <p className="text-[11px] text-gray-500">
-                          Upload custom signature image (transparent PNG/SVG) or use the classic cursive SVG signature with custom ink color.
+                          Upload custom signature image (transparent PNG/SVG) for the Chairman identity card.
                         </p>
                       </div>
                     </div>
@@ -3096,29 +3095,12 @@ export default function AdminPortal() {
                           placeholder="Upload PNG signature or enter image URL"
                           onReset={() => {
                             setChairmanData({ ...chairmanData, signature: "" });
-                            notifySave("Reset to default cursive SVG signature!");
+                            notifySave("Chairman signature cleared!");
                           }}
                           onChange={(val) => setChairmanData({ ...chairmanData, signature: val })}
                           aspectRatio="wide"
                           recommendedSize="300 × 100 px (Transparent PNG/SVG)"
                         />
-                        <div className="flex flex-wrap items-center gap-2 pt-1">
-                          <label className="text-[10px] font-bold text-gray-600 uppercase">
-                            Default Cursive SVG Ink Color:
-                          </label>
-                          {["#072A6C", "#0A2D6D", "#000000", "#1E293B", "#D4AF37", "#176B5B"].map((col) => (
-                            <button
-                              key={col}
-                              type="button"
-                              onClick={() => setChairmanData({ ...chairmanData, signatureColor: col })}
-                              className={`w-6 h-6 rounded-full border border-black/20 cursor-pointer transition-transform hover:scale-110 ${
-                                (chairmanData.signatureColor || "#072A6C") === col ? "ring-2 ring-blue-500 ring-offset-1" : ""
-                              }`}
-                              style={{ backgroundColor: col }}
-                              title={col}
-                            />
-                          ))}
-                        </div>
                       </div>
 
                       {/* Live Visual Preview corresponding to media_1789906099100.png */}
@@ -3128,27 +3110,15 @@ export default function AdminPortal() {
                         </span>
                         <div className="p-4 rounded-xl border border-slate-100 bg-slate-50/50 space-y-2.5">
                           {/* Signature Graphic */}
-                          <div className="h-10 flex items-center select-none">
-                            {chairmanData.signature ? (
+                          {chairmanData.signature && (
+                            <div className="h-10 flex items-center select-none">
                               <img 
                                 src={chairmanData.signature} 
                                 alt="Signature" 
                                 className="h-9 max-w-[160px] object-contain" 
                               />
-                            ) : (
-                              <svg 
-                                className="h-9 text-[#072A6C]" 
-                                style={{ color: chairmanData.signatureColor || "#072A6C" }}
-                                viewBox="0 0 160 50" 
-                                fill="none" 
-                                stroke="currentColor" 
-                                strokeWidth="2.5" 
-                                strokeLinecap="round"
-                              >
-                                <path d="M15 28c12-6 22-14 26-1s-8 12-4 4 12-16 16-4-4 12 0 4 10-14 12-2-4 10 4 2 10-12 12 4-4 8 4 2c10 2 15-4 18-9" />
-                              </svg>
-                            )}
-                          </div>
+                            </div>
+                          )}
                           <div>
                             <h5 className="text-sm font-extrabold text-[#072A6C] leading-snug">
                               {chairmanData.name || "Dr. Y. V Anjaneyulu"}
@@ -4122,7 +4092,7 @@ export default function AdminPortal() {
                                 <img
                                   src={partner.logo}
                                   alt={partner.name}
-                                  className="h-7 max-h-7 w-auto max-w-[100px] object-contain transition-transform group-hover/logo:scale-105"
+                                  className="h-7 max-h-7 w-auto max-w-[100px] object-contain"
                                   onError={(e) => { (e.target as HTMLImageElement).src = "/logos/wipro.svg"; }}
                                 />
                                 <label className="absolute inset-0 bg-[#072A6C]/85 opacity-0 group-hover/logo:opacity-100 transition-opacity flex items-center justify-center text-white text-[10.5px] font-semibold gap-1.5 cursor-pointer shadow-inner">
@@ -6841,29 +6811,12 @@ export default function AdminPortal() {
                           placeholder="Upload PNG signature or enter image URL"
                           onReset={() => {
                             setChairmanData({ ...chairmanData, signature: "" });
-                            notifySave("Reset to default cursive SVG signature!");
+                            notifySave("Chairman signature cleared!");
                           }}
                           onChange={(val) => setChairmanData({ ...chairmanData, signature: val })}
                           aspectRatio="wide"
                           recommendedSize="300 × 100 px (Transparent PNG/SVG)"
                         />
-                        <div className="flex flex-wrap items-center gap-2 pt-1">
-                          <label className="text-[10px] font-bold text-gray-600 uppercase">
-                            Default Cursive SVG Ink Color:
-                          </label>
-                          {["#072A6C", "#0A2D6D", "#000000", "#1E293B", "#D4AF37", "#176B5B"].map((col) => (
-                            <button
-                              key={col}
-                              type="button"
-                              onClick={() => setChairmanData({ ...chairmanData, signatureColor: col })}
-                              className={`w-6 h-6 rounded-full border border-black/20 cursor-pointer transition-transform hover:scale-110 ${
-                                (chairmanData.signatureColor || "#072A6C") === col ? "ring-2 ring-blue-500 ring-offset-1" : ""
-                              }`}
-                              style={{ backgroundColor: col }}
-                              title={col}
-                            />
-                          ))}
-                        </div>
                       </div>
 
                       {/* Live Card Preview */}
@@ -6872,15 +6825,11 @@ export default function AdminPortal() {
                           Website Card Preview:
                         </span>
                         <div className="p-3 bg-white rounded-xl border border-slate-200/80 shadow-2xs space-y-2">
-                          <div className="h-9 flex items-center select-none">
-                            {chairmanData.signature ? (
+                          {chairmanData.signature && (
+                            <div className="h-9 flex items-center select-none">
                               <img src={chairmanData.signature} alt="Signature" className="h-8 max-w-[150px] object-contain" />
-                            ) : (
-                              <svg className="h-8" style={{ color: chairmanData.signatureColor || "#072A6C" }} viewBox="0 0 160 50" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                                <path d="M15 28c12-6 22-14 26-1s-8 12-4 4 12-16 16-4-4 12 0 4 10-14 12-2-4 10 4 2 10-12 12 0-4 10 4 2 10-12 12 4-4 8 4 2c10 2 15-4 18-9" />
-                              </svg>
-                            )}
-                          </div>
+                            </div>
+                          )}
                           <div>
                             <h5 className="text-xs font-extrabold text-[#072A6C]">{chairmanData.name || "Dr. Y. V Anjaneyulu"}</h5>
                             <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block mt-0.5">{chairmanData.designation || "CHAIRMAN"}</span>

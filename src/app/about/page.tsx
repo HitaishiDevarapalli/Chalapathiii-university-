@@ -69,8 +69,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               { name: "Sri Y. V. Anjaneyulu", title: "Chancellor / Founder", credentials: "Renowned Educationist & Visionary", bio: "Sri Y.V. Anjaneyulu has spent over three decades building premium educational establishments in Guntur, dedicated to raising the standard of professional education." },
-              { name: "Dr. K. Prasad Rao", title: "Vice Chancellor", credentials: "Ph.D., Former Senior Professor", bio: "Leading the administrative and research arms of the university, Dr. Rao focus lies on international exchange programs and corporate placements." },
-              { name: "Prof. T. Sivaramaiah", title: "Registrar", credentials: "M.Tech, Ph.D.", bio: "Managing general governance, legal compliances, and academic audit policies to ensure 100% standard alignment." }
+              { name: "Sri Y. Sujit Kumar", title: "Pro Chancellor", credentials: "B.Tech & MBA - Executive Education", bio: "Sri Y. Sujit Kumar leads institutional progress planning, modernization initiatives, and strategic industry collaborations." }
             ].map((lead, idx) => (
               <div key={idx} className="bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm space-y-4">
                 <div>

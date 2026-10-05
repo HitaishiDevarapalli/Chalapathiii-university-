@@ -28,7 +28,7 @@ export default function SchoolCard({ school }: SchoolCardProps) {
           <img
             src={school.image || "/campus_hero.png"}
             alt={`School of ${school.name}`}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-full object-cover"
           />
         </div>
         <div className="px-4 pb-4 relative">

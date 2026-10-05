@@ -1253,13 +1253,11 @@ export default function Home() {
                     <img
                       src={item.image}
                       alt={item.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="w-full h-full object-cover"
                       onError={(e) => {
                         (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=300&auto=format&fit=crop";
                       }}
                     />
-                    {/* Shine gradient reflection */}
-                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out" />
                   </div>
                   <div className="p-2.5 text-center">
                     <span className="text-[9.5px] font-black text-gray-700 block truncate tracking-wide uppercase">
@@ -1365,18 +1363,15 @@ export default function Home() {
                 <img 
                   src={localStorage.getItem("chalapathi_chairman_image") || "/chairman_portrait.png"} 
                   alt={localStorage.getItem("chalapathi_chairman_name") || "Chairman Dr. Y. V Anjaneyulu"} 
-                  className="w-full h-auto object-cover aspect-[4/5] transition-transform duration-700 group-hover:scale-103"
+                  className="w-full h-auto object-cover aspect-[4/5]"
                   style={{ objectPosition: "50% 0%" }}
                 />
-                
-                {/* Light reflection animation overlay */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/15 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
                 
                 {/* Image tint overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent pointer-events-none" />
 
                 {/* Floating Glass Information Card */}
-                <div className="absolute bottom-5 left-5 right-5 bg-[#072A6C]/75 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-white text-left transition-transform duration-300 group-hover:scale-102">
+                <div className="absolute bottom-5 left-5 right-5 bg-[#072A6C]/75 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-white text-left transition-all duration-300">
                   <span className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-wider block mb-0.5">
                     {localStorage.getItem("chalapathi_chairman_designation") || "Chairman"}
                   </span>
@@ -1417,28 +1412,16 @@ export default function Home() {
                 {/* Signature, Name, Designation & Action Button */}
                 <div className="mt-8 pt-6 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 z-10">
                   <div className="space-y-2">
-                    {/* Cursive Signature or Uploaded Signature Image */}
-                    <div className="h-12 flex items-center select-none">
-                      {localStorage.getItem("chalapathi_chairman_signature") ? (
+                    {/* Uploaded Signature Image (if provided) */}
+                    {localStorage.getItem("chalapathi_chairman_signature") && (
+                      <div className="h-10 flex items-center select-none">
                         <img 
                           src={localStorage.getItem("chalapathi_chairman_signature")!} 
                           alt="Chairman Signature" 
                           className="h-10 max-w-[180px] object-contain" 
                         />
-                      ) : (
-                        <svg 
-                          className="h-9 text-[#072A6C]" 
-                          style={{ color: localStorage.getItem("chalapathi_chairman_signature_color") || "#072A6C" }}
-                          viewBox="0 0 160 50" 
-                          fill="none" 
-                          stroke="currentColor" 
-                          strokeWidth="2.5" 
-                          strokeLinecap="round"
-                        >
-                          <path d="M15 28c12-6 22-14 26-1s-8 12-4 4 12-16 16-4-4 12 0 4 10-14 12-2-4 10 4 2 10-12 12 0-4 10 4 2 10-12 12 4-4 8 4 2c10 2 15-4 18-9" />
-                        </svg>
-                      )}
-                    </div>
+                      </div>
+                    )}
                     <div>
                       <h5 className="text-xs font-extrabold text-[#072A6C]">{localStorage.getItem("chalapathi_chairman_name") || "Dr. Y. V Anjaneyulu"}</h5>
                       <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{localStorage.getItem("chalapathi_chairman_designation") || "CHAIRMAN"}</span>
@@ -1669,14 +1652,14 @@ export default function Home() {
                         <img 
                           src={activeStudent.studentImage} 
                           alt={activeStudent.studentName} 
-                          className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
+                          className="w-full h-full object-cover"
                         />
                         {/* Image Tint Overlay */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
                       </div>
 
                       {/* Floating Placed At badge */}
-                      <div className="absolute left-6 top-6 bg-white/85 backdrop-blur-md border border-white/40 rounded-xl p-2.5 flex items-center gap-2.5 shadow-md max-w-[160px] transition-transform duration-300 hover:scale-105">
+                      <div className="absolute left-6 top-6 bg-white/85 backdrop-blur-md border border-white/40 rounded-xl p-2.5 flex items-center gap-2.5 shadow-md max-w-[160px]">
                         <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center p-1 shadow-sm shrink-0">
                           <img 
                             src={activeStudent.companyLogo} 
@@ -1691,7 +1674,7 @@ export default function Home() {
                       </div>
 
                       {/* Floating Package Offered badge */}
-                      <div className="absolute right-6 bottom-6 bg-white/85 backdrop-blur-md border border-white/40 rounded-xl p-2.5 shadow-md min-w-[120px] text-left transition-transform duration-300 hover:scale-105">
+                      <div className="absolute right-6 bottom-6 bg-white/85 backdrop-blur-md border border-white/40 rounded-xl p-2.5 shadow-md min-w-[120px] text-left">
                         <span className="text-[8px] text-gray-400 font-bold block uppercase tracking-wider">Package Offered</span>
                         <span className="text-lg font-black text-[#D4AF37] block leading-none mt-0.5">{activeStudent.packageOffered}</span>
                         <span className="text-[8px] text-gray-400 font-medium tracking-wide">PER ANNUM</span>

@@ -223,7 +223,7 @@ export const ResearchView: React.FC<ResearchViewProps> = ({ path = "/research" }
               <img
                 src={data.heroImage || "https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=800&fit=crop"}
                 alt="Chalapathi Research Laboratory"
-                className="w-full h-64 sm:h-72 lg:h-80 object-cover group-hover:scale-105 transition-transform duration-500"
+                className="w-full h-64 sm:h-72 lg:h-80 object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#072A6C] via-transparent to-transparent opacity-90 flex flex-col justify-end p-5">
                 <span className="text-[10px] font-extrabold text-[#D4AF37] uppercase tracking-widest">
@@ -532,7 +532,7 @@ export const ResearchView: React.FC<ResearchViewProps> = ({ path = "/research" }
                   <img
                     src={lab.image}
                     alt={lab.title}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-cover"
                   />
                   <div className="absolute top-3 left-3 px-3 py-1 bg-[#072A6C]/90 text-white rounded-lg text-[10px] font-black uppercase tracking-wider backdrop-blur-sm">
                     {lab.badge}

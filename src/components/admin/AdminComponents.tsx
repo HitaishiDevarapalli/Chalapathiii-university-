@@ -266,7 +266,7 @@ export const ImageField: React.FC<ImageFieldProps> = ({
                 <img
                   src={value}
                   alt={altText || label}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  className="w-full h-full object-cover"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = placeholder || "/logo.png?v=3";
                   }}
@@ -390,7 +390,7 @@ export const ImageField: React.FC<ImageFieldProps> = ({
                 <img
                   src={value}
                   alt={altText || label}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  className="w-full h-full object-cover"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = placeholder || "/logo.png?v=3";
                   }}

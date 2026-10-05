@@ -181,7 +181,7 @@ export default function Events() {
                         src={item.image}
                         alt={item.title}
                         onError={(e) => { (e.target as HTMLImageElement).src = "/prog_engineering.png"; }}
-                        className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-cover object-center"
                         draggable="false"
                         loading="lazy"
                       />

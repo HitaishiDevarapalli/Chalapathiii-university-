@@ -509,7 +509,7 @@ export default function News() {
                     src={item.image} 
                     alt={item.title} 
                     onError={(e) => { (e.target as HTMLImageElement).src = "/prog_computer.png"; }}
-                    className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300" 
+                    className="w-full h-full object-cover" 
                   />
                 </div>
 
@@ -712,7 +712,7 @@ export default function News() {
                         </span>
                         
                         <div className="w-16 h-12 rounded-lg overflow-hidden shrink-0 bg-gray-50 border border-gray-100">
-                          <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                          <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
                         </div>
                       </div>
 

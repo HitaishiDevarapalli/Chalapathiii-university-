@@ -2158,7 +2158,7 @@ function LatestNewsView() {
           className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow transition-all flex flex-col md:flex-row cursor-pointer group"
         >
           <div className="w-full md:w-1/3 h-40 bg-gray-50 border-r border-gray-100 overflow-hidden">
-            <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300" />
+            <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
           </div>
           <div className="p-5 flex-1 flex flex-col justify-between text-left">
             <div className="space-y-1.5">
@@ -2240,7 +2240,7 @@ export default function DynamicPage() {
                   src={campusPage.videoThumbnail || "/campus_life_bg.png"} 
                   alt="Video Thumbnail"
                   onError={(e) => { e.currentTarget.src = "/campus_life_bg.png"; }}
-                  className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-full object-cover opacity-80"
                 />
                 <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
                   <button 
@@ -2299,7 +2299,7 @@ export default function DynamicPage() {
                   src={sect.image} 
                   alt={sect.title}
                   onError={(e) => { e.currentTarget.src = "/campus_hero.png"; }}
-                  className="rounded-[20px] shadow-lg w-full h-[280px] md:h-[360px] object-cover hover:scale-105 transition-transform duration-500" 
+                  className="rounded-[20px] shadow-lg w-full h-[280px] md:h-[360px] object-cover" 
                 />
               </div>
               <div className="lg:col-span-6 space-y-4">
@@ -2330,7 +2330,7 @@ export default function DynamicPage() {
                     src={imgUrl} 
                     alt={`${campusPage.title} Gallery Photo ${i + 1}`} 
                     onError={(e) => { e.currentTarget.src = "/gallery_tech_events.png"; }}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    className="w-full h-full object-cover"
                     loading="lazy"
                   />
                   <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-extrabold text-sm">
@@ -2582,9 +2582,7 @@ function MemberAvatar({
 const BOARD_DEPARTMENTS = [
   "Governing Council",
   "Chancellor",
-  "Pro Chancellor",
-  "Vice Chancellor",
-  "Registrar"
+  "Pro Chancellor"
 ];
 
 // BOARD_DATA is managed dynamically from DataContext
@@ -2753,7 +2751,7 @@ function BoardDirectory() {
               <MemberAvatar 
                 avatar={member.avatar} 
                 name={member.name} 
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out" 
+                className="w-full h-full object-cover" 
               />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 pointer-events-none"></div>
             </div>
@@ -2804,7 +2802,7 @@ function BoardDirectory() {
               </div>
               
               <p className="text-[14px] md:text-[15px] text-gray-600 mt-8 leading-loose text-justify">
-                {selectedFaculty.name}, {selectedFaculty.edu}, is renowned for their focus on {selectedFaculty.interests.toLowerCase()} and educational excellence. With {selectedFaculty.experience} in educational management and leadership, they continue to drive forward the institution's core mission and global footprint.
+                {selectedFaculty.name}, {selectedFaculty.edu?.replace(/M\.Tech/gi, "B.Tech")}, is renowned for their focus on {selectedFaculty.interests.toLowerCase()} and educational excellence. With {selectedFaculty.experience} in educational management and leadership, they continue to drive forward the institution's core mission and global footprint.
               </p>
             </div>
           </div>
@@ -3113,7 +3111,7 @@ function FacultyDirectory() {
                 <MemberAvatar 
                   avatar={faculty.avatar} 
                   name={faculty.name} 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                  className="w-full h-full object-cover" 
                 />
               </div>
               
@@ -3157,32 +3155,12 @@ const LEADERS = [
   {
     name: "Sri Y. Sujit Kumar",
     title: "Pro Chancellor",
-    edu: "M.Tech & MBA - Executive Education",
+    edu: "B.Tech & MBA - Executive Education",
     avatar: "YSK",
     interests: "Institutional progress planning, modernization initiatives, and industry collaborations.",
-    bio: "Sri Y. Sujit Kumar holds a postgraduate degree in engineering and executive education in management. As Pro Chancellor, he works closely with the governing board to implement modernization initiatives, digital transformation of the campus, and strategic expansion projects. With 18 years of experience, he leads university-industry collaborations, global academic partnerships, and entrepreneurship programs, preparing students for dynamic international careers.",
+    bio: "Sri Y. Sujit Kumar holds a degree in engineering and executive education in management. As Pro Chancellor, he works closely with the governing board to implement modernization initiatives, digital transformation of the campus, and strategic expansion projects. With 18 years of experience, he leads university-industry collaborations, global academic partnerships, and entrepreneurship programs, preparing students for dynamic international careers.",
     phone: "+91 863 2345402",
     email: "prochan@city.ac.in",
-    address: "Chalapathi Nagar, Lam, Guntur, Andhra Pradesh - 522034"
-  },
-  {
-    name: "Dr. K. Prasad Rao",
-    title: "Vice Chancellor",
-    edu: "Ph.D., Former Senior Professor - Administration & Research",
-    avatar: "KPR",
-    interests: "Curriculum planning coordination, academic excellence, and international relations.",
-    bio: "Dr. K. Prasad Rao is an eminent academician and researcher with a Ph.D. and over 30 years of teaching, research, and administrative experience. He has published numerous research papers in international journals and overseen critical accreditation achievements. As Vice Chancellor, he heads academic governance, research direction, outcome-based curricula, and student-centric learning frameworks, steering the university towards national and international prominence.",
-    phone: "+91 863 2345403",
-    email: "vc@city.ac.in",
-    address: "Chalapathi Nagar, Lam, Guntur, Andhra Pradesh - 522034"
-  },
-  {
-    name: "Prof. T. Sivaramaiah",
-    title: "Registrar",
-    edu: "M.Tech, Ph.D. - Computer Networks",
-    avatar: "TS",
-    phone: "+91 863 2345404",
-    email: "registrar@city.ac.in",
     address: "Chalapathi Nagar, Lam, Guntur, Andhra Pradesh - 522034"
   }
 ];
@@ -3208,10 +3186,10 @@ function LeadershipView() {
           <div className="lg:col-span-5 flex justify-center relative">
             <div className="relative group">
               {/* Soft Golden Glow Ring */}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#D4AF37] to-[#D71920] opacity-40 blur-2xl group-hover:opacity-75 transition-all duration-500 scale-105" />
+              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#D4AF37] to-[#D71920] opacity-40 blur-2xl group-hover:opacity-60 transition-opacity duration-500" />
               
               {/* 3D Glass Frame bezel */}
-              <div className="relative w-[320px] h-[320px] md:w-[400px] md:h-[400px] rounded-full p-2.5 bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl overflow-hidden transition-transform duration-500 hover:rotate-2 hover:scale-[1.02]">
+              <div className="relative w-[320px] h-[320px] md:w-[400px] md:h-[400px] rounded-full p-2.5 bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl overflow-hidden">
                 <img 
                   src={leadership.chairmanImage || "/chairman_v4.png"} 
                   alt="Chairman" 
@@ -4583,7 +4561,7 @@ function PlacementsView() {
                 src={student.img} 
                 alt={student.name} 
                 draggable="false"
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                className="absolute inset-0 w-full h-full object-cover"
               />
               {/* Bottom Dark Gradient Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent pointer-events-none" />
@@ -4724,7 +4702,7 @@ function PlacementsView() {
                 <img 
                   src={ind.img} 
                   alt={ind.name} 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                  className="w-full h-full object-cover" 
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-4">
                   <span className="text-white font-extrabold text-xs md:text-sm uppercase tracking-wide">

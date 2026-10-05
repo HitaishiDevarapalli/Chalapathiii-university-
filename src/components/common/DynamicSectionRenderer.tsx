@@ -158,7 +158,7 @@ export const DynamicSectionRenderer: React.FC<DynamicSectionRendererProps> = ({
                   <img 
                     src={media.url} 
                     alt={media.alt || title || "Banner"} 
-                    className="w-full h-80 sm:h-96 object-cover transform group-hover:scale-105 transition-transform duration-500" 
+                    className="w-full h-80 sm:h-96 object-cover" 
                   />
                   {media.caption && (
                     <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-4 text-xs text-white/90">
@@ -320,7 +320,7 @@ export const DynamicSectionRenderer: React.FC<DynamicSectionRendererProps> = ({
                     </div>
                     {item.image && (
                       <div className="rounded-xl overflow-hidden h-40 w-full mb-3">
-                        <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
                       </div>
                     )}
                     <h3 className="text-lg font-bold text-[#072A6C] leading-snug group-hover:text-blue-700 transition-colors">
@@ -554,7 +554,7 @@ export const DynamicSectionRenderer: React.FC<DynamicSectionRendererProps> = ({
                 className="group relative rounded-2xl overflow-hidden aspect-[4/3] bg-gray-200 shadow-sm cursor-pointer hover:shadow-xl transition-all"
               >
                 {item.image && (
-                  <img src={item.image} alt={item.title || "Gallery"} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                  <img src={item.image} alt={item.title || "Gallery"} className="w-full h-full object-cover" />
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4 text-white">
                   <h4 className="text-xs font-bold leading-tight">{item.title}</h4>

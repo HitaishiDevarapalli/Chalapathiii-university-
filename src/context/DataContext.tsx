@@ -3037,15 +3037,7 @@ export const INITIAL_BOARD_DATA: Record<string, DirectoryData> = {
     others: []
   },
   "Pro Chancellor": {
-    hod: { name: "Sri Y. Sujit Kumar", title: "Pro Chancellor", edu: "M.Tech & MBA - Executive Education", interests: "Institutional progress planning, modernization initiatives, and industry collaborations.", phone: "0863 2345402", email: "prochan@city.ac.in", avatar: "", age: "42 Years", experience: "18 Years", idNo: "CUB-PC-001", department: "Office of the Pro Chancellor" },
-    others: []
-  },
-  "Vice Chancellor": {
-    hod: { name: "Dr. K. Prasad Rao", title: "Vice Chancellor", edu: "Ph.D., Former Senior Professor - Administration & Research", interests: "Curriculum planning coordination, academic excellence, and international relations.", phone: "0863 2345403", email: "vc@city.ac.in", avatar: "", age: "58 Years", experience: "30 Years", idNo: "CUB-VC-001", department: "Office of the Vice Chancellor" },
-    others: []
-  },
-  "Registrar": {
-    hod: { name: "Prof. T. Sivaramaiah", title: "Registrar", edu: "M.Tech, Ph.D. - Computer Networks", interests: "General administration, statutory records management, and legal affairs compliance.", phone: "0863 2345404", email: "registrar@city.ac.in", avatar: "", age: "53 Years", experience: "25 Years", idNo: "CUB-RG-001", department: "Registrar Office" },
+    hod: { name: "Sri Y. Sujit Kumar", title: "Pro Chancellor", edu: "B.Tech & MBA - Executive Education", interests: "Institutional progress planning, modernization initiatives, and industry collaborations.", phone: "0863 2345402", email: "prochan@city.ac.in", avatar: "", age: "42 Years", experience: "18 Years", idNo: "CUB-PC-001", department: "Office of the Pro Chancellor" },
     others: []
   }
 };
@@ -3317,11 +3309,17 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (local) {
       try {
         const parsed = JSON.parse(local);
+        delete parsed["Vice Chancellor"];
+        delete parsed["Registrar"];
+        if (parsed["Pro Chancellor"]?.hod?.edu) {
+          parsed["Pro Chancellor"].hod.edu = parsed["Pro Chancellor"].hod.edu.replace(/M\.Tech/gi, "B.Tech");
+        }
         Object.keys(parsed).forEach(dept => {
           if (parsed[dept]?.hod?.avatar && parsed[dept].hod.avatar.includes("images.unsplash.com")) {
             parsed[dept].hod.avatar = "";
           }
         });
+        localStorage.setItem("chalapathi_board_data_v3", JSON.stringify(parsed));
         return parsed;
       } catch (e) {}
     }
