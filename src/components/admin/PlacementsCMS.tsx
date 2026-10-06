@@ -198,13 +198,31 @@ export const PlacementsCMS: React.FC<PlacementsCMSProps> = ({
 
           {/* Key Stats Highlights */}
           <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-gray-100">
               <div>
-                <h3 className="text-sm font-black text-[#072A6C] uppercase flex items-center gap-2">
-                  <Trophy size={16} className="text-[#072A6C]" /> Key Placement Metrics & Stats
+                <h3 className="text-sm font-black text-[#072A6C] uppercase">
+                  Key Placement Metrics & Stats
                 </h3>
                 <p className="text-xs text-gray-500 mt-0.5">Top stats shown on the Placement Page and Homepage</p>
               </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const nextVal = !placementsForm.hidePlacementStats;
+                  const updated = { ...placementsForm, hidePlacementStats: nextVal };
+                  setPlacementsForm(updated);
+                  updatePlacementsContent(updated);
+                  notifySave(nextVal ? "Placement stats & packages hidden from main web!" : "Placement stats & packages visible on main web!");
+                }}
+                className={`px-3 py-1.5 text-xs font-bold rounded-xl border cursor-pointer transition-colors flex items-center gap-1.5 self-start sm:self-auto ${
+                  placementsForm.hidePlacementStats
+                    ? "bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
+                    : "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                }`}
+              >
+                <span className={`w-2 h-2 rounded-full ${placementsForm.hidePlacementStats ? 'bg-red-500' : 'bg-emerald-500'}`}></span>
+                <span>Packages / Stats: {placementsForm.hidePlacementStats ? "Hidden" : "Visible"}</span>
+              </button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
               <div className="p-3.5 bg-slate-50 rounded-xl border border-gray-200 space-y-1.5">
@@ -1039,6 +1057,24 @@ export const PlacementsCMS: React.FC<PlacementsCMSProps> = ({
                   className="px-3 py-1.5 text-xs font-bold text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all"
                 >
                   Reset Recruiters
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nextVal = !placementsForm.hideCorporatePartners;
+                    const updated = { ...placementsForm, hideCorporatePartners: nextVal };
+                    setPlacementsForm(updated);
+                    updatePlacementsContent(updated);
+                    notifySave(nextVal ? "Corporate partners marquee hidden from main web!" : "Corporate partners marquee visible on main web!");
+                  }}
+                  className={`px-3 py-1.5 text-xs font-bold rounded-xl border cursor-pointer transition-colors flex items-center gap-1.5 ${
+                    placementsForm.hideCorporatePartners
+                      ? "bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
+                      : "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                  }`}
+                >
+                  <span className={`w-2 h-2 rounded-full ${placementsForm.hideCorporatePartners ? 'bg-red-500' : 'bg-emerald-500'}`}></span>
+                  <span>Corporate Partners: {placementsForm.hideCorporatePartners ? "Hidden" : "Visible"}</span>
                 </button>
                 <button
                   type="button"

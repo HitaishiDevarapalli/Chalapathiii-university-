@@ -797,7 +797,13 @@ export default function AdminPortal() {
     storiesBadge: placementsSection?.extraData?.storiesBadge || "PLACEMENT SUCCESS STORIES",
     storiesTitle: placementsSection?.extraData?.storiesTitle || "Our Students. Top Careers. Bright Futures.",
     storiesSubtitle: placementsSection?.extraData?.storiesSubtitle || "Real stories from Chalapathi students who achieved successful careers through campus placements.",
-    partnersHeading: placementsSection?.extraData?.partnersHeading || "Our Top Corporate Partners"
+    partnersHeading: placementsSection?.extraData?.partnersHeading || "Our Top Corporate Partners",
+    hideCorporatePartners: placementsSection?.extraData?.hideCorporatePartners !== undefined
+      ? Boolean(placementsSection.extraData.hideCorporatePartners)
+      : (placementsContent.hideCorporatePartners !== undefined ? Boolean(placementsContent.hideCorporatePartners) : true),
+    hidePlacementStats: placementsSection?.extraData?.hidePlacementStats !== undefined
+      ? Boolean(placementsSection.extraData.hidePlacementStats)
+      : (placementsContent.hidePlacementStats !== undefined ? Boolean(placementsContent.hidePlacementStats) : true),
   }));
 
   const savePlacementsSection = () => {
@@ -809,12 +815,18 @@ export default function AdminPortal() {
         storiesBadge: placementsSectionData.storiesBadge,
         storiesTitle: placementsSectionData.storiesTitle,
         storiesSubtitle: placementsSectionData.storiesSubtitle,
-        partnersHeading: placementsSectionData.partnersHeading
+        partnersHeading: placementsSectionData.partnersHeading,
+        hideCorporatePartners: placementsSectionData.hideCorporatePartners,
+        hidePlacementStats: placementsSectionData.hidePlacementStats
       }
     } : s));
     setSectionsList(updatedSections);
     updateHomepageSections(updatedSections);
-    updatePlacementsContent(placementsForm);
+    updatePlacementsContent({
+      ...placementsForm,
+      hideCorporatePartners: placementsSectionData.hideCorporatePartners,
+      hidePlacementStats: placementsSectionData.hidePlacementStats
+    });
     updateSuccessStories(storiesList);
     notifySave("Placements metrics, corporate partners, and success stories saved live!");
   };
@@ -3475,6 +3487,62 @@ export default function AdminPortal() {
                           ← Back to Ordering
                         </button>
                         {renderCategoryVisibilityButton("placements", "Placements & Career Milestones")}
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const nextVal = !placementsSectionData.hideCorporatePartners;
+                            const newSecData = { ...placementsSectionData, hideCorporatePartners: nextVal };
+                            setPlacementsSectionData(newSecData);
+                            setPlacementsForm(prev => ({ ...prev, hideCorporatePartners: nextVal }));
+                            const updatedSections = sectionsList.map((s) => (s.id === "placements" || s.id === "certifications" ? {
+                              ...s,
+                              ...newSecData,
+                              extraData: { ...(s.extraData || {}), hideCorporatePartners: nextVal }
+                            } : s));
+                            setSectionsList(updatedSections);
+                            updateHomepageSections(updatedSections);
+                            updatePlacementsContent({ ...placementsForm, hideCorporatePartners: nextVal });
+                            notifySave(nextVal ? "Corporate partners marquee hidden from main web!" : "Corporate partners marquee visible on main web!");
+                          }}
+                          className={`h-9 px-3 text-xs font-bold rounded-lg border cursor-pointer transition-colors flex items-center gap-1.5 ${
+                            placementsSectionData.hideCorporatePartners
+                              ? "bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
+                              : "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                          }`}
+                          title="Click to toggle Corporate Partners marquee on main web"
+                        >
+                          <span className={`w-2 h-2 rounded-full ${placementsSectionData.hideCorporatePartners ? 'bg-red-500' : 'bg-emerald-500'}`}></span>
+                          <span>Corporate Partners: {placementsSectionData.hideCorporatePartners ? "Hidden" : "Visible"}</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const nextVal = !placementsSectionData.hidePlacementStats;
+                            const newSecData = { ...placementsSectionData, hidePlacementStats: nextVal };
+                            setPlacementsSectionData(newSecData);
+                            setPlacementsForm(prev => ({ ...prev, hidePlacementStats: nextVal }));
+                            const updatedSections = sectionsList.map((s) => (s.id === "placements" || s.id === "certifications" ? {
+                              ...s,
+                              ...newSecData,
+                              extraData: { ...(s.extraData || {}), hidePlacementStats: nextVal }
+                            } : s));
+                            setSectionsList(updatedSections);
+                            updateHomepageSections(updatedSections);
+                            updatePlacementsContent({ ...placementsForm, hidePlacementStats: nextVal });
+                            notifySave(nextVal ? "Placement packages & statistics hidden from main web!" : "Placement packages & statistics visible on main web!");
+                          }}
+                          className={`h-9 px-3 text-xs font-bold rounded-lg border cursor-pointer transition-colors flex items-center gap-1.5 ${
+                            placementsSectionData.hidePlacementStats
+                              ? "bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
+                              : "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                          }`}
+                          title="Click to toggle Placement Packages & Statistics on main web"
+                        >
+                          <span className={`w-2 h-2 rounded-full ${placementsSectionData.hidePlacementStats ? 'bg-red-500' : 'bg-emerald-500'}`}></span>
+                          <span>Packages & Stats: {placementsSectionData.hidePlacementStats ? "Hidden" : "Visible"}</span>
+                        </button>
                         <button
                           type="button"
                           onClick={() => {
@@ -3490,7 +3558,9 @@ export default function AdminPortal() {
                               storiesBadge: defPlacements?.extraData?.storiesBadge || "PLACEMENT SUCCESS STORIES",
                               storiesTitle: defPlacements?.extraData?.storiesTitle || "Our Students. Top Careers. Bright Futures.",
                               storiesSubtitle: defPlacements?.extraData?.storiesSubtitle || "Real stories from Chalapathi students who achieved successful careers through campus placements.",
-                              partnersHeading: defPlacements?.extraData?.partnersHeading || "Our Top Corporate Partners"
+                              partnersHeading: defPlacements?.extraData?.partnersHeading || "Our Top Corporate Partners",
+                              hideCorporatePartners: true,
+                              hidePlacementStats: true
                             });
                             setStoriesList(INITIAL_SUCCESS_STORIES);
                             setPlacementsForm(INITIAL_PLACEMENTS_CONTENT);
@@ -3564,14 +3634,52 @@ export default function AdminPortal() {
 
                     {/* 4 Key Placement Metrics (Matches Website) */}
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-xs font-black text-[#072A6C] uppercase">Placement Key Statistics (4 Highlights)</h4>
-                        <span className="text-[10px] text-gray-400">Displayed in 4 cards above footer strip</span>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-slate-50 border border-gray-200 rounded-xl">
+                        <div>
+                          <h4 className="text-xs font-black text-[#072A6C] uppercase">Placement Key Statistics / Packages (4 Highlights)</h4>
+                          <p className="text-[11px] text-gray-500">Show or hide the 4 bottom package metrics (Students Placed, Highest Package, Average, etc.) on the homepage</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const nextVal = !placementsSectionData.hidePlacementStats;
+                            const newSecData = { ...placementsSectionData, hidePlacementStats: nextVal };
+                            setPlacementsSectionData(newSecData);
+                            setPlacementsForm(prev => ({ ...prev, hidePlacementStats: nextVal }));
+
+                            const updatedSections = sectionsList.map((s) => (s.id === "placements" || s.id === "certifications" ? {
+                              ...s,
+                              ...newSecData,
+                              extraData: { ...(s.extraData || {}), hidePlacementStats: nextVal }
+                            } : s));
+                            setSectionsList(updatedSections);
+                            updateHomepageSections(updatedSections);
+                            updatePlacementsContent({ ...placementsForm, hidePlacementStats: nextVal });
+                            notifySave(nextVal ? "Placement packages & statistics hidden from main web!" : "Placement packages & statistics visible on main web!");
+                          }}
+                          className={`h-8 px-3 text-xs font-bold rounded-lg border cursor-pointer transition-colors flex items-center gap-1.5 shrink-0 ${
+                            placementsSectionData.hidePlacementStats
+                              ? "bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
+                              : "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                          }`}
+                        >
+                          {placementsSectionData.hidePlacementStats ? (
+                            <>
+                              <span className="w-2 h-2 rounded-full bg-red-500 inline-block"></span>
+                              <span>Packages & Stats: Hidden (Click to Show)</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+                              <span>Packages & Stats: Visible (Click to Hide)</span>
+                            </>
+                          )}
+                        </button>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                         <div className="p-3 rounded-xl border border-gray-200 bg-white shadow-xs space-y-1.5">
-                          <span className="text-[10px] font-bold text-[#072A6C] uppercase flex items-center gap-1">
-                            <Users size={12} /> Students Placed
+                          <span className="text-[10px] font-bold text-[#072A6C] uppercase">
+                            Students Placed
                           </span>
                           <input
                             type="text"
@@ -3594,8 +3702,8 @@ export default function AdminPortal() {
                         </div>
 
                         <div className="p-3 rounded-xl border border-gray-200 bg-white shadow-xs space-y-1.5">
-                          <span className="text-[10px] font-bold text-[#D4AF37] uppercase flex items-center gap-1">
-                            <Trophy size={12} /> Highest Package
+                          <span className="text-[10px] font-bold text-[#D4AF37] uppercase">
+                            Highest Package
                           </span>
                           <input
                             type="text"
@@ -3618,8 +3726,8 @@ export default function AdminPortal() {
                         </div>
 
                         <div className="p-3 rounded-xl border border-gray-200 bg-white shadow-xs space-y-1.5">
-                          <span className="text-[10px] font-bold text-amber-600 uppercase flex items-center gap-1">
-                            <Handshake size={12} /> Corporate Partners
+                          <span className="text-[10px] font-bold text-amber-600 uppercase">
+                            Corporate Partners
                           </span>
                           <input
                             type="text"
@@ -4020,15 +4128,51 @@ export default function AdminPortal() {
                     {/* OUR TOP CORPORATE PARTNERS / RECRUITERS MARQUEE CMS        */}
                     {/* ══════════════════════════════════════════════════════════ */}
                     <div className="pt-6 border-t border-gray-100 space-y-6">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-slate-50 border border-gray-200 rounded-xl">
                         <div>
-                          <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-1.5">
-                            <Building size={14} className="text-[#072A6C]" />
+                          <h4 className="text-xs font-black text-[#072A6C] uppercase">
                             Our Top Corporate Partners Marquee ({(placementsForm.recruiters || []).length} Companies)
                           </h4>
-                          <p className="text-[11px] text-gray-500">Manage all hiring partner logos shown in the homepage auto-scrolling recruiter marquee strip</p>
+                          <p className="text-[11px] text-gray-500">Show or hide the "OUR TOP CORPORATE PARTNERS" title and logo marquee on the homepage</p>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap items-center gap-2 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const nextVal = !placementsSectionData.hideCorporatePartners;
+                              const newSecData = { ...placementsSectionData, hideCorporatePartners: nextVal };
+                              setPlacementsSectionData(newSecData);
+                              setPlacementsForm(prev => ({ ...prev, hideCorporatePartners: nextVal }));
+
+                              const updatedSections = sectionsList.map((s) => (s.id === "placements" || s.id === "certifications" ? {
+                                ...s,
+                                ...newSecData,
+                                extraData: { ...(s.extraData || {}), hideCorporatePartners: nextVal }
+                              } : s));
+                              setSectionsList(updatedSections);
+                              updateHomepageSections(updatedSections);
+                              updatePlacementsContent({ ...placementsForm, hideCorporatePartners: nextVal });
+                              notifySave(nextVal ? "Corporate partners marquee hidden from main web!" : "Corporate partners marquee visible on main web!");
+                            }}
+                            className={`h-8 px-3 text-xs font-bold rounded-lg border cursor-pointer transition-colors flex items-center gap-1.5 ${
+                              placementsSectionData.hideCorporatePartners
+                                ? "bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
+                                : "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                            }`}
+                          >
+                            {placementsSectionData.hideCorporatePartners ? (
+                              <>
+                                <span className="w-2 h-2 rounded-full bg-red-500 inline-block"></span>
+                                <span>Corporate Partners: Hidden (Click to Show)</span>
+                              </>
+                            ) : (
+                              <>
+                                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+                                <span>Corporate Partners: Visible (Click to Hide)</span>
+                              </>
+                            )}
+                          </button>
+
                           <button
                             type="button"
                             onClick={() => {

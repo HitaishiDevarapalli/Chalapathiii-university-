@@ -1581,6 +1581,14 @@ export default function Home() {
         const storiesSubtitle = placementsData.storiesSubtitle || "Real stories from Chalapathi students who achieved successful careers through campus placements.";
         const partnersHeading = placementsData.partnersHeading || "Our Top Corporate Partners";
 
+        const isCorporatePartnersHidden = placementsData.hideCorporatePartners !== undefined
+          ? Boolean(placementsData.hideCorporatePartners)
+          : (placementsContent.hideCorporatePartners !== undefined ? Boolean(placementsContent.hideCorporatePartners) : true);
+
+        const isPlacementStatsHidden = placementsData.hidePlacementStats !== undefined
+          ? Boolean(placementsData.hidePlacementStats)
+          : (placementsContent.hidePlacementStats !== undefined ? Boolean(placementsContent.hidePlacementStats) : true);
+
         return (
           <section className="bg-white py-10 relative overflow-hidden font-[var(--font-poppins)]">
             {/* Soft Background Blobs */}
@@ -1783,7 +1791,7 @@ export default function Home() {
               })()}
 
               {/* INFINITE LOGO MARQUEE */}
-              {placementsContent.recruiters && placementsContent.recruiters.length > 0 && (
+              {!isCorporatePartnersHidden && placementsContent.recruiters && placementsContent.recruiters.length > 0 && (
                 <div className="mt-20 pt-10 border-t border-gray-100/60 relative">
                   <span className="text-[10px] font-bold text-[#072A6C] uppercase tracking-widest text-center block mb-6">
                     {partnersHeading}
@@ -1818,31 +1826,33 @@ export default function Home() {
               )}
 
               {/* BOTTOM STATISTICS (Dynamic from CMS) - Clean typographic presentation without boxed cards or icons */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mt-16 pt-10 border-t border-gray-200/60 text-center">
-                {/* Stat 1 */}
-                <div className="flex flex-col items-center">
-                  <AnimatedCounter value={placementsContent.stats?.[0]?.value || placementsContent.placementPercent || "92%"} />
-                  <span className="text-xs text-gray-500 font-bold uppercase tracking-wider block mt-2">{placementsContent.stats?.[0]?.label || "Students Placed"}</span>
-                </div>
+              {!isPlacementStatsHidden && (
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mt-16 pt-10 border-t border-gray-200/60 text-center">
+                  {/* Stat 1 */}
+                  <div className="flex flex-col items-center">
+                    <AnimatedCounter value={placementsContent.stats?.[0]?.value || placementsContent.placementPercent || "92%"} />
+                    <span className="text-xs text-gray-500 font-bold uppercase tracking-wider block mt-2">{placementsContent.stats?.[0]?.label || "Students Placed"}</span>
+                  </div>
 
-                {/* Stat 2 */}
-                <div className="flex flex-col items-center">
-                  <AnimatedCounter value={placementsContent.stats?.[1]?.value || placementsContent.highestPackage || "30 LPA"} />
-                  <span className="text-xs text-gray-500 font-bold uppercase tracking-wider block mt-2">{placementsContent.stats?.[1]?.label || "Highest Package"}</span>
-                </div>
+                  {/* Stat 2 */}
+                  <div className="flex flex-col items-center">
+                    <AnimatedCounter value={placementsContent.stats?.[1]?.value || placementsContent.highestPackage || "30 LPA"} />
+                    <span className="text-xs text-gray-500 font-bold uppercase tracking-wider block mt-2">{placementsContent.stats?.[1]?.label || "Highest Package"}</span>
+                  </div>
 
-                {/* Stat 3 */}
-                <div className="flex flex-col items-center">
-                  <AnimatedCounter value={placementsContent.stats?.[2]?.value || placementsContent.corporatePartnersCount || "116+"} />
-                  <span className="text-xs text-gray-500 font-bold uppercase tracking-wider block mt-2">{placementsContent.stats?.[2]?.label || "Corporate Partners"}</span>
-                </div>
+                  {/* Stat 3 */}
+                  <div className="flex flex-col items-center">
+                    <AnimatedCounter value={placementsContent.stats?.[2]?.value || placementsContent.corporatePartnersCount || "116+"} />
+                    <span className="text-xs text-gray-500 font-bold uppercase tracking-wider block mt-2">{placementsContent.stats?.[2]?.label || "Corporate Partners"}</span>
+                  </div>
 
-                {/* Stat 4 */}
-                <div className="flex flex-col items-center">
-                  <AnimatedCounter value={placementsContent.stats?.[3]?.value || placementsContent.placementAssistance || "100%"} />
-                  <span className="text-xs text-gray-500 font-bold uppercase tracking-wider block mt-2">{placementsContent.stats?.[3]?.label || "Placement Assistance"}</span>
+                  {/* Stat 4 */}
+                  <div className="flex flex-col items-center">
+                    <AnimatedCounter value={placementsContent.stats?.[3]?.value || placementsContent.placementAssistance || "100%"} />
+                    <span className="text-xs text-gray-500 font-bold uppercase tracking-wider block mt-2">{placementsContent.stats?.[3]?.label || "Placement Assistance"}</span>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </section>
         );

@@ -346,6 +346,8 @@ export interface PlacementsContent {
   recruitersTitle?: string;
   placedStudents: PlacedStudent[];
   recruiters: Recruiter[];
+  hideCorporatePartners?: boolean;
+  hidePlacementStats?: boolean;
 }
 
 export interface DepartmentContact {
@@ -1654,7 +1656,11 @@ export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionConfig[] = [
     order: 9,
     title: "A Step Towards Success!",
     subtitle: "Building Careers. Creating Leaders.",
-    bgColor: "#F9FAFB"
+    bgColor: "#F9FAFB",
+    extraData: {
+      hideCorporatePartners: true,
+      hidePlacementStats: true
+    }
   },
   {
     id: "virtualTour",
@@ -2769,6 +2775,8 @@ export const INITIAL_PLACEMENTS_CONTENT: PlacementsContent = {
   ],
   recruitersBadge: "GLOBAL COLLABORATORS",
   recruitersTitle: "TOP RECRUITERS VISITED",
+  hideCorporatePartners: true,
+  hidePlacementStats: true,
   placedStudents: [
     { name: "Ch. Sandeep", branch: "Information Technology", company: "Adobe", ctc: "₹14.0 LPA", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=500&fit=crop&crop=face" },
     { name: "M. Sneha Reddy", branch: "Electronics & Comm", company: "Cognizant", ctc: "₹12.0 LPA", img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=500&fit=crop&crop=face" },
@@ -3206,7 +3214,21 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (local) {
       try {
         const parsed = JSON.parse(local);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((s: any) => {
+            if (s.id === "placements" || s.id === "certifications") {
+              return {
+                ...s,
+                extraData: {
+                  hideCorporatePartners: s.extraData?.hideCorporatePartners !== undefined ? s.extraData.hideCorporatePartners : true,
+                  hidePlacementStats: s.extraData?.hidePlacementStats !== undefined ? s.extraData.hidePlacementStats : true,
+                  ...(s.extraData || {})
+                }
+              };
+            }
+            return s;
+          });
+        }
       } catch (e) {}
     }
     return DEFAULT_HOMEPAGE_SECTIONS;
@@ -3335,8 +3357,21 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Placements
   const [placementsContent, setPlacementsContent] = useState<PlacementsContent>(() => {
-    const local = localStorage.getItem("chalapathi_placements");
-    return local ? JSON.parse(local) : INITIAL_PLACEMENTS_CONTENT;
+    try {
+      const local = localStorage.getItem("chalapathi_placements");
+      if (local) {
+        const parsed = JSON.parse(local);
+        return {
+          ...INITIAL_PLACEMENTS_CONTENT,
+          ...parsed,
+          hideCorporatePartners: parsed.hideCorporatePartners !== undefined ? parsed.hideCorporatePartners : true,
+          hidePlacementStats: parsed.hidePlacementStats !== undefined ? parsed.hidePlacementStats : true
+        };
+      }
+    } catch (e) {
+      console.error("Failed to parse placements content", e);
+    }
+    return INITIAL_PLACEMENTS_CONTENT;
   });
 
   // Contact Page Content
