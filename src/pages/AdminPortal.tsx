@@ -183,6 +183,58 @@ export default function AdminPortal() {
     setTimeout(() => setSaveSuccess(false), 3000);
   };
 
+  // Sync & Backup State
+  const [showSyncModal, setShowSyncModal] = useState(false);
+  const [syncJsonInput, setSyncJsonInput] = useState("");
+  const syncFileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleExportAllData = () => {
+    const dataPayload: Record<string, any> = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith("chalapathi_") || key.startsWith("site_") || key.startsWith("theme_"))) {
+        try {
+          dataPayload[key] = JSON.parse(localStorage.getItem(key) || "null");
+        } catch {
+          dataPayload[key] = localStorage.getItem(key);
+        }
+      }
+    }
+    const blob = new Blob([JSON.stringify(dataPayload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `chalapathi_cms_backup_${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    notifySave("✓ All CMS data exported to backup JSON file!");
+  };
+
+  const handleImportDataPayload = (jsonText: string) => {
+    try {
+      const parsed = JSON.parse(jsonText);
+      if (!parsed || typeof parsed !== "object") throw new Error("Invalid CMS backup format");
+      let count = 0;
+      Object.entries(parsed).forEach(([key, val]) => {
+        if (typeof val === "string") {
+          localStorage.setItem(key, val);
+        } else {
+          localStorage.setItem(key, JSON.stringify(val));
+        }
+        count++;
+      });
+      notifySave(`✓ Imported ${count} CMS collections successfully! Reloading...`);
+      setShowSyncModal(false);
+      setTimeout(() => {
+        window.location.reload();
+      }, 600);
+    } catch (e: any) {
+      alert("Import failed: " + e.message);
+    }
+  };
+
   // Login handler
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1534,6 +1586,16 @@ export default function AdminPortal() {
               <Clock size={11} /> Last saved: {lastSavedTime}
             </span>
           )}
+
+          <button
+            type="button"
+            onClick={() => setShowSyncModal(true)}
+            className="h-8 px-3 bg-[#D4AF37] hover:bg-[#c49f28] text-slate-900 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+            title="Backup & Sync CMS Data between Localhost and Live Website"
+          >
+            <Download size={13} />
+            <span className="hidden sm:inline">Sync / Backup Data</span>
+          </button>
 
           <Link
             to="/"
@@ -11545,6 +11607,123 @@ export default function AdminPortal() {
           )}
         </main>
       </div>
+
+      {/* CMS Data Backup & Sync Modal */}
+      {showSyncModal && (
+        <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-gray-100 space-y-5 text-left animate-fade-in max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-900 flex items-center justify-center font-bold">
+                  <Download size={18} />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-[#072A6C]">CMS Data Backup & Sync Center</h3>
+                  <p className="text-xs text-gray-500">Transfer data seamlessly between localhost:3000 and the live Vercel website</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSyncModal(false)}
+                className="p-1.5 text-gray-400 hover:text-gray-700 rounded-lg cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* 1. Export Section */}
+            <div className="p-4 rounded-2xl bg-slate-50 border border-gray-200 space-y-2.5">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div>
+                  <h4 className="text-xs font-black uppercase text-[#072A6C] tracking-wider">
+                    Step 1: Export from this Browser / Localhost
+                  </h4>
+                  <p className="text-xs text-gray-600">
+                    Download all your custom pages, banners, news, events, and certifications into a single backup JSON file.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleExportAllData}
+                  className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs shrink-0 transition-colors"
+                >
+                  <Download size={14} /> Download Backup (.json)
+                </button>
+              </div>
+            </div>
+
+            {/* 2. Import File Section */}
+            <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-3">
+              <div>
+                <h4 className="text-xs font-black uppercase text-emerald-900 tracking-wider">
+                  Step 2: Import Backup File / Apply to Live Website
+                </h4>
+                <p className="text-xs text-emerald-800">
+                  Select your downloaded <code className="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-emerald-300">.json</code> file to immediately apply all changes from localhost to this browser.
+                </p>
+              </div>
+
+              <input
+                type="file"
+                ref={syncFileInputRef}
+                accept=".json,application/json"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                      if (typeof ev.target?.result === "string") {
+                        handleImportDataPayload(ev.target.result);
+                      }
+                    };
+                    reader.readAsText(file);
+                  }
+                }}
+              />
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => syncFileInputRef.current?.click()}
+                  className="h-9 px-4 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                >
+                  <UploadCloud size={14} /> Choose Backup File (.json)
+                </button>
+              </div>
+            </div>
+
+            {/* 3. Direct JSON Paste */}
+            <div className="p-4 rounded-2xl bg-slate-50 border border-gray-200 space-y-2.5">
+              <h4 className="text-xs font-black uppercase text-[#072A6C] tracking-wider">
+                Or Paste Backup JSON Text Directly:
+              </h4>
+              <textarea
+                rows={4}
+                value={syncJsonInput}
+                onChange={(e) => setSyncJsonInput(e.target.value)}
+                placeholder='Paste backup JSON content here (e.g. { "chalapathi_site_settings": { ... } })...'
+                className="w-full p-3 text-xs bg-white border border-gray-200 rounded-xl font-mono focus:ring-2 focus:ring-[#072A6C]"
+              />
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (syncJsonInput.trim()) {
+                      handleImportDataPayload(syncJsonInput.trim());
+                    } else {
+                      alert("Please paste valid JSON data into the text box.");
+                    }
+                  }}
+                  className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer transition-colors"
+                >
+                  <Check size={14} /> Apply Pasted Data
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

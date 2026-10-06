@@ -5,7 +5,8 @@ import {
   Sun, CheckCircle2, ArrowRight, ExternalLink, Image as ImageIcon,
   Lock, Bell, Layers, Phone, Mail, MapPin, Building,
   Search, Rocket, FileText, TrendingUp, Home, GraduationCap,
-  BookOpen, Award, Briefcase, Users, Trash2, Plus, Edit3, X, Lightbulb, Star, Laptop
+  BookOpen, Award, Briefcase, Users, Trash2, Plus, Edit3, X, Lightbulb, Star, Laptop,
+  Download, UploadCloud
 } from "lucide-react";
 import { 
   useData, 
@@ -187,7 +188,7 @@ export function SettingsCMS({
     updatePlacementsContent
   } = useData();
 
-  const [settingsSubTab, setSettingsSubTab] = useState<"appearance" | "preview" | "branding" | "controls" | "visibility" | "search">("appearance");
+  const [settingsSubTab, setSettingsSubTab] = useState<"appearance" | "preview" | "branding" | "controls" | "visibility" | "search" | "backup">("appearance");
   
   // Local Theme Form State
   const [selectedPresetId, setSelectedPresetId] = useState<string>("classic");
@@ -337,7 +338,8 @@ export function SettingsCMS({
           { id: "branding", label: "3. Global Branding & Identity" },
           { id: "controls", label: "4. Global Website Controls" },
           { id: "visibility", label: "5. Page Visibility & Hide Manager" },
-          { id: "search", label: "6. Search Bar & Search Icon CMS" }
+          { id: "search", label: "6. Search Bar & Search Icon CMS" },
+          { id: "backup", label: "7. CMS Backup & Localhost Sync" }
         ].map((st) => (
           <button
             key={st.id}
@@ -1719,6 +1721,133 @@ export function SettingsCMS({
                 className="px-6 py-2.5 text-xs font-bold text-white bg-[#072A6C] hover:bg-[#051C4A] rounded-xl shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
               >
                 <Save size={14} /> Save & Publish Search Configuration
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ────────────────────────────────────────────────────────── */}
+      {/* SUBTAB 7: CMS BACKUP & LOCALHOST SYNC                       */}
+      {/* ────────────────────────────────────────────────────────── */}
+      {settingsSubTab === "backup" && (
+        <div className="space-y-6 text-left">
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+            <div className="pb-3 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-black text-[#072A6C] uppercase flex items-center gap-2">
+                  <Download size={16} className="text-[#D4AF37]" />
+                  7. CMS Data Backup & Localhost ➔ Production Sync
+                </h3>
+                <p className="text-xs text-gray-500">
+                  Export all your local website changes from <code className="font-mono font-bold text-blue-900">localhost:3000</code> and sync them directly onto the live <code className="font-mono font-bold text-blue-900">vercel.app</code> website with one click.
+                </p>
+              </div>
+            </div>
+
+            {/* How It Works Instructions */}
+            <div className="p-4 bg-blue-50/70 border border-blue-200 rounded-2xl space-y-2 text-xs text-[#072A6C]">
+              <div className="font-bold flex items-center gap-1.5 text-sm">
+                <CheckCircle2 size={16} className="text-blue-600" />
+                How to transfer all changes from Localhost to Production:
+              </div>
+              <ol className="list-decimal list-inside space-y-1 text-slate-700 pl-1 font-medium">
+                <li>On <code className="font-mono font-bold bg-white px-1 py-0.5 rounded border border-blue-200">http://localhost:3000/admin</code>, click <strong>"Download Full CMS Backup (.json)"</strong> below.</li>
+                <li>Open your live production admin: <code className="font-mono font-bold bg-white px-1 py-0.5 rounded border border-blue-200">https://chalapathi-university-amber.vercel.app/admin</code>.</li>
+                <li>Click <strong>"Choose Backup File (.json)"</strong> on the live site to import and apply all changes instantly!</li>
+              </ol>
+            </div>
+
+            {/* Export Card */}
+            <div className="p-5 bg-slate-50 border border-gray-200 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h4 className="text-xs font-black uppercase text-[#072A6C] tracking-wider mb-1">
+                  1. Download CMS Backup (from this Browser)
+                </h4>
+                <p className="text-xs text-gray-600">
+                  Includes all pages, home page builder sections, theme colors, navigation links, news, events, certifications, leadership, and contact data.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const dataPayload: Record<string, any> = {};
+                  for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && (key.startsWith("chalapathi_") || key.startsWith("site_") || key.startsWith("theme_"))) {
+                      try {
+                        dataPayload[key] = JSON.parse(localStorage.getItem(key) || "null");
+                      } catch {
+                        dataPayload[key] = localStorage.getItem(key);
+                      }
+                    }
+                  }
+                  const blob = new Blob([JSON.stringify(dataPayload, null, 2)], { type: "application/json" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `chalapathi_cms_backup_${new Date().toISOString().slice(0, 10)}.json`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                  notifySave("✓ CMS Backup downloaded successfully!");
+                }}
+                className="h-10 px-5 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl flex items-center gap-2 cursor-pointer shadow-xs shrink-0 transition-colors"
+              >
+                <Download size={15} /> Download Full CMS Backup (.json)
+              </button>
+            </div>
+
+            {/* Import Card */}
+            <div className="p-5 bg-emerald-50/80 border border-emerald-200 rounded-2xl space-y-3">
+              <div>
+                <h4 className="text-xs font-black uppercase text-emerald-950 tracking-wider mb-1">
+                  2. Import CMS Backup File (to this Browser / Live Site)
+                </h4>
+                <p className="text-xs text-emerald-900">
+                  Select your downloaded backup JSON file to apply all configurations and content to this website.
+                </p>
+              </div>
+
+              <input
+                type="file"
+                id="settings-sync-file-input"
+                accept=".json,application/json"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                      if (typeof ev.target?.result === "string") {
+                        try {
+                          const parsed = JSON.parse(ev.target.result);
+                          if (!parsed || typeof parsed !== "object") throw new Error("Invalid format");
+                          let count = 0;
+                          Object.entries(parsed).forEach(([k, v]) => {
+                            if (typeof v === "string") localStorage.setItem(k, v);
+                            else localStorage.setItem(k, JSON.stringify(v));
+                            count++;
+                          });
+                          notifySave(`✓ Imported ${count} CMS collections! Reloading...`);
+                          setTimeout(() => window.location.reload(), 600);
+                        } catch (err: any) {
+                          alert("Import failed: " + err.message);
+                        }
+                      }
+                    };
+                    reader.readAsText(file);
+                  }
+                }}
+              />
+
+              <button
+                type="button"
+                onClick={() => document.getElementById("settings-sync-file-input")?.click()}
+                className="h-10 px-5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl flex items-center gap-2 cursor-pointer shadow-xs transition-colors"
+              >
+                <UploadCloud size={15} /> Choose Backup File (.json) to Restore
               </button>
             </div>
           </div>
