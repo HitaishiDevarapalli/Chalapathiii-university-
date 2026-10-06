@@ -67,9 +67,8 @@ export const AdmissionsPortalView: React.FC = () => {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-[#D4AF37]/40 text-[#D4AF37] text-xs font-black tracking-widest uppercase"
+            className="inline-flex items-center px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-[#D4AF37]/40 text-[#D4AF37] text-xs font-black tracking-widest uppercase"
           >
-            <Sparkles size={14} className="animate-spin-slow" />
             <span>{portalData.heroBadge || "Academic Session 2026-27 Open"}</span>
           </motion.div>
 
@@ -143,15 +142,6 @@ export const AdmissionsPortalView: React.FC = () => {
               }`}
             >
               <div className="flex items-center justify-between">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                  idx === 0 
-                    ? "bg-white/15 backdrop-blur-md text-[#D4AF37] border border-white/20" 
-                    : idx === 1 
-                    ? "bg-[#072A6C]/5 text-[#072A6C]" 
-                    : "bg-[#D4AF37]/10 text-[#D4AF37]"
-                }`}>
-                  {idx === 0 ? <GraduationCap size={20} /> : idx === 1 ? <FileText size={20} /> : <Award size={20} />}
-                </div>
                 <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full ${
                   idx === 0 
                     ? "bg-[#D4AF37] text-white" 

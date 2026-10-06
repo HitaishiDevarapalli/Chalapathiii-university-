@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Sparkles, Send, X, Bot, User, ArrowRight } from "lucide-react";
+import { Send, X, ArrowRight } from "lucide-react";
 
 interface AIAssistantProps {
   isOpen: boolean;
@@ -123,18 +123,13 @@ export default function AIAssistant({ isOpen, onClose }: AIAssistantProps) {
   return (
     <div className="fixed bottom-6 right-6 z-50 w-[380px] h-[550px] bg-white rounded-2xl shadow-2xl border border-zinc-100 flex flex-col overflow-hidden animate-slide-up font-sans">
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary-blue to-indigo-950 p-4 text-white flex justify-between items-center">
-        <div className="flex items-center gap-2.5">
-          <div className="p-1.5 bg-indigo-600/30 rounded-lg border border-indigo-400/30">
-            <Sparkles size={18} className="text-yellow-300 animate-pulse" />
-          </div>
-          <div>
-            <h4 className="font-extrabold text-sm tracking-wide">University AI Bot</h4>
-            <span className="text-[10px] text-zinc-300 flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-              Online & ready to help
-            </span>
-          </div>
+      <div className="bg-[#072A6C] p-4 text-white flex justify-between items-center">
+        <div>
+          <h4 className="font-extrabold text-sm tracking-wide">University Helpdesk</h4>
+          <span className="text-[10px] text-zinc-300 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+            Online & ready to help
+          </span>
         </div>
         <button 
           onClick={onClose}
@@ -150,10 +145,10 @@ export default function AIAssistant({ isOpen, onClose }: AIAssistantProps) {
           <div key={index} className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"}`}>
             <div className={`flex gap-2 max-w-[85%] ${msg.sender === "user" ? "flex-row-reverse" : "flex-row"}`}>
               {/* Avatar */}
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs shrink-0 ${
-                msg.sender === "bot" ? "bg-indigo-600 text-white" : "bg-primary-gold text-primary-navy"
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 ${
+                msg.sender === "bot" ? "bg-[#072A6C] text-white" : "bg-[#D4AF37] text-[#072A6C]"
               }`}>
-                {msg.sender === "bot" ? <Bot size={14} /> : <User size={14} />}
+                {msg.sender === "bot" ? "CU" : "U"}
               </div>
 
               {/* Bubble */}
@@ -186,8 +181,8 @@ export default function AIAssistant({ isOpen, onClose }: AIAssistantProps) {
         {/* Typing indicator */}
         {isTyping && (
           <div className="flex gap-2 items-start">
-            <div className="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center shrink-0">
-              <Bot size={14} />
+            <div className="w-7 h-7 rounded-full bg-[#072A6C] text-white flex items-center justify-center text-[10px] font-black shrink-0">
+              CU
             </div>
             <div className="bg-white border border-zinc-100 p-3 rounded-2xl rounded-tl-none shadow-sm flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce"></span>

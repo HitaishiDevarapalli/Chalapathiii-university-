@@ -502,29 +502,22 @@ export default function Home() {
           viewport={{ once: true }}
           variants={staggerContainer}
         >
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-y-8 gap-x-4 justify-items-center text-center">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-y-8 gap-x-6 justify-items-center text-center">
             {[
-              { n: "25+", label: "Years of Excellence", icon: Trophy },
-              { n: "150+", label: "Programs Offered", icon: GraduationCap },
-              { n: "50+", label: "Expert Faculty", icon: Users },
-              { n: "300+", label: "Industry Partners", icon: Handshake },
-              { n: "20,000+", label: "Successful Alumni", icon: Landmark },
-              { n: "95%", label: "Placement Success", icon: Award },
-            ].map((s, i) => {
-              const Icon = s.icon;
-              return (
-                <motion.div key={i} className="flex flex-col items-center max-w-[160px] rounded-[14px]" variants={fadeUp}>
-                  <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center mb-3 border border-[#D4AF37]/30 shadow-sm relative group overflow-hidden">
-                    <Icon size={18} className="text-[#D4AF37] relative z-10 transition-transform duration-300 group-hover:scale-110" strokeWidth={2} />
-                    <div className="absolute inset-0 bg-[#D4AF37]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  </div>
-                  <AnimatedCounter value={s.n} />
-                  <span className="block text-[11px] text-gray-200 font-[500] mt-2 leading-tight">
-                    {s.label}
-                  </span>
-                </motion.div>
-              );
-            })}
+              { n: "25+", label: "Years of Excellence" },
+              { n: "150+", label: "Programs Offered" },
+              { n: "50+", label: "Expert Faculty" },
+              { n: "300+", label: "Industry Partners" },
+              { n: "20,000+", label: "Successful Alumni" },
+              { n: "95%", label: "Placement Success" },
+            ].map((s, i) => (
+              <motion.div key={i} className="flex flex-col items-center max-w-[160px]" variants={fadeUp}>
+                <AnimatedCounter value={s.n} />
+                <span className="block text-[11px] text-gray-200 font-[500] mt-2 leading-tight uppercase tracking-wider">
+                  {s.label}
+                </span>
+              </motion.div>
+            ))}
           </div>
         </motion.div>
       </section>
@@ -552,7 +545,7 @@ export default function Home() {
           </motion.p>
 
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 text-left mt-8"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-50px" }}
@@ -560,64 +553,50 @@ export default function Home() {
         >
           {[
             {
-              title: "Industry integrated curriculum",
-              desc: "Curriculum designed with practical learning and industry collaboration to ensure graduates are career-ready.",
-              icon: Trophy,
-              color: "#123A7A"
+              num: "01",
+              title: "Industry Integrated Curriculum",
+              desc: "Curriculum designed with practical learning and industry collaboration to ensure graduates are career-ready."
             },
             {
+              num: "02",
               title: "Expert Faculty & Research",
-              desc: "Learn from accomplished faculty members, researchers, and industry experts who inspire innovation.",
-              icon: Users,
-              color: "#1F4FA8"
+              desc: "Learn from accomplished faculty members, researchers, and industry experts who inspire innovation."
             },
             {
+              num: "03",
               title: "Smart Campus Infrastructure",
-              desc: "Technology-enabled classrooms, modern laboratories, and collaborative learning spaces designed for excellence.",
-              icon: Building2,
-              color: "#123A7A"
+              desc: "Technology-enabled classrooms, modern laboratories, and collaborative learning spaces designed for excellence."
             },
             {
+              num: "04",
               title: "Career & Placement Excellence",
-              desc: "Industry partnerships, internships, and placement training help students launch successful careers.",
-              icon: Handshake,
-              color: "#1F4FA8"
+              desc: "Industry partnerships, internships, and placement training help students launch successful careers."
             },
             {
+              num: "05",
               title: "Global Learning Opportunities",
-              desc: "International certifications, collaborative learning, and global industry exposure.",
-              icon: Globe,
-              color: "#123A7A"
+              desc: "International certifications, collaborative learning, and global industry exposure."
             },
             {
+              num: "06",
               title: "Leadership & Holistic Development",
-              desc: "Develop leadership, communication, creativity, and life skills through a vibrant campus ecosystem.",
-              icon: Sparkles,
-              color: "#1F4FA8"
+              desc: "Develop leadership, communication, creativity, and life skills through a vibrant campus ecosystem."
             }
-          ].map((item, idx) => {
-            const Icon = item.icon;
-            return (
-              <motion.div
-                key={idx}
-                className="bg-white border border-[#E7ECF3] rounded-[16px] p-6 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col items-center text-center group"
-                variants={fadeUp}
-              >
-                <div
-                  className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5 text-white shadow-md transition-transform duration-300 group-hover:scale-110"
-                  style={{ backgroundColor: item.color }}
-                >
-                  <Icon size={24} />
-                </div>
-                <h3 className="font-[700] text-[16px] text-[#0F172A] mb-3 leading-snug min-h-[48px] flex items-center justify-center transition-colors duration-300 group-hover:text-[#123A7A]">
-                  {item.title}
-                </h3>
-                <p className="text-[13px] text-[#64748B] leading-relaxed font-[500]">
-                  {item.desc}
-                </p>
-              </motion.div>
-            );
-          })}
+          ].map((item, idx) => (
+            <motion.div
+              key={idx}
+              className="border-t-2 border-[#072A6C]/30 hover:border-[#072A6C] pt-6 flex flex-col justify-start transition-colors duration-300"
+              variants={fadeUp}
+            >
+              <span className="text-2xl font-black text-[#D4AF37] mb-2">{item.num}</span>
+              <h3 className="font-[800] text-[17px] text-[#072A6C] mb-2 leading-snug">
+                {item.title}
+              </h3>
+              <p className="text-[13px] text-gray-600 leading-relaxed font-medium">
+                {item.desc}
+              </p>
+            </motion.div>
+          ))}
         </motion.div>
         </div>
       </section>
@@ -1085,50 +1064,34 @@ export default function Home() {
                   { title: "Transport Facility", desc: "Convenient and reliable transportation across city routes.", icon: "Bus", border: "border-indigo-500" }
                 ];
               })().map((card, idx) => {
-                const getIcon = (iconName: string) => {
-                  switch (iconName) {
-                    case "Users": return <Users size={18} className="text-[#072A6C]" />;
-                    case "GraduationCap": return <GraduationCap size={18} className="text-[#072A6C]" />;
-                    case "Trophy": return <Trophy size={18} className="text-[#072A6C]" />;
-                    case "Sparkles": return <Sparkles size={18} className="text-[#072A6C]" />;
-                    case "Building2": return <Building2 size={18} className="text-[#072A6C]" />;
-                    case "Landmark": return <Landmark size={18} className="text-[#072A6C]" />;
-                    case "Coffee": return <Coffee size={18} className="text-[#072A6C]" />;
-                    case "Bus": return <Bus size={18} className="text-[#072A6C]" />;
-                    default: return <Sparkles size={18} className="text-[#072A6C]" />;
+                const getCardPath = (titleStr: string) => {
+                  switch (titleStr) {
+                    case "Clubs & Activities": return "/campus-life/clubs";
+                    case "Sports & Fitness": return "/campus-life/sports";
+                    case "Hostel Life": return "/campus-life/hostels";
+                    case "Smart Learning Spaces": return "/campus-life/library";
+                    default: return "/campus-life";
                   }
                 };
-                const getCardPath = (titleStr: string) => {
-                    switch (titleStr) {
-                      case "Clubs & Activities": return "/campus-life/clubs";
-                      case "Sports & Fitness": return "/campus-life/sports";
-                      case "Hostel Life": return "/campus-life/hostels";
-                      case "Smart Learning Spaces": return "/campus-life/library";
-                      default: return "/campus-life";
-                    }
-                  };
                 return (
                   <div 
                     key={idx}
                     onClick={() => navigate(getCardPath(card.title))}
-                    className="bg-white border border-gray-150 rounded-[20px] p-5 shadow-xs hover:shadow-md transition-all duration-300 hover:-translate-y-1 text-left flex flex-col justify-between group relative overflow-hidden cursor-pointer"
+                    className="p-5 border-l-2 border-[#072A6C]/20 hover:border-[#072A6C] transition-all duration-300 text-left flex flex-col justify-between group cursor-pointer bg-white/60 hover:bg-white"
                   >
                     <div>
-                      {/* Icon */}
-                      <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center mb-4 transition-transform group-hover:scale-105">
-                        {getIcon(card.icon)}
-                      </div>
                       {/* Title */}
-                      <h4 className="text-xs font-black text-gray-800 mb-1.5 uppercase tracking-wide group-hover:text-[#072A6C] transition-colors">
+                      <h4 className="text-sm font-black text-[#072A6C] mb-1.5 uppercase tracking-wide group-hover:text-amber-600 transition-colors">
                         {card.title}
                       </h4>
                       {/* Description */}
-                      <p className="text-[10px] text-gray-400 font-light leading-relaxed">
+                      <p className="text-xs text-gray-500 font-medium leading-relaxed">
                         {card.desc}
                       </p>
                     </div>
-                    {/* Color accent line at bottom */}
-                    <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#072A6C] opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <span className="text-[11px] font-bold text-[#072A6C] mt-3 group-hover:underline">
+                      Explore &rarr;
+                    </span>
                   </div>
                 );
               })}
@@ -1287,12 +1250,9 @@ export default function Home() {
               className="bg-gradient-to-br from-[#072A6C] to-indigo-950 text-white rounded-[24px] p-8 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 text-left relative overflow-hidden group cursor-pointer"
             >
               <div className="absolute right-0 top-0 w-24 h-24 bg-white/5 rounded-full blur-xl pointer-events-none" />
-              <div className="space-y-2.5 max-w-[340px]">
-                <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
-                  <Users size={16} className="text-[#D4AF37]" />
-                </div>
+              <div className="space-y-2 max-w-[340px]">
                 <h4 className="text-sm font-black uppercase tracking-wider">{campusBanners?.community?.title || "Be a Part of Our Community"}</h4>
-                <p className="text-[10px] text-white/80 font-light leading-relaxed">
+                <p className="text-xs text-white/80 font-light leading-relaxed">
                   {campusBanners?.community?.desc || "Experience life beyond academics and build a brighter future."}
                 </p>
               </div>
@@ -1317,12 +1277,9 @@ export default function Home() {
               className="bg-gradient-to-br from-[#D71920] to-red-950 text-white rounded-[24px] p-8 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 text-left relative overflow-hidden group cursor-pointer"
             >
               <div className="absolute right-0 top-0 w-24 h-24 bg-white/5 rounded-full blur-xl pointer-events-none" />
-              <div className="space-y-2.5 max-w-[340px]">
-                <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
-                  <Calendar size={16} className="text-[#D4AF37]" />
-                </div>
+              <div className="space-y-2 max-w-[340px]">
                 <h4 className="text-sm font-black uppercase tracking-wider">{campusBanners?.events?.title || "Upcoming Campus Events"}</h4>
-                <p className="text-[10px] text-white/80 font-light leading-relaxed">
+                <p className="text-xs text-white/80 font-light leading-relaxed">
                   {campusBanners?.events?.desc || "There's always something exciting happening."}
                 </p>
               </div>
@@ -1860,42 +1817,30 @@ export default function Home() {
                 </div>
               )}
 
-              {/* BOTTOM STATISTICS (Dynamic from CMS) */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-16 pt-10 border-t border-gray-100/60">
-                {/* Stat Card 1 */}
-                <div className="bg-white border border-gray-100 rounded-[20px] p-6 shadow-sm flex flex-col items-center justify-center text-center transition-all duration-300 hover:shadow-md group">
-                  <div className="w-10 h-10 rounded-full bg-blue-50 text-[#072A6C] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                    <Users size={18} />
-                  </div>
+              {/* BOTTOM STATISTICS (Dynamic from CMS) - Clean typographic presentation without boxed cards or icons */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mt-16 pt-10 border-t border-gray-200/60 text-center">
+                {/* Stat 1 */}
+                <div className="flex flex-col items-center">
                   <AnimatedCounter value={placementsContent.stats?.[0]?.value || placementsContent.placementPercent || "92%"} />
-                  <span className="text-[10.5px] text-gray-500 font-medium block mt-1.5">{placementsContent.stats?.[0]?.label || "Students Placed"}</span>
+                  <span className="text-xs text-gray-500 font-bold uppercase tracking-wider block mt-2">{placementsContent.stats?.[0]?.label || "Students Placed"}</span>
                 </div>
 
-                {/* Stat Card 2 */}
-                <div className="bg-white border border-gray-100 rounded-[20px] p-6 shadow-sm flex flex-col items-center justify-center text-center transition-all duration-300 hover:shadow-md group">
-                  <div className="w-10 h-10 rounded-full bg-amber-50 text-[#D4AF37] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                    <Trophy size={18} />
-                  </div>
+                {/* Stat 2 */}
+                <div className="flex flex-col items-center">
                   <AnimatedCounter value={placementsContent.stats?.[1]?.value || placementsContent.highestPackage || "30 LPA"} />
-                  <span className="text-[10.5px] text-gray-500 font-medium block mt-1.5">{placementsContent.stats?.[1]?.label || "Highest Package"}</span>
+                  <span className="text-xs text-gray-500 font-bold uppercase tracking-wider block mt-2">{placementsContent.stats?.[1]?.label || "Highest Package"}</span>
                 </div>
 
-                {/* Stat Card 3 */}
-                <div className="bg-white border border-gray-100 rounded-[20px] p-6 shadow-sm flex flex-col items-center justify-center text-center transition-all duration-300 hover:shadow-md group">
-                  <div className="w-10 h-10 rounded-full bg-yellow-50 text-[#EAB308] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                    <Handshake size={18} />
-                  </div>
+                {/* Stat 3 */}
+                <div className="flex flex-col items-center">
                   <AnimatedCounter value={placementsContent.stats?.[2]?.value || placementsContent.corporatePartnersCount || "116+"} />
-                  <span className="text-[10.5px] text-gray-500 font-medium block mt-1.5">{placementsContent.stats?.[2]?.label || "Corporate Partners"}</span>
+                  <span className="text-xs text-gray-500 font-bold uppercase tracking-wider block mt-2">{placementsContent.stats?.[2]?.label || "Corporate Partners"}</span>
                 </div>
 
-                {/* Stat Card 4 */}
-                <div className="bg-white border border-gray-100 rounded-[20px] p-6 shadow-sm flex flex-col items-center justify-center text-center transition-all duration-300 hover:shadow-md group">
-                  <div className="w-10 h-10 rounded-full bg-green-50 text-[#10B981] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                    <GraduationCap size={18} />
-                  </div>
+                {/* Stat 4 */}
+                <div className="flex flex-col items-center">
                   <AnimatedCounter value={placementsContent.stats?.[3]?.value || placementsContent.placementAssistance || "100%"} />
-                  <span className="text-[10.5px] text-gray-500 font-medium block mt-1.5">{placementsContent.stats?.[3]?.label || "Placement Assistance"}</span>
+                  <span className="text-xs text-gray-500 font-bold uppercase tracking-wider block mt-2">{placementsContent.stats?.[3]?.label || "Placement Assistance"}</span>
                 </div>
               </div>
             </div>

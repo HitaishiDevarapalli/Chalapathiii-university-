@@ -570,7 +570,7 @@ interface SectionHeaderProps {
 export const SectionHeader: React.FC<SectionHeaderProps> = ({
   title,
   subtitle,
-  icon: Icon,
+  icon: _Icon,
   onSave,
   onReset,
   resetLabel,
@@ -579,14 +579,9 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
 }) => {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-6 border-b border-gray-200 text-left">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-[#072A6C]/10 text-[#072A6C] flex items-center justify-center shrink-0">
-          <Icon size={20} />
-        </div>
-        <div>
-          <h2 className="text-lg font-black text-[#072A6C] uppercase tracking-tight">{title}</h2>
-          <p className="text-xs text-gray-500 font-medium">{subtitle}</p>
-        </div>
+      <div>
+        <h2 className="text-lg font-black text-[#072A6C] uppercase tracking-tight">{title}</h2>
+        <p className="text-xs text-gray-500 font-medium">{subtitle}</p>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">

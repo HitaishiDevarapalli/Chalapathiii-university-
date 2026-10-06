@@ -1566,15 +1566,15 @@ export default function AdminPortal() {
                   )}
                   <button
                     onClick={() => setActiveTab(item.id as any)}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all text-left cursor-pointer ${
+                    className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all text-left cursor-pointer ${
                       isActive
                         ? "bg-[#D4AF37] text-slate-900 shadow-md"
                         : "text-blue-100 hover:bg-white/10 hover:text-white"
                     }`}
                     title={item.label}
                   >
-                    <Icon size={18} className="shrink-0" />
                     {sidebarOpen && <span className="flex-1 truncate">{item.label}</span>}
+                    {!sidebarOpen && <span className="truncate text-[10px] font-black">{item.label.slice(0, 3)}</span>}
                     {sidebarOpen && item.badge && (
                       <span
                         className={`text-[9px] px-1.5 py-0.5 rounded-full font-extrabold ${
@@ -1593,10 +1593,9 @@ export default function AdminPortal() {
           <div className="p-3 border-t border-white/10">
             <button
               onClick={resetToDefaults}
-              className="w-full h-8 px-2 bg-white/5 hover:bg-red-500/20 text-red-200 hover:text-red-100 text-[10px] font-bold rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+              className="w-full h-8 px-2 bg-white/5 hover:bg-red-500/20 text-red-200 hover:text-red-100 text-[10px] font-bold rounded-lg flex items-center justify-center transition-colors cursor-pointer"
             >
-              <RotateCcw size={12} />
-              {sidebarOpen && "Restore Defaults"}
+              {sidebarOpen ? "Restore Defaults" : "Reset"}
             </button>
           </div>
         </aside>
@@ -1613,12 +1612,11 @@ export default function AdminPortal() {
             >
               <div className="flex items-center justify-between pb-3 mb-2 border-b border-white/10">
                 <h3 className="font-bold text-xs uppercase tracking-wider text-blue-200">CMS Menu</h3>
-                <button onClick={() => setMobileSidebarOpen(false)} className="text-white">
-                  <X size={18} />
+                <button onClick={() => setMobileSidebarOpen(false)} className="text-white text-xs font-bold">
+                  Close
                 </button>
               </div>
               {navItems.map((item) => {
-                const Icon = item.icon;
                 const isActive = activeTab === item.id;
                 return (
                   <React.Fragment key={item.id}>
@@ -1634,12 +1632,16 @@ export default function AdminPortal() {
                         setActiveTab(item.id as any);
                         setMobileSidebarOpen(false);
                       }}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all text-left cursor-pointer ${
+                      className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all text-left cursor-pointer ${
                         isActive ? "bg-[#D4AF37] text-slate-900 shadow-md" : "text-blue-100 hover:bg-white/10"
                       }`}
                     >
-                      <Icon size={18} />
                       <span className="flex-1 truncate">{item.label}</span>
+                      {item.badge && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full font-extrabold bg-blue-600 text-white">
+                          {item.badge}
+                        </span>
+                      )}
                     </button>
                   </React.Fragment>
                 );
@@ -1661,94 +1663,68 @@ export default function AdminPortal() {
                 icon={LayoutDashboard}
               />
 
-              {/* Metrics Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex items-center gap-4 text-left">
-                  <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                    <GraduationCap size={24} />
-                  </div>
-                  <div>
-                    <span className="text-2xl font-black text-slate-800">{programs.length}</span>
-                    <p className="text-xs text-gray-500 font-medium">Academic Programs</p>
-                  </div>
+              {/* Metrics - Clean borderless typography without boxes or icons */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 py-6 border-b border-gray-200/80 text-left">
+                <div className="border-l-3 border-[#072A6C] pl-4">
+                  <div className="text-3xl sm:text-4xl font-black text-[#072A6C] tracking-tight">{programs.length}</div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mt-1">Academic Programs</p>
                 </div>
 
-                <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex items-center gap-4 text-left">
-                  <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-                    <UserPlus size={24} />
-                  </div>
-                  <div>
-                    <span className="text-2xl font-black text-slate-800">{enquiries.length}</span>
-                    <p className="text-xs text-gray-500 font-medium">Enquiry Leads</p>
-                  </div>
+                <div className="border-l-3 border-[#D4AF37] pl-4">
+                  <div className="text-3xl sm:text-4xl font-black text-[#072A6C] tracking-tight">{enquiries.length}</div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mt-1">Enquiry Leads</p>
                 </div>
 
-                <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex items-center gap-4 text-left">
-                  <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                    <Newspaper size={24} />
-                  </div>
-                  <div>
-                    <span className="text-2xl font-black text-slate-800">{news.length + events.length}</span>
-                    <p className="text-xs text-gray-500 font-medium">News & Events</p>
-                  </div>
+                <div className="border-l-3 border-[#072A6C] pl-4">
+                  <div className="text-3xl sm:text-4xl font-black text-[#072A6C] tracking-tight">{news.length + events.length}</div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mt-1">News & Events</p>
                 </div>
 
-                <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex items-center gap-4 text-left">
-                  <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
-                    <Megaphone size={24} />
-                  </div>
-                  <div>
-                    <span className="text-2xl font-black text-slate-800">{announcements.length}</span>
-                    <p className="text-xs text-gray-500 font-medium">Announcements</p>
-                  </div>
+                <div className="border-l-3 border-[#D4AF37] pl-4">
+                  <div className="text-3xl sm:text-4xl font-black text-[#072A6C] tracking-tight">{announcements.length}</div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mt-1">Announcements</p>
                 </div>
               </div>
 
-              {/* Quick Actions Card */}
-              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs text-left space-y-4">
-                <h3 className="text-sm font-black text-[#072A6C] uppercase tracking-wider">Quick Management Shortcuts</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              {/* Quick Management Shortcuts - Clean typographic links without boxes or icons */}
+              <div className="py-4 text-left space-y-3">
+                <h3 className="text-xs font-black uppercase tracking-wider text-gray-400">Quick Management Shortcuts</h3>
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-bold">
                   <button
                     onClick={() => setActiveTab("homepage")}
-                    className="p-3 bg-slate-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 rounded-xl flex flex-col items-center justify-center gap-2 text-center transition-all cursor-pointer"
+                    className="text-[#072A6C] hover:text-[#D4AF37] hover:underline cursor-pointer transition-colors"
                   >
-                    <Sparkles size={20} className="text-[#072A6C]" />
-                    <span className="text-xs font-bold text-slate-700">Homepage Sections</span>
+                    Homepage Sections &rarr;
                   </button>
                   <button
                     onClick={() => { setActiveTab("homepage"); setActiveHomeSubTab("placements"); }}
-                    className="p-3 bg-slate-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 rounded-xl flex flex-col items-center justify-center gap-2 text-center transition-all cursor-pointer"
+                    className="text-[#072A6C] hover:text-[#D4AF37] hover:underline cursor-pointer transition-colors"
                   >
-                    <Briefcase size={20} className="text-[#D4AF37]" />
-                    <span className="text-xs font-bold text-slate-700">Placement Stories</span>
+                    Placement Stories &rarr;
                   </button>
                   <button
                     onClick={() => { setActiveTab("homepage"); setActiveHomeSubTab("virtualTour"); }}
-                    className="p-3 bg-slate-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 rounded-xl flex flex-col items-center justify-center gap-2 text-center transition-all cursor-pointer"
+                    className="text-[#072A6C] hover:text-[#D4AF37] hover:underline cursor-pointer transition-colors"
                   >
-                    <MapPin size={20} className="text-blue-600" />
-                    <span className="text-xs font-bold text-slate-700">Admissions & Map</span>
+                    Admissions & Map &rarr;
                   </button>
                   <button
                     onClick={() => setActiveTab("admissions")}
-                    className="p-3 bg-slate-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 rounded-xl flex flex-col items-center justify-center gap-2 text-center transition-all cursor-pointer"
+                    className="text-[#072A6C] hover:text-[#D4AF37] hover:underline cursor-pointer transition-colors"
                   >
-                    <UserPlus size={20} className="text-emerald-600" />
-                    <span className="text-xs font-bold text-slate-700">Enquiries ({enquiries.length})</span>
+                    Enquiries ({enquiries.length}) &rarr;
                   </button>
                   <button
                     onClick={() => setActiveTab("news-events")}
-                    className="p-3 bg-slate-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 rounded-xl flex flex-col items-center justify-center gap-2 text-center transition-all cursor-pointer"
+                    className="text-[#072A6C] hover:text-[#D4AF37] hover:underline cursor-pointer transition-colors"
                   >
-                    <Newspaper size={20} className="text-amber-600" />
-                    <span className="text-xs font-bold text-slate-700">Post News/Events</span>
+                    Post News/Events &rarr;
                   </button>
                   <button
                     onClick={() => setActiveTab("academics")}
-                    className="p-3 bg-slate-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 rounded-xl flex flex-col items-center justify-center gap-2 text-center transition-all cursor-pointer"
+                    className="text-[#072A6C] hover:text-[#D4AF37] hover:underline cursor-pointer transition-colors"
                   >
-                    <GraduationCap size={20} className="text-purple-600" />
-                    <span className="text-xs font-bold text-slate-700">Edit Programs</span>
+                    Edit Programs &rarr;
                   </button>
                 </div>
               </div>
@@ -2362,8 +2338,7 @@ export default function AdminPortal() {
                 <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs text-left space-y-6">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
                     <div>
-                      <h3 className="text-sm font-black text-[#072A6C] uppercase flex items-center gap-2">
-                        <GraduationCap size={16} className="text-[#072A6C]" />
+                      <h3 className="text-sm font-black text-[#072A6C] uppercase">
                         Explore Our Schools & Programs CMS
                       </h3>
                       <p className="text-xs text-gray-500">Configure schools, category/department tabs, and individual degree course cards with photos & target sizes</p>
@@ -2736,8 +2711,7 @@ export default function AdminPortal() {
                 <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs text-left space-y-6">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
                     <div>
-                      <h3 className="text-sm font-black text-[#072A6C] uppercase flex items-center gap-2">
-                        <Newspaper size={16} className="text-[#072A6C]" />
+                      <h3 className="text-sm font-black text-[#072A6C] uppercase">
                         News & Events Highlights CMS
                       </h3>
                       <p className="text-xs text-gray-500">Configure Featured News hero card, Latest News list (4 items), and Upcoming Events list (4 items)</p>
@@ -3487,8 +3461,7 @@ export default function AdminPortal() {
                     {/* Header */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-gray-100">
                       <div>
-                        <h3 className="text-sm font-black text-[#072A6C] uppercase flex items-center gap-2">
-                          <Briefcase size={16} className="text-[#072A6C]" />
+                        <h3 className="text-sm font-black text-[#072A6C] uppercase">
                           Placement Key Metrics, Success Stories & Corporate Partners CMS
                         </h3>
                         <p className="text-xs text-gray-500">Configure homepage placement stats, full student success story testimonials with 4-step milestones, and corporate partner logos</p>
@@ -3540,8 +3513,7 @@ export default function AdminPortal() {
 
                     {/* 1. Placement Section Main Headline & Subtitle Settings */}
                     <div className="p-4 rounded-xl border border-gray-200 bg-slate-50/70 space-y-3">
-                      <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-1.5">
-                        <Sparkles size={14} className="text-[#D4AF37]" />
+                      <h4 className="text-xs font-black text-[#072A6C] uppercase">
                         Section Headers & Captions
                       </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -3669,8 +3641,8 @@ export default function AdminPortal() {
                         </div>
 
                         <div className="p-3 rounded-xl border border-gray-200 bg-white shadow-xs space-y-1.5">
-                          <span className="text-[10px] font-bold text-emerald-600 uppercase flex items-center gap-1">
-                            <GraduationCap size={12} /> Placement Assistance
+                          <span className="text-[10px] font-bold text-emerald-600 uppercase">
+                            Placement Assistance
                           </span>
                           <input
                             type="text"
@@ -3699,8 +3671,7 @@ export default function AdminPortal() {
                     <div className="pt-6 border-t border-gray-100 space-y-6">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div>
-                          <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-1.5">
-                            <Sparkles size={14} className="text-[#D4AF37]" />
+                          <h4 className="text-xs font-black text-[#072A6C] uppercase">
                             Placement Success Stories Showcase ({storiesList.length} Stories)
                           </h4>
                           <p className="text-[11px] text-gray-500">Edit student testimonials, photos, 4-step milestone journeys, skills acquired, and dream packages</p>
@@ -4279,9 +4250,6 @@ export default function AdminPortal() {
                           <div className="p-3 bg-white rounded-xl border border-gray-200 shadow-xs space-y-2">
                             <div className="flex items-center justify-between">
                               <span className="text-[10px] font-black text-[#072A6C] uppercase">#1 Students Placed</span>
-                              <div className="w-6 h-6 rounded-full bg-blue-50 text-[#072A6C] flex items-center justify-center">
-                                <Users size={12} />
-                              </div>
                             </div>
                             <div>
                               <label className="text-[9px] font-bold text-gray-500 uppercase">Value / Percent</label>
@@ -4329,9 +4297,6 @@ export default function AdminPortal() {
                           <div className="p-3 bg-white rounded-xl border border-gray-200 shadow-xs space-y-2">
                             <div className="flex items-center justify-between">
                               <span className="text-[10px] font-black text-[#D4AF37] uppercase">#2 Highest Package</span>
-                              <div className="w-6 h-6 rounded-full bg-amber-50 text-[#D4AF37] flex items-center justify-center">
-                                <Trophy size={12} />
-                              </div>
                             </div>
                             <div>
                               <label className="text-[9px] font-bold text-gray-500 uppercase">Value / CTC</label>
@@ -4379,9 +4344,6 @@ export default function AdminPortal() {
                           <div className="p-3 bg-white rounded-xl border border-gray-200 shadow-xs space-y-2">
                             <div className="flex items-center justify-between">
                               <span className="text-[10px] font-black text-amber-600 uppercase">#3 Corporate Partners</span>
-                              <div className="w-6 h-6 rounded-full bg-yellow-50 text-amber-600 flex items-center justify-center">
-                                <Handshake size={12} />
-                              </div>
                             </div>
                             <div>
                               <label className="text-[9px] font-bold text-gray-500 uppercase">Value / Count</label>
@@ -4429,9 +4391,6 @@ export default function AdminPortal() {
                           <div className="p-3 bg-white rounded-xl border border-gray-200 shadow-xs space-y-2">
                             <div className="flex items-center justify-between">
                               <span className="text-[10px] font-black text-emerald-600 uppercase">#4 Assistance</span>
-                              <div className="w-6 h-6 rounded-full bg-green-50 text-emerald-600 flex items-center justify-center">
-                                <GraduationCap size={12} />
-                              </div>
                             </div>
                             <div>
                               <label className="text-[9px] font-bold text-gray-500 uppercase">Value / Percent</label>
@@ -6802,8 +6761,7 @@ export default function AdminPortal() {
                   <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
                     <div className="flex items-center justify-between pb-3 border-b border-gray-100">
                       <div>
-                        <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-2">
-                          <Sparkles size={14} className="text-[#D4AF37]" />
+                        <h4 className="text-xs font-black text-[#072A6C] uppercase">
                           1. Why Choose Chalapathi University (6 Core Cards)
                         </h4>
                         <p className="text-[11px] text-gray-500">The 6 value proposition cards presented in the Why Choose Us section</p>
@@ -6849,8 +6807,7 @@ export default function AdminPortal() {
                   <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
                     <div className="flex items-center justify-between pb-3 border-b border-gray-100">
                       <div>
-                        <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-2">
-                          <Award size={14} className="text-[#072A6C]" />
+                        <h4 className="text-xs font-black text-[#072A6C] uppercase">
                           2. Chairman's Leadership Message & Video
                         </h4>
                         <p className="text-[11px] text-gray-500">Inspiring message from Sri Y.V. Anjaneyulu, Chairman</p>
@@ -10124,17 +10081,17 @@ export default function AdminPortal() {
                         : "bg-slate-100 text-gray-700 hover:bg-slate-200"
                     }`}
                   >
-                    <BookOpen size={14} /> 1. Campus Life Subpages CMS ({Object.keys(DEFAULT_CAMPUS_LIFE_CONTENT).length} Pages)
+                    1. Campus Life Subpages CMS ({Object.keys(DEFAULT_CAMPUS_LIFE_CONTENT).length} Pages)
                   </button>
                   <button
                     onClick={() => setCampusLifeSubTab("homepage-tour")}
-                    className={`px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-2 ${
+                    className={`px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                       campusLifeSubTab === "homepage-tour"
                         ? "bg-[#072A6C] text-white shadow-sm"
                         : "bg-slate-100 text-gray-700 hover:bg-slate-200"
                     }`}
                   >
-                    <Sparkles size={14} /> 2. Homepage Campus Tour & 8 Highlight Cards
+                    2. Homepage Campus Tour & 8 Highlight Cards
                   </button>
                 </div>
 
@@ -10161,7 +10118,6 @@ export default function AdminPortal() {
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
                       {campusLifeSubpages.map((p) => {
-                        const Icon = p.icon;
                         const isSelected = selectedCampusSlug === p.path;
                         return (
                           <button
@@ -10174,7 +10130,7 @@ export default function AdminPortal() {
                             }`}
                           >
                             <div className="flex items-center justify-between w-full">
-                              <Icon size={14} className={isSelected ? "text-[#D4AF37]" : "text-blue-600"} />
+                              <span className="text-[10px] font-black uppercase text-gray-400">Section</span>
                               {p.badge && (
                                 <span className={`text-[8px] px-1 py-0.2 rounded font-extrabold ${isSelected ? 'bg-[#D4AF37] text-slate-900' : 'bg-blue-100 text-blue-700'}`}>
                                   {p.badge}
@@ -10977,19 +10933,17 @@ export default function AdminPortal() {
                       : "bg-white text-gray-700 hover:bg-slate-50 border border-gray-200/80"
                   }`}
                 >
-                  <Newspaper size={14} className={newsEventsModuleTab === "news" ? "text-[#D4AF37]" : "text-gray-400"} />
                   <span>News & Articles CMS ({news.length})</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setNewsEventsModuleTab("events")}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     newsEventsModuleTab === "events"
                       ? "bg-[#072A6C] text-white shadow-md shadow-[#072A6C]/20"
                       : "bg-white text-gray-700 hover:bg-slate-50 border border-gray-200/80"
                   }`}
                 >
-                  <Calendar size={14} className={newsEventsModuleTab === "events" ? "text-[#D4AF37]" : "text-gray-400"} />
                   <span>Events & Registrations CMS ({events.length})</span>
                 </button>
               </div>
@@ -11316,8 +11270,7 @@ export default function AdminPortal() {
                   <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
                     <div className="flex items-center justify-between pb-3 border-b border-gray-100">
                       <div>
-                        <h4 className="text-xs font-black text-[#072A6C] uppercase flex items-center gap-2">
-                          <Sparkles size={14} className="text-[#072A6C]" />
+                        <h4 className="text-xs font-black text-[#072A6C] uppercase">
                           2. Homepage Campus Tour Video Reel
                         </h4>
                         <p className="text-[11px] text-gray-500">The drone overview and student tour video highlighted on the home page</p>

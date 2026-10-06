@@ -772,7 +772,6 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
           {query.trim() === "" ? (
             <div className="py-6 px-4">
               <div className="flex items-center gap-2 mb-3">
-                <Sparkles size={16} style={{ color: config.quickNavHeadingIconColor || config.searchIconColor || "#072A6C" }} />
                 <span 
                   className="text-xs font-bold uppercase tracking-wider"
                   style={{ color: config.quickNavHeadingColor || "#64748B" }}
@@ -782,7 +781,6 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {(config.quickNavItems || []).filter(item => item.enabled !== false).map((item) => {
-                  const Icon = QUICK_NAV_ICON_MAP[item.iconName] || BookOpen;
                   return (
                     <button
                       key={item.id || item.label}
@@ -791,15 +789,10 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
                         backgroundColor: config.quickNavCardBg || "#F8FAFC",
                         color: config.quickNavCardText || "#072A6C"
                       }}
-                      className="flex items-center gap-2.5 p-2.5 rounded-xl transition-all text-left group border border-slate-100 hover:border-slate-300 hover:shadow-xs hover:scale-[1.02] cursor-pointer outline-none"
+                      className="flex items-center justify-between p-3 rounded-xl transition-all text-left border border-slate-100 hover:border-[#D4AF37] hover:shadow-xs cursor-pointer outline-none"
                     >
-                      <div 
-                        className="w-7 h-7 rounded-lg bg-white flex items-center justify-center shrink-0 shadow-xs group-hover:scale-110 transition-transform"
-                        style={{ color: config.quickNavCardIconColor || config.searchIconColor || "#072A6C" }}
-                      >
-                        <Icon size={14} />
-                      </div>
                       <span className="text-xs font-bold truncate">{item.label}</span>
+                      <span className="text-gray-400 text-xs ml-2">&rarr;</span>
                     </button>
                   );
                 })}
@@ -814,7 +807,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
                 className="px-4 py-2 bg-[#072A6C] text-white text-xs font-bold rounded-xl hover:bg-[#D4AF37] transition-all inline-flex items-center gap-1.5 cursor-pointer border-none"
               >
                 <span>Browse All Academic Programs</span>
-                <ArrowRight size={13} />
+                <span className="text-xs">&rarr;</span>
               </button>
             </div>
           ) : (
@@ -824,7 +817,6 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
                 <span className="text-[10px] text-gray-400">Press Enter to select</span>
               </div>
               {results.map((item, idx) => {
-                const Icon = item.icon;
                 const isSelected = idx === selectedIndex;
 
                 return (
@@ -839,11 +831,6 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
                     }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                        isSelected ? "bg-white/20 text-[#D4AF37]" : "bg-[#072A6C]/5 text-[#072A6C]"
-                      }`}>
-                        <Icon size={18} />
-                      </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <h4 className="text-xs md:text-sm font-bold truncate leading-tight">
