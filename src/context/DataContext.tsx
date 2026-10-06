@@ -43,6 +43,7 @@ export interface HeroSlide {
   image: string;
   title?: string;
   subtitle?: string;
+  hidden?: boolean;
 }
 
 // Announcements interface
@@ -70,6 +71,7 @@ export interface NewsArticle {
   sourceUrl?: string;
   featured?: boolean;
   readTime?: string;
+  hidden?: boolean;
 }
 
 // News Page Hero & Header Configuration interface

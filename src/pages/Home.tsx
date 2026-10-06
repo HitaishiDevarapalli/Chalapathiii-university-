@@ -213,10 +213,14 @@ export default function Home() {
   const [activeNewsSlide, setActiveNewsSlide] = useState(0);
   const [showCopiedTooltip, setShowCopiedTooltip] = useState(false);
 
-  const featuredSlides = useMemo(() => {
-    const featured = news?.filter(item => item.featured) || [];
-    return featured.length > 0 ? featured : news?.slice(0, 4) || [];
+  const visibleNews = useMemo(() => {
+    return (news || []).filter((item) => !item.hidden);
   }, [news]);
+
+  const featuredSlides = useMemo(() => {
+    const featured = visibleNews.filter((item) => item.featured);
+    return featured.length > 0 ? featured : visibleNews.slice(0, 4);
+  }, [visibleNews]);
 
   // Auto-slide effect for the Featured News image carousel
   useEffect(() => {
@@ -317,7 +321,12 @@ export default function Home() {
     document.title = "Chalapathi University | Best University in Andhra Pradesh";
   }, []);
 
-  const slidesCount = heroSlides && heroSlides.length > 0 ? heroSlides.length : 1;
+  const visibleHeroSlides = useMemo(() => {
+    const list = (heroSlides || []).filter((s) => !s.hidden);
+    return list.length > 0 ? list : (heroSlides || []);
+  }, [heroSlides]);
+
+  const slidesCount = visibleHeroSlides.length || 1;
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -412,7 +421,7 @@ export default function Home() {
         `}} />
 
         {/* Dynamic slides carousel */}
-        {heroSlides && heroSlides.length > 0 && heroSlides.map((slide, index) => {
+        {visibleHeroSlides && visibleHeroSlides.length > 0 && visibleHeroSlides.map((slide, index) => {
           const isActive = currentSlide === index;
           return (
             <div
@@ -445,9 +454,9 @@ export default function Home() {
         })}
 
         {/* Slider Indicator Dots (only show if slides > 1) */}
-        {heroSlides && heroSlides.length > 1 && (
+        {visibleHeroSlides && visibleHeroSlides.length > 1 && (
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2.5 z-30">
-            {heroSlides.map((_, idx) => (
+            {visibleHeroSlides.map((_, idx) => (
               <button
                 key={idx}
                 type="button"
@@ -944,7 +953,7 @@ export default function Home() {
                 </div>
 
                 <div className="space-y-4">
-                  {(news.length > 4 ? news.slice(1, 5) : news.slice(0, 4)).map((item, idx) => {
+                  {(visibleNews.length > 4 ? visibleNews.slice(1, 5) : visibleNews.slice(0, 4)).map((item, idx) => {
                     const dateParts = (() => {
                       if (!item.date) return { day: "12", month: "MAY" };
                       const parts = item.date.trim().split(" ");

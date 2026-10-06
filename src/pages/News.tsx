@@ -137,11 +137,15 @@ export default function News() {
     return () => clearInterval(timer);
   }, [baseCarouselImages.length]);
 
+  // Visible news excluding hidden articles
+  const visibleNews = (news || []).filter(item => !item.hidden);
+
   // Find the Featured news article (via config ID, or featured flag, or ID 1, or first item)
   const featuredArticle = 
-    news.find(item => item.id === newsPageConfig?.featuredArticleId) ||
-    news.find(item => item.featured) ||
-    news.find(item => item.id === 1) ||
+    visibleNews.find(item => item.id === newsPageConfig?.featuredArticleId) ||
+    visibleNews.find(item => item.featured) ||
+    visibleNews.find(item => item.id === 1) ||
+    visibleNews[0] ||
     news[0];
 
   // Dynamic featured images prioritizing the article's own configured image
@@ -161,7 +165,7 @@ export default function News() {
   };
 
   // Find 5 Trending news articles for University Highlights sidebar
-  const trendingArticles = news.slice(0, 5);
+  const trendingArticles = visibleNews.slice(0, 5);
 
   // Filter upcoming events based on config
   const eventsCount = newsPageConfig?.eventsStripCount || 3;
@@ -169,10 +173,10 @@ export default function News() {
 
   // Filter latest news list based on config (excluding featured article)
   const latestCount = newsPageConfig?.latestNewsCount || 4;
-  const filteredLatest = news.filter(item => item.id !== featuredArticle?.id);
+  const filteredLatest = visibleNews.filter(item => item.id !== featuredArticle?.id);
   const latestNewsArticles = filteredLatest.length >= latestCount 
     ? filteredLatest.slice(0, latestCount) 
-    : news.slice(1, 1 + latestCount);
+    : visibleNews.slice(1, 1 + latestCount);
 
   // Share setup
   const handleShareTrigger = (type: "news" | "event", id: number, e: React.MouseEvent) => {

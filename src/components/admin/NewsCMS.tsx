@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { 
   Newspaper, Plus, Trash2, Edit3, CheckCircle2, Search, 
   Sparkles, RotateCcw, Save, ArrowUp, ArrowDown, ExternalLink,
-  Clock, MapPin, Eye, Tag, AlertCircle, X, Check, Image as ImageIcon,
+  Clock, MapPin, Eye, EyeOff, Tag, AlertCircle, X, Check, Image as ImageIcon,
   Bell, Flame, Layers, ChevronRight
 } from "lucide-react";
 import { 
@@ -254,24 +254,67 @@ export function NewsCMS({
                   "/prog_engineering.png",
                   "/prog_management.png",
                   "/prog_pharmacy.png"
-                ]).map((imgUrl, sIdx) => (
-                  <div key={sIdx} className="p-3 bg-slate-50 rounded-xl border border-gray-200 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-black text-gray-400">Slide #{sIdx + 1}</span>
-                      {(newsPageForm.featuredCarouselImages?.length || 1) > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const currentImgs = newsPageForm.featuredCarouselImages || [];
-                            const filtered = currentImgs.filter((_, i) => i !== sIdx);
-                            setNewsPageForm({ ...newsPageForm, featuredCarouselImages: filtered });
-                          }}
-                          className="text-[10px] text-red-500 hover:text-red-700 font-bold flex items-center gap-0.5 cursor-pointer"
-                        >
-                          <Trash2 size={11} /> Remove
-                        </button>
-                      )}
-                    </div>
+                ]).map((imgUrl, sIdx) => {
+                  const isSlideHidden = ((newsPageForm as any).hiddenCarouselSlides || []).includes(sIdx);
+                  return (
+                    <div 
+                      key={sIdx} 
+                      className={`p-3 rounded-xl border space-y-2 transition-all ${
+                        isSlideHidden 
+                          ? "bg-amber-50/30 border-dashed border-amber-300 opacity-70" 
+                          : "bg-slate-50 border-gray-200"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-black text-gray-500">Slide #{sIdx + 1}</span>
+                          {isSlideHidden && (
+                            <span className="px-1.5 py-0.2 text-[8px] font-black bg-amber-100 text-amber-800 rounded uppercase">
+                              Hidden
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const currentHidden: number[] = (newsPageForm as any).hiddenCarouselSlides || [];
+                              const updatedHidden = currentHidden.includes(sIdx)
+                                ? currentHidden.filter((i: number) => i !== sIdx)
+                                : [...currentHidden, sIdx];
+                              const updatedForm = { ...newsPageForm, hiddenCarouselSlides: updatedHidden };
+                              setNewsPageForm(updatedForm);
+                              updateNewsPageConfig(updatedForm);
+                              notifySave(`Slide #${sIdx + 1} is now ${currentHidden.includes(sIdx) ? "Visible" : "Hidden"}!`);
+                            }}
+                            className={`text-[10px] font-bold flex items-center gap-0.5 cursor-pointer transition-colors ${
+                              isSlideHidden 
+                                ? "text-amber-700 hover:text-amber-800" 
+                                : "text-gray-500 hover:text-[#072A6C]"
+                            }`}
+                            title={isSlideHidden ? "Click to Show Slide" : "Click to Hide Slide"}
+                          >
+                            {isSlideHidden ? (
+                              <><EyeOff size={11} className="text-amber-600" /> Hidden (Show)</>
+                            ) : (
+                              <><Eye size={11} className="text-gray-500" /> Hide</>
+                            )}
+                          </button>
+                          {(newsPageForm.featuredCarouselImages?.length || 1) > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const currentImgs = newsPageForm.featuredCarouselImages || [];
+                                const filtered = currentImgs.filter((_, i) => i !== sIdx);
+                                setNewsPageForm({ ...newsPageForm, featuredCarouselImages: filtered });
+                              }}
+                              className="text-[10px] text-red-500 hover:text-red-700 font-bold flex items-center gap-0.5 cursor-pointer"
+                            >
+                              <Trash2 size={11} /> Remove
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     <ImageField
                       label="Hero Slide Photo"
                       value={imgUrl}
@@ -290,7 +333,8 @@ export function NewsCMS({
                       recommendedSize="1200 × 700 px"
                     />
                   </div>
-                ))}
+                );
+              })}
               </div>
             </div>
           </div>
@@ -405,6 +449,11 @@ export function NewsCMS({
                       <span className="text-[10px] font-extrabold uppercase bg-amber-50 text-amber-900 px-2.5 py-0.5 rounded-md border border-amber-200">
                         {article.category || "General"}
                       </span>
+                      {article.hidden && (
+                        <span className="text-[10px] font-black uppercase bg-red-100 text-red-800 px-2.5 py-0.5 rounded-md border border-red-200">
+                          Hidden
+                        </span>
+                      )}
                       {article.featured && (
                         <span className="text-[10px] font-bold uppercase bg-orange-100 text-orange-800 px-2 py-0.5 rounded-md flex items-center gap-1">
                           <Flame size={11} /> Featured
@@ -446,6 +495,25 @@ export function NewsCMS({
                         title="Move Down"
                       >
                         <ArrowDown size={13} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const isHidden = !article.hidden;
+                          const updated = [...newsList];
+                          updated[idx] = { ...updated[idx], hidden: isHidden };
+                          setNewsList(updated);
+                          updateNews(updated);
+                          notifySave(`Article "${article.title || 'Untitled'}" is now ${isHidden ? 'Hidden' : 'Visible'}!`);
+                        }}
+                        className={`h-7 px-2.5 border text-xs font-bold rounded-md flex items-center gap-1 cursor-pointer transition-colors ${
+                          article.hidden 
+                            ? "bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-300" 
+                            : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-gray-200"
+                        }`}
+                        title={article.hidden ? "Show this article on website" : "Hide this article from website"}
+                      >
+                        {article.hidden ? <><Eye size={12} /> Show</> : <><EyeOff size={12} /> Hide</>}
                       </button>
                       <button
                         type="button"

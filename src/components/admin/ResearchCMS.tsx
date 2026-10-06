@@ -1,10 +1,23 @@
 import React, { useState } from "react";
 import { 
-  Award, Sparkles, BookOpen, Layers, Plus, Trash2, ArrowUp, ArrowDown,
-  TrendingUp, FileText, Globe, CheckCircle2, ShieldCheck, Microscope
+  Award, Sparkles, Plus, Trash2, Edit3, Eye, EyeOff, Save, RotateCcw, 
+  Wrench, ExternalLink, X, Check, FileText, AlertCircle, Phone, Mail,
+  Microscope, Layers, Tag
 } from "lucide-react";
-import { SectionHeader, ImageField } from "./AdminComponents";
+import { SectionHeader } from "./AdminComponents";
 
+export interface ResearchItem {
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  badge?: string;
+  link?: string;
+  linkText?: string;
+  hidden?: boolean;
+}
+
+// Backwards-compatibility aliases
 export interface ResearchProjectItem {
   id: string;
   title: string;
@@ -30,593 +43,627 @@ export interface ResearchThrustArea {
 }
 
 export interface ResearchCMSData {
-  heroTitle: string;
-  heroSubtitle: string;
-  heroDesc: string;
-  heroImage: string;
-  stats: { label: string; value: string }[];
-  thrustAreas: ResearchThrustArea[];
-  projects: ResearchProjectItem[];
-  publications: ResearchPublicationItem[];
+  pageTitle: string;
+  pageSubtitle: string;
+  isUnderConstruction: boolean;
+  underConstructionMessage: string;
+  contactEmail: string;
+  contactPhone: string;
+  hidden?: boolean;
+  items: ResearchItem[];
 }
 
 export const DEFAULT_RESEARCH_DATA: ResearchCMSData = {
-  heroTitle: "Research & Innovation Ecosystem",
-  heroSubtitle: "Fostering cutting-edge research, sponsored projects, and global scientific breakthroughs.",
-  heroDesc: "Chalapathi University actively supports doctoral scholars, faculty innovators, and student research teams. Our research centers drive high-impact publications, patent filings, and multidisciplinary technology development in collaboration with national agencies (DST, AICTE, DRDO) and industry leaders.",
-  heroImage: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=800&fit=crop",
-  stats: [
-    { label: "Funded Projects", value: "45+" },
-    { label: "Scopus / IEEE Papers", value: "350+" },
-    { label: "Patents Published", value: "28+" },
-    { label: "Specialized Labs", value: "12+" }
-  ],
-  thrustAreas: [
-    { title: "Artificial Intelligence & ML", desc: "Deep neural networks, computer vision, natural language processing, and automated medical diagnostics." },
-    { title: "Sustainable Energy & Smart Grids", desc: "Hybrid solar-wind energy harvesting, microgrid optimization, and battery management systems." },
-    { title: "IoT, Sensors & Smart Systems", desc: "Decentralized sensor networks, edge compute architectures, and disaster response communication." },
-    { title: "Biomedical & Pharmaceutical R&D", desc: "Targeted drug delivery mechanisms, eco-friendly chemical synthesis, and molecular biology assays." },
-    { title: "VLSI, Embedded & Microelectronics", desc: "Low-power IC architectures, FPGA hardware accelerators, and wireless telemetry transceivers." }
-  ],
-  projects: [
-    { id: "proj-1", title: "AI-Driven Healthcare Diagnostics Platform for Rural Clinics", agency: "DST - Dept of Science & Technology", investigator: "Dr. K. Chandrasekhar", amount: "₹45 Lakhs", year: "2024 - 2027" },
-    { id: "proj-2", title: "Decentralized Self-Healing IoT Mesh for Disaster Early Warning", agency: "AICTE - Research Promotion Scheme", investigator: "Dr. P. V. Ramana", amount: "₹28 Lakhs", year: "2023 - 2025" },
-    { id: "proj-3", title: "Hybrid Solar-Wind Microgrid Optimization with Predictive Storage", agency: "MNRE - Ministry of Renewable Energy", investigator: "Dr. M. Srinivasa Rao", amount: "₹36 Lakhs", year: "2024 - 2026" }
-  ],
-  publications: [
-    { id: "pub-1", title: "Optimized Hybrid Solar-Wind Energy Harvesting Models in Islanded Microgrids", journal: "IEEE Transactions on Sustainable Energy (Scopus Q1)", authors: "Dr. M. Srinivasa Rao, et al.", year: "2025", link: "https://doi.org/10.1109/TSTE.2025" },
-    { id: "pub-2", title: "Deep Convolutional Neural Networks for Automated Retinal Disease Screening", journal: "Elsevier Computers in Biology and Medicine", authors: "Dr. K. Chandrasekhar, Dr. P. V. Ramana", year: "2024", link: "https://doi.org/10.1016/j.compbiomed.2024" },
-    { id: "pub-3", title: "Self-Healing Protocols in Low-Power IoT Mesh Topologies during Crisis Situations", journal: "Springer Wireless Networks", authors: "Dr. P. V. Ramana, Research Scholars Team", year: "2024", link: "https://doi.org/10.1007/s11276-024" }
-  ]
+  pageTitle: "Research & Innovation",
+  pageSubtitle: "Fostering academic inquiry, scientific research, and technological development.",
+  isUnderConstruction: true,
+  underConstructionMessage: "This section is currently under development. Our new Research & Innovation portal featuring doctoral programs, active grants, publications, and patents is coming soon.",
+  contactEmail: "research@chalapathi.ac.in",
+  contactPhone: "+91 95055 05566",
+  hidden: false,
+  items: [] // Blank by default, as requested
 };
 
 export interface ResearchCMSProps {
   notifySave: (msg: string) => void;
 }
 
+const CATEGORY_OPTIONS = [
+  "General",
+  "Thrust Area",
+  "Sponsored Project",
+  "Publication & Paper",
+  "Patent & IP",
+  "Laboratory & Facility",
+  "Doctoral Program (Ph.D.)",
+  "Research Fellowship"
+];
+
 export const ResearchCMS: React.FC<ResearchCMSProps> = ({ notifySave }) => {
   const [researchData, setResearchData] = useState<ResearchCMSData>(() => {
     try {
       const saved = localStorage.getItem("chalapathi_research_cms_data");
-      if (saved) return JSON.parse(saved);
-    } catch (e) {}
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          ...DEFAULT_RESEARCH_DATA,
+          ...parsed,
+          // ensure items exists and defaults to array
+          items: Array.isArray(parsed.items) ? parsed.items : []
+        };
+      }
+    } catch (e) {
+      console.error("Error reading research CMS data:", e);
+    }
     return DEFAULT_RESEARCH_DATA;
   });
 
-  const [activeSubTab, setActiveSubTab] = useState<"overview" | "thrustAreas" | "projects" | "publications" | "homepage">("overview");
+  // Modal State for Add / Edit
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<ResearchItem | null>(null);
+  const [itemForm, setItemForm] = useState<Partial<ResearchItem>>({
+    title: "",
+    category: "General",
+    description: "",
+    badge: "",
+    link: "",
+    linkText: "Learn More",
+    hidden: false
+  });
 
-  const saveResearch = () => {
-    localStorage.setItem("chalapathi_research_cms_data", JSON.stringify(researchData));
+  // Category filter for the items table/list
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
+
+  const saveResearch = (overrideData?: ResearchCMSData) => {
+    const dataToSave = overrideData || researchData;
+    localStorage.setItem("chalapathi_research_cms_data", JSON.stringify(dataToSave));
     window.dispatchEvent(new Event("chalapathi_cms_updated"));
-    notifySave("Research & Innovation CMS updated and published live!");
+    notifySave("Research & Innovation CMS updated and saved!");
   };
+
+  const handleOpenAddModal = () => {
+    setEditingItem(null);
+    setItemForm({
+      title: "",
+      category: "General",
+      description: "",
+      badge: "",
+      link: "",
+      linkText: "Learn More",
+      hidden: false
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEditModal = (item: ResearchItem) => {
+    setEditingItem(item);
+    setItemForm({ ...item });
+    setIsModalOpen(true);
+  };
+
+  const handleSaveItemModal = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!itemForm.title?.trim()) {
+      alert("Please provide a title for this research item.");
+      return;
+    }
+
+    let updatedItems: ResearchItem[];
+    if (editingItem) {
+      // Edit existing
+      updatedItems = researchData.items.map((it) => 
+        it.id === editingItem.id ? ({ ...it, ...itemForm } as ResearchItem) : it
+      );
+    } else {
+      // Add new
+      const newItem: ResearchItem = {
+        id: `res-${Date.now()}`,
+        title: itemForm.title.trim(),
+        category: itemForm.category || "General",
+        description: itemForm.description || "",
+        badge: itemForm.badge || "",
+        link: itemForm.link || "",
+        linkText: itemForm.linkText || "Learn More",
+        hidden: itemForm.hidden || false
+      };
+      updatedItems = [...researchData.items, newItem];
+    }
+
+    const updatedData = { ...researchData, items: updatedItems };
+    setResearchData(updatedData);
+    saveResearch(updatedData);
+    setIsModalOpen(false);
+    setEditingItem(null);
+  };
+
+  const handleDeleteItem = (id: string, title: string) => {
+    if (!window.confirm(`Are you sure you want to delete "${title}"?`)) return;
+    const updatedItems = researchData.items.filter((it) => it.id !== id);
+    const updatedData = { ...researchData, items: updatedItems };
+    setResearchData(updatedData);
+    saveResearch(updatedData);
+  };
+
+  const handleToggleHideItem = (id: string) => {
+    const updatedItems = researchData.items.map((it) => {
+      if (it.id === id) {
+        const nextState = !it.hidden;
+        notifySave(`"${it.title}" is now ${nextState ? "Hidden" : "Visible"}!`);
+        return { ...it, hidden: nextState };
+      }
+      return it;
+    });
+    const updatedData = { ...researchData, items: updatedItems };
+    setResearchData(updatedData);
+    saveResearch(updatedData);
+  };
+
+  const filteredItems = researchData.items.filter((it) => {
+    if (selectedCategory === "All") return true;
+    return it.category === selectedCategory;
+  });
 
   return (
     <div className="space-y-6 animate-fade-in text-left">
-      <SectionHeader
-        title="Research & Innovation CMS"
-        subtitle="Manage research ecosystem overview, thrust areas, sponsored grants, patents, and Scopus publications"
-        icon={Award}
-        onSave={saveResearch}
-        saveSuccess={false}
-        onReset={() => {
-          setResearchData(DEFAULT_RESEARCH_DATA);
-          localStorage.setItem("chalapathi_research_cms_data", JSON.stringify(DEFAULT_RESEARCH_DATA));
-          window.dispatchEvent(new Event("chalapathi_cms_updated"));
-          notifySave("Research data reset to default!");
-        }}
-        resetLabel="Reset Research"
-      />
+      {/* Top Header */}
+      <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="text-base font-black text-[#072A6C] uppercase flex items-center gap-2">
+              <Award size={18} className="text-[#D4AF37]" />
+              Research & Innovation CMS
+            </h3>
+            <span className="px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider rounded-md bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-1">
+              <Wrench size={11} /> Under Construction
+            </span>
+          </div>
+          <p className="text-xs text-gray-500">
+            Public Research page is currently set to Under Construction. You can customize the notice and manage research items below with Add, Edit, Delete, and Hide.
+          </p>
+        </div>
 
-      {/* Subtab Navigation */}
-      <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-gray-200">
-        {[
-          { id: "overview" as const, label: "1. Overview & Metrics", icon: Sparkles },
-          { id: "thrustAreas" as const, label: `2. Thrust Areas (${researchData.thrustAreas.length})`, icon: Microscope },
-          { id: "projects" as const, label: `3. Sponsored Projects (${researchData.projects.length})`, icon: FileText },
-          { id: "publications" as const, label: `4. Publications & Patents (${researchData.publications.length})`, icon: BookOpen },
-          { id: "homepage" as const, label: "5. Homepage Research Showcase & Metrics", icon: Award }
-        ].map((sub) => {
-          const Icon = sub.icon;
-          const isActive = activeSubTab === sub.id;
-          return (
-            <button
-              key={sub.id}
-              onClick={() => setActiveSubTab(sub.id)}
-              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                isActive
-                  ? "bg-[#072A6C] text-white shadow-md shadow-[#072A6C]/20"
-                  : "bg-white text-gray-700 hover:bg-slate-50 border border-gray-200/80"
-              }`}
-            >
-              <Icon size={14} className={isActive ? "text-[#D4AF37]" : "text-gray-400"} />
-              <span>{sub.label}</span>
-            </button>
-          );
-        })}
+        {/* Global Action Buttons */}
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          {/* Master Category / Page Hide Toggle */}
+          <button
+            type="button"
+            onClick={() => {
+              const nextHidden = !researchData.hidden;
+              const updated = { ...researchData, hidden: nextHidden };
+              setResearchData(updated);
+              saveResearch(updated);
+              notifySave(`Research page is now ${nextHidden ? "Hidden" : "Visible"} on website!`);
+            }}
+            className={`h-9 px-3 text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer transition-colors border shadow-xs ${
+              !researchData.hidden
+                ? "bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200"
+                : "bg-red-50 hover:bg-red-100 text-red-700 border-red-200"
+            }`}
+            title="Toggle visibility of the Research page in website navigation"
+          >
+            {!researchData.hidden ? (
+              <>
+                <Eye size={13} className="text-emerald-600" />
+                <span>Page: Visible</span>
+              </>
+            ) : (
+              <>
+                <EyeOff size={13} className="text-red-600" />
+                <span>Page: Hidden</span>
+              </>
+            )}
+          </button>
+
+          {/* Under Construction Toggle */}
+          <button
+            type="button"
+            onClick={() => {
+              const nextVal = !researchData.isUnderConstruction;
+              const updated = { ...researchData, isUnderConstruction: nextVal };
+              setResearchData(updated);
+              saveResearch(updated);
+              notifySave(`Under Construction mode is now ${nextVal ? "Enabled" : "Disabled"}!`);
+            }}
+            className={`h-9 px-3 text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer transition-colors border shadow-xs ${
+              researchData.isUnderConstruction
+                ? "bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300"
+                : "bg-blue-50 hover:bg-blue-100 text-blue-900 border-blue-200"
+            }`}
+            title="Toggle Under Construction mode"
+          >
+            <Wrench size={13} className={researchData.isUnderConstruction ? "text-amber-600" : "text-blue-600"} />
+            <span>Mode: {researchData.isUnderConstruction ? "Under Construction" : "Live Content"}</span>
+          </button>
+
+          {/* Add Item Button */}
+          <button
+            type="button"
+            onClick={handleOpenAddModal}
+            className="h-9 px-3.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+          >
+            <Plus size={14} /> Add Research Item
+          </button>
+
+          {/* Reset Button */}
+          <button
+            type="button"
+            onClick={() => {
+              if (window.confirm("Reset Research CMS to default Under Construction state?")) {
+                setResearchData(DEFAULT_RESEARCH_DATA);
+                saveResearch(DEFAULT_RESEARCH_DATA);
+                notifySave("Research CMS reset to blank Under Construction default!");
+              }
+            }}
+            className="h-9 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+            title="Reset to blank under construction state"
+          >
+            <RotateCcw size={13} /> Reset
+          </button>
+
+          {/* Save Button */}
+          <button
+            type="button"
+            onClick={() => saveResearch()}
+            className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+          >
+            <Save size={13} /> Save CMS
+          </button>
+        </div>
       </div>
 
-      {/* SUBTAB 1: Overview & Metrics */}
-      {activeSubTab === "overview" && (
-        <div className="space-y-6">
-          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-              <h3 className="text-sm font-black text-[#072A6C] uppercase flex items-center gap-2">
-                <Sparkles size={16} className="text-[#D4AF37]" /> Research Hero Banner & Overview
-              </h3>
-            </div>
+      {/* Under Construction Notice Settings */}
+      <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+          <h4 className="text-sm font-black text-[#072A6C] uppercase flex items-center gap-2">
+            <Wrench size={16} className="text-amber-500" />
+            Under Construction Page Banner Settings
+          </h4>
+          <span className="text-xs text-gray-400 font-semibold">Displayed to public visitors on /research</span>
+        </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-gray-700 uppercase">Hero Title</label>
-                <input
-                  type="text"
-                  value={researchData.heroTitle}
-                  onChange={(e) => setResearchData({ ...researchData, heroTitle: e.target.value })}
-                  className="w-full h-10 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-gray-800 focus:bg-white"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-gray-700 uppercase">Hero Tagline</label>
-                <input
-                  type="text"
-                  value={researchData.heroSubtitle}
-                  onChange={(e) => setResearchData({ ...researchData, heroSubtitle: e.target.value })}
-                  className="w-full h-10 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-gray-800 focus:bg-white"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-gray-700 uppercase">Research Ecosystem Description</label>
-              <textarea
-                rows={3}
-                value={researchData.heroDesc}
-                onChange={(e) => setResearchData({ ...researchData, heroDesc: e.target.value })}
-                className="w-full p-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800 leading-relaxed focus:bg-white resize-y"
-              />
-            </div>
-
-            <div className="pt-2 border-t border-gray-100">
-              <ImageField
-                label="Research Graphic / Laboratory Banner"
-                value={researchData.heroImage}
-                defaultValue="https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=800&fit=crop"
-                aspectRatio="wide"
-                recommendedSize="800 × 500 px"
-                onChange={(heroImage) => setResearchData({ ...researchData, heroImage })}
-              />
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-gray-600 uppercase">Page Header Title</label>
+            <input
+              type="text"
+              value={researchData.pageTitle}
+              onChange={(e) => setResearchData({ ...researchData, pageTitle: e.target.value })}
+              className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-gray-800"
+              placeholder="e.g. Research & Innovation"
+            />
           </div>
 
-          {/* Key Metrics */}
-          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
-            <h3 className="text-sm font-black text-[#072A6C] uppercase flex items-center gap-2 pb-3 border-b border-gray-100">
-              <TrendingUp size={16} className="text-[#072A6C]" /> Research Key Metrics
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              {researchData.stats.map((st, sIdx) => (
-                <div key={sIdx} className="p-3.5 bg-slate-50 rounded-xl border border-gray-200 space-y-1.5">
-                  <label className="text-[10px] font-bold text-[#072A6C] uppercase">Metric #{sIdx + 1} Label</label>
-                  <input
-                    type="text"
-                    value={st.label}
-                    onChange={(e) => {
-                      const updated = [...researchData.stats];
-                      updated[sIdx] = { ...updated[sIdx], label: e.target.value };
-                      setResearchData({ ...researchData, stats: updated });
-                    }}
-                    className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-700"
-                  />
-                  <label className="text-[10px] font-bold text-[#D4AF37] uppercase">Value</label>
-                  <input
-                    type="text"
-                    value={st.value}
-                    onChange={(e) => {
-                      const updated = [...researchData.stats];
-                      updated[sIdx] = { ...updated[sIdx], value: e.target.value };
-                      setResearchData({ ...researchData, stats: updated });
-                    }}
-                    className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-black text-[#072A6C]"
-                  />
-                </div>
-              ))}
-            </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-gray-600 uppercase">Page Subtitle / Tagline</label>
+            <input
+              type="text"
+              value={researchData.pageSubtitle}
+              onChange={(e) => setResearchData({ ...researchData, pageSubtitle: e.target.value })}
+              className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-700"
+              placeholder="e.g. Fostering academic inquiry and global breakthroughs."
+            />
+          </div>
+
+          <div className="space-y-1 md:col-span-2">
+            <label className="text-[10px] font-bold text-gray-600 uppercase">Under Construction Description</label>
+            <textarea
+              rows={2}
+              value={researchData.underConstructionMessage}
+              onChange={(e) => setResearchData({ ...researchData, underConstructionMessage: e.target.value })}
+              className="w-full p-2.5 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-700"
+              placeholder="Enter message for public visitors..."
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-gray-600 uppercase flex items-center gap-1">
+              <Mail size={11} /> Contact Email
+            </label>
+            <input
+              type="email"
+              value={researchData.contactEmail}
+              onChange={(e) => setResearchData({ ...researchData, contactEmail: e.target.value })}
+              className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-700"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-gray-600 uppercase flex items-center gap-1">
+              <Phone size={11} /> Contact Phone / Helpdesk
+            </label>
+            <input
+              type="text"
+              value={researchData.contactPhone}
+              onChange={(e) => setResearchData({ ...researchData, contactPhone: e.target.value })}
+              className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-700"
+            />
           </div>
         </div>
-      )}
+      </div>
 
-      {/* SUBTAB 2: Thrust Areas */}
-      {activeSubTab === "thrustAreas" && (
-        <div className="space-y-6">
-          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-              <div>
-                <h3 className="text-sm font-black text-[#072A6C] uppercase flex items-center gap-2">
-                  <Microscope size={16} className="text-[#072A6C]" /> Core Research Thrust Areas ({researchData.thrustAreas.length})
-                </h3>
-                <p className="text-xs text-gray-500 mt-0.5">Specialized disciplinary domains driving interdisciplinary research</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  const newArea: ResearchThrustArea = {
-                    title: "New Research Domain",
-                    desc: "Description of focused research activities, key technologies, and target publications."
-                  };
-                  setResearchData({ ...researchData, thrustAreas: [...researchData.thrustAreas, newArea] });
-                }}
-                className="px-3.5 py-1.5 text-xs font-bold text-white bg-[#072A6C] hover:bg-[#072A6C]/90 rounded-xl flex items-center gap-1.5 shadow-sm transition-all"
-              >
-                <Plus size={14} /> Add Thrust Area
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {researchData.thrustAreas.map((area, aIdx) => (
-                <div key={aIdx} className="p-4 bg-slate-50 rounded-xl border border-gray-200 space-y-3 relative group hover:border-[#072A6C]/40 transition-all">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black text-[#072A6C] bg-white px-2 py-0.5 rounded border border-gray-200">
-                      #{aIdx + 1}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const updated = researchData.thrustAreas.filter((_, i) => i !== aIdx);
-                        setResearchData({ ...researchData, thrustAreas: updated });
-                      }}
-                      className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded"
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  </div>
-                  <input
-                    type="text"
-                    value={area.title}
-                    onChange={(e) => {
-                      const updated = [...researchData.thrustAreas];
-                      updated[aIdx] = { ...updated[aIdx], title: e.target.value };
-                      setResearchData({ ...researchData, thrustAreas: updated });
-                    }}
-                    className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold text-[#072A6C]"
-                    placeholder="Thrust Area Title"
-                  />
-                  <textarea
-                    rows={3}
-                    value={area.desc}
-                    onChange={(e) => {
-                      const updated = [...researchData.thrustAreas];
-                      updated[aIdx] = { ...updated[aIdx], desc: e.target.value };
-                      setResearchData({ ...researchData, thrustAreas: updated });
-                    }}
-                    className="w-full p-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-700 leading-relaxed resize-y"
-                    placeholder="Domain description..."
-                  />
-                </div>
-              ))}
-            </div>
+      {/* Research Categories & Items List */}
+      <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
+          <div>
+            <h4 className="text-sm font-black text-[#072A6C] uppercase flex items-center gap-2">
+              <Layers size={16} className="text-[#072A6C]" />
+              Research Categories & Items ({researchData.items.length})
+            </h4>
+            <p className="text-xs text-gray-500">
+              Manage custom research cards, projects, or categories. Each item has direct Edit, Delete, and Hide options.
+            </p>
           </div>
-        </div>
-      )}
 
-      {/* SUBTAB 3: Sponsored Projects */}
-      {activeSubTab === "projects" && (
-        <div className="space-y-6">
-          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-              <div>
-                <h3 className="text-sm font-black text-[#072A6C] uppercase flex items-center gap-2">
-                  <FileText size={16} className="text-[#072A6C]" /> Sponsored Research Grants & Projects ({researchData.projects.length})
-                </h3>
-                <p className="text-xs text-gray-500 mt-0.5">Externally funded grants by DST, AICTE, DRDO, and private corporate research sponsors</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  const newProj: ResearchProjectItem = {
-                    id: `proj-${Date.now()}`,
-                    title: "New Sponsored Project Title",
-                    agency: "DST / AICTE / Industry Partner",
-                    investigator: "Dr. Faculty Name",
-                    amount: "₹25 Lakhs",
-                    year: "2025 - 2028"
-                  };
-                  setResearchData({ ...researchData, projects: [...researchData.projects, newProj] });
-                }}
-                className="px-3.5 py-1.5 text-xs font-bold text-white bg-[#072A6C] hover:bg-[#072A6C]/90 rounded-xl flex items-center gap-1.5 shadow-sm transition-all"
+          {/* Category Filter Pills & Add Button */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1 text-xs">
+              <span className="text-gray-400 font-bold text-[11px]">Filter:</span>
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold text-gray-700"
               >
-                <Plus size={14} /> Add Project
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              {researchData.projects.map((proj, pIdx) => (
-                <div key={proj.id || pIdx} className="p-4 bg-slate-50 rounded-xl border border-gray-200 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#072A6C]">Project #{pIdx + 1}</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const updated = researchData.projects.filter((_, i) => i !== pIdx);
-                        setResearchData({ ...researchData, projects: updated });
-                      }}
-                      className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                  <input
-                    type="text"
-                    value={proj.title}
-                    onChange={(e) => {
-                      const updated = [...researchData.projects];
-                      updated[pIdx] = { ...updated[pIdx], title: e.target.value };
-                      setResearchData({ ...researchData, projects: updated });
-                    }}
-                    className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold text-gray-800"
-                    placeholder="Project Title"
-                  />
-                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
-                    <input
-                      type="text"
-                      value={proj.agency}
-                      onChange={(e) => {
-                        const updated = [...researchData.projects];
-                        updated[pIdx] = { ...updated[pIdx], agency: e.target.value };
-                        setResearchData({ ...researchData, projects: updated });
-                      }}
-                      className="w-full h-8 px-2 text-xs bg-white border border-gray-200 rounded-lg text-gray-700"
-                      placeholder="Funding Agency"
-                    />
-                    <input
-                      type="text"
-                      value={proj.investigator}
-                      onChange={(e) => {
-                        const updated = [...researchData.projects];
-                        updated[pIdx] = { ...updated[pIdx], investigator: e.target.value };
-                        setResearchData({ ...researchData, projects: updated });
-                      }}
-                      className="w-full h-8 px-2 text-xs bg-white border border-gray-200 rounded-lg text-gray-700"
-                      placeholder="Principal Investigator"
-                    />
-                    <input
-                      type="text"
-                      value={proj.amount}
-                      onChange={(e) => {
-                        const updated = [...researchData.projects];
-                        updated[pIdx] = { ...updated[pIdx], amount: e.target.value };
-                        setResearchData({ ...researchData, projects: updated });
-                      }}
-                      className="w-full h-8 px-2 text-xs bg-white border border-gray-200 rounded-lg font-bold text-[#D4AF37]"
-                      placeholder="Grant Amount"
-                    />
-                    <input
-                      type="text"
-                      value={proj.year}
-                      onChange={(e) => {
-                        const updated = [...researchData.projects];
-                        updated[pIdx] = { ...updated[pIdx], year: e.target.value };
-                        setResearchData({ ...researchData, projects: updated });
-                      }}
-                      className="w-full h-8 px-2 text-xs bg-white border border-gray-200 rounded-lg text-gray-700"
-                      placeholder="Duration (e.g. 2024-2027)"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* SUBTAB 4: Publications */}
-      {activeSubTab === "publications" && (
-        <div className="space-y-6">
-          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-              <div>
-                <h3 className="text-sm font-black text-[#072A6C] uppercase flex items-center gap-2">
-                  <BookOpen size={16} className="text-[#072A6C]" /> Indexed Publications & Patents Showcase ({researchData.publications.length})
-                </h3>
-                <p className="text-xs text-gray-500 mt-0.5">Scopus, Web of Science, IEEE Xplore, and published intellectual property archives</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  const newPub: ResearchPublicationItem = {
-                    id: `pub-${Date.now()}`,
-                    title: "New Research Publication Title",
-                    journal: "International Journal of Engineering (Scopus)",
-                    authors: "Faculty Name, Co-Author",
-                    year: "2025",
-                    link: "https://doi.org/10.1016/sample"
-                  };
-                  setResearchData({ ...researchData, publications: [...researchData.publications, newPub] });
-                }}
-                className="px-3.5 py-1.5 text-xs font-bold text-white bg-[#072A6C] hover:bg-[#072A6C]/90 rounded-xl flex items-center gap-1.5 shadow-sm transition-all"
-              >
-                <Plus size={14} /> Add Publication
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              {researchData.publications.map((pub, uIdx) => (
-                <div key={pub.id || uIdx} className="p-4 bg-slate-50 rounded-xl border border-gray-200 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#072A6C]">Publication #{uIdx + 1}</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const updated = researchData.publications.filter((_, i) => i !== uIdx);
-                        setResearchData({ ...researchData, publications: updated });
-                      }}
-                      className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                  <input
-                    type="text"
-                    value={pub.title}
-                    onChange={(e) => {
-                      const updated = [...researchData.publications];
-                      updated[uIdx] = { ...updated[uIdx], title: e.target.value };
-                      setResearchData({ ...researchData, publications: updated });
-                    }}
-                    className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold text-gray-800"
-                    placeholder="Paper Title"
-                  />
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                    <input
-                      type="text"
-                      value={pub.journal}
-                      onChange={(e) => {
-                        const updated = [...researchData.publications];
-                        updated[uIdx] = { ...updated[uIdx], journal: e.target.value };
-                        setResearchData({ ...researchData, publications: updated });
-                      }}
-                      className="w-full h-8 px-2 text-xs bg-white border border-gray-200 rounded-lg text-gray-700"
-                      placeholder="Journal / Conference Name"
-                    />
-                    <input
-                      type="text"
-                      value={pub.authors}
-                      onChange={(e) => {
-                        const updated = [...researchData.publications];
-                        updated[uIdx] = { ...updated[uIdx], authors: e.target.value };
-                        setResearchData({ ...researchData, publications: updated });
-                      }}
-                      className="w-full h-8 px-2 text-xs bg-white border border-gray-200 rounded-lg text-gray-700"
-                      placeholder="Authors (e.g. Dr. Name, et al.)"
-                    />
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={pub.year}
-                        onChange={(e) => {
-                          const updated = [...researchData.publications];
-                          updated[uIdx] = { ...updated[uIdx], year: e.target.value };
-                          setResearchData({ ...researchData, publications: updated });
-                        }}
-                        className="w-20 h-8 px-2 text-xs bg-white border border-gray-200 rounded-lg text-gray-700"
-                        placeholder="Year"
-                      />
-                      <input
-                        type="text"
-                        value={pub.link || ""}
-                        onChange={(e) => {
-                          const updated = [...researchData.publications];
-                          updated[uIdx] = { ...updated[uIdx], link: e.target.value };
-                          setResearchData({ ...researchData, publications: updated });
-                        }}
-                        className="flex-1 h-8 px-2 text-xs bg-white border border-gray-200 rounded-lg text-gray-700"
-                        placeholder="DOI / Paper URL"
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* SUBTAB 5: Homepage Research Showcase & Metrics */}
-      {activeSubTab === "homepage" && (
-        <div className="space-y-6">
-          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-              <div>
-                <h3 className="text-sm font-black text-[#072A6C] uppercase flex items-center gap-2">
-                  <Award size={16} className="text-[#D4AF37]" /> Homepage Research Highlights & Metrics
-                </h3>
-                <p className="text-xs text-gray-500 mt-0.5">Control how research accomplishments, funded grant totals, and patent counters appear on the main website homepage</p>
-              </div>
-              <button
-                onClick={saveResearch}
-                className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
-              >
-                Save Research Showcase
-              </button>
-            </div>
-
-            {/* 4 Homepage Metric Counters */}
-            <div className="space-y-3">
-              <label className="text-[11px] font-bold text-gray-700 uppercase block">
-                Homepage Research Statistics Counters (4 Live Badges)
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-                {researchData.stats.map((st, sIdx) => (
-                  <div key={sIdx} className="p-3.5 bg-slate-50 border border-gray-200 rounded-xl space-y-2">
-                    <span className="text-[10px] font-black text-[#D4AF37] uppercase">Metric #{sIdx + 1}</span>
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-gray-500 uppercase">Number Value</label>
-                      <input
-                        type="text"
-                        value={st.value}
-                        onChange={(e) => {
-                          const updated = [...researchData.stats];
-                          updated[sIdx] = { ...updated[sIdx], value: e.target.value };
-                          setResearchData({ ...researchData, stats: updated });
-                        }}
-                        className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-black text-[#072A6C]"
-                        placeholder="e.g. 45+"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-gray-500 uppercase">Label Text</label>
-                      <input
-                        type="text"
-                        value={st.label}
-                        onChange={(e) => {
-                          const updated = [...researchData.stats];
-                          updated[sIdx] = { ...updated[sIdx], label: e.target.value };
-                          setResearchData({ ...researchData, stats: updated });
-                        }}
-                        className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-semibold text-gray-700"
-                        placeholder="e.g. Funded Projects"
-                      />
-                    </div>
-                  </div>
+                <option value="All">All Categories ({researchData.items.length})</option>
+                {CATEGORY_OPTIONS.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat} ({researchData.items.filter((it) => it.category === cat).length})
+                  </option>
                 ))}
-              </div>
+              </select>
             </div>
 
-            {/* Homepage Thrust Areas Showcase Teaser */}
-            <div className="space-y-3 pt-3 border-t border-gray-100">
-              <div className="flex items-center justify-between">
-                <label className="text-[11px] font-bold text-gray-700 uppercase">
-                  Featured Research Thrust Badges on Homepage
-                </label>
-                <span className="text-[10px] text-gray-400">Pills displayed across homepage showcase</span>
+            <button
+              type="button"
+              onClick={handleOpenAddModal}
+              className="h-8 px-3 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+            >
+              <Plus size={13} /> Add Item
+            </button>
+          </div>
+        </div>
+
+        {/* Blank state when no items exist */}
+        {researchData.items.length === 0 ? (
+          <div className="py-12 px-4 rounded-xl border border-dashed border-gray-200 bg-slate-50 text-center space-y-3">
+            <div className="w-12 h-12 mx-auto rounded-full bg-amber-50 text-amber-600 flex items-center justify-center">
+              <Wrench size={24} />
+            </div>
+            <div>
+              <h5 className="text-sm font-black text-gray-800 uppercase tracking-wide">
+                Page is Currently Blank & Under Construction
+              </h5>
+              <p className="text-xs text-gray-500 max-w-md mx-auto mt-1">
+                The public research page displays the Under Construction banner. No research items or categories have been published yet.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleOpenAddModal}
+              className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg inline-flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+            >
+              <Plus size={14} /> Add First Research Item
+            </button>
+          </div>
+        ) : filteredItems.length === 0 ? (
+          <div className="py-8 text-center text-xs text-gray-400 italic">
+            No research items in category "{selectedCategory}".
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+            {filteredItems.map((item, idx) => (
+              <div
+                key={item.id}
+                className={`p-4 rounded-xl border transition-all text-left space-y-2.5 ${
+                  item.hidden
+                    ? "bg-amber-50/20 border-amber-300 opacity-75"
+                    : "bg-slate-50/60 border-gray-200 hover:border-gray-300"
+                }`}
+              >
+                {/* Header row with Title & Category */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-[#072A6C]/10 text-[#072A6C]">
+                        {item.category}
+                      </span>
+                      {item.hidden ? (
+                        <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-300">
+                          Hidden
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-300">
+                          Visible
+                        </span>
+                      )}
+                    </div>
+                    <h5 className="text-xs font-black text-gray-900 truncate">
+                      {item.title}
+                    </h5>
+                  </div>
+
+                  {/* Item Actions: Hide / Edit / Delete */}
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {/* Hide / Show Toggle */}
+                    <button
+                      type="button"
+                      onClick={() => handleToggleHideItem(item.id)}
+                      className={`h-7 px-2 text-[11px] font-bold rounded-md flex items-center gap-1 cursor-pointer transition-colors border ${
+                        item.hidden
+                          ? "bg-amber-100 hover:bg-amber-200 text-amber-900 border-amber-300"
+                          : "bg-white hover:bg-slate-100 text-slate-700 border-gray-200"
+                      }`}
+                      title={item.hidden ? "Show on public research page" : "Hide from public research page"}
+                    >
+                      {item.hidden ? (
+                        <>
+                          <Eye size={12} className="text-amber-700" />
+                          <span>Show</span>
+                        </>
+                      ) : (
+                        <>
+                          <EyeOff size={12} className="text-gray-500" />
+                          <span>Hide</span>
+                        </>
+                      )}
+                    </button>
+
+                    {/* Edit Button */}
+                    <button
+                      type="button"
+                      onClick={() => handleOpenEditModal(item)}
+                      className="h-7 px-2 bg-white hover:bg-blue-50 text-blue-700 hover:text-blue-900 border border-gray-200 hover:border-blue-300 text-[11px] font-bold rounded-md flex items-center gap-1 cursor-pointer transition-colors"
+                      title="Edit this item"
+                    >
+                      <Edit3 size={12} />
+                      <span>Edit</span>
+                    </button>
+
+                    {/* Delete Button */}
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteItem(item.id, item.title)}
+                      className="h-7 px-2 bg-white hover:bg-red-50 text-red-600 hover:text-red-800 border border-gray-200 hover:border-red-300 text-[11px] font-bold rounded-md flex items-center gap-1 cursor-pointer transition-colors"
+                      title="Delete this item"
+                    >
+                      <Trash2 size={12} />
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Description */}
+                {item.description && (
+                  <p className="text-[11px] text-gray-600 line-clamp-2 leading-relaxed">
+                    {item.description}
+                  </p>
+                )}
+
+                {/* Optional Link */}
+                {item.link && (
+                  <div className="pt-1 flex items-center gap-1 text-[10px] font-bold text-[#072A6C]">
+                    <ExternalLink size={11} />
+                    <span className="truncate">{item.linkText || item.link}</span>
+                  </div>
+                )}
               </div>
-              <div className="flex flex-wrap gap-2">
-                {researchData.thrustAreas.map((t, idx) => (
-                  <span
-                    key={idx}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50/70 border border-blue-200 text-[#072A6C] rounded-xl text-xs font-bold"
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Add / Edit Item Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-2xl max-w-lg w-full overflow-hidden text-left animate-in fade-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-slate-50">
+              <h4 className="text-sm font-black text-[#072A6C] uppercase flex items-center gap-2">
+                {editingItem ? <Edit3 size={15} /> : <Plus size={15} />}
+                {editingItem ? "Edit Research Item" : "Add New Research Item"}
+              </h4>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 p-1 rounded-lg cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <form onSubmit={handleSaveItemModal} className="p-5 space-y-4">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Item Title *</label>
+                <input
+                  type="text"
+                  required
+                  value={itemForm.title || ""}
+                  onChange={(e) => setItemForm({ ...itemForm, title: e.target.value })}
+                  placeholder="e.g. Artificial Intelligence Center of Excellence"
+                  className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-gray-800 focus:bg-white"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-600 uppercase">Category *</label>
+                  <select
+                    value={itemForm.category || "General"}
+                    onChange={(e) => setItemForm({ ...itemForm, category: e.target.value })}
+                    className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-gray-700"
                   >
-                    {t.title}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Top Grant Spotlight */}
-            <div className="p-4 bg-amber-50/60 rounded-2xl border border-amber-200 space-y-2">
-              <span className="text-[10px] font-bold text-amber-800 uppercase font-mono tracking-wider block">
-                FEATURED HIGH-IMPACT SPONSORED PROJECT SPOTLIGHT
-              </span>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div>
-                  <h4 className="text-xs sm:text-sm font-black text-[#072A6C]">{researchData.projects[0]?.title || "Research Project"}</h4>
-                  <p className="text-[11px] text-gray-600">Investigator: {researchData.projects[0]?.investigator} • Agency: {researchData.projects[0]?.agency}</p>
+                    {CATEGORY_OPTIONS.map((cat) => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
                 </div>
-                <span className="text-sm font-black text-[#D4AF37] shrink-0 bg-white px-3 py-1 rounded-xl border border-amber-200 shadow-2xs">
-                  {researchData.projects[0]?.amount || "₹45 Lakhs"}
-                </span>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-600 uppercase">Visibility</label>
+                  <select
+                    value={itemForm.hidden ? "hidden" : "visible"}
+                    onChange={(e) => setItemForm({ ...itemForm, hidden: e.target.value === "hidden" })}
+                    className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-gray-700"
+                  >
+                    <option value="visible">Visible (Active)</option>
+                    <option value="hidden">Hidden</option>
+                  </select>
+                </div>
               </div>
-            </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Description / Details</label>
+                <textarea
+                  rows={3}
+                  value={itemForm.description || ""}
+                  onChange={(e) => setItemForm({ ...itemForm, description: e.target.value })}
+                  placeholder="Summary of research focus, project scope, or patent info..."
+                  className="w-full p-2.5 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-700 focus:bg-white"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-600 uppercase">Target Link URL (Optional)</label>
+                  <input
+                    type="text"
+                    value={itemForm.link || ""}
+                    onChange={(e) => setItemForm({ ...itemForm, link: e.target.value })}
+                    placeholder="e.g. /admissions or https://doi.org/..."
+                    className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-700"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-600 uppercase">Link Button Label</label>
+                  <input
+                    type="text"
+                    value={itemForm.linkText || ""}
+                    onChange={(e) => setItemForm({ ...itemForm, linkText: e.target.value })}
+                    placeholder="e.g. Explore / View Paper"
+                    className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-700"
+                  />
+                </div>
+              </div>
+
+              {/* Modal Actions */}
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="h-9 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg cursor-pointer transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                >
+                  <Check size={14} />
+                  <span>{editingItem ? "Update Item" : "Create Item"}</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -236,6 +236,46 @@ export default function AdminPortal() {
     notifySave("Homepage section order & visibility saved!");
   };
 
+  const toggleSectionAndSave = (id: string, name: string) => {
+    const updated = sectionsList.map((s) => {
+      const match = s.id === id || (id === "whyChoose" && s.id === "whyChooseUs") || (id === "whyChooseUs" && s.id === "whyChoose");
+      return match ? { ...s, enabled: !s.enabled } : s;
+    });
+    setSectionsList(updated);
+    updateHomepageSections(updated);
+    const item = updated.find((s) => s.id === id || (id === "whyChoose" && s.id === "whyChooseUs"));
+    notifySave(`${name} is now ${item?.enabled !== false ? "Visible" : "Hidden"}!`);
+  };
+
+  const renderCategoryVisibilityButton = (sectionId: string, sectionTitle: string) => {
+    const section = sectionsList.find((s) => s.id === sectionId || (sectionId === "whyChoose" && s.id === "whyChooseUs"));
+    const isEnabled = section?.enabled !== false;
+    return (
+      <button
+        type="button"
+        onClick={() => toggleSectionAndSave(sectionId, sectionTitle)}
+        className={`h-9 px-3 text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer transition-colors border shadow-xs ${
+          isEnabled 
+            ? "bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200" 
+            : "bg-red-50 hover:bg-red-100 text-red-700 border-red-200"
+        }`}
+        title={isEnabled ? `Click to hide "${sectionTitle}" from homepage` : `Click to show "${sectionTitle}" on homepage`}
+      >
+        {isEnabled ? (
+          <>
+            <Eye size={13} className="text-emerald-600" />
+            <span>Category: Visible</span>
+          </>
+        ) : (
+          <>
+            <EyeOff size={13} className="text-red-600" />
+            <span>Category: Hidden</span>
+          </>
+        )}
+      </button>
+    );
+  };
+
   // ----------------------------------------------------
   // 2. HERO SLIDES FORM
   // ----------------------------------------------------
@@ -1951,7 +1991,7 @@ export default function AdminPortal() {
                       <h3 className="text-sm font-black text-[#072A6C] uppercase">Hero Banner Slides Carousel</h3>
                       <p className="text-xs text-gray-500">Add or replace full-width banner slides displayed at top of homepage</p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <button
                         type="button"
                         onClick={() => setActiveHomeSubTab("ordering")}
@@ -1959,6 +1999,7 @@ export default function AdminPortal() {
                       >
                         ← Back to Ordering
                       </button>
+                      {renderCategoryVisibilityButton("hero", "Hero Carousel")}
                       <button
                         type="button"
                         onClick={() => {
@@ -1988,16 +2029,49 @@ export default function AdminPortal() {
 
                   <div className="space-y-4">
                     {slides.map((slide, idx) => (
-                      <div key={slide.id} className="p-4 rounded-xl border border-gray-200 bg-slate-50/50 space-y-3">
+                      <div 
+                        key={slide.id} 
+                        className={`p-4 rounded-xl border transition-all space-y-3 ${
+                          slide.hidden 
+                            ? "border-amber-300 bg-amber-50/20 opacity-80" 
+                            : "border-gray-200 bg-slate-50/50"
+                        }`}
+                      >
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-black text-[#072A6C]">Slide #{idx + 1}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveHeroSlide(slide.id)}
-                            className="text-red-500 hover:text-red-700 text-xs font-bold flex items-center gap-1 cursor-pointer"
-                          >
-                            <Trash2 size={13} /> Remove
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-black text-[#072A6C]">Slide #{idx + 1}</span>
+                            {slide.hidden && (
+                              <span className="text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full border border-amber-300">
+                                Hidden
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const isHidden = !slide.hidden;
+                                const updated = [...slides];
+                                updated[idx] = { ...updated[idx], hidden: isHidden };
+                                setSlides(updated);
+                                updateHeroSlides(updated);
+                                notifySave(`Slide #${idx + 1} is now ${isHidden ? "Hidden" : "Visible"}!`);
+                              }}
+                              className={`text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors ${
+                                slide.hidden ? "text-amber-700 hover:text-amber-900" : "text-slate-600 hover:text-slate-900"
+                              }`}
+                              title={slide.hidden ? "Show this slide on homepage" : "Hide this slide from homepage"}
+                            >
+                              {slide.hidden ? <><Eye size={13} /> Show Slide</> : <><EyeOff size={13} /> Hide Slide</>}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveHeroSlide(slide.id)}
+                              className="text-red-500 hover:text-red-700 text-xs font-bold flex items-center gap-1 cursor-pointer"
+                            >
+                              <Trash2 size={13} /> Remove
+                            </button>
+                          </div>
                         </div>
 
                         <ImageField
@@ -2049,7 +2123,7 @@ export default function AdminPortal() {
                       <h3 className="text-sm font-black text-[#072A6C] uppercase">Admissions Alert Marquee Ticker</h3>
                       <p className="text-xs text-gray-500">Edit the animated ticker text that scrolls below hero banner</p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <button
                         type="button"
                         onClick={() => setActiveHomeSubTab("ordering")}
@@ -2057,6 +2131,7 @@ export default function AdminPortal() {
                       >
                         ← Back to Ordering
                       </button>
+                      {renderCategoryVisibilityButton("ticker", "Admissions Ticker")}
                       <button
                         type="button"
                         onClick={() => {
@@ -2136,7 +2211,7 @@ export default function AdminPortal() {
                       <h3 className="text-sm font-black text-[#072A6C] uppercase">Statistics Bar Counters</h3>
                       <p className="text-xs text-gray-500">Manage the 6 live counters displayed on homepage</p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <button
                         type="button"
                         onClick={() => setActiveHomeSubTab("ordering")}
@@ -2144,6 +2219,7 @@ export default function AdminPortal() {
                       >
                         ← Back to Ordering
                       </button>
+                      {renderCategoryVisibilityButton("stats", "Key Statistics Bar")}
                       <button
                         type="button"
                         onClick={() => {
@@ -2211,7 +2287,7 @@ export default function AdminPortal() {
                       <h3 className="text-sm font-black text-[#072A6C] uppercase">Why Choose Us Feature Cards</h3>
                       <p className="text-xs text-gray-500">Edit heading, subtext and the 6 key differentiator cards</p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <button
                         type="button"
                         onClick={() => setActiveHomeSubTab("ordering")}
@@ -2219,6 +2295,7 @@ export default function AdminPortal() {
                       >
                         ← Back to Ordering
                       </button>
+                      {renderCategoryVisibilityButton("whyChoose", "Why Choose Us")}
                       <button
                         type="button"
                         onClick={() => {
@@ -2297,6 +2374,7 @@ export default function AdminPortal() {
                       >
                         ← Back to Ordering
                       </button>
+                      {renderCategoryVisibilityButton("programs", "Schools & Programs")}
                       <button
                         type="button"
                         onClick={() => {
@@ -2662,7 +2740,7 @@ export default function AdminPortal() {
                       </h3>
                       <p className="text-xs text-gray-500">Configure Featured News hero card, Latest News list (4 items), and Upcoming Events list (4 items)</p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <button
                         type="button"
                         onClick={() => setActiveHomeSubTab("ordering")}
@@ -2670,6 +2748,7 @@ export default function AdminPortal() {
                       >
                         ← Back to Ordering
                       </button>
+                      {renderCategoryVisibilityButton("newsEvents", "News & Events Highlights")}
                       <button
                         type="button"
                         onClick={() => {
@@ -3003,7 +3082,7 @@ export default function AdminPortal() {
                       <h3 className="text-sm font-black text-[#072A6C] uppercase">Chairman's Vision & Message</h3>
                       <p className="text-xs text-gray-500">Edit portrait, video URL, quote paragraphs, and titles</p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <button
                         type="button"
                         onClick={() => setActiveHomeSubTab("ordering")}
@@ -3011,6 +3090,7 @@ export default function AdminPortal() {
                       >
                         ← Back to Ordering
                       </button>
+                      {renderCategoryVisibilityButton("chairman", "Chairman's Message")}
                       <button
                         type="button"
                         onClick={() => {
@@ -3179,7 +3259,7 @@ export default function AdminPortal() {
                       </h3>
                       <p className="text-xs text-gray-500">Edit 8 campus highlight cards, campus tour video player (with file size MB limits), and quotes</p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <button
                         type="button"
                         onClick={() => setActiveHomeSubTab("ordering")}
@@ -3187,6 +3267,7 @@ export default function AdminPortal() {
                       >
                         ← Back to Ordering
                       </button>
+                      {renderCategoryVisibilityButton("campusLife", "Campus Life & Video Tour")}
                       <button
                         type="button"
                         onClick={() => {
@@ -3410,7 +3491,7 @@ export default function AdminPortal() {
                         </h3>
                         <p className="text-xs text-gray-500">Configure homepage placement stats, full student success story testimonials with 4-step milestones, and corporate partner logos</p>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <button
                           type="button"
                           onClick={() => setActiveHomeSubTab("ordering")}
@@ -3418,6 +3499,7 @@ export default function AdminPortal() {
                         >
                           ← Back to Ordering
                         </button>
+                        {renderCategoryVisibilityButton("placements", "Placements & Career Milestones")}
                         <button
                           type="button"
                           onClick={() => {
@@ -4420,7 +4502,7 @@ export default function AdminPortal() {
                       <h3 className="text-sm font-black text-[#072A6C] uppercase">10. Admissions Banner & Campus Visit Strip</h3>
                       <p className="text-xs text-gray-500">Configure the admissions open promotional card, 3 action buttons, student banner image, contact coordinates, and interactive Google Map location.</p>
                     </div>
-                    <div className="flex gap-2 shrink-0">
+                    <div className="flex flex-wrap items-center gap-2 shrink-0">
                       <button
                         type="button"
                         onClick={() => setActiveHomeSubTab("ordering")}
@@ -4428,6 +4510,7 @@ export default function AdminPortal() {
                       >
                         ← Back to Ordering
                       </button>
+                      {renderCategoryVisibilityButton("virtualTour", "Admissions Banner & Visit Us")}
                       <button
                         type="button"
                         onClick={() => {

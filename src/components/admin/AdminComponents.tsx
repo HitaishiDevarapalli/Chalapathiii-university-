@@ -190,21 +190,12 @@ export const ImageField: React.FC<ImageFieldProps> = ({
   };
 
   const getAspectClass = () => {
-    if (compact) {
-      switch (aspectRatio) {
-        case "square": return "aspect-square w-full max-h-36";
-        case "portrait": return "aspect-[3/4] w-full max-h-40";
-        case "banner": return "aspect-[21/9] w-full max-h-24";
-        case "video": return "aspect-video w-full max-h-32";
-        default: return "aspect-[16/10] w-full max-h-32";
-      }
-    }
     switch (aspectRatio) {
-      case "square": return "aspect-square w-28";
-      case "portrait": return "aspect-[3/4] w-28";
-      case "banner": return "aspect-[21/9] w-full max-w-[280px]";
-      case "video": return "aspect-video w-44";
-      default: return "aspect-[16/10] w-36";
+      case "square": return "aspect-square w-full max-h-44 max-w-[180px] mx-auto";
+      case "portrait": return "aspect-[3/4] w-full max-h-48 max-w-[160px] mx-auto";
+      case "banner": return "aspect-[21/9] w-full max-h-32";
+      case "video": return "aspect-video w-full max-h-36";
+      default: return "aspect-[16/10] w-full max-h-36";
     }
   };
 
@@ -220,29 +211,34 @@ export const ImageField: React.FC<ImageFieldProps> = ({
             : "bg-slate-50/70 border-gray-200/80"
         }`}
       >
-        <div className="flex items-center justify-between gap-1 pb-1 border-b border-gray-200/50">
+        <div className="flex flex-wrap items-center justify-between gap-1 pb-1 border-b border-gray-200/50">
           <label className="text-[10px] font-black text-[#072A6C] uppercase tracking-wider truncate flex items-center gap-1">
             <ImageIcon size={11} className="text-[#072A6C] shrink-0" />
             <span className="truncate">{label}</span>
           </label>
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex flex-wrap items-center gap-2 shrink-0 text-[9.5px]">
+            {targetSize && (
+              <span className="text-red-500 font-bold">
+                Target: {targetSize}
+              </span>
+            )}
             {(defaultValue || onReset) && (
               <button
                 type="button"
                 onClick={() => onReset ? onReset() : onChange(defaultValue || "")}
-                className="px-1.5 py-0.5 rounded bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-[9px] font-bold cursor-pointer"
+                className="text-red-500 hover:text-red-700 font-bold flex items-center gap-0.5 cursor-pointer hover:underline transition-colors"
                 title="Reset photo"
               >
-                Reset
+                <RotateCcw size={9} /> Reset Photo
               </button>
             )}
             {value && (
               <button
                 type="button"
                 onClick={() => onChange("")}
-                className="text-[9px] text-red-500 hover:text-red-700 font-bold cursor-pointer"
+                className="text-red-500 hover:text-red-700 font-bold flex items-center gap-0.5 cursor-pointer hover:underline transition-colors"
               >
-                Clear
+                <X size={9} /> Clear
               </button>
             )}
           </div>
@@ -318,7 +314,7 @@ export const ImageField: React.FC<ImageFieldProps> = ({
           </div>
 
           <div className="text-[9px] text-gray-500 flex items-center justify-between">
-            <span className="font-semibold truncate">Target: {targetSize}</span>
+            <span className="font-bold text-red-500 truncate">Target: {targetSize}</span>
             {imageMeta.isValid && value && (
               <span className="text-emerald-700 font-bold shrink-0">✓ Valid</span>
             )}
@@ -339,21 +335,21 @@ export const ImageField: React.FC<ImageFieldProps> = ({
           : "bg-slate-50/70 border-gray-200/80"
       }`}
     >
-      {/* Header with Title & Prominent Valid Size Tag & Action Buttons */}
+      {/* Header with Title & Action Links in Red Text Only */}
       <div className="flex flex-wrap items-center justify-between gap-1.5 pb-1 border-b border-gray-200/50">
-        <label className="text-[11px] font-black text-[#072A6C] uppercase tracking-wider flex items-center gap-1.5">
-          <ImageIcon size={13} className="text-[#072A6C]" />
-          {label}
+        <label className="text-[11px] font-black text-[#072A6C] uppercase tracking-wider flex items-center gap-1.5 truncate">
+          <ImageIcon size={13} className="text-[#072A6C] shrink-0" />
+          <span className="truncate">{label}</span>
         </label>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="px-2 py-0.5 rounded-md bg-blue-50 text-[#072A6C] border border-blue-200/80 text-[10px] font-extrabold tracking-tight">
+        <div className="flex flex-wrap items-center gap-2.5 text-[10.5px]">
+          <span className="text-red-500 font-bold">
             Target Size: {targetSize}
           </span>
           {(defaultValue || onReset) && (
             <button
               type="button"
               onClick={() => onReset ? onReset() : onChange(defaultValue || "")}
-              className="px-2 py-0.5 rounded-md bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
+              className="text-red-500 hover:text-red-700 font-bold flex items-center gap-0.5 cursor-pointer hover:underline transition-colors"
               title="Reset photo to initial default"
             >
               <RotateCcw size={10} /> Reset Photo
@@ -363,7 +359,7 @@ export const ImageField: React.FC<ImageFieldProps> = ({
             <button
               type="button"
               onClick={() => onChange("")}
-              className="text-[10px] text-red-500 hover:text-red-700 font-bold flex items-center gap-0.5 cursor-pointer hover:underline"
+              className="text-red-500 hover:text-red-700 font-bold flex items-center gap-0.5 cursor-pointer hover:underline transition-colors"
             >
               <X size={11} /> Clear
             </button>
@@ -371,13 +367,13 @@ export const ImageField: React.FC<ImageFieldProps> = ({
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3.5 pt-1 w-full min-w-0">
-        {/* Preview Container / Drop Zone */}
+      <div className="flex flex-col gap-2.5 pt-1 w-full min-w-0">
+        {/* Preview Container / Drop Zone - Full Width, Beautiful & Stable */}
         <div 
           onClick={() => fileInputRef.current?.click()}
-          className={`${getAspectClass()} rounded-lg bg-white border ${
+          className={`${getAspectClass()} rounded-xl bg-white border ${
             isDragging ? "border-dashed border-blue-500 bg-blue-50/50" : "border-gray-200"
-          } overflow-hidden relative shadow-xs shrink-0 flex items-center justify-center cursor-pointer group`}
+          } overflow-hidden relative shadow-xs flex items-center justify-center cursor-pointer group w-full`}
           title="Click or drag & drop to replace photo"
         >
           {value ? (
@@ -397,12 +393,12 @@ export const ImageField: React.FC<ImageFieldProps> = ({
                 />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[10px] font-bold gap-1">
                   <UploadCloud size={16} />
-                  <span>Replace</span>
+                  <span>Replace Photo</span>
                 </div>
               </>
             )
           ) : (
-            <div className="flex flex-col items-center justify-center p-2 text-gray-400 text-center">
+            <div className="flex flex-col items-center justify-center p-3 text-gray-400 text-center">
               <UploadCloud size={20} className="mb-1 text-gray-400 group-hover:text-blue-600 transition-colors" />
               <span className="text-[10px] font-bold text-gray-500">Drag & Drop</span>
               <span className="text-[8.5px] text-gray-400">or click to upload</span>
@@ -415,69 +411,53 @@ export const ImageField: React.FC<ImageFieldProps> = ({
           )}
         </div>
 
-        {/* Input & Upload Controls & Validation Status */}
-        <div className="flex-1 space-y-2 w-full min-w-0">
-          <div className="flex gap-2 items-center w-full min-w-0">
-            <input
-              type="text"
-              placeholder="Enter image URL or drag photo here..."
-              value={value || ""}
-              onChange={(e) => onChange(e.target.value)}
-              className="flex-1 min-w-0 h-9 px-3 text-xs bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-100 font-mono text-gray-700"
-            />
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileUpload}
-              accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif,image/avif"
-              className="hidden"
-            />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="h-9 px-3 bg-[#072A6C] hover:bg-[#051c4a] text-white text-[11px] font-bold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-xs"
-            >
-              <UploadCloud size={13} />
-              Browse
-            </button>
-          </div>
+        {/* Input & Upload Controls - Full Width Row */}
+        <div className="flex gap-2 items-center w-full min-w-0">
+          <input
+            type="text"
+            placeholder="Enter image URL or drag photo here..."
+            value={value || ""}
+            onChange={(e) => onChange(e.target.value)}
+            className="flex-1 min-w-0 h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-100 font-mono text-gray-700"
+          />
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif,image/avif"
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="h-8 px-3 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-xs"
+          >
+            <UploadCloud size={13} />
+            Browse
+          </button>
+        </div>
 
-          {/* Validation & Size / Dimensions Badge */}
-          {value ? (
-            <div className="flex flex-wrap items-center gap-1.5 w-full min-w-0">
-              {imageMeta.isValid ? (
-                <div className="inline-flex flex-wrap items-center gap-2 px-2.5 py-1 bg-emerald-50 border border-emerald-200/90 rounded-lg text-[10.5px] font-bold text-emerald-800 shadow-xs max-w-full">
-                  <span className="flex items-center gap-1 text-emerald-700 truncate">
-                    <CheckCircle2 size={12} className="text-emerald-600 shrink-0" />
-                    ✓ Valid Photo {imageMeta.format ? `(${imageMeta.format})` : ""}
+        {/* Validation & Status line */}
+        {value ? (
+          <div className="flex flex-wrap items-center justify-between gap-1 w-full text-[10px]">
+            {imageMeta.isValid ? (
+              <span className="flex items-center gap-1 text-emerald-700 font-bold truncate">
+                <CheckCircle2 size={11} className="text-emerald-600 shrink-0" />
+                Valid Photo {imageMeta.format ? `(${imageMeta.format})` : ""}
+                {imageMeta.width && imageMeta.height ? (
+                  <span className="text-gray-500 font-mono font-normal">
+                    • {imageMeta.width}×{imageMeta.height} px
                   </span>
-                  {imageMeta.width && imageMeta.height ? (
-                    <span className="text-emerald-900 bg-emerald-100/70 px-1.5 py-0.5 rounded font-mono font-bold shrink-0">
-                      {imageMeta.width} × {imageMeta.height} px
-                    </span>
-                  ) : null}
-                  {imageMeta.size && (
-                    <span className="text-emerald-700 font-mono text-[10px] shrink-0">
-                      • {imageMeta.size}
-                    </span>
-                  )}
-                  <span className="text-emerald-700/80 font-medium text-[10px] truncate">
-                    (Target: {targetSize})
-                  </span>
-                </div>
-              ) : (
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-50 border border-red-200 rounded-lg text-[10.5px] font-bold text-red-800">
-                  <AlertCircle size={12} className="text-red-600 shrink-0" />
-                  <span>{imageMeta.errorMsg || "Invalid Image format or broken link"}</span>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="text-[10px] text-gray-500 bg-white/80 px-2.5 py-1 rounded-md border border-dashed border-gray-200 inline-flex items-center gap-2">
-              <span className="font-bold text-[#072A6C]">Target Size: {targetSize}</span>
-              <span className="text-gray-400">• Max 8MB (PNG, JPG, WebP, SVG)</span>
-            </div>
-          )}
+                ) : null}
+              </span>
+            ) : (
+              <span className="flex items-center gap-1 text-red-600 font-bold truncate">
+                <AlertCircle size={11} className="text-red-600 shrink-0" />
+                {imageMeta.errorMsg || "Invalid Image format"}
+              </span>
+            )}
+          </div>
+        ) : null}
 
           {/* Optional Alt Text & Image Prompt */}
           {(onAltChange || onPromptChange) && (
@@ -504,7 +484,6 @@ export const ImageField: React.FC<ImageFieldProps> = ({
           )}
         </div>
       </div>
-    </div>
   );
 };
 
