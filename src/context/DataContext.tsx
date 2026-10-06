@@ -1808,8 +1808,7 @@ export const DEFAULT_FOOTER_CONTENT: FooterContent = {
   bottomLinks: [
     { label: "Privacy Policy", to: "/privacy-policy" },
     { label: "Terms & Conditions", to: "/terms-conditions" },
-    { label: "Sitemap", to: "/sitemap" },
-    { label: "Admin Portal", to: "/admin" }
+    { label: "Sitemap", to: "/sitemap" }
   ],
   copyrightText: "© 2026 Chalapathi University. All rights reserved."
 };
@@ -3243,7 +3242,18 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Footer Content
   const [footerContent, setFooterContent] = useState<FooterContent>(() => {
     const local = localStorage.getItem("chalapathi_footer_content");
-    return local ? JSON.parse(local) : DEFAULT_FOOTER_CONTENT;
+    if (local) {
+      try {
+        const parsed = JSON.parse(local);
+        if (parsed.bottomLinks && Array.isArray(parsed.bottomLinks)) {
+          parsed.bottomLinks = parsed.bottomLinks.filter((item: any) => item.to !== "/admin" && !item.label?.toLowerCase().includes("admin"));
+        }
+        return { ...DEFAULT_FOOTER_CONTENT, ...parsed };
+      } catch (e) {
+        return DEFAULT_FOOTER_CONTENT;
+      }
+    }
+    return DEFAULT_FOOTER_CONTENT;
   });
 
   // Enquiries Leads
@@ -3509,7 +3519,17 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (localNav) setNavigationMenu(JSON.parse(localNav));
 
         const localFooter = localStorage.getItem("chalapathi_footer_content");
-        if (localFooter) setFooterContent({ ...DEFAULT_FOOTER_CONTENT, ...JSON.parse(localFooter) });
+        if (localFooter) {
+          try {
+            const parsed = JSON.parse(localFooter);
+            if (parsed.bottomLinks && Array.isArray(parsed.bottomLinks)) {
+              parsed.bottomLinks = parsed.bottomLinks.filter((item: any) => item.to !== "/admin" && !item.label?.toLowerCase().includes("admin"));
+            }
+            setFooterContent({ ...DEFAULT_FOOTER_CONTENT, ...parsed });
+          } catch (e) {
+            setFooterContent(DEFAULT_FOOTER_CONTENT);
+          }
+        }
 
         const localEnquiries = localStorage.getItem("chalapathi_enquiries");
         if (localEnquiries) setEnquiries(JSON.parse(localEnquiries));

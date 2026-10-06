@@ -41,12 +41,11 @@ export default function Footer() {
     { label: "Amenities", to: "/campus-life" },
   ];
 
-  const bottomLinks = footerContent?.bottomLinks || [
+  const bottomLinks = (footerContent?.bottomLinks || [
     { label: "Privacy Policy", to: "/privacy-policy" },
     { label: "Terms & Conditions", to: "/terms-conditions" },
-    { label: "Sitemap", to: "/sitemap" },
-    { label: "Admin Portal", to: "/admin" }
-  ];
+    { label: "Sitemap", to: "/sitemap" }
+  ]).filter(item => item.to !== "/admin" && !item.label?.toLowerCase().includes("admin"));
 
   const brandSocials = footerContent?.brandSocials || [
     { icon: "Globe", url: "https://city.ac.in", label: "Website" },
@@ -275,7 +274,7 @@ export default function Footer() {
               ) : (
                 <Link 
                   to={item.to} 
-                  className={`hover:text-white transition-colors ${item.to === "/admin" ? "text-amber-400 font-bold hover:text-amber-300" : ""}`}
+                  className="hover:text-white transition-colors"
                 >
                   {item.label}
                 </Link>

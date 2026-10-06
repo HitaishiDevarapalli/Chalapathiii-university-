@@ -1062,7 +1062,7 @@ export default function FooterCMS() {
                 {(form.bottomLinks || []).map((item, idx) => (
                   <React.Fragment key={idx}>
                     {idx > 0 && <span>|</span>}
-                    <span className={item.to === "/admin" ? "text-amber-400 font-bold" : ""}>{item.label}</span>
+                    <span>{item.label}</span>
                   </React.Fragment>
                 ))}
               </div>
