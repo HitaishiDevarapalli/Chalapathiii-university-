@@ -14,8 +14,8 @@ export default function SEO({
   description, 
   name = "Chalapathi University", 
   type = "website", 
-  image = "https://chalapathy-university.vercel.app/logo.png",
-  url = "https://chalapathy-university.vercel.app/"
+  image = "https://chalapathi-university.vercel.app/logo.png",
+  url = "https://chalapathi-university.vercel.app/"
 }: SEOProps) {
   return (
     <Helmet>
