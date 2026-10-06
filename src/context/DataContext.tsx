@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { safeSetItem } from "../lib/utils";
 import { PROGRAMS_DATA, ProgramDetail } from "../data/programsData";
 import { CmsPage } from "../types/cms";
 import { INITIAL_CMS_PAGES } from "../data/initialCmsPages";
@@ -3491,7 +3490,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const recordSave = () => {
     const timeStr = new Date().toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
     setLastSavedTime(timeStr);
-    safeSetItem("chalapathi_last_saved", timeStr);
+    localStorage.setItem("chalapathi_last_saved", timeStr);
 
     // Notify same-window components
     if (typeof window !== "undefined") {
@@ -3642,37 +3641,37 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateSiteSettings = (settings: SiteSettings) => {
     setSiteSettings(settings);
-    safeSetItem("chalapathi_site_settings", JSON.stringify(settings));
+    localStorage.setItem("chalapathi_site_settings", JSON.stringify(settings));
     recordSave();
   };
 
   const updateThemeColors = (colors: ThemeColors) => {
     setThemeColors(colors);
-    safeSetItem("chalapathi_theme_colors", JSON.stringify(colors));
+    localStorage.setItem("chalapathi_theme_colors", JSON.stringify(colors));
     recordSave();
   };
 
   const updateHomepageSections = (sections: HomepageSectionConfig[]) => {
     setHomepageSections(sections);
-    safeSetItem("chalapathi_homepage_sections_v2", JSON.stringify(sections));
+    localStorage.setItem("chalapathi_homepage_sections_v2", JSON.stringify(sections));
     recordSave();
   };
 
   const updateNavigationMenu = (menu: NavMenuItem[]) => {
     setNavigationMenu(menu);
-    safeSetItem("chalapathi_navigation_menu", JSON.stringify(menu));
+    localStorage.setItem("chalapathi_navigation_menu", JSON.stringify(menu));
     recordSave();
   };
 
   const updateFooterContent = (content: FooterContent) => {
     setFooterContent(content);
-    safeSetItem("chalapathi_footer_content", JSON.stringify(content));
+    localStorage.setItem("chalapathi_footer_content", JSON.stringify(content));
     recordSave();
   };
 
   const updateEnquiries = (leads: EnquiryLead[]) => {
     setEnquiries(leads);
-    safeSetItem("chalapathi_enquiries", JSON.stringify(leads));
+    localStorage.setItem("chalapathi_enquiries", JSON.stringify(leads));
     recordSave();
   };
 
@@ -3685,80 +3684,80 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
     const updated = [newLead, ...enquiries];
     setEnquiries(updated);
-    safeSetItem("chalapathi_enquiries", JSON.stringify(updated));
+    localStorage.setItem("chalapathi_enquiries", JSON.stringify(updated));
   };
 
   const updateAnnouncements = (list: Announcement[]) => {
     setAnnouncements(list);
-    safeSetItem("chalapathi_announcements", JSON.stringify(list));
+    localStorage.setItem("chalapathi_announcements", JSON.stringify(list));
     recordSave();
   };
 
   const updatePrograms = (list: ProgramDetail[]) => {
     setPrograms(list);
-    safeSetItem("chalapathi_programs", JSON.stringify(list));
+    localStorage.setItem("chalapathi_programs", JSON.stringify(list));
     recordSave();
   };
 
   const updateNews = (list: NewsArticle[]) => {
     setNews(list);
-    safeSetItem("chalapathi_news_v3", JSON.stringify(list));
-    safeSetItem("chalapathi_news", JSON.stringify(list));
+    localStorage.setItem("chalapathi_news_v3", JSON.stringify(list));
+    localStorage.setItem("chalapathi_news", JSON.stringify(list));
     recordSave();
   };
 
   const updateNewsPageConfig = (config: NewsPageConfig) => {
     setNewsPageConfig(config);
-    safeSetItem("chalapathi_news_page_config", JSON.stringify(config));
+    localStorage.setItem("chalapathi_news_page_config", JSON.stringify(config));
     recordSave();
   };
 
   const updateEvents = (list: EventItem[]) => {
     setEvents(list);
-    safeSetItem("chalapathi_events_v3", JSON.stringify(list));
-    safeSetItem("chalapathi_events", JSON.stringify(list));
+    localStorage.setItem("chalapathi_events_v3", JSON.stringify(list));
+    localStorage.setItem("chalapathi_events", JSON.stringify(list));
     recordSave();
   };
 
   const updateAboutContent = (content: AboutUsContent) => {
     setAboutContent(content);
-    safeSetItem("chalapathi_about_v2", JSON.stringify(content));
+    localStorage.setItem("chalapathi_about_v2", JSON.stringify(content));
     recordSave();
   };
 
   const updateCalendarData = (data: MonthCalendarData[]) => {
     setCalendarData(data);
-    safeSetItem("chalapathi_calendar", JSON.stringify(data));
+    localStorage.setItem("chalapathi_calendar", JSON.stringify(data));
     recordSave();
   };
 
   const updateFacultyData = (data: Record<string, DirectoryData>) => {
     setFacultyData(data);
-    safeSetItem("chalapathi_faculty_data_v3", JSON.stringify(data));
+    localStorage.setItem("chalapathi_faculty_data_v3", JSON.stringify(data));
     recordSave();
   };
 
   const updateBoardData = (data: Record<string, DirectoryData>) => {
     setBoardData(data);
-    safeSetItem("chalapathi_board_data_v3", JSON.stringify(data));
+    localStorage.setItem("chalapathi_board_data_v3", JSON.stringify(data));
     recordSave();
   };
 
   const updateStaffData = (data: Record<string, DirectoryData>) => {
     setStaffData(data);
-    safeSetItem("chalapathi_staff_data", JSON.stringify(data));
+    localStorage.setItem("chalapathi_staff_data", JSON.stringify(data));
     recordSave();
   };
 
   const updatePlacementsContent = (data: PlacementsContent) => {
     setPlacementsContent(data);
-    safeSetItem("chalapathi_placements", JSON.stringify(data));
+    localStorage.setItem("chalapathi_placements", JSON.stringify(data));
     recordSave();
   };
 
   const updateSuccessStories = (list: SuccessStory[]) => {
     setSuccessStories(list);
-    safeSetItem("chalapathi_success_stories", JSON.stringify(list));
+    localStorage.setItem("chalapathi_success_stories", JSON.stringify(list));
     recordSave();
   };
 
@@ -3825,35 +3824,35 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateAcademicStructure = (structure: AcademicStructure) => {
     setAcademicStructure(structure);
-    safeSetItem("chalapathi_academic_structure", JSON.stringify(structure));
+    localStorage.setItem("chalapathi_academic_structure", JSON.stringify(structure));
     recordSave();
   };
 
   const updateCampusVideos = (list: CampusVideoItem[]) => {
     setCampusVideos(list);
-    safeSetItem("chalapathi_campus_videos", JSON.stringify(list));
+    localStorage.setItem("chalapathi_campus_videos", JSON.stringify(list));
     recordSave();
   };
 
   const updateCampusTour = (tour: CampusTourConfig) => {
     setCampusTour(tour);
-    safeSetItem("chalapathi_campus_poster", tour.poster);
-    safeSetItem("chalapathi_campus_badge", tour.badge);
-    safeSetItem("chalapathi_campus_quote", tour.quote);
-    if (tour.heading) safeSetItem("chalapathi_campus_label", tour.heading);
-    if (tour.subtitle) safeSetItem("chalapathi_campus_subtitle", tour.subtitle);
+    localStorage.setItem("chalapathi_campus_poster", tour.poster);
+    localStorage.setItem("chalapathi_campus_badge", tour.badge);
+    localStorage.setItem("chalapathi_campus_quote", tour.quote);
+    if (tour.heading) localStorage.setItem("chalapathi_campus_label", tour.heading);
+    if (tour.subtitle) localStorage.setItem("chalapathi_campus_subtitle", tour.subtitle);
     recordSave();
   };
 
   const updateCampusGallery = (list: CampusGalleryItem[]) => {
     setCampusGallery(list);
-    safeSetItem("chalapathi_campus_gallery", JSON.stringify(list));
+    localStorage.setItem("chalapathi_campus_gallery", JSON.stringify(list));
     recordSave();
   };
 
   const updateCampusBanners = (banners: CampusBannersConfig) => {
     setCampusBanners(banners);
-    safeSetItem("chalapathi_campus_banners", JSON.stringify(banners));
+    localStorage.setItem("chalapathi_campus_banners", JSON.stringify(banners));
     recordSave();
   };
 
@@ -3872,14 +3871,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateCampusLifeContent = (content: CampusLifeContent) => {
     setCampusLifeContent(content);
-    safeSetItem("chalapathi_campus_life_content", JSON.stringify(content));
+    localStorage.setItem("chalapathi_campus_life_content", JSON.stringify(content));
     recordSave();
   };
 
   const updateCampusLifePage = (path: string, pageData: CampusLifePageData) => {
     setCampusLifeContent((prev) => {
       const updated = { ...prev, [path]: pageData };
-      safeSetItem("chalapathi_campus_life_content", JSON.stringify(updated));
+      localStorage.setItem("chalapathi_campus_life_content", JSON.stringify(updated));
       return updated;
     });
     recordSave();
@@ -3887,7 +3886,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateHeroSlides = (list: HeroSlide[]) => {
     setHeroSlides(list);
-    safeSetItem("chalapathi_hero_slides", JSON.stringify(list));
+    localStorage.setItem("chalapathi_hero_slides", JSON.stringify(list));
     recordSave();
   };
 
@@ -3906,7 +3905,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateAdmissionsContent = (content: AdmissionsContent) => {
     setAdmissionsContent(content);
-    safeSetItem("chalapathi_admissions_content", JSON.stringify(content));
+    localStorage.setItem("chalapathi_admissions_content", JSON.stringify(content));
     recordSave();
   };
 
@@ -3925,7 +3924,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateSearchConfig = (config: SearchBarConfig) => {
     setSearchConfig(config);
-    safeSetItem("chalapathi_search_config", JSON.stringify(config));
+    localStorage.setItem("chalapathi_search_config", JSON.stringify(config));
     recordSave();
   };
 
@@ -3952,7 +3951,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const res = await CmsApiService.fetchAll();
         if (res && res.success && Array.isArray(res.pages) && res.pages.length > 0) {
           setCmsPages(res.pages);
-          safeSetItem("chalapathi_cms_pages_v3", JSON.stringify(res.pages));
+          localStorage.setItem("chalapathi_cms_pages_v3", JSON.stringify(res.pages));
         }
       } catch (err) {
         console.warn("Initial CMS API sync:", err);
@@ -3963,7 +3962,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateCmsPages = (pages: CmsPage[]) => {
     setCmsPages(pages);
-    safeSetItem("chalapathi_cms_pages_v3", JSON.stringify(pages));
+    localStorage.setItem("chalapathi_cms_pages_v3", JSON.stringify(pages));
     recordSave();
   };
 
@@ -3993,7 +3992,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updatedList = [...prev, updatedPage];
       }
 
-      safeSetItem("chalapathi_cms_pages_v3", JSON.stringify(updatedList));
+      localStorage.setItem("chalapathi_cms_pages_v3", JSON.stringify(updatedList));
       // Asynchronously sync to backend API / database
       CmsApiService.savePage(updatedPage, note).catch((e) => console.warn("API sync save error:", e));
 
@@ -4006,7 +4005,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCmsPages((prev) => {
       const targetPage = prev.find((p) => p.id === id);
       const filtered = prev.filter((p) => p.id !== id);
-      safeSetItem("chalapathi_cms_pages_v3", JSON.stringify(filtered));
+      localStorage.setItem("chalapathi_cms_pages_v3", JSON.stringify(filtered));
       if (targetPage) {
         CmsApiService.deletePage(targetPage.slug, targetPage.id).catch((e) => console.warn("API delete error:", e));
       }
@@ -4076,7 +4075,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateCertificationsData = (data: Certification[]) => {
     setCertificationsData(data);
-    safeSetItem("chalapathi_certifications_v1", JSON.stringify(data));
+    localStorage.setItem("chalapathi_certifications_v1", JSON.stringify(data));
     recordSave();
   };
 
@@ -4096,7 +4095,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateCertificationsPageConfig = (config: GlobalCertificationsPageConfig) => {
     setCertificationsPageConfig(config);
-    safeSetItem("chalapathi_certifications_page_config_v1", JSON.stringify(config));
+    localStorage.setItem("chalapathi_certifications_page_config_v1", JSON.stringify(config));
     recordSave();
   };
 
@@ -4116,7 +4115,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateAcademicFlexibilities = (data: AcademicFlexibilityItem[]) => {
     setAcademicFlexibilities(data);
-    safeSetItem("chalapathi_flexibilities_v1", JSON.stringify(data));
+    localStorage.setItem("chalapathi_flexibilities_v1", JSON.stringify(data));
     recordSave();
   };
 
@@ -4136,7 +4135,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateGradingSystemData = (data: GradingSystemConfig) => {
     setGradingSystemData(data);
-    safeSetItem("chalapathi_grading_config", JSON.stringify(data));
+    localStorage.setItem("chalapathi_grading_config", JSON.stringify(data));
     recordSave();
   };
 
@@ -4156,7 +4155,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateAwardOfDegreesData = (data: AwardOfDegreesConfig) => {
     setAwardOfDegreesData(data);
-    safeSetItem("chalapathi_award_degrees_v1", JSON.stringify(data));
+    localStorage.setItem("chalapathi_award_degrees_v1", JSON.stringify(data));
     recordSave();
   };
 
@@ -4176,7 +4175,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateAcademicRulesData = (data: AcademicRuleItem[]) => {
     setAcademicRulesData(data);
-    safeSetItem("chalapathi_rules_regulations_v1", JSON.stringify(data));
+    localStorage.setItem("chalapathi_rules_regulations_v1", JSON.stringify(data));
     recordSave();
   };
 
@@ -4196,7 +4195,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateTeachingEvaluationData = (data: TeachingEvaluationConfig) => {
     setTeachingEvaluationData(data);
-    safeSetItem("chalapathi_teaching_evaluation_v1", JSON.stringify(data));
+    localStorage.setItem("chalapathi_teaching_evaluation_v1", JSON.stringify(data));
     recordSave();
   };
 
@@ -4216,7 +4215,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateAcademicCalendarTerms = (data: AcademicCalendarTerm[]) => {
     setAcademicCalendarTerms(data);
-    safeSetItem("chalapathi_calendar_terms_v1", JSON.stringify(data));
+    localStorage.setItem("chalapathi_calendar_terms_v1", JSON.stringify(data));
     recordSave();
   };
 

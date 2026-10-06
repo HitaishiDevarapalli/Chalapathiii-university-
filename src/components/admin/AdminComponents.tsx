@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import { UploadCloud, Image as ImageIcon, X, CheckCircle2, AlertCircle, RotateCcw, Save, ExternalLink, Eye, EyeOff } from "lucide-react";
-import { compressImage } from "../../lib/utils";
 
 interface ImageFieldProps {
   label: string;
@@ -147,22 +146,22 @@ export const ImageField: React.FC<ImageFieldProps> = ({
     }
 
     setIsUploading(true);
-    compressImage(file, 1600, 1200, 0.82)
-      .then((compressed) => {
-        onChange(compressed);
-        setIsUploading(false);
-      })
-      .catch((err) => {
-        console.warn("Compression fallback to FileReader:", err);
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          if (typeof event.target?.result === "string") {
-            onChange(event.target.result);
-          }
-          setIsUploading(false);
-        };
-        reader.readAsDataURL(file);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (typeof event.target?.result === "string") {
+        onChange(event.target.result);
+      }
+      setIsUploading(false);
+    };
+    reader.onerror = () => {
+      setImageMeta({
+        isValid: false,
+        errorMsg: "Failed to read image file."
       });
+      alert("Failed to read image file.");
+      setIsUploading(false);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
