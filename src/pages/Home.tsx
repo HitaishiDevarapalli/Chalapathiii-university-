@@ -20,19 +20,6 @@ const FEATURED_IMAGES = [
 ];
 import { useData } from "../context/DataContext";
 import { ACADEMIC_PROGRAMS_STRUCTURE } from "../components/layout/Header";
-import imgComputerScience from "../assets/illustrations/computer_science.png";
-import imgMtechCSE from "../assets/illustrations/mtech_cse.png";
-import imgMCA from "../assets/illustrations/mca.png";
-import imgPhdCSE from "../assets/illustrations/phd_cse.png";
-import imgDataScience from "../assets/illustrations/data_science.png";
-import imgArtificialIntelligence from "../assets/illustrations/artificial_intelligence.png";
-import imgAIMachineLearning from "../assets/illustrations/aiml.png";
-import imgCyberSecurity from "../assets/illustrations/cyber_security.png";
-import imgElectronicsCommunication from "../assets/illustrations/electronics.png";
-import imgVLSIEmbedded from "../assets/illustrations/vlsi.png";
-import imgCivilEngineering from "../assets/illustrations/civil.png";
-import imgStructuralEngineering from "../assets/illustrations/structural.png";
-import imgMBA from "../assets/illustrations/mba.png";
 
 /* ── animation helpers ────────────────────────── */
 const fadeUp = {
@@ -471,27 +458,39 @@ export default function Home() {
       </section>
 
       {/* ═══ ADMISSION ALERT TICKER ═══ */}
-      <section className="relative z-10 w-full h-[50px] bg-[#F4B400] text-[#0A2D6D] flex items-center overflow-hidden select-none font-[var(--font-poppins)] font-[700] text-[18px] shadow-[inset_0_4px_6px_rgba(0,0,0,0.08),0_2px_4px_rgba(0,0,0,0.05)] border-none">
-        <style dangerouslySetInnerHTML={{__html: `
-          @keyframes marquee {
-            0% { transform: translateX(0%); }
-            100% { transform: translateX(-50%); }
-          }
-          .marquee-inner {
-            display: flex;
-            width: max-content;
-            animation: marquee 20s linear infinite;
-            will-change: transform;
-          }
-          .marquee-inner:hover {
-            animation-play-state: paused;
-          }
-        `}} />
-        <div className="marquee-inner">
-          <span className="px-4 whitespace-nowrap">Admissions Open for Academic Year 2026–27 • Applications Closing Soon • Apply Now • Scholarships Available for Meritorious Students • Limited Seats • Register Today • Highest Placement Opportunities • Admissions Open for 2026–27 •</span>
-          <span className="px-4 whitespace-nowrap" aria-hidden="true">Admissions Open for Academic Year 2026–27 • Applications Closing Soon • Apply Now • Scholarships Available for Meritorious Students • Limited Seats • Register Today • Highest Placement Opportunities • Admissions Open for 2026–27 •</span>
-        </div>
-      </section>
+      {(() => {
+        const tickerSection = (homepageSections || []).find((s) => s.id === "ticker");
+        if (tickerSection && tickerSection.enabled === false) return null;
+        const tickerText = tickerSection?.title || "Admissions Open for Academic Year 2026–27 • Applications Closing Soon • Apply Now • Scholarships Available for Meritorious Students • Limited Seats • Register Today • Highest Placement Opportunities • Admissions Open for 2026–27 •";
+        const tickerBg = tickerSection?.bgColor || "#F4B400";
+        const tickerColor = tickerSection?.textColor || "#0A2D6D";
+        return (
+          <section
+            style={{ backgroundColor: tickerBg, color: tickerColor }}
+            className="relative z-10 w-full h-[50px] flex items-center overflow-hidden select-none font-[var(--font-poppins)] font-[700] text-[18px] shadow-[inset_0_4px_6px_rgba(0,0,0,0.08),0_2px_4px_rgba(0,0,0,0.05)] border-none"
+          >
+            <style dangerouslySetInnerHTML={{__html: `
+              @keyframes marquee {
+                0% { transform: translateX(0%); }
+                100% { transform: translateX(-50%); }
+              }
+              .marquee-inner {
+                display: flex;
+                width: max-content;
+                animation: marquee 20s linear infinite;
+                will-change: transform;
+              }
+              .marquee-inner:hover {
+                animation-play-state: paused;
+              }
+            `}} />
+            <div className="marquee-inner">
+              <span className="px-4 whitespace-nowrap">{tickerText}</span>
+              <span className="px-4 whitespace-nowrap" aria-hidden="true">{tickerText}</span>
+            </div>
+          </section>
+        );
+      })()}
 
       {/* ═══ STATISTICS BAR (Dark Blue - 14px border-radius container) ═══ */}
       <section className="bg-[#072A6C] w-full text-white py-8 select-none relative z-20 overflow-hidden">
@@ -655,115 +654,55 @@ export default function Home() {
             )}
           </div>
 
-          {/* Cards Grid */}
-          <motion.div
+          {/* Academic Programs Prospectus Grid - Unboxed, Clean & Elegant without AI icons */}
+          <div
             key={`${activeSchoolTab}-${currentDepartment}`}
-            className="flex flex-wrap justify-center gap-8 w-full"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full text-left mt-6"
           >
             {activeSchoolTab && currentDepartment && structure[activeSchoolTab]?.[currentDepartment]
               ?.map((courseLink: any, idx: number) => {
-                
-                // Find full program data using the slug if any
                 const programSlug = courseLink.to ? courseLink.to.split('/').pop() : "";
-                const program = programs.find(p => p.slug === programSlug);
+                const program = programs.find((p) => p.slug === programSlug);
 
                 const cardTitle = courseLink.label || program?.title || "Academic Program";
                 const cardDesc = courseLink.description || program?.overview || program?.desc || "Comprehensive curriculum with world-class faculty and hands-on laboratory experience.";
                 const cardLink = courseLink.to || (program?.slug ? `/academics/${program.slug}` : "/academics");
-                const cardImage = courseLink.image;
-                
-                // Helper to assign a dynamic image based on title
-                const getIllustrationForProgram = (title: string, size = 64) => {
-                  if (cardImage) {
-                    return (
-                      <img 
-                        src={cardImage} 
-                        alt={cardTitle} 
-                        style={{ width: size, height: size, objectFit: "contain" }}
-                        className="rounded-lg"
-                      />
-                    );
-                  }
-                  const t = title.toLowerCase();
-                  let imgSrc = imgComputerScience;
-                  
-                  if (t.includes('cse') && t.includes('ai') && t.includes('learning')) imgSrc = imgArtificialIntelligence;
-                  else if (t.includes('machine learning') || t.includes('aiml')) imgSrc = imgAIMachineLearning;
-                  else if (t.includes('artificial intelligence') || t.includes('ai')) imgSrc = imgArtificialIntelligence;
-                  else if (t.includes('data science') || t.includes('data')) imgSrc = imgDataScience;
-                  else if (t.includes('cyber security') || t.includes('security')) imgSrc = imgCyberSecurity;
-                  else if (t.includes('ph.d')) imgSrc = imgPhdCSE;
-                  else if (t.includes('electronics') || t.includes('communication') || t.includes('ece')) imgSrc = imgElectronicsCommunication;
-                  else if (t.includes('vlsi') || t.includes('embedded')) imgSrc = imgVLSIEmbedded;
-                  else if (t.includes('structural')) imgSrc = imgStructuralEngineering;
-                  else if (t.includes('civil')) imgSrc = imgCivilEngineering;
-                  else if (t.includes('management') || t.includes('mba')) imgSrc = imgMBA;
-                  else if (t.includes('m.tech') && t.includes('computer science')) imgSrc = imgArtificialIntelligence;
-                  else if (t.includes('master of computer') || t.includes('mca')) imgSrc = imgMCA;
-                  else if (t.includes('math') || t.includes('computational')) imgSrc = imgDataScience;
-                  else if (t.includes('physics') || t.includes('material')) imgSrc = imgElectronicsCommunication;
-                  else if (t.includes('chemistry') || t.includes('environmental')) imgSrc = imgStructuralEngineering;
-                  else if (t.includes('english') || t.includes('humanities') || t.includes('communication')) imgSrc = imgMCA;
-                  else if (t.includes('cse') || t.includes('computer science') || t.includes('software')) imgSrc = imgComputerScience;
-                  
-                  return (
-                    <img 
-                      src={imgSrc} 
-                      alt={title} 
-                      style={{ width: size, height: size, objectFit: 'contain', clipPath: t.includes('mba') || t.includes('management') ? 'inset(18% 0% 25% 0%)' : 'inset(0% 0% 25% 0%)' }}
-                      className="rounded-lg"
-                    />
-                  );
-                };
+                const t = cardTitle.toLowerCase();
+                const duration = program?.duration || (t.includes("m.tech") || t.includes("mca") || t.includes("mba") ? "2 Years" : t.includes("ph.d") ? "3-5 Years" : "4 Years");
+                const level = t.includes("ph.d") ? "Doctoral Program" : (t.includes("m.") || t.includes("mca") || t.includes("mba")) ? "Postgraduate Degree" : "Undergraduate Degree";
 
-                 return (
-                  <motion.div
+                return (
+                  <div
                     key={idx}
-                    className={`group relative bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden h-[340px] shrink-0 ${
-                      structure[activeSchoolTab][currentDepartment]?.length === 4
-                        ? "w-full md:w-[calc(50%-16px)] lg:w-[calc(25%-24px)]"
-                        : "w-full md:w-[calc(50%-16px)] lg:w-[calc(33.333%-22px)]"
-                    }`}
-                    variants={scaleIn}
-                    whileHover="hover"
-                    initial="rest"
+                    className="border-t-2 border-[#072A6C]/30 hover:border-[#072A6C] pt-6 pb-3 flex flex-col justify-between transition-colors duration-300 group"
                   >
-                    {/* Default State (Centered) */}
-                    <div className="absolute inset-0 flex flex-col justify-center items-center p-5 transition-all duration-300 group-hover:-translate-y-8 group-hover:opacity-0 text-center">
-                      <div className="flex items-center justify-center mb-4 transition-transform duration-500 group-hover:scale-[1.06]">
-                        {getIllustrationForProgram(cardTitle, 110)}
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-[#D4AF37] bg-amber-50 px-2.5 py-1 rounded-md">
+                          {level}
+                        </span>
+                        <span className="text-[11px] font-bold text-gray-400">
+                          {duration}
+                        </span>
                       </div>
-                      <h3 className="font-[800] text-[#072A6C] text-[16px] leading-tight max-w-[250px]">
+                      <h3 className="font-[900] text-[#072A6C] text-[18px] md:text-[20px] leading-snug mb-3 group-hover:text-[#0B3D91] transition-colors">
                         {cardTitle}
                       </h3>
-                    </div>
-                    
-                    {/* Hover State (Sliding up) */}
-                    <div className="absolute inset-0 flex flex-col justify-start items-center p-5 opacity-0 translate-y-8 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 bg-white text-center">
-                      <div className="flex items-center justify-center mb-3 transition-transform duration-500 group-hover:scale-[1.06]">
-                        {getIllustrationForProgram(cardTitle, 80)}
-                      </div>
-                      <h3 className="font-[800] text-[#072A6C] text-[15px] mb-2 leading-tight max-w-[250px]">
-                        {cardTitle}
-                      </h3>
-                      <p className="text-[12px] text-gray-500 line-clamp-3 leading-relaxed mb-4">
+                      <p className="text-[13px] text-gray-600 font-normal leading-relaxed line-clamp-3 mb-6">
                         {cardDesc}
                       </p>
-                      
-                      <Link 
-                        to={cardLink}
-                        className="mt-auto bg-[#072A6C] text-white px-6 py-2 rounded-full text-[13px] font-[700] flex items-center gap-2 hover:bg-[#D4AF37] transition-colors shadow-md"
-                      >
-                        Read More <ArrowRight size={14} />
-                      </Link>
                     </div>
-                  </motion.div>
+                    <Link
+                      to={cardLink}
+                      className="inline-flex items-center gap-1.5 text-xs font-black text-[#072A6C] uppercase tracking-wider group-hover:text-[#D4AF37] transition-colors mt-auto"
+                    >
+                      <span>Explore Program &amp; Syllabus</span>
+                      <span className="text-sm font-bold">&rarr;</span>
+                    </Link>
+                  </div>
                 );
-            })}
-          </motion.div>
+              })}
+          </div>
         </div>
       </section>
 
@@ -1581,13 +1520,13 @@ export default function Home() {
         const storiesSubtitle = placementsData.storiesSubtitle || "Real stories from Chalapathi students who achieved successful careers through campus placements.";
         const partnersHeading = placementsData.partnersHeading || "Our Top Corporate Partners";
 
-        const isCorporatePartnersHidden = placementsData.hideCorporatePartners !== undefined
-          ? Boolean(placementsData.hideCorporatePartners)
-          : (placementsContent.hideCorporatePartners !== undefined ? Boolean(placementsContent.hideCorporatePartners) : true);
+        const isCorporatePartnersHidden = (placementsData.hideCorporatePartners === false || placementsContent.hideCorporatePartners === false)
+          ? false
+          : true;
 
-        const isPlacementStatsHidden = placementsData.hidePlacementStats !== undefined
-          ? Boolean(placementsData.hidePlacementStats)
-          : (placementsContent.hidePlacementStats !== undefined ? Boolean(placementsContent.hidePlacementStats) : true);
+        const isPlacementStatsHidden = (placementsData.hidePlacementStats === false || placementsContent.hidePlacementStats === false)
+          ? false
+          : true;
 
         return (
           <section className="bg-white py-10 relative overflow-hidden font-[var(--font-poppins)]">
