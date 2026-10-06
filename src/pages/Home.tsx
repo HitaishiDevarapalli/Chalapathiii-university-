@@ -887,7 +887,7 @@ export default function Home() {
                         className="flex gap-3.5 items-start cursor-pointer group"
                       >
                         {/* Custom Date Badge */}
-                        <div className="w-10 h-10 rounded-xl bg-white/10 text-white text-center flex flex-col items-center justify-center shadow-sm shrink-0 transition-transform group-hover:scale-105 border border-white/5">
+                        <div className="w-10 h-10 rounded-xl bg-white/10 text-white text-center flex flex-col items-center justify-center shadow-sm shrink-0 border border-white/5">
                           <span className="block text-[12px] font-black leading-none">{dateParts.day}</span>
                           <span className="block text-[7px] font-extrabold tracking-wider mt-0.5">{dateParts.month}</span>
                         </div>
@@ -937,7 +937,7 @@ export default function Home() {
                         className="flex gap-3.5 items-start cursor-pointer group"
                       >
                         {/* Custom Date Badge */}
-                        <div className="w-10 h-10 rounded-xl bg-white/10 text-white text-center flex flex-col items-center justify-center shadow-sm shrink-0 transition-transform group-hover:scale-105 border border-white/5">
+                        <div className="w-10 h-10 rounded-xl bg-white/10 text-white text-center flex flex-col items-center justify-center shadow-sm shrink-0 border border-white/5">
                           <span className="block text-[12px] font-black leading-none">{dateParts.day}</span>
                           <span className="block text-[7px] font-extrabold tracking-wider mt-0.5">{dateParts.month}</span>
                         </div>
@@ -1087,7 +1087,7 @@ export default function Home() {
                 </button>
 
                 {/* Center overlay play button */}
-                <div className="absolute inset-0 flex items-center justify-center z-10 group-hover:scale-110 transition-transform">
+                <div className="absolute inset-0 flex items-center justify-center z-10">
                   <div className="w-14 h-14 rounded-full bg-[#072A6C]/90 backdrop-blur-md flex items-center justify-center text-white border border-[#D4AF37]/50 shadow-xl">
                     <Play size={20} fill="currentColor" className="ml-0.5 text-[#D4AF37]" />
                   </div>

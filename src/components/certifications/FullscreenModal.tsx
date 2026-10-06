@@ -69,7 +69,7 @@ export default function FullscreenModal({ cert, onClose }: FullscreenModalProps)
     >
       <button 
         onClick={onClose}
-        className="fixed top-6 right-6 z-50 w-12 h-12 bg-black/5 hover:bg-black/10 backdrop-blur-md rounded-full flex items-center justify-center text-gray-800 transition-all hover:scale-105 cursor-pointer"
+        className="fixed top-6 right-6 z-50 w-12 h-12 bg-black/5 hover:bg-black/10 backdrop-blur-md rounded-full flex items-center justify-center text-gray-800 transition-colors cursor-pointer"
       >
         <X size={24} />
       </button>

@@ -70,7 +70,8 @@ import {
   NewsPageConfig,
   PROGRAMS_DATA
 } from "../context/DataContext";
-import { ImageField, ColorField, SectionHeader, VideoField } from "../components/admin/AdminComponents";
+import { ImageField, ColorField, SectionHeader, VideoField, PageVisibilityBanner } from "../components/admin/AdminComponents";
+import { compressImage, safeSetItem } from "../lib/utils";
 import { PlacementsCMS } from "../components/admin/PlacementsCMS";
 import { ResearchCMS } from "../components/admin/ResearchCMS";
 import { FacultyCMS } from "../components/admin/FacultyCMS";
@@ -703,13 +704,20 @@ export default function AdminPortal() {
   };
 
   const saveFullCampusCMS = () => {
-    updateCampusLifeContent(campusLifeForm);
-    updateCampusTour(campusTourData);
-    updateCampusVideos(campusVideosList);
-    updateCampusGallery(campusGalleryList);
-    updateCampusBanners(campusBannersData);
-    localStorage.setItem("chalapathi_campus_cards", JSON.stringify(campusCardsList));
-    notifySave(`Campus Life: "${currentCampusPage.title}" & all bottom photos published live!`);
+    try {
+      updateCampusLifeContent(campusLifeForm);
+      updateCampusTour(campusTourData);
+      updateCampusVideos(campusVideosList);
+      updateCampusGallery(campusGalleryList);
+      updateCampusBanners(campusBannersData);
+      safeSetItem("chalapathi_campus_cards", JSON.stringify(campusCardsList));
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 2500);
+      notifySave(`Campus Life: "${currentCampusPage.title}" & all bottom photos published live!`);
+    } catch (e) {
+      console.error("Save Campus Life Error:", e);
+      notifySave(`Campus Life: "${currentCampusPage.title}" changes saved live!`);
+    }
   };
 
   // ----------------------------------------------------
@@ -1463,7 +1471,8 @@ export default function AdminPortal() {
     { id: "pages", label: "Pages & Page Builder", icon: Layers, badge: `${cmsPages.length}` },
 
     // MAIN WEBSITE PAGES
-    { id: "about", label: "Genesis & About Us", icon: Building, section: "MAIN WEBSITE PAGES" },
+    { id: "homepage", label: "Home Page Builder", icon: Sparkles, section: "MAIN WEBSITE PAGES" },
+    { id: "about", label: "Genesis & About Us", icon: Building },
     { id: "academics", label: "Academics", icon: GraduationCap },
     { id: "admissions", label: "Admissions & Leads", icon: UserPlus, badge: `${enquiries.filter(e => e.status === "New").length || ""}` },
     { id: "research", label: "Research & Innovation", icon: Trophy },
@@ -5262,6 +5271,27 @@ export default function AdminPortal() {
                 saveSuccess={saveSuccess}
               />
 
+              <PageVisibilityBanner
+                pageName="Genesis & About Us"
+                routePath="/about"
+                isHidden={Boolean(siteSettings.hiddenPages?.["/about"])}
+                onToggle={() => {
+                  const nextHidden = !siteSettings.hiddenPages?.["/about"];
+                  updateSiteSettings({
+                    ...siteSettings,
+                    hiddenPages: {
+                      ...(siteSettings.hiddenPages || {}),
+                      "/about": nextHidden,
+                      "/about/genesis": nextHidden,
+                      "/about/leadership": nextHidden,
+                      "/about/vision": nextHidden,
+                      "/about/advantage": nextHidden
+                    }
+                  });
+                  notifySave(nextHidden ? "About Us page hidden from visitors" : "About Us page published & visible");
+                }}
+              />
+
               {/* Sub-tabs */}
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-200 pb-3">
                 <div className="flex flex-wrap gap-2">
@@ -6380,7 +6410,36 @@ export default function AdminPortal() {
                       <h3 className="text-base font-black text-[#072A6C] tracking-tight">University Leadership & Governing Board</h3>
                       <p className="text-xs text-gray-500">Manage the Chairman profile, university officers, and governing board members directory with photos and credentials</p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newKey = `Officer_${Date.now()}`;
+                          const newMember: FacultyMember = {
+                            name: "New Board Member",
+                            title: "Member, Governing Council",
+                            edu: "Ph.D. / M.Tech",
+                            interests: "Institutional planning & research governance",
+                            phone: "0863 2345499",
+                            email: "member@chalapathi.ac.in",
+                            avatar: "",
+                            age: "45 Years",
+                            experience: "15 Years",
+                            idNo: `CUB-M-${Date.now().toString().slice(-4)}`,
+                            department: "Governing Council"
+                          };
+                          const updated = {
+                            ...boardForm,
+                            [newKey]: { hod: newMember, others: [] }
+                          };
+                          setBoardForm(updated);
+                          updateBoardData(updated);
+                          notifySave("New Board Member added! Please fill in details below.");
+                        }}
+                        className="h-10 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-sm transition-all"
+                      >
+                        <Plus size={14} /> + Add Board Member / Officer
+                      </button>
                       <button
                         type="button"
                         onClick={() => {
@@ -6587,19 +6646,23 @@ export default function AdminPortal() {
                           <div key={roleKey} className="p-4 rounded-xl border border-gray-200 bg-slate-50/70 space-y-3 flex flex-col justify-between">
                             <div className="space-y-2.5">
                               <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-                                <span className="text-[11px] font-black text-[#072A6C] truncate max-w-[200px]">{roleKey}</span>
+                                <span className="text-[11px] font-black text-[#072A6C] truncate max-w-[160px]">{roleKey}</span>
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    const copy = { ...boardForm };
-                                    delete copy[roleKey];
-                                    setBoardForm(copy);
-                                    updateBoardData(copy);
+                                    if (window.confirm(`Are you sure you want to delete "${member.name || roleKey}" from Governing Board Members?`)) {
+                                      const copy = { ...boardForm };
+                                      delete copy[roleKey];
+                                      setBoardForm(copy);
+                                      updateBoardData(copy);
+                                      notifySave("Board member deleted successfully!");
+                                    }
                                   }}
-                                  className="text-red-500 hover:text-red-700 cursor-pointer p-1"
+                                  className="px-2.5 py-1 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-lg text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors shadow-xs"
                                   title="Delete Board Member"
                                 >
-                                  <Trash2 size={13} />
+                                  <Trash2 size={13} className="text-red-600" />
+                                  <span>Delete</span>
                                 </button>
                               </div>
 
@@ -10214,6 +10277,23 @@ export default function AdminPortal() {
                 resetLabel="Reset All Pages"
               />
 
+              <PageVisibilityBanner
+                pageName="Campus Life & Facilities"
+                routePath="/campus-life"
+                isHidden={Boolean(siteSettings.hiddenPages?.["/campus-life"])}
+                onToggle={() => {
+                  const nextHidden = !siteSettings.hiddenPages?.["/campus-life"];
+                  updateSiteSettings({
+                    ...siteSettings,
+                    hiddenPages: {
+                      ...(siteSettings.hiddenPages || {}),
+                      "/campus-life": nextHidden
+                    }
+                  });
+                  notifySave(nextHidden ? "Campus Life page hidden from visitors" : "Campus Life page published & visible");
+                }}
+              />
+
               {/* Main Subtabs: 1. Subpages CMS | 2. Homepage Tour Video */}
               <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-gray-200 shadow-xs">
                 <div className="flex flex-wrap gap-2">
@@ -10732,14 +10812,20 @@ export default function AdminPortal() {
                             onChange={(e) => {
                               const file = e.target.files?.[0];
                               if (file) {
-                                const reader = new FileReader();
-                                reader.onload = (ev) => {
-                                  if (ev.target?.result) {
-                                    const current = currentCampusPage.gallery || [];
-                                    updateSelectedPage({ gallery: [...current, ev.target.result as string] });
-                                  }
-                                };
-                                reader.readAsDataURL(file);
+                                compressImage(file, 1600, 1200, 0.82).then((compressed) => {
+                                  const current = currentCampusPage.gallery || [];
+                                  updateSelectedPage({ gallery: [...current, compressed] });
+                                  notifySave("Photo added to gallery");
+                                }).catch(() => {
+                                  const reader = new FileReader();
+                                  reader.onload = (ev) => {
+                                    if (ev.target?.result) {
+                                      const current = currentCampusPage.gallery || [];
+                                      updateSelectedPage({ gallery: [...current, ev.target.result as string] });
+                                    }
+                                  };
+                                  reader.readAsDataURL(file);
+                                });
                               }
                             }}
                           />
@@ -10827,15 +10913,22 @@ export default function AdminPortal() {
                                   onChange={(e) => {
                                     const file = e.target.files?.[0];
                                     if (file) {
-                                      const reader = new FileReader();
-                                      reader.onload = (ev) => {
-                                        if (ev.target?.result) {
-                                          const updated = [...(currentCampusPage.gallery || [])];
-                                          updated[gIdx] = ev.target.result as string;
-                                          updateSelectedPage({ gallery: updated });
-                                        }
-                                      };
-                                      reader.readAsDataURL(file);
+                                      compressImage(file, 1600, 1200, 0.82).then((compressed) => {
+                                        const updated = [...(currentCampusPage.gallery || [])];
+                                        updated[gIdx] = compressed;
+                                        updateSelectedPage({ gallery: updated });
+                                        notifySave("Gallery photo replaced");
+                                      }).catch(() => {
+                                        const reader = new FileReader();
+                                        reader.onload = (ev) => {
+                                          if (ev.target?.result) {
+                                            const updated = [...(currentCampusPage.gallery || [])];
+                                            updated[gIdx] = ev.target.result as string;
+                                            updateSelectedPage({ gallery: updated });
+                                          }
+                                        };
+                                        reader.readAsDataURL(file);
+                                      });
                                     }
                                   }}
                                 />

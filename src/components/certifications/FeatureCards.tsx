@@ -34,7 +34,7 @@ export default function FeatureCards({ features, color }: FeatureProps) {
             className="bg-white border border-gray-100 rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all flex flex-col items-start gap-4 group"
           >
             <div 
-              className="w-14 h-14 rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110"
+              className="w-14 h-14 rounded-2xl flex items-center justify-center"
               style={{ backgroundColor: `${color}15`, color: color }}
             >
               {iconMap[feature.icon] || <Zap size={24} />}

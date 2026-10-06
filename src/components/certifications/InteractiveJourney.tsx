@@ -39,7 +39,7 @@ export default function InteractiveJourney({ timeline, color }: JourneyProps) {
             >
               {/* Node Circle */}
               <div 
-                className="w-12 h-12 rounded-full border-4 border-white flex items-center justify-center text-white font-bold text-sm shadow-md mb-6 transition-transform duration-300 group-hover:scale-110"
+                className="w-12 h-12 rounded-full border-4 border-white flex items-center justify-center text-white font-bold text-sm shadow-md mb-6"
                 style={{ backgroundColor: color }}
               >
                 {index + 1}

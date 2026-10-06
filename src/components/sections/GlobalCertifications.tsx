@@ -86,24 +86,23 @@ export default function GlobalCertifications() {
 
               <motion.div
                 key={cert.name}
-                initial={{ opacity: 0, y: 40 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-20px" }}
-                transition={{ type: "spring", stiffness: 100, damping: 20, delay: (index % 4) * 0.1 }}
-                whileHover={{ y: -10, scale: 1.02 }}
-                className="group flex flex-col bg-white border border-gray-200 rounded-[4px] shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_30px_rgba(0,0,0,0.15)] transition-all duration-400 relative pt-3 overflow-hidden cursor-pointer"
+                transition={{ duration: 0.4, delay: (index % 4) * 0.05 }}
+                className="group flex flex-col bg-white border border-gray-200 rounded-[8px] shadow-sm hover:border-[#072A6C]/40 hover:shadow-md transition-all duration-300 relative pt-3 overflow-hidden"
               >
-                {/* Top Folder Tab Decoration - expands slightly on hover */}
-                <div className="absolute top-0 left-0 right-0 h-3 bg-[#7b8c9e]/80 group-hover:h-4 transition-all duration-300"></div>
+                {/* Top Folder Tab Decoration */}
+                <div className="absolute top-0 left-0 right-0 h-2.5 bg-[#072A6C]/80"></div>
                 
-                {/* Rectangular Logo Badge (Supports multiple logos now) */}
-                <div className="absolute top-4 right-4 h-12 min-w-[60px] max-w-[160px] bg-white rounded-md flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(0,0,0,0.1)] px-3 py-1 z-10 group-hover:scale-105 group-hover:-translate-y-1 transition-all duration-500 border border-gray-100">
+                {/* Rectangular Logo Badge */}
+                <div className="absolute top-4 right-4 h-12 min-w-[60px] max-w-[160px] bg-white rounded-md flex items-center justify-center gap-2 shadow-sm px-3 py-1 z-10 border border-gray-150">
                   {cert.images.map((img, idx) => (
                     <img 
                       key={idx}
                       src={img} 
                       alt={`${cert.name} logo ${idx + 1}`} 
-                      className={`${cert.images.length > 1 ? 'h-6 max-w-[60px]' : 'h-8 max-w-[100px]'} w-auto object-contain transition-transform duration-500`}
+                      className={`${cert.images.length > 1 ? 'h-6 max-w-[60px]' : 'h-8 max-w-[100px]'} w-auto object-contain`}
                     />
                   ))}
                 </div>
@@ -122,11 +121,10 @@ export default function GlobalCertifications() {
                   <p className="text-sm text-gray-600 leading-relaxed mb-4 flex-grow">
                     {cert.description.length > 80 ? cert.description.slice(0, 80) + '...' : cert.description}
                   </p>
-                  
 
                   <button 
                     onClick={() => setSelectedCert(cert)}
-                    className="w-full py-3 bg-[#425974] group-hover:bg-[#072A6C] text-white text-[13px] font-semibold rounded-[4px] transition-colors duration-300 mt-auto transform group-hover:-translate-y-1 block text-center cursor-pointer"
+                    className="w-full py-3 bg-[#425974] hover:bg-[#072A6C] text-white text-[13px] font-semibold rounded-[4px] transition-colors duration-200 mt-auto block text-center cursor-pointer outline-none"
                   >
                     Read More
                   </button>

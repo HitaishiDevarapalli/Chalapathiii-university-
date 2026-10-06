@@ -97,7 +97,7 @@ export default function HeroSection({ cert }: HeroSectionProps) {
                   key={i} 
                   src={img} 
                   alt={`${cert.name} Logo ${i+1}`} 
-                  className="h-20 w-auto max-w-[160px] object-contain drop-shadow-md transition-transform duration-700 group-hover:scale-110" 
+                  className="h-20 w-auto max-w-[160px] object-contain drop-shadow-md" 
                 />
               ))}
             </div>

@@ -23,7 +23,7 @@ import {
   INITIAL_ENQUIRIES,
   DEFAULT_HOMEPAGE_SECTIONS
 } from "../../context/DataContext";
-import { SectionHeader, ImageField, ColorField } from "./AdminComponents";
+import { SectionHeader, ImageField, ColorField, PageVisibilityBanner } from "./AdminComponents";
 import { ApplyOnlineCMS } from "./ApplyOnlineCMS";
 
 export interface AdmissionsCMSProps {
@@ -234,8 +234,38 @@ export const AdmissionsCMS: React.FC<AdmissionsCMSProps> = ({ notifySave }) => {
   const currentStep = formData.portal.steps[activeStepIdx] || formData.portal.steps[0];
   const popupConfig = formData.enquiryPopup || DEFAULT_ADMISSIONS_CONTENT.enquiryPopup;
 
+  const { siteSettings, updateSiteSettings } = useData();
+  const isAdmissionsHidden = !!(siteSettings?.hiddenPages?.["/admissions"] || siteSettings?.hiddenPages?.["Admissions"]);
+  const toggleAdmissionsVisibility = () => {
+    const nextHidden = !isAdmissionsHidden;
+    const currentHiddenPages = { ...(siteSettings?.hiddenPages || {}) };
+    if (nextHidden) {
+      currentHiddenPages["/admissions"] = true;
+      currentHiddenPages["Admissions"] = true;
+      currentHiddenPages["admissions"] = true;
+    } else {
+      delete currentHiddenPages["/admissions"];
+      delete currentHiddenPages["Admissions"];
+      delete currentHiddenPages["admissions"];
+    }
+    updateSiteSettings({
+      ...(siteSettings || {}),
+      universityName: siteSettings?.universityName || "Chalapathi University",
+      hiddenPages: currentHiddenPages
+    });
+    notifySave(nextHidden ? "Admissions page hidden from website!" : "Admissions page visible on website!");
+  };
+
   return (
     <div className="space-y-6 animate-fade-in text-left">
+      {/* 🌟 STANDARDIZED PAGE VISIBILITY HIDE / SHOW BANNER */}
+      <PageVisibilityBanner
+        pageName="Admissions & Enrollment"
+        routePath="/admissions"
+        isHidden={isAdmissionsHidden}
+        onToggle={toggleAdmissionsVisibility}
+      />
+
       <SectionHeader
         title="Admissions & Enrollment CMS"
         subtitle="Manage admissions portal, interactive 5-step process, fee structure charts, merit scholarships, admission enquiry popup modal, and student leads"

@@ -32,7 +32,7 @@ export default function ProjectCards({ projects, color }: ProjectsProps) {
               style={{ backgroundColor: `${color}10` }}
             >
               <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
-              <FolderGit2 size={48} style={{ color: color }} className="relative z-10 transition-transform duration-500 group-hover:scale-110" />
+              <FolderGit2 size={48} style={{ color: color }} className="relative z-10" />
             </div>
 
             <div className="p-6 flex flex-col flex-grow bg-white">

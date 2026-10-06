@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Certification, GlobalCertificationsPageConfig } from "../../data/certifications";
 import { useData } from "../../context/DataContext";
 import FullscreenModal from "../certifications/FullscreenModal";
+import { PageVisibilityBanner } from "./AdminComponents";
 
 interface CertificationsCMSProps {
   notifySave?: (msg?: string) => void;
@@ -20,7 +21,9 @@ export const CertificationsCMS: React.FC<CertificationsCMSProps> = ({ notifySave
     certificationsData, 
     updateCertificationsData,
     certificationsPageConfig,
-    updateCertificationsPageConfig
+    updateCertificationsPageConfig,
+    siteSettings,
+    updateSiteSettings
   } = useData();
 
   const [activeSubTab, setActiveSubTab] = useState<"certs" | "header" | "worldStage">("certs");
@@ -30,8 +33,9 @@ export const CertificationsCMS: React.FC<CertificationsCMSProps> = ({ notifySave
   const [editingCert, setEditingCert] = useState<Certification | null>(null);
   const [isCreatingNew, setIsCreatingNew] = useState(false);
   const [editorSectionTab, setEditorSectionTab] = useState<
-    "overview" | "journey" | "features" | "skills" | "industries" | "roadmap" | "projectsStats"
+    "overview" | "journey" | "features" | "skills" | "industries" | "roadmap" | "companies" | "projects" | "stats" | "process"
   >("overview");
+  const [newCompanyInput, setNewCompanyInput] = useState("");
   
   // Live Preview Modal Toggle
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -199,7 +203,10 @@ export const CertificationsCMS: React.FC<CertificationsCMSProps> = ({ notifySave
             { id: "skills", label: `4. Technical Arsenal (${editingCert.skills?.length || 0} Skills)`, icon: Sparkles },
             { id: "industries", label: `5. Industry Applications (${editingCert.industries?.length || 0})`, icon: Building2 },
             { id: "roadmap", label: `6. Career Progression (${editingCert.roadmap?.length || 0} Stages)`, icon: TrendingUp },
-            { id: "projectsStats", label: "7. Capstone Projects & Global Stats", icon: Globe },
+            { id: "companies", label: `7. Companies Hiring (${editingCert.companies?.length || 0} Partners)`, icon: Briefcase },
+            { id: "projects", label: `8. Student Projects (${editingCert.projects?.length || 0} Labs)`, icon: Code },
+            { id: "stats", label: "9. Global Impact & Stats (3 Metrics)", icon: Globe },
+            { id: "process", label: "10. Certification Process (Path to Success)", icon: CheckCircle2 },
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = editorSectionTab === tab.id;
@@ -768,27 +775,340 @@ export const CertificationsCMS: React.FC<CertificationsCMSProps> = ({ notifySave
         )}
 
         {/* ═══════════════════════════════════════════════════════════════ */}
-        {/* SECTION 7: CAPSTONE PROJECTS & GLOBAL STATS                    */}
+        {/* SECTION 7: COMPANIES HIRING (HIRING PARTNERS)                  */}
         {/* ═══════════════════════════════════════════════════════════════ */}
-        {editorSectionTab === "projectsStats" && (
+        {editorSectionTab === "companies" && (
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+            <div className="pb-3 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 className="text-sm font-black text-[#072A6C] uppercase tracking-wider flex items-center gap-2">
+                  <Briefcase size={16} className="text-[#072A6C]" />
+                  Companies Hiring — Top Recruiting Partners
+                </h3>
+                <p className="text-xs text-gray-500">
+                  Manage multinational employers and tech giants actively recruiting candidates certified in {editingCert.name}.
+                </p>
+              </div>
+              <span className="px-2.5 py-1 bg-blue-50 text-[#072A6C] rounded-lg text-xs font-bold shrink-0">
+                {editingCert.companies?.length || 0} Companies Added
+              </span>
+            </div>
+
+            {/* Live Marquee Preview Box */}
+            <div className="bg-gradient-to-r from-slate-50 via-blue-50/40 to-slate-50 p-5 rounded-2xl border border-gray-200 text-center space-y-2">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#072A6C]">
+                LIVE WEBSITE PREVIEW: COMPANIES HIRING
+              </span>
+              <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
+                {(editingCert.companies || []).length > 0 ? (
+                  editingCert.companies.map((company, cIdx) => (
+                    <span
+                      key={cIdx}
+                      className="text-base sm:text-lg font-black tracking-wide text-slate-800 px-3 py-1 bg-white rounded-xl shadow-xs border border-gray-100"
+                    >
+                      {company}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-xs font-medium text-gray-400 italic">
+                    No companies added yet. Add companies below to display on the live page marquee.
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Quick Add Company Input & Tag Chips */}
+            <div className="space-y-4">
+              <label className="font-bold text-gray-700 block text-xs">
+                Active Hiring Partners List:
+              </label>
+
+              {/* Tag Badges with Delete */}
+              <div className="flex flex-wrap gap-2 min-h-[44px] p-3 bg-slate-50 rounded-xl border border-gray-200 items-center">
+                {(editingCert.companies || []).map((company, cIdx) => (
+                  <span
+                    key={cIdx}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 text-slate-800 text-xs font-bold rounded-lg shadow-xs"
+                  >
+                    <span>{company}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = editingCert.companies.filter((_, i) => i !== cIdx);
+                        setEditingCert({ ...editingCert, companies: updated });
+                      }}
+                      className="text-gray-400 hover:text-red-600 rounded cursor-pointer transition-colors"
+                      title={`Remove ${company}`}
+                    >
+                      <X size={13} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+
+              {/* Add New Company Input */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newCompanyInput}
+                  onChange={(e) => setNewCompanyInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && newCompanyInput.trim()) {
+                      e.preventDefault();
+                      const val = newCompanyInput.trim();
+                      if (!editingCert.companies.includes(val)) {
+                        setEditingCert({
+                          ...editingCert,
+                          companies: [...(editingCert.companies || []), val]
+                        });
+                      }
+                      setNewCompanyInput("");
+                    }
+                  }}
+                  placeholder="Enter company name (e.g. IBM, Deloitte, Amazon) and press Add or Enter..."
+                  className="flex-1 h-9 px-3 bg-white border border-gray-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-[#072A6C]"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (newCompanyInput.trim()) {
+                      const val = newCompanyInput.trim();
+                      if (!editingCert.companies.includes(val)) {
+                        setEditingCert({
+                          ...editingCert,
+                          companies: [...(editingCert.companies || []), val]
+                        });
+                      }
+                      setNewCompanyInput("");
+                    }
+                  }}
+                  className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <Plus size={14} /> Add Company
+                </button>
+              </div>
+
+              {/* Quick Presets */}
+              <div className="space-y-1.5 pt-1">
+                <span className="text-[10.5px] font-bold text-gray-500 uppercase tracking-wider">
+                  Quick Add Popular Tech Leaders:
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    "IBM", "Deloitte", "Capgemini", "Amazon", "Google", 
+                    "Microsoft", "TCS", "Infosys", "Accenture", "Cisco", 
+                    "Oracle", "Wipro", "Cognizant", "SAP", "ServiceNow"
+                  ].map((preset) => {
+                    const isAdded = (editingCert.companies || []).includes(preset);
+                    return (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => {
+                          if (isAdded) {
+                            setEditingCert({
+                              ...editingCert,
+                              companies: editingCert.companies.filter(c => c !== preset)
+                            });
+                          } else {
+                            setEditingCert({
+                              ...editingCert,
+                              companies: [...(editingCert.companies || []), preset]
+                            });
+                          }
+                        }}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
+                          isAdded 
+                            ? "bg-emerald-50 text-emerald-800 border-emerald-300 shadow-xs" 
+                            : "bg-white text-gray-700 hover:bg-gray-100 border-gray-200"
+                        }`}
+                      >
+                        {isAdded ? `✓ ${preset}` : `+ ${preset}`}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Bulk Text Area */}
+              <div className="pt-2">
+                <label className="font-bold text-gray-700 block mb-1 text-xs">
+                  Bulk Comma-Separated Input:
+                </label>
+                <textarea
+                  rows={2}
+                  value={(editingCert.companies || []).join(", ")}
+                  onChange={(e) => setEditingCert({
+                    ...editingCert,
+                    companies: e.target.value.split(",").map(s => s.trim()).filter(Boolean)
+                  })}
+                  className="w-full p-3 border border-gray-200 rounded-xl text-xs bg-slate-50 focus:bg-white transition-colors"
+                  placeholder="IBM, Deloitte, Capgemini, Amazon, Google, Microsoft, TCS..."
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {/* SECTION 8: STUDENT PROJECTS (HANDS-ON EXPERIENCE)              */}
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {editorSectionTab === "projects" && (
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+            <div className="pb-3 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 className="text-sm font-black text-[#072A6C] uppercase tracking-wider flex items-center gap-2">
+                  <Code size={16} className="text-[#072A6C]" />
+                  Student Projects — Hands-on Experience
+                </h3>
+                <p className="text-xs text-gray-500">
+                  Practical capstone projects and lab scenarios built by students to demonstrate mastery in {editingCert.name}.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const pj = [
+                    ...(editingCert.projects || []),
+                    { name: "New Real-World Capstone Project", duration: "3 Weeks", difficulty: "Medium" }
+                  ];
+                  setEditingCert({ ...editingCert, projects: pj });
+                }}
+                className="h-9 px-3.5 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors shrink-0"
+              >
+                <Plus size={14} /> Add Capstone Project
+              </button>
+            </div>
+
+            {/* Project Cards Grid */}
+            <div className="space-y-3">
+              {(editingCert.projects || []).map((proj, pIdx) => (
+                <div 
+                  key={pIdx} 
+                  className="p-4 rounded-xl border border-gray-200 bg-slate-50/60 hover:bg-slate-50 transition-all space-y-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-[#072A6C] uppercase tracking-wider flex items-center gap-1.5">
+                      <span className="w-5 h-5 rounded-full bg-[#072A6C] text-white text-[10px] flex items-center justify-center font-bold">
+                        {pIdx + 1}
+                      </span>
+                      Project Card {pIdx + 1}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = editingCert.projects.filter((_, i) => i !== pIdx);
+                        setEditingCert({ ...editingCert, projects: updated });
+                      }}
+                      className="px-2.5 py-1 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-lg text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                      title="Delete Project"
+                    >
+                      <Trash2 size={13} />
+                      <span>Delete</span>
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-3 text-xs">
+                    <div className="md:col-span-6 space-y-1">
+                      <label className="font-bold text-gray-600 block text-[10.5px] uppercase">
+                        Project Name / Title:
+                      </label>
+                      <input
+                        type="text"
+                        value={proj.name}
+                        onChange={(e) => {
+                          const updated = [...editingCert.projects];
+                          updated[pIdx].name = e.target.value;
+                          setEditingCert({ ...editingCert, projects: updated });
+                        }}
+                        className="w-full h-9 px-3 bg-white border border-gray-200 rounded-xl font-bold text-[#072A6C] text-xs"
+                        placeholder="e.g. Enterprise Dashboard, Cloud Infrastructure Setup"
+                      />
+                    </div>
+
+                    <div className="md:col-span-3 space-y-1">
+                      <label className="font-bold text-gray-600 block text-[10.5px] uppercase">
+                        Duration:
+                      </label>
+                      <input
+                        type="text"
+                        value={proj.duration}
+                        onChange={(e) => {
+                          const updated = [...editingCert.projects];
+                          updated[pIdx].duration = e.target.value;
+                          setEditingCert({ ...editingCert, projects: updated });
+                        }}
+                        className="w-full h-9 px-3 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-gray-700"
+                        placeholder="e.g. 4 Weeks, 3 Weeks"
+                      />
+                    </div>
+
+                    <div className="md:col-span-3 space-y-1">
+                      <label className="font-bold text-gray-600 block text-[10.5px] uppercase">
+                        Difficulty Level:
+                      </label>
+                      <select
+                        value={proj.difficulty}
+                        onChange={(e) => {
+                          const updated = [...editingCert.projects];
+                          updated[pIdx].difficulty = e.target.value;
+                          setEditingCert({ ...editingCert, projects: updated });
+                        }}
+                        className="w-full h-9 px-3 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-700 cursor-pointer"
+                      >
+                        <option value="Easy">Easy</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Hard">Hard</option>
+                        <option value="Advanced">Advanced</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              <button
+                type="button"
+                onClick={() => {
+                  const pj = [
+                    ...(editingCert.projects || []),
+                    { name: "New Real-World Capstone Project", duration: "3 Weeks", difficulty: "Medium" }
+                  ];
+                  setEditingCert({ ...editingCert, projects: pj });
+                }}
+                className="w-full py-2.5 border-2 border-dashed border-gray-300 hover:border-[#072A6C] rounded-xl text-xs font-bold text-[#072A6C] flex items-center justify-center gap-1.5 transition-colors cursor-pointer bg-slate-50/50 hover:bg-slate-50"
+              >
+                <Plus size={14} /> Add Another Project Card
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {/* SECTION 9: GLOBAL IMPACT & STATS (THE POWER OF THE CREDENTIAL) */}
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {editorSectionTab === "stats" && (
           <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
             <div className="pb-3 border-b border-gray-100">
-              <h3 className="text-sm font-black text-[#072A6C] uppercase tracking-wider">
-                Capstone Projects, Hiring Companies & Global Impact
+              <h3 className="text-sm font-black text-[#072A6C] uppercase tracking-wider flex items-center gap-2">
+                <Globe size={16} className="text-[#072A6C]" />
+                Global Impact — The Power of the Credential
               </h3>
               <p className="text-xs text-gray-500">
-                Hands-on practical projects, marquee companies hiring for this skill, and global demand metrics.
+                Key demand metrics displayed across 3 highlight cards showing global recognition, active hiring, and annual market growth.
               </p>
             </div>
 
-            {/* Global Recognition Stats */}
-            <div className="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-4">
-              <h4 className="font-black text-[#072A6C] text-xs uppercase tracking-wider">
-                Global Impact Metrics
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-                <div>
-                  <label className="font-bold text-gray-600 block mb-1">Countries Count:</label>
+            {/* 3 Metric Cards matching live design */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {/* Stat 1: Countries */}
+              <div className="p-5 rounded-2xl bg-gradient-to-br from-blue-50/70 to-white border border-blue-200 shadow-xs space-y-3 text-center">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#072A6C]">
+                  Metric 1: Countries Adoption
+                </span>
+                <div className="space-y-1">
+                  <label className="text-[10.5px] font-bold text-gray-500 uppercase block text-left">
+                    Countries Count (Number):
+                  </label>
                   <input
                     type="number"
                     value={editingCert.stats?.countries || 140}
@@ -796,11 +1116,24 @@ export const CertificationsCMS: React.FC<CertificationsCMSProps> = ({ notifySave
                       ...editingCert,
                       stats: { ...editingCert.stats, countries: parseInt(e.target.value) || 0 }
                     })}
-                    className="w-full h-9 px-3 bg-white border border-gray-200 rounded-xl font-bold"
+                    className="w-full h-10 px-3 bg-white border border-gray-200 rounded-xl text-center text-lg font-black text-sky-500"
+                    placeholder="140"
                   />
                 </div>
-                <div>
-                  <label className="font-bold text-gray-600 block mb-1">Jobs Open (e.g. 500K+):</label>
+                <div className="text-[11px] font-black tracking-wider text-gray-500 uppercase">
+                  COUNTRIES USING IT
+                </div>
+              </div>
+
+              {/* Stat 2: Jobs Available */}
+              <div className="p-5 rounded-2xl bg-gradient-to-br from-blue-50/70 to-white border border-blue-200 shadow-xs space-y-3 text-center">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#072A6C]">
+                  Metric 2: Employment Opportunities
+                </span>
+                <div className="space-y-1">
+                  <label className="text-[10.5px] font-bold text-gray-500 uppercase block text-left">
+                    Jobs Count (Text):
+                  </label>
                   <input
                     type="text"
                     value={editingCert.stats?.jobs || "500K+"}
@@ -808,11 +1141,24 @@ export const CertificationsCMS: React.FC<CertificationsCMSProps> = ({ notifySave
                       ...editingCert,
                       stats: { ...editingCert.stats, jobs: e.target.value }
                     })}
-                    className="w-full h-9 px-3 bg-white border border-gray-200 rounded-xl font-bold"
+                    className="w-full h-10 px-3 bg-white border border-gray-200 rounded-xl text-center text-lg font-black text-sky-500"
+                    placeholder="500K+"
                   />
                 </div>
-                <div>
-                  <label className="font-bold text-gray-600 block mb-1">Demand Growth (e.g. Growing 25% YoY):</label>
+                <div className="text-[11px] font-black tracking-wider text-gray-500 uppercase">
+                  JOBS AVAILABLE
+                </div>
+              </div>
+
+              {/* Stat 3: Demand Growth */}
+              <div className="p-5 rounded-2xl bg-gradient-to-br from-blue-50/70 to-white border border-blue-200 shadow-xs space-y-3 text-center">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#072A6C]">
+                  Metric 3: Market Demand
+                </span>
+                <div className="space-y-1">
+                  <label className="text-[10.5px] font-bold text-gray-500 uppercase block text-left">
+                    Demand Growth (Text):
+                  </label>
                   <input
                     type="text"
                     value={editingCert.stats?.demand || "Growing 25% YoY"}
@@ -820,94 +1166,76 @@ export const CertificationsCMS: React.FC<CertificationsCMSProps> = ({ notifySave
                       ...editingCert,
                       stats: { ...editingCert.stats, demand: e.target.value }
                     })}
-                    className="w-full h-9 px-3 bg-white border border-gray-200 rounded-xl font-bold"
+                    className="w-full h-10 px-3 bg-white border border-gray-200 rounded-xl text-center text-lg font-black text-sky-500"
+                    placeholder="Growing 25% YoY"
                   />
+                </div>
+                <div className="text-[11px] font-black tracking-wider text-gray-500 uppercase">
+                  MARKET DEMAND
                 </div>
               </div>
             </div>
+          </div>
+        )}
 
-            {/* Top Hiring Companies */}
-            <div>
-              <label className="font-bold text-gray-700 block mb-1 text-xs">
-                Top Hiring Companies (Comma-separated):
-              </label>
-              <textarea
-                rows={2}
-                value={(editingCert.companies || []).join(", ")}
-                onChange={(e) => setEditingCert({
-                  ...editingCert,
-                  companies: e.target.value.split(",").map(s => s.trim()).filter(Boolean)
-                })}
-                className="w-full p-3 border border-gray-200 rounded-xl text-xs"
-                placeholder="Amazon, Google, Microsoft, TCS, Infosys, Deloitte, Wipro..."
-              />
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {/* SECTION 10: CERTIFICATION PROCESS (YOUR PATH TO SUCCESS)       */}
+        {/* ═══════════════════════════════════════════════════════════════ */}
+        {editorSectionTab === "process" && (
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+            <div className="pb-3 border-b border-gray-100">
+              <h3 className="text-sm font-black text-[#072A6C] uppercase tracking-wider flex items-center gap-2">
+                <CheckCircle2 size={16} className="text-[#072A6C]" />
+                Certification Process — Your Path to Success
+              </h3>
+              <p className="text-xs text-gray-500">
+                The standardized 7-step student roadmap rendered at the bottom of the certification detail modal.
+              </p>
             </div>
 
-            {/* Capstone Projects */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <label className="font-bold text-gray-700 text-xs">Hands-on Capstone Projects:</label>
-                <button
-                  onClick={() => {
-                    const pj = [
-                      ...(editingCert.projects || []),
-                      { name: "New Real-World Capstone Project", duration: "3 Weeks", difficulty: "Medium" }
-                    ];
-                    setEditingCert({ ...editingCert, projects: pj });
-                  }}
-                  className="h-7 px-3 bg-blue-50 text-[#072A6C] text-[11px] font-bold rounded-lg flex items-center gap-1"
-                >
-                  <Plus size={12} /> Add Capstone Project
-                </button>
+            {/* 7-Step Interactive Flow Preview */}
+            <div className="p-6 rounded-2xl bg-slate-50 border border-gray-200 space-y-5">
+              <div className="text-center">
+                <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 mb-1">
+                  CERTIFICATION PROCESS
+                </h4>
+                <h3 className="text-2xl font-black text-gray-900">
+                  Your Path to Success
+                </h3>
               </div>
 
-              <div className="space-y-2">
-                {editingCert.projects.map((proj, pIdx) => (
-                  <div key={pIdx} className="flex gap-2 items-center bg-gray-50 p-2.5 rounded-xl border border-gray-200">
-                    <input
-                      type="text"
-                      value={proj.name}
-                      onChange={(e) => {
-                        const updated = [...editingCert.projects];
-                        updated[pIdx].name = e.target.value;
-                        setEditingCert({ ...editingCert, projects: updated });
-                      }}
-                      className="flex-1 h-8 px-2.5 bg-white border border-gray-200 rounded-lg font-bold text-xs"
-                      placeholder="Project Name"
-                    />
-                    <input
-                      type="text"
-                      value={proj.duration}
-                      onChange={(e) => {
-                        const updated = [...editingCert.projects];
-                        updated[pIdx].duration = e.target.value;
-                        setEditingCert({ ...editingCert, projects: updated });
-                      }}
-                      className="w-24 h-8 px-2.5 bg-white border border-gray-200 rounded-lg text-center text-xs"
-                      placeholder="4 Weeks"
-                    />
-                    <input
-                      type="text"
-                      value={proj.difficulty}
-                      onChange={(e) => {
-                        const updated = [...editingCert.projects];
-                        updated[pIdx].difficulty = e.target.value;
-                        setEditingCert({ ...editingCert, projects: updated });
-                      }}
-                      className="w-24 h-8 px-2.5 bg-white border border-gray-200 rounded-lg text-center text-xs"
-                      placeholder="Hard"
-                    />
-                    <button
-                      onClick={() => {
-                        const updated = editingCert.projects.filter((_, i) => i !== pIdx);
-                        setEditingCert({ ...editingCert, projects: updated });
-                      }}
-                      className="p-1.5 text-gray-400 hover:text-red-600 rounded"
+              <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                {[
+                  "Enroll in Course",
+                  "Master Concepts",
+                  "Hands-on Labs",
+                  "Capstone Project",
+                  "Mock Evaluation",
+                  "Global Exam",
+                  "Certified!"
+                ].map((step, idx, arr) => (
+                  <React.Fragment key={idx}>
+                    <div
+                      className="px-4 py-3 bg-white border border-gray-200 shadow-xs rounded-xl text-center font-bold text-xs text-gray-800 flex items-center gap-2"
+                      style={{ borderBottom: `4px solid ${editingCert.color || "#072A6C"}` }}
                     >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
+                      <span
+                        className="w-5 h-5 rounded-full text-white text-[10px] font-bold flex items-center justify-center"
+                        style={{ backgroundColor: editingCert.color || "#072A6C" }}
+                      >
+                        {idx + 1}
+                      </span>
+                      <span>{step}</span>
+                    </div>
+                    {idx < arr.length - 1 && (
+                      <span className="text-gray-300 font-black text-sm">➔</span>
+                    )}
+                  </React.Fragment>
                 ))}
+              </div>
+
+              <div className="p-3 bg-blue-50/70 border border-blue-200 rounded-xl text-xs text-[#072A6C] font-medium text-center">
+                ✨ The process flow highlights the student journey from course induction to global examination and official credential certification.
               </div>
             </div>
           </div>
@@ -999,6 +1327,23 @@ export const CertificationsCMS: React.FC<CertificationsCMSProps> = ({ notifySave
           </a>
         </div>
       </div>
+
+      <PageVisibilityBanner
+        pageName="Global Certifications"
+        routePath="/academics/certifications"
+        isHidden={Boolean(siteSettings.hiddenPages?.["/academics/certifications"])}
+        onToggle={() => {
+          const nextHidden = !siteSettings.hiddenPages?.["/academics/certifications"];
+          updateSiteSettings({
+            ...siteSettings,
+            hiddenPages: {
+              ...(siteSettings.hiddenPages || {}),
+              "/academics/certifications": nextHidden
+            }
+          });
+          notifySave?.(nextHidden ? "Global Certifications page hidden from visitors" : "Global Certifications page published & visible");
+        }}
+      />
 
       {/* Subtabs Selector */}
       <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3">

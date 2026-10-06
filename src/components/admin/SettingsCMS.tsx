@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { 
-  Settings, Palette, Sparkles, Eye, RotateCcw, Save, Check, 
+  Settings, Palette, Sparkles, Eye, EyeOff, RotateCcw, Save, Check, 
   Globe, Shield, Sliders, Layout, Monitor, Smartphone, Moon, 
   Sun, CheckCircle2, ArrowRight, ExternalLink, Image as ImageIcon,
   Lock, Bell, Layers, Phone, Mail, MapPin, Building,
@@ -182,16 +182,21 @@ export function SettingsCMS({
     themeColors, 
     updateThemeColors,
     searchConfig,
-    updateSearchConfig
+    updateSearchConfig,
+    placementsContent,
+    updatePlacementsContent
   } = useData();
 
-  const [settingsSubTab, setSettingsSubTab] = useState<"appearance" | "preview" | "branding" | "controls" | "search">("appearance");
+  const [settingsSubTab, setSettingsSubTab] = useState<"appearance" | "preview" | "branding" | "controls" | "visibility" | "search">("appearance");
   
   // Local Theme Form State
   const [selectedPresetId, setSelectedPresetId] = useState<string>("classic");
   const [colorsForm, setColorsForm] = useState<ThemeColors>(themeColors || DEFAULT_THEME_COLORS);
   const [settingsForm, setSettingsForm] = useState<SiteSettings>(siteSettings || DEFAULT_SITE_SETTINGS);
   const [searchForm, setSearchForm] = useState<SearchBarConfig>(searchConfig || DEFAULT_SEARCH_CONFIG);
+  const [pageSearchQuery, setPageSearchQuery] = useState<string>("");
+  const [customPathInput, setCustomPathInput] = useState<string>("");
+  const [customLabelInput, setCustomLabelInput] = useState<string>("");
 
   // Sync state if context changes externally
   React.useEffect(() => {
@@ -205,6 +210,46 @@ export function SettingsCMS({
   React.useEffect(() => {
     if (searchConfig) setSearchForm(searchConfig);
   }, [searchConfig]);
+
+  // Toggle Page Visibility Handler
+  const handleTogglePageVisibility = (path: string, label: string) => {
+    const currentHidden = { ...(settingsForm.hiddenPages || {}) };
+    const isCurrentlyHidden = currentHidden[path] || currentHidden[label] || (path === "/placements" && placementsContent?.hidePage);
+    const newStatus = !isCurrentlyHidden;
+
+    if (newStatus) {
+      currentHidden[path] = true;
+      currentHidden[label] = true;
+      currentHidden[path.toLowerCase()] = true;
+      currentHidden[label.toLowerCase()] = true;
+    } else {
+      delete currentHidden[path];
+      delete currentHidden[label];
+      delete currentHidden[path.toLowerCase()];
+      delete currentHidden[label.toLowerCase()];
+    }
+
+    const updatedSettings = {
+      ...settingsForm,
+      hiddenPages: currentHidden
+    };
+
+    setSettingsForm(updatedSettings);
+    updateSiteSettings(updatedSettings);
+
+    if (path === "/placements" || label.toLowerCase().includes("placement")) {
+      const updatedPlacements = { ...placementsContent, hidePage: newStatus };
+      updatePlacementsContent(updatedPlacements);
+    }
+
+    notifySave(newStatus ? `"${label}" is now HIDDEN from the public website!` : `"${label}" is now LIVE on the public website!`);
+  };
+
+  const isPageHiddenCheck = (path: string, label: string) => {
+    const map = settingsForm.hiddenPages || {};
+    if (path === "/placements" && placementsContent?.hidePage) return true;
+    return !!(map[path] || map[label] || map[path.toLowerCase()] || map[label.toLowerCase()]);
+  };
 
   // Apply Theme Preset
   const handleApplyPreset = (preset: ThemePreset) => {
@@ -291,7 +336,8 @@ export function SettingsCMS({
           { id: "preview", label: "2. Live Website Theme Preview" },
           { id: "branding", label: "3. Global Branding & Identity" },
           { id: "controls", label: "4. Global Website Controls" },
-          { id: "search", label: "5. Search Bar & Search Icon CMS" }
+          { id: "visibility", label: "5. Page Visibility & Hide Manager" },
+          { id: "search", label: "6. Search Bar & Search Icon CMS" }
         ].map((st) => (
           <button
             key={st.id}
@@ -887,7 +933,280 @@ export function SettingsCMS({
       )}
 
       {/* ────────────────────────────────────────────────────────── */}
-      {/* SUBTAB 5: SEARCH BAR & SEARCH ICON CMS                     */}
+      {/* SUBTAB 5: PAGE VISIBILITY & HIDE MANAGER                   */}
+      {/* ────────────────────────────────────────────────────────── */}
+      {settingsSubTab === "visibility" && (
+        <div className="space-y-6">
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono font-black text-[#072A6C] uppercase tracking-wider bg-blue-50 px-2.5 py-1 rounded-md border border-blue-200">
+                    WEBSITE ACCESS CONTROL
+                  </span>
+                </div>
+                <h3 className="text-base font-black text-[#072A6C] mt-1">
+                  Global Page Visibility & Hide Manager
+                </h3>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Toggle hide or show for any page on the website. When a page is hidden, it is automatically removed from the Header navigation and Footer links, and direct access displays a maintenance notice.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleSaveSettings}
+                className="h-8.5 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-xs cursor-pointer shrink-0"
+              >
+                <Save size={13} /> Save Visibility Settings
+              </button>
+            </div>
+
+            {/* Quick Placements Highlight Card */}
+            <div className={`p-4 rounded-2xl border transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
+              isPageHiddenCheck("/placements", "Placements")
+                ? "bg-amber-50/90 border-amber-300 text-amber-950"
+                : "bg-emerald-50/90 border-emerald-300 text-emerald-950"
+            }`}>
+              <div className="flex items-center gap-3">
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold shrink-0 ${
+                  isPageHiddenCheck("/placements", "Placements") ? "bg-amber-200 text-amber-900" : "bg-emerald-200 text-emerald-900"
+                }`}>
+                  {isPageHiddenCheck("/placements", "Placements") ? <EyeOff size={18} /> : <Eye size={18} />}
+                </div>
+                <div>
+                  <div className="text-xs font-black">
+                    Placements Page (/placements): {isPageHiddenCheck("/placements", "Placements") ? "CURRENTLY HIDDEN" : "CURRENTLY VISIBLE"}
+                  </div>
+                  <div className="text-[11px] opacity-80 font-light">
+                    {isPageHiddenCheck("/placements", "Placements") 
+                      ? "The Placements page is hidden from the public navigation and footer until unhidden." 
+                      : "The Placements page is currently live and accessible in the navbar."}
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleTogglePageVisibility("/placements", "Placements")}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer ${
+                  isPageHiddenCheck("/placements", "Placements")
+                    ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                    : "bg-amber-600 hover:bg-amber-700 text-white"
+                }`}
+              >
+                {isPageHiddenCheck("/placements", "Placements") ? "✓ Make Placements Visible" : "✕ Hide Placements Page"}
+              </button>
+            </div>
+
+            {/* Search Filter */}
+            <div className="pt-2">
+              <div className="relative">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search pages by title or URL route (e.g. Placements, Research, Faculty, Campus Life)..."
+                  value={pageSearchQuery}
+                  onChange={(e) => setPageSearchQuery(e.target.value)}
+                  className="w-full h-9 pl-9 pr-3 text-xs bg-slate-50 border border-gray-200 rounded-xl outline-none focus:border-[#072A6C]"
+                />
+              </div>
+            </div>
+
+            {/* Add Custom Route to Hide */}
+            <div className="p-3.5 bg-slate-50 rounded-xl border border-gray-200 space-y-2">
+              <span className="text-[10px] font-bold text-gray-600 uppercase tracking-wider block">
+                Hide Any Custom Page or Section by Path / Label
+              </span>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="text"
+                  placeholder="Page Label (e.g. Special Events)"
+                  value={customLabelInput}
+                  onChange={(e) => setCustomLabelInput(e.target.value)}
+                  className="flex-1 h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg"
+                />
+                <input
+                  type="text"
+                  placeholder="URL Path (e.g. /custom-page)"
+                  value={customPathInput}
+                  onChange={(e) => setCustomPathInput(e.target.value)}
+                  className="flex-1 h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-mono"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!customPathInput.trim() && !customLabelInput.trim()) return;
+                    const path = customPathInput.trim() || `/${customLabelInput.trim().toLowerCase().replace(/\s+/g, "-")}`;
+                    const label = customLabelInput.trim() || path;
+                    handleTogglePageVisibility(path, label);
+                    setCustomPathInput("");
+                    setCustomLabelInput("");
+                  }}
+                  className="h-8 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg shrink-0 cursor-pointer flex items-center gap-1"
+                >
+                  <Plus size={13} /> Add & Hide Route
+                </button>
+              </div>
+            </div>
+
+            {/* Structured Page Groups */}
+            <div className="space-y-6 pt-3">
+              {[
+                {
+                  category: "🌟 Top Key University Portals",
+                  pages: [
+                    { label: "Placements & Careers", path: "/placements", desc: "Corporate packages, placed students & recruiters" },
+                    { label: "Research & Innovation", path: "/research", desc: "Patents, publications, funded projects & research directory" },
+                    { label: "Admissions Portal", path: "/admissions", desc: "Undergraduate, postgraduate & international admission" },
+                    { label: "Apply Online", path: "/admissions/apply", desc: "Student online application & registration form" },
+                    { label: "Contact Us & Helplines", path: "/contact", desc: "Department phone numbers, emails & campus map" },
+                    { label: "News Highlights", path: "/news", desc: "Campus press releases, highlights and articles" },
+                    { label: "Events & Festivals", path: "/events", desc: "Campus events, national symposiums & seminars" }
+                  ]
+                },
+                {
+                  category: "🏛️ About University",
+                  pages: [
+                    { label: "About Us Overview", path: "/about", desc: "Overview of Chalapathi University" },
+                    { label: "Genesis & Heritage", path: "/about/genesis", desc: "History, founder legacy & university journey" },
+                    { label: "Vision & Mission", path: "/about/vision", desc: "Strategic goals, core ethos & values" },
+                    { label: "University Leadership", path: "/about/leadership", desc: "Chancellor, Vice Chancellor & Advisory Board" },
+                    { label: "The Chalapathi Advantage", path: "/about/advantage", desc: "Why choose Chalapathi University highlights" }
+                  ]
+                },
+                {
+                  category: "🎓 Academics & Schools",
+                  pages: [
+                    { label: "Academic Programs", path: "/academics", desc: "Complete degree & diploma course portal" },
+                    { label: "Computer Science & Engineering", path: "/academics/computer-science", desc: "CSE Department details" },
+                    { label: "Artificial Intelligence & ML", path: "/academics/artificial-intelligence", desc: "AI & ML specialized department" },
+                    { label: "Data Science", path: "/academics/data-science", desc: "Data Science department" },
+                    { label: "Global Certifications", path: "/academics/certifications", desc: "Industry certifications & partner badges" },
+                    { label: "Academic Calendar", path: "/academics/calendar", desc: "Term dates, exams & schedules" },
+                    { label: "Academic Flexibilities", path: "/academics/flexibilities", desc: "Minors, honours & credit transfers" },
+                    { label: "Board of Studies (BOS)", path: "/academics/bos", desc: "Curriculum advisory board" }
+                  ]
+                },
+                {
+                  category: "📋 Admissions & Fees",
+                  pages: [
+                    { label: "Undergraduate Admissions", path: "/admissions/undergraduate", desc: "B.Tech and bachelor qualifications" },
+                    { label: "Postgraduate Admissions", path: "/admissions/postgraduate", desc: "M.Tech, MBA and MCA qualifications" },
+                    { label: "Fee Structure", path: "/admissions/fees", desc: "Academic tuition and annual fee charts" },
+                    { label: "Scholarships & Waivers", path: "/admissions/scholarships", desc: "Merit concessions and student aids" }
+                  ]
+                },
+                {
+                  category: "👥 Management & Faculty",
+                  pages: [
+                    { label: "Board of Governors", path: "/management/board-members", desc: "Trustees and governing council" },
+                    { label: "Esteemed Faculty Directory", path: "/management/faculty", desc: "Professors & researchers across all schools" },
+                    { label: "Administrative Staff", path: "/management/staff", desc: "Technical & support staff members" }
+                  ]
+                },
+                {
+                  category: "🏫 Campus Life & Facilities",
+                  pages: [
+                    { label: "Campus Life Overview", path: "/campus-life", desc: "Campus infrastructure & student lifestyle" },
+                    { label: "Hostels & Accommodation", path: "/campus-life/hostels", desc: "Boys and girls hostel facilities" },
+                    { label: "Central Library", path: "/campus-life/library", desc: "Library collection & e-journal database" },
+                    { label: "Sports & Athletics", path: "/campus-life/sports", desc: "Courts, grounds and gymnasiums" },
+                    { label: "Clubs & Societies", path: "/campus-life/clubs", desc: "Student cultural and technical clubs" },
+                    { label: "Innovation Hub", path: "/campus-life/innovation-hub", desc: "Startup incubation & tech labs" },
+                    { label: "Health Centre", path: "/campus-life/health-centre", desc: "Medical clinic & first-aid support" }
+                  ]
+                }
+              ].map((group, gIdx) => {
+                const filteredPages = group.pages.filter(p => {
+                  if (!pageSearchQuery) return true;
+                  const q = pageSearchQuery.toLowerCase();
+                  return p.label.toLowerCase().includes(q) || p.path.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q);
+                });
+
+                if (filteredPages.length === 0) return null;
+
+                return (
+                  <div key={gIdx} className="space-y-3">
+                    <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider pb-1 border-b border-gray-100">
+                      {group.category}
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {filteredPages.map((page, pIdx) => {
+                        const isHidden = isPageHiddenCheck(page.path, page.label);
+
+                        return (
+                          <div
+                            key={pIdx}
+                            className={`p-3.5 rounded-xl border transition-all flex items-center justify-between gap-3 ${
+                              isHidden
+                                ? "bg-amber-50/60 border-amber-200"
+                                : "bg-slate-50/70 border-gray-200 hover:border-[#072A6C]/30"
+                            }`}
+                          >
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-bold text-gray-900 truncate">
+                                  {page.label}
+                                </span>
+                                <span className={`px-1.5 py-0.5 rounded text-[9.5px] font-black uppercase tracking-wider shrink-0 ${
+                                  isHidden
+                                    ? "bg-amber-100 text-amber-800"
+                                    : "bg-emerald-100 text-emerald-800"
+                                }`}>
+                                  {isHidden ? "Hidden" : "Visible"}
+                                </span>
+                              </div>
+                              <div className="text-[10.5px] font-mono text-gray-500 truncate mt-0.5">
+                                {page.path}
+                              </div>
+                              <p className="text-[10px] text-gray-400 truncate mt-0.5 font-light">
+                                {page.desc}
+                              </p>
+                            </div>
+
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <a
+                                href={page.path}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Open Live Page"
+                                className="w-7 h-7 rounded-lg bg-white border border-gray-200 hover:bg-gray-100 text-gray-600 flex items-center justify-center transition-colors"
+                              >
+                                <ExternalLink size={12} />
+                              </a>
+                              <button
+                                type="button"
+                                onClick={() => handleTogglePageVisibility(page.path, page.label)}
+                                className={`h-7 px-3 text-[11px] font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
+                                  isHidden
+                                    ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+                                    : "bg-white hover:bg-red-50 text-red-600 border border-red-200"
+                                }`}
+                              >
+                                {isHidden ? (
+                                  <>
+                                    <Eye size={12} /> Show
+                                  </>
+                                ) : (
+                                  <>
+                                    <EyeOff size={12} /> Hide
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ────────────────────────────────────────────────────────── */}
+      {/* SUBTAB 6: SEARCH BAR & SEARCH ICON CMS                     */}
       {/* ────────────────────────────────────────────────────────── */}
       {settingsSubTab === "search" && (
         <div className="space-y-6">

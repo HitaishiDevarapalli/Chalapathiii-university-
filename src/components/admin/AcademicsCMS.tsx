@@ -17,6 +17,7 @@ import {
   EvaluationBreakdownItem,
   AcademicCalendarTerm
 } from "../../data/academicsData";
+import { SectionHeader, PageVisibilityBanner } from "./AdminComponents";
 import { CertificationsCMS } from "./CertificationsCMS";
 
 interface AcademicsCMSProps {
@@ -407,6 +408,40 @@ export const AcademicsCMS: React.FC<AcademicsCMSProps> = ({ notifySave, defaultS
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* 🌟 STANDARDIZED PAGE VISIBILITY HIDE / SHOW BANNER */}
+      {(() => {
+        const { siteSettings, updateSiteSettings } = useData();
+        const isAcademicsHidden = !!(siteSettings?.hiddenPages?.["/academics"] || siteSettings?.hiddenPages?.["Academics"]);
+        const toggleAcademicsVisibility = () => {
+          const nextHidden = !isAcademicsHidden;
+          const currentHiddenPages = { ...(siteSettings?.hiddenPages || {}) };
+          if (nextHidden) {
+            currentHiddenPages["/academics"] = true;
+            currentHiddenPages["Academics"] = true;
+            currentHiddenPages["academics"] = true;
+          } else {
+            delete currentHiddenPages["/academics"];
+            delete currentHiddenPages["Academics"];
+            delete currentHiddenPages["academics"];
+          }
+          updateSiteSettings({
+            ...(siteSettings || {}),
+            universityName: siteSettings?.universityName || "Chalapathi University",
+            hiddenPages: currentHiddenPages
+          });
+          showToast(nextHidden ? "Academics page hidden from website" : "Academics page visible on website");
+        };
+
+        return (
+          <PageVisibilityBanner
+            pageName="Academics & Curriculum"
+            routePath="/academics"
+            isHidden={isAcademicsHidden}
+            onToggle={toggleAcademicsVisibility}
+          />
+        );
+      })()}
 
       {/* Header Banner */}
       <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">

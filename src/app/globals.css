@@ -115,75 +115,34 @@ h4, h5, h6 {
   scrollbar-width: none;
 }
 
-/* ── PREMIUM INTERACTIVE ANIMATIONS ── */
+/* ── CLEAN PROFESSIONAL INTERACTION STYLES ── */
 
-/* 1. Hardware accelerated cinematic transition on major containers */
+/* 1. Page container styling */
 section {
-  will-change: transform, opacity;
-  animation: pageEntrance 800ms cubic-bezier(0.25, 1, 0.5, 1) both;
-}
-
-@keyframes pageEntrance {
-  0% { opacity: 0; transform: scale(0.985) translateY(10px); filter: blur(3px); }
-  100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
-}
-
-/* 2. Image lifts, rotations, and soft gold drop shadows */
-img:not(.no-lift), .image-premium-hover {
-  transition: all 500ms cubic-bezier(0.25, 1, 0.5, 1);
-  will-change: transform, box-shadow;
-}
-img:not(.no-lift):hover, .image-premium-hover:hover {
-  transform: scale(1.04) translateY(-4px) rotate(1deg);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12), 0 0 20px rgba(212, 175, 55, 0.25);
-}
-
-/* 3. Card glassmorphic hover scale & red/gold subtle perimeter glow */
-.card, div[class*="rounded-"][class*="shadow-"]:not([class*="bg-white/10"]):not([class*="z-20"]):not([class*="grid"]) {
-  transition: all 450ms cubic-bezier(0.25, 1, 0.5, 1);
-  will-change: transform, box-shadow;
-}
-.card:hover, div[class*="rounded-"][class*="shadow-"]:not([class*="bg-white/10"]):not([class*="z-20"]):not([class*="grid"]):hover {
-  transform: translateY(-5px) scale(1.015);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.12), 0 0 25px rgba(212, 175, 55, 0.15);
-  border-color: rgba(212, 175, 55, 0.3) !important;
-}
-
-/* 4. Button gradient/light sweeps and responsive tap depth scales */
-a[class*="bg-[#072A6C]"]:not(.rounded-lg), a[class*="bg-[#D4AF37]"]:not(.rounded-lg), button[class*="bg-[#D4AF37]"], button[class*="bg-[#072A6C]"] {
   position: relative;
-  overflow: hidden;
-  transition: all 300ms cubic-bezier(0.25, 1, 0.5, 1);
-}
-a[class*="bg-[#072A6C]"]:not(.rounded-lg)::after, a[class*="bg-[#D4AF37]"]:not(.rounded-lg)::after, button[class*="bg-[#D4AF37]"]::after, button[class*="bg-[#072A6C]"]::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 50%;
-  height: 100%;
-  background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
-  transform: skewX(-25deg);
-  transition: none;
-}
-a[class*="bg-[#072A6C]"]:not(.rounded-lg)::after, a[class*="bg-[#D4AF37]"]:not(.rounded-lg)::after, button[class*="bg-[#D4AF37]"]::after, button[class*="bg-[#072A6C]"]::after {
-  left: 200%;
-  transition: all 850ms ease;
-}
-a[class*="bg-[#072A6C]"]:not(.rounded-lg):hover, a[class*="bg-[#D4AF37]"]:not(.rounded-lg):hover, button[class*="bg-[#D4AF37]"]:hover, button[class*="bg-[#072A6C]"]:hover {
-  transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 12px 24px rgba(7, 42, 108, 0.2), 0 0 15px rgba(212, 175, 55, 0.2);
-}
-a[class*="bg-[#072A6C]"]:not(.rounded-lg):active, a[class*="bg-[#D4AF37]"]:not(.rounded-lg):active, button[class*="bg-[#D4AF37]"]:active, button[class*="bg-[#072A6C]"]:active {
-  transform: translateY(1px) scale(0.97);
 }
 
-/* 5. Lucide icons micro-interaction bounce */
-svg {
-  transition: transform 300ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+/* 2. Images: solid, crisp, and stable */
+img, .image-premium-hover {
+  transition: opacity 200ms ease;
+  will-change: auto;
 }
-*:hover > svg {
-  transform: scale(1.18) rotate(4deg);
+
+/* 3. Cards: stable with subtle border/shadow feedback only without shifting layout */
+.card, div[class*="rounded-"][class*="shadow-"]:not([class*="bg-white/10"]):not([class*="z-20"]):not([class*="grid"]) {
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+  will-change: auto;
+}
+
+/* 4. Buttons: clean color transition without scale or shifting */
+a[class*="bg-[#072A6C]"], a[class*="bg-[#D4AF37]"], button[class*="bg-[#D4AF37]"], button[class*="bg-[#072A6C]"] {
+  position: relative;
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease, opacity 200ms ease;
+}
+
+/* 5. Icons: crisp and stable */
+svg {
+  transition: color 200ms ease, opacity 200ms ease;
 }
 
 /* 6. Infinite Loop Marquee */

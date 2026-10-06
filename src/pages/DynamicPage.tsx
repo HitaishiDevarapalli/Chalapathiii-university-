@@ -2176,18 +2176,50 @@ function LatestNewsView() {
 
 export default function DynamicPage() {
   const { pathname } = useLocation();
-  const { programs, campusLifeContent, newsPageConfig } = useData();
+  const { programs, campusLifeContent, newsPageConfig, siteSettings, placementsContent } = useData();
   const content = getPageContent(pathname, programs, newsPageConfig);
   const isManagement = pathname.toLowerCase().startsWith("/management");
   const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
   const [playingVideo, setPlayingVideo] = React.useState<string | null>(null);
+
+  const cleanPath = pathname.toLowerCase().replace(/\/$/, "");
+  const hiddenMap = siteSettings?.hiddenPages || {};
+  const isHidden = 
+    (cleanPath === "/placements" && placementsContent?.hidePage) ||
+    hiddenMap[cleanPath] ||
+    hiddenMap[pathname] ||
+    (content.title && (hiddenMap[content.title] || hiddenMap[content.title.toLowerCase()]));
 
   useEffect(() => {
     document.title = `${content.title} | Chalapathi University`;
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [pathname, content.title]);
 
-  const cleanPath = pathname.toLowerCase().replace(/\/$/, "");
+  if (isHidden) {
+    return (
+      <div className="flex-1 w-full bg-[#F7F8FC] py-20 font-[var(--font-poppins)] flex items-center justify-center min-h-[60vh]">
+        <div className="max-w-md mx-auto px-6 text-center bg-white border border-gray-200/80 rounded-3xl p-10 shadow-sm space-y-4">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center mx-auto text-2xl font-black">
+            🚧
+          </div>
+          <span className="text-[11px] font-extrabold text-[#D4AF37] uppercase tracking-wider block">Notice</span>
+          <h2 className="text-2xl font-black text-[#072A6C] tracking-tight">Page Temporarily Unavailable</h2>
+          <p className="text-xs text-gray-500 leading-relaxed font-light">
+            This section is currently under maintenance or hidden by the administration. Please check back later.
+          </p>
+          <div className="pt-2">
+            <Link 
+              to="/" 
+              className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#072A6C] hover:bg-[#0c409c] text-white text-xs font-bold rounded-xl transition-all shadow-sm"
+            >
+              ← Return to Home
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const isCampusLife = cleanPath.startsWith("/campus-life");
 
   const campusPage = campusLifeContent ? (campusLifeContent[cleanPath] || campusLifeContent["/campus-life"]) : undefined;

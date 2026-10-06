@@ -10,7 +10,7 @@ import {
   EventRegistration, 
   INITIAL_EVENTS 
 } from "../../context/DataContext";
-import { SectionHeader, ImageField } from "./AdminComponents";
+import { SectionHeader, ImageField, PageVisibilityBanner } from "./AdminComponents";
 
 export function EventsCMS({
   notifySave,
@@ -26,7 +26,9 @@ export function EventsCMS({
     updateEventRegistrations,
     addEventRegistration,
     homepageSections,
-    updateHomepageSections
+    updateHomepageSections,
+    siteSettings,
+    updateSiteSettings
   } = useData();
 
   const [eventsSubTab, setEventsSubTab] = useState<"eventsList" | "attendeesCRM" | "pageBanner" | "homepage">("eventsList");
@@ -151,6 +153,23 @@ export function EventsCMS({
         saveSuccess={saveSuccess}
         onReset={handleResetEvents}
         resetLabel="Reset Events"
+      />
+
+      <PageVisibilityBanner
+        pageName="Events & Registrations"
+        routePath="/events"
+        isHidden={Boolean(siteSettings.hiddenPages?.["/events"])}
+        onToggle={() => {
+          const nextHidden = !siteSettings.hiddenPages?.["/events"];
+          updateSiteSettings({
+            ...siteSettings,
+            hiddenPages: {
+              ...(siteSettings.hiddenPages || {}),
+              "/events": nextHidden
+            }
+          });
+          notifySave(nextHidden ? "Events page hidden from visitors" : "Events page published & visible");
+        }}
       />
 
       {/* Subtabs Selector */}

@@ -4,7 +4,8 @@ import {
   Wrench, ExternalLink, X, Check, FileText, AlertCircle, Phone, Mail,
   Microscope, Layers, Tag
 } from "lucide-react";
-import { SectionHeader } from "./AdminComponents";
+import { SectionHeader, PageVisibilityBanner } from "./AdminComponents";
+import { useData } from "../../context/DataContext";
 
 export interface ResearchItem {
   id: string;
@@ -203,12 +204,48 @@ export const ResearchCMS: React.FC<ResearchCMSProps> = ({ notifySave }) => {
     return it.category === selectedCategory;
   });
 
+  const { siteSettings, updateSiteSettings } = useData();
+  const isResearchHidden = !!(researchData.hidden || siteSettings?.hiddenPages?.["/research"] || siteSettings?.hiddenPages?.["Research"]);
+
+  const toggleResearchVisibility = () => {
+    const nextHidden = !isResearchHidden;
+    const updated = { ...researchData, hidden: nextHidden };
+    setResearchData(updated);
+    saveResearch(updated);
+
+    const currentHiddenPages = { ...(siteSettings?.hiddenPages || {}) };
+    if (nextHidden) {
+      currentHiddenPages["/research"] = true;
+      currentHiddenPages["Research"] = true;
+      currentHiddenPages["research"] = true;
+    } else {
+      delete currentHiddenPages["/research"];
+      delete currentHiddenPages["Research"];
+      delete currentHiddenPages["research"];
+    }
+    updateSiteSettings({
+      ...(siteSettings || {}),
+      universityName: siteSettings?.universityName || "Chalapathi University",
+      hiddenPages: currentHiddenPages
+    });
+
+    notifySave(`Research page is now ${nextHidden ? "HIDDEN from public website" : "LIVE & VISIBLE on public website"}!`);
+  };
+
   return (
     <div className="space-y-6 animate-fade-in text-left">
-      {/* Top Header */}
-      <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* 🌟 STANDARDIZED PAGE VISIBILITY HIDE / SHOW BANNER */}
+      <PageVisibilityBanner
+        pageName="Research & Innovation"
+        routePath="/research"
+        isHidden={isResearchHidden}
+        onToggle={toggleResearchVisibility}
+      />
+
+      {/* Top Header Card with Clean Wrapping Buttons */}
+      <div className="bg-white p-5 sm:p-6 rounded-2xl border border-gray-200 shadow-xs flex flex-col xl:flex-row xl:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex flex-wrap items-center gap-2 mb-1">
             <h3 className="text-base font-black text-[#072A6C] uppercase flex items-center gap-2">
               <Award size={18} className="text-[#D4AF37]" />
               Research & Innovation CMS
@@ -222,38 +259,8 @@ export const ResearchCMS: React.FC<ResearchCMSProps> = ({ notifySave }) => {
           </p>
         </div>
 
-        {/* Global Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
-          {/* Master Category / Page Hide Toggle */}
-          <button
-            type="button"
-            onClick={() => {
-              const nextHidden = !researchData.hidden;
-              const updated = { ...researchData, hidden: nextHidden };
-              setResearchData(updated);
-              saveResearch(updated);
-              notifySave(`Research page is now ${nextHidden ? "Hidden" : "Visible"} on website!`);
-            }}
-            className={`h-9 px-3 text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer transition-colors border shadow-xs ${
-              !researchData.hidden
-                ? "bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200"
-                : "bg-red-50 hover:bg-red-100 text-red-700 border-red-200"
-            }`}
-            title="Toggle visibility of the Research page in website navigation"
-          >
-            {!researchData.hidden ? (
-              <>
-                <Eye size={13} className="text-emerald-600" />
-                <span>Page: Visible</span>
-              </>
-            ) : (
-              <>
-                <EyeOff size={13} className="text-red-600" />
-                <span>Page: Hidden</span>
-              </>
-            )}
-          </button>
-
+        {/* Global Action Buttons - Perfectly Wrap on all screens */}
+        <div className="flex flex-wrap items-center gap-2 pt-2 xl:pt-0">
           {/* Under Construction Toggle */}
           <button
             type="button"
@@ -264,7 +271,7 @@ export const ResearchCMS: React.FC<ResearchCMSProps> = ({ notifySave }) => {
               saveResearch(updated);
               notifySave(`Under Construction mode is now ${nextVal ? "Enabled" : "Disabled"}!`);
             }}
-            className={`h-9 px-3 text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer transition-colors border shadow-xs ${
+            className={`h-9 px-3 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer transition-colors border shadow-xs ${
               researchData.isUnderConstruction
                 ? "bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300"
                 : "bg-blue-50 hover:bg-blue-100 text-blue-900 border-blue-200"
@@ -279,7 +286,7 @@ export const ResearchCMS: React.FC<ResearchCMSProps> = ({ notifySave }) => {
           <button
             type="button"
             onClick={handleOpenAddModal}
-            className="h-9 px-3.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+            className="h-9 px-3.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
           >
             <Plus size={14} /> Add Research Item
           </button>
@@ -294,7 +301,7 @@ export const ResearchCMS: React.FC<ResearchCMSProps> = ({ notifySave }) => {
                 notifySave("Research CMS reset to blank Under Construction default!");
               }
             }}
-            className="h-9 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+            className="h-9 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl flex items-center gap-1 cursor-pointer transition-colors"
             title="Reset to blank under construction state"
           >
             <RotateCcw size={13} /> Reset
@@ -304,7 +311,7 @@ export const ResearchCMS: React.FC<ResearchCMSProps> = ({ notifySave }) => {
           <button
             type="button"
             onClick={() => saveResearch()}
-            className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+            className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
           >
             <Save size={13} /> Save CMS
           </button>

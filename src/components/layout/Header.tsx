@@ -108,7 +108,7 @@ const CATEGORY_INFO: Record<string, { desc: string; linkText: string; to: string
 };
 
 export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {}) {
-  const { announcements, showAnnouncementsDrawer, setShowAnnouncementsDrawer, programs, siteSettings, themeColors, searchConfig } = useData();
+  const { announcements, showAnnouncementsDrawer, setShowAnnouncementsDrawer, programs, siteSettings, themeColors, searchConfig, placementsContent } = useData();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -135,6 +135,85 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
 
   const location = useLocation();
   const navigate = useNavigate();
+
+  const isPageHidden = (name: string, href?: string) => {
+    if (name === "Placements" && placementsContent?.hidePage) return true;
+    if (href === "/placements" && placementsContent?.hidePage) return true;
+    if (siteSettings?.hiddenPages?.[name]) return true;
+    if (href && siteSettings?.hiddenPages?.[href]) return true;
+    return false;
+  };
+
+  const aboutItems = [
+    { label: "Genesis", to: "/about/genesis" },
+    { label: "Vision & Mission", to: "/about/vision" },
+    { label: "Leadership", to: "/about/leadership" },
+    { label: "Chalapathi Advantage", to: "/about/advantage" }
+  ];
+
+  const navLinks = [
+    "About Us", "Academics", "Admissions", "Research", "Faculty",
+    "Campus Life", "Placements", "News & Events", "Contact Us",
+  ];
+
+  const navHrefs: Record<string, string> = {
+    "About Us": "/about",
+    "Academics": "/academics",
+    "Admissions": "/admissions",
+    "Research": "/research",
+    "Faculty": "/management/faculty/computing",
+    "Campus Life": "/campus-life",
+    "Placements": "/placements",
+    "Contact Us": "/contact",
+  };
+
+  const newsEventsItems = [
+    { label: "News", to: "/news" },
+    { label: "Events", to: "/news/events" }
+  ];
+
+  const academicsItems = [
+    { label: "Programmes Offered", to: "/academics/programmes" },
+    { label: "Global Certifications", to: "/academics/certifications" },
+    { label: "Academic Calendar", to: "/academics/calendar" },
+    { label: "Flexibilities", to: "/academics/flexibilities" },
+    { label: "Grading System", to: "/academics/grading" },
+    { label: "Award of Degrees", to: "/academics/degrees" },
+    { label: "Rules & Regulations", to: "/academics/rules" },
+    { label: "Teaching & Evaluation", to: "/academics/teaching" }
+  ];
+
+  const facultyItems = [
+    { label: "School of Computing Sciences", to: "/management/faculty/computing" },
+    { label: "School of Engineering", to: "/management/faculty/engineering" },
+    { label: "School of Business & Management", to: "/management/faculty/business" }
+  ];
+
+  const campusLifeItems = [
+    { label: "Campus Overview", to: "/campus-life" },
+    { label: "Central Library", to: "/campus-life/library" },
+    { label: "Smart Classrooms", to: "/campus-life/smart-classrooms" },
+    { label: "Laboratories", to: "/campus-life/laboratories" },
+    { label: "Hostel Facilities", to: "/campus-life/hostels" },
+    { label: "Sports & Fitness", to: "/campus-life/sports" },
+    { label: "Cafeteria", to: "/campus-life/cafeteria" },
+    { label: "Transportation", to: "/campus-life/transportation" },
+    { label: "Wi-Fi Campus", to: "/campus-life/wifi" },
+    { label: "Health Centre", to: "/campus-life/health-centre" },
+    { label: "Student Clubs", to: "/campus-life/clubs" },
+    { label: "Events & Festivals", to: "/campus-life/events" },
+    { label: "Innovation Hub", to: "/campus-life/innovation-hub" },
+    { label: "Campus Safety", to: "/campus-life/safety" },
+    { label: "NSS & NCC", to: "/campus-life/nss-ncc" },
+    { label: "Grievance Cell", to: "/campus-life/grievance-cell" }
+  ];
+
+  const visibleNavLinks = navLinks.filter(name => !isPageHidden(name, navHrefs[name]));
+  const visibleAboutItems = aboutItems.filter(item => !isPageHidden(item.label, item.to));
+  const visibleAcademicsItems = academicsItems.filter(item => !isPageHidden(item.label, item.to));
+  const visibleFacultyItems = facultyItems.filter(item => !isPageHidden(item.label, item.to));
+  const visibleCampusLifeItems = campusLifeItems.filter(item => !isPageHidden(item.label, item.to));
+  const visibleNewsEventsItems = newsEventsItems.filter(item => !isPageHidden(item.label, item.to));
 
   useEffect(() => {
     if (!searchQuery.trim()) {
@@ -252,70 +331,6 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
     setMobileNewsEventsOpen(false);
   }, [location.pathname]);
 
-  const aboutItems = [
-    { label: "Genesis", to: "/about/genesis" },
-    { label: "Vision & Mission", to: "/about/vision" },
-    { label: "Leadership", to: "/about/leadership" },
-    { label: "Chalapathi Advantage", to: "/about/advantage" }
-  ];
-
-  const navLinks = [
-    "About Us", "Academics", "Admissions", "Research", "Faculty",
-    "Campus Life", "Placements", "News & Events", "Contact Us",
-  ];
-
-  const navHrefs: Record<string, string> = {
-    "About Us": "/about",
-    "Academics": "/academics",
-    "Admissions": "/admissions",
-    "Research": "/research",
-    "Faculty": "/management/faculty/computing",
-    "Campus Life": "/campus-life",
-    "Placements": "/placements",
-    "Contact Us": "/contact",
-  };
-
-  const newsEventsItems = [
-    { label: "News", to: "/news" },
-    { label: "Events", to: "/news/events" }
-  ];
-
-  const academicsItems = [
-    { label: "Programmes Offered", to: "/academics/programmes" },
-    { label: "Global Certifications", to: "/academics/certifications" },
-    { label: "Academic Calendar", to: "/academics/calendar" },
-    { label: "Flexibilities", to: "/academics/flexibilities" },
-    { label: "Grading System", to: "/academics/grading" },
-    { label: "Award of Degrees", to: "/academics/degrees" },
-    { label: "Rules & Regulations", to: "/academics/rules" },
-    { label: "Teaching & Evaluation", to: "/academics/teaching" }
-  ];
-
-  const facultyItems = [
-    { label: "School of Computing Sciences", to: "/management/faculty/computing" },
-    { label: "School of Engineering", to: "/management/faculty/engineering" },
-    { label: "School of Business & Management", to: "/management/faculty/business" }
-  ];
-
-  const campusLifeItems = [
-    { label: "Campus Overview", to: "/campus-life" },
-    { label: "Central Library", to: "/campus-life/library" },
-    { label: "Smart Classrooms", to: "/campus-life/smart-classrooms" },
-    { label: "Laboratories", to: "/campus-life/laboratories" },
-    { label: "Hostel Facilities", to: "/campus-life/hostels" },
-    { label: "Sports & Fitness", to: "/campus-life/sports" },
-    { label: "Cafeteria", to: "/campus-life/cafeteria" },
-    { label: "Transportation", to: "/campus-life/transportation" },
-    { label: "Wi-Fi Campus", to: "/campus-life/wifi" },
-    { label: "Health Centre", to: "/campus-life/health-centre" },
-    { label: "Student Clubs", to: "/campus-life/clubs" },
-    { label: "Events & Festivals", to: "/campus-life/events" },
-    { label: "Innovation Hub", to: "/campus-life/innovation-hub" },
-    { label: "Campus Safety", to: "/campus-life/safety" },
-    { label: "NSS & NCC", to: "/campus-life/nss-ncc" },
-    { label: "Grievance Cell", to: "/campus-life/grievance-cell" }
-  ];
-
   return (
     <>
       <header
@@ -336,7 +351,7 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
 
           {/* Center nav */}
           <nav className="hidden min-[1024px]:flex items-center justify-center gap-0.5 min-[1280px]:gap-1 min-[1440px]:gap-1.5 h-full flex-1 mx-auto">
-            {navLinks.map((name) => {
+            {visibleNavLinks.map((name) => {
               if (name === "About Us") {
                 return (
                   <div
@@ -353,7 +368,7 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
                     </button>
                     {aboutOpen && (
                       <div className="absolute top-full left-0 mt-0 w-[180px] bg-white border border-gray-200/80 rounded-[12px] shadow-lg py-2.5 z-50 flex flex-col gap-0.5 animate-fade-in font-[var(--font-poppins)]">
-                        {aboutItems.map((item) => (
+                        {visibleAboutItems.map((item) => (
                           <Link
                             key={item.label}
                             to={item.to}
@@ -801,7 +816,7 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
       {/* Mobile drawer */}
       {mobileOpen && (
         <div className="fixed inset-0 top-[90px] z-30 bg-white flex flex-col p-6 overflow-y-auto min-[1024px]:hidden shadow-2xl">
-          {navLinks.map((name) => {
+          {visibleNavLinks.map((name) => {
             if (name === "About Us") {
               return (
                 <div key={name} className="flex flex-col border-b border-gray-100 py-3">
@@ -815,7 +830,7 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
                   </button>
                   {mobileAboutOpen && (
                     <div className="pl-4 flex flex-col gap-2 mt-2 pt-2 border-t border-gray-50 text-left">
-                      {aboutItems.map((item) => (
+                      {visibleAboutItems.map((item) => (
                         <Link
                           key={item.label}
                           to={item.to}
@@ -844,7 +859,7 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
                   </button>
                   {mobileAcademicsOpen && (
                     <div className="pl-4 flex flex-col gap-2 mt-2 pt-2 border-t border-gray-50">
-                      {academicsItems.map((item) => {
+                      {visibleAcademicsItems.map((item) => {
                         if (item.label === "Programmes Offered") {
                           return (
                             <div key={item.label} className="flex flex-col">
@@ -933,7 +948,7 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
                   </button>
                   {mobileFacultyOpen && (
                     <div className="pl-4 flex flex-col gap-2 mt-2 pt-2 border-t border-gray-50">
-                      {facultyItems.map((item) => (
+                      {visibleFacultyItems.map((item) => (
                         <Link
                           key={item.label}
                           to={item.to}
@@ -962,7 +977,7 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
                   </button>
                   {mobileCampusLifeOpen && (
                     <div className="pl-4 flex flex-col gap-2 mt-2 pt-2 border-t border-gray-50 max-h-[260px] overflow-y-auto">
-                      {campusLifeItems.map((item) => (
+                      {visibleCampusLifeItems.map((item) => (
                         <Link
                           key={item.label}
                           to={item.to}
@@ -991,7 +1006,7 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
                   </button>
                   {mobileNewsEventsOpen && (
                     <div className="pl-4 flex flex-col gap-2 mt-2 pt-2 border-t border-gray-50 text-left">
-                      {newsEventsItems.map((item) => (
+                      {visibleNewsEventsItems.map((item) => (
                         <Link
                           key={item.label}
                           to={item.to}

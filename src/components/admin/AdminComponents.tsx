@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import { UploadCloud, Image as ImageIcon, X, CheckCircle2, AlertCircle, RotateCcw, Save, ExternalLink } from "lucide-react";
+import { UploadCloud, Image as ImageIcon, X, CheckCircle2, AlertCircle, RotateCcw, Save, ExternalLink, Eye, EyeOff } from "lucide-react";
+import { compressImage } from "../../lib/utils";
 
 interface ImageFieldProps {
   label: string;
@@ -146,22 +147,22 @@ export const ImageField: React.FC<ImageFieldProps> = ({
     }
 
     setIsUploading(true);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      if (typeof event.target?.result === "string") {
-        onChange(event.target.result);
-      }
-      setIsUploading(false);
-    };
-    reader.onerror = () => {
-      setImageMeta({
-        isValid: false,
-        errorMsg: "Failed to read image file."
+    compressImage(file, 1600, 1200, 0.82)
+      .then((compressed) => {
+        onChange(compressed);
+        setIsUploading(false);
+      })
+      .catch((err) => {
+        console.warn("Compression fallback to FileReader:", err);
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          if (typeof event.target?.result === "string") {
+            onChange(event.target.result);
+          }
+          setIsUploading(false);
+        };
+        reader.readAsDataURL(file);
       });
-      alert("Failed to read image file.");
-      setIsUploading(false);
-    };
-    reader.readAsDataURL(file);
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -616,6 +617,80 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
           </>
         )}
       </div>
+    </div>
+  );
+};
+
+export interface PageVisibilityBannerProps {
+  pageName: string;
+  routePath?: string;
+  isHidden: boolean;
+  onToggle: () => void;
+  customMessage?: string;
+}
+
+export const PageVisibilityBanner: React.FC<PageVisibilityBannerProps> = ({
+  pageName,
+  routePath,
+  isHidden,
+  onToggle,
+  customMessage
+}) => {
+  return (
+    <div className={`p-4 sm:p-5 rounded-2xl border transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm text-left ${
+      isHidden 
+        ? "bg-amber-50/90 border-amber-300 text-amber-950" 
+        : "bg-emerald-50/90 border-emerald-300 text-emerald-950"
+    }`}>
+      <div className="flex items-center gap-3.5">
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-xs ${
+          isHidden ? "bg-amber-200 text-amber-900" : "bg-emerald-200 text-emerald-900"
+        }`}>
+          {isHidden ? <EyeOff size={20} /> : <Eye size={20} />}
+        </div>
+        <div>
+          <div className="flex items-center gap-2">
+            <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${
+              isHidden ? "bg-amber-200 text-amber-900" : "bg-emerald-200 text-emerald-900"
+            }`}>
+              {isHidden ? "PAGE STATUS: HIDDEN" : "PAGE STATUS: VISIBLE & LIVE"}
+            </span>
+            {routePath && (
+              <span className="text-[10px] font-mono text-gray-500 font-bold">
+                {routePath}
+              </span>
+            )}
+          </div>
+          <h4 className="text-sm font-black mt-1">
+            {isHidden ? `${pageName} Page is currently Hidden` : `${pageName} Page is Live on Website`}
+          </h4>
+          <p className="text-xs opacity-80 font-light mt-0.5">
+            {customMessage || (isHidden 
+              ? `The ${pageName} page and navbar links are hidden from visitors until you re-enable them.`
+              : `The ${pageName} page is accessible to public visitors from navigation links and direct URL.`
+            )}
+          </p>
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={onToggle}
+        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer shrink-0 flex items-center gap-1.5 ${
+          isHidden
+            ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+            : "bg-amber-600 hover:bg-amber-700 text-white"
+        }`}
+      >
+        {isHidden ? (
+          <>
+            <Eye size={14} /> MAKE PAGE VISIBLE
+          </>
+        ) : (
+          <>
+            <EyeOff size={14} /> HIDE PAGE
+          </>
+        )}
+      </button>
     </div>
   );
 };

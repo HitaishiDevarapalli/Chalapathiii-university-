@@ -38,7 +38,7 @@ export default function IndustryGrid({ industries, color }: IndustryProps) {
               className={`relative p-8 rounded-3xl cursor-pointer border transition-all duration-300 flex flex-col items-center justify-center text-center overflow-hidden ${
                 isActive 
                   ? 'bg-white shadow-xl scale-105 z-10' 
-                  : 'bg-gray-50 border-gray-100 hover:bg-white hover:shadow-md hover:-translate-y-1'
+                  : 'bg-gray-50 border-gray-100 hover:bg-white hover:shadow-sm'
               }`}
               style={{ borderColor: isActive ? color : undefined }}
             >

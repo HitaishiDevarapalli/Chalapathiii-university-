@@ -9,7 +9,7 @@ import {
   DEFAULT_CONTACT_PAGE_CONTENT, 
   useData 
 } from "../../context/DataContext";
-import { SectionHeader } from "./AdminComponents";
+import { SectionHeader, PageVisibilityBanner } from "./AdminComponents";
 
 export interface ContactCMSProps {
   notifySave: (msg: string) => void;
@@ -66,6 +66,23 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
         saveSuccess={saveSuccess}
         onReset={handleReset}
         resetLabel="Reset Contact Page"
+      />
+
+      <PageVisibilityBanner
+        pageName="Contact Us"
+        routePath="/contact"
+        isHidden={Boolean(siteSettings.hiddenPages?.["/contact"])}
+        onToggle={() => {
+          const nextHidden = !siteSettings.hiddenPages?.["/contact"];
+          updateSiteSettings({
+            ...siteSettings,
+            hiddenPages: {
+              ...(siteSettings.hiddenPages || {}),
+              "/contact": nextHidden
+            }
+          });
+          notifySave(nextHidden ? "Contact Us page hidden from visitors" : "Contact Us page published & visible");
+        }}
       />
 
       {/* Subtab Navigation matching live page layout */}

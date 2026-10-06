@@ -6,9 +6,21 @@ import {
 import { useData } from "../../context/DataContext";
 
 export default function Footer() {
-  const { siteSettings, footerContent, themeColors } = useData();
+  const { siteSettings, footerContent, placementsContent, themeColors } = useData();
 
-  const quickLinks = footerContent?.quickLinks || [
+  const isPageHidden = (label: string, href?: string) => {
+    const hiddenMap = siteSettings?.hiddenPages || {};
+    if (label?.toLowerCase().includes("placement") || href === "/placements" || href?.includes("placement")) {
+      if (placementsContent?.hidePage || hiddenMap["/placements"] || hiddenMap["Placements"] || hiddenMap["placements"]) {
+        return true;
+      }
+    }
+    if (href && (hiddenMap[href] || hiddenMap[href.toLowerCase()])) return true;
+    if (label && (hiddenMap[label] || hiddenMap[label.toLowerCase()])) return true;
+    return false;
+  };
+
+  const rawQuickLinks = footerContent?.quickLinks || [
     { label: "About Us", to: "/about" },
     { label: "Vision & Mission", to: "/about/vision" },
     { label: "Leadership", to: "/about/leadership" },
@@ -17,7 +29,9 @@ export default function Footer() {
     { label: "Accreditations", to: "/about" },
   ];
 
-  const academicsLinks = footerContent?.academicsLinks || [
+  const quickLinks = rawQuickLinks.filter(l => !isPageHidden(l.label, l.to));
+
+  const rawAcademicsLinks = footerContent?.academicsLinks || [
     { label: "Programs", to: "/academics" },
     { label: "Computer Science", to: "/academics/computer-science" },
     { label: "AI & ML", to: "/academics/artificial-intelligence" },
@@ -25,7 +39,9 @@ export default function Footer() {
     { label: "Schools", to: "/academics/schools" },
   ];
 
-  const admissionsLinks = footerContent?.admissionsLinks || [
+  const academicsLinks = rawAcademicsLinks.filter(l => !isPageHidden(l.label, l.to));
+
+  const rawAdmissionsLinks = footerContent?.admissionsLinks || [
     { label: "Undergraduate", to: "/admissions/undergraduate" },
     { label: "Postgraduate", to: "/admissions/postgraduate" },
     { label: "Fee Structure", to: "/admissions/fees" },
@@ -33,7 +49,9 @@ export default function Footer() {
     { label: "Apply Online", to: "/admissions/apply" },
   ];
 
-  const campusLifeLinks = footerContent?.campusLifeLinks || [
+  const admissionsLinks = rawAdmissionsLinks.filter(l => !isPageHidden(l.label, l.to));
+
+  const rawCampusLifeLinks = footerContent?.campusLifeLinks || [
     { label: "Hostels", to: "/campus-life/hostels" },
     { label: "Library", to: "/campus-life/library" },
     { label: "Sports", to: "/campus-life/sports" },
@@ -41,18 +59,22 @@ export default function Footer() {
     { label: "Amenities", to: "/campus-life" },
   ];
 
+  const campusLifeLinks = rawCampusLifeLinks.filter(l => !isPageHidden(l.label, l.to));
+
   const bottomLinks = (footerContent?.bottomLinks || [
     { label: "Privacy Policy", to: "/privacy-policy" },
     { label: "Terms & Conditions", to: "/terms-conditions" },
     { label: "Sitemap", to: "/sitemap" }
-  ]).filter(item => item.to !== "/admin" && !item.label?.toLowerCase().includes("admin"));
+  ]).filter(item => item.to !== "/admin" && !item.label?.toLowerCase().includes("admin") && !isPageHidden(item.label, item.to));
 
-  const brandSocials = footerContent?.brandSocials || [
+  const rawBrandSocials = footerContent?.brandSocials || [
     { icon: "Globe", url: "https://city.ac.in", label: "Website" },
     { icon: "Users", url: "/about", label: "Community" },
     { icon: "Briefcase", url: "/placements", label: "Careers" },
     { icon: "Play", url: "/campus-life", label: "Campus Tour" }
   ];
+
+  const brandSocials = rawBrandSocials.filter(b => !isPageHidden(b.label, b.url));
 
   const getBrandIcon = (iconName: string) => {
     switch (iconName?.toLowerCase()) {

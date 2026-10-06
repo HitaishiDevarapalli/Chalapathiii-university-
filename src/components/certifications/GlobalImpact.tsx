@@ -35,7 +35,7 @@ export default function GlobalImpact({ stats, color }: ImpactProps) {
             />
             
             <h4 
-              className="text-4xl md:text-5xl font-black mb-2 transition-transform duration-500 group-hover:scale-110"
+              className="text-4xl md:text-5xl font-black mb-2"
               style={{ color: color }}
             >
               {stat.value}

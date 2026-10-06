@@ -27,7 +27,7 @@ export default function ProcessFlow({ color }: { color: string }) {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: index * 0.1 }}
-              className="px-6 py-4 bg-white border border-gray-100 shadow-md rounded-2xl text-center font-bold text-sm md:text-base whitespace-nowrap text-gray-800 transition-transform hover:-translate-y-2"
+              className="px-6 py-4 bg-white border border-gray-100 shadow-sm rounded-2xl text-center font-bold text-sm md:text-base whitespace-nowrap text-gray-800 transition-colors"
               style={{ borderBottom: `4px solid ${color}` }}
             >
               {step}

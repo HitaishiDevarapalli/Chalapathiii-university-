@@ -2,7 +2,7 @@ import React from "react";
 import { 
   Briefcase, Sparkles, GraduationCap, Building, Layers, Handshake, LayoutDashboard,
   Plus, Trash2, ArrowUp, ArrowDown, Trophy, TrendingUp, CheckCircle2, Clock, X,
-  Image as ImageIcon, BookOpen, Award, Eye
+  Image as ImageIcon, BookOpen, Award, Eye, EyeOff
 } from "lucide-react";
 import { 
   PlacementsContent, 
@@ -74,6 +74,59 @@ export const PlacementsCMS: React.FC<PlacementsCMSProps> = ({
         }}
         resetLabel="Reset Placements"
       />
+
+      {/* 🌟 PLACEMENTS PAGE VISIBILITY (HIDE / SHOW) BANNER */}
+      <div className={`p-4 sm:p-5 rounded-2xl border transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm ${
+        placementsForm.hidePage 
+          ? "bg-amber-50/90 border-amber-300 text-amber-950" 
+          : "bg-emerald-50/90 border-emerald-300 text-emerald-950"
+      }`}>
+        <div className="flex items-center gap-3.5">
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-xs ${
+            placementsForm.hidePage ? "bg-amber-200 text-amber-900" : "bg-emerald-200 text-emerald-900"
+          }`}>
+            {placementsForm.hidePage ? <EyeOff size={20} /> : <Eye size={20} />}
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${
+                placementsForm.hidePage ? "bg-amber-200 text-amber-900" : "bg-emerald-200 text-emerald-900"
+              }`}>
+                {placementsForm.hidePage ? "PAGE STATUS: HIDDEN" : "PAGE STATUS: VISIBLE & LIVE"}
+              </span>
+            </div>
+            <h4 className="text-sm font-black mt-1">
+              {placementsForm.hidePage ? "Placements Page is currently Hidden" : "Placements Page is Live on Website"}
+            </h4>
+            <p className="text-xs opacity-80 font-medium mt-0.5">
+              {placementsForm.hidePage 
+                ? "The Placements page and navbar links are hidden from visitors until you re-enable them." 
+                : "The Placements link is visible in the Header navigation, Footer, and accessible to everyone."}
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            const updated = {
+              ...placementsForm,
+              hidePage: !placementsForm.hidePage
+            };
+            setPlacementsForm(updated);
+            updatePlacementsContent(updated);
+            notifySave(updated.hidePage ? "Placements page is now HIDDEN from the website!" : "Placements page is now VISIBLE on the website!");
+          }}
+          className={`h-10 px-5 rounded-xl font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md transition-all shrink-0 uppercase tracking-wider ${
+            placementsForm.hidePage 
+              ? "bg-emerald-600 hover:bg-emerald-700 text-white" 
+              : "bg-amber-600 hover:bg-amber-700 text-white"
+          }`}
+        >
+          {placementsForm.hidePage ? <Eye size={15} /> : <EyeOff size={15} />}
+          <span>{placementsForm.hidePage ? "Make Page Visible" : "Hide Placements Page"}</span>
+        </button>
+      </div>
 
       {/* Subtab Navigation - Real Page on Top, Homepage at Bottom */}
       <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-gray-200">

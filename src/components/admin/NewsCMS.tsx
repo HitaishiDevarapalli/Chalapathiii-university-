@@ -14,7 +14,7 @@ import {
   INITIAL_NEWS, 
   INITIAL_ANNOUNCEMENTS 
 } from "../../context/DataContext";
-import { SectionHeader, ImageField } from "./AdminComponents";
+import { SectionHeader, ImageField, PageVisibilityBanner } from "./AdminComponents";
 
 export function NewsCMS({
   notifySave,
@@ -31,7 +31,9 @@ export function NewsCMS({
     announcements, 
     updateAnnouncements,
     homepageSections,
-    updateHomepageSections
+    updateHomepageSections,
+    siteSettings,
+    updateSiteSettings
   } = useData();
 
   const [newsSubTab, setNewsSubTab] = useState<"pageSettings" | "articlesList" | "announcements" | "homepage">("pageSettings");
@@ -123,6 +125,23 @@ export function NewsCMS({
         saveSuccess={saveSuccess}
         onReset={handleResetAllNews}
         resetLabel="Reset News"
+      />
+
+      <PageVisibilityBanner
+        pageName="News & Articles Portal"
+        routePath="/news"
+        isHidden={Boolean(siteSettings.hiddenPages?.["/news"])}
+        onToggle={() => {
+          const nextHidden = !siteSettings.hiddenPages?.["/news"];
+          updateSiteSettings({
+            ...siteSettings,
+            hiddenPages: {
+              ...(siteSettings.hiddenPages || {}),
+              "/news": nextHidden
+            }
+          });
+          notifySave(nextHidden ? "News page hidden from visitors" : "News page published & visible");
+        }}
       />
 
       {/* Subtabs Selector */}

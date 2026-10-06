@@ -12,7 +12,7 @@ import {
   INITIAL_FACULTY_DATA, 
   INITIAL_BOARD_DATA 
 } from "../../context/DataContext";
-import { ImageField, SectionHeader } from "./AdminComponents";
+import { ImageField, SectionHeader, PageVisibilityBanner } from "./AdminComponents";
 
 interface FacultyCMSProps {
   notifySave: (msg: string) => void;
@@ -73,7 +73,7 @@ export const getDeptData = (deptName: string, source: Record<string, DirectoryDa
 };
 
 export function FacultyCMS({ notifySave }: FacultyCMSProps) {
-  const { facultyData, updateFacultyData, boardData, updateBoardData, homepageSections, updateHomepageSections } = useData();
+  const { facultyData, updateFacultyData, boardData, updateBoardData, homepageSections, updateHomepageSections, siteSettings, updateSiteSettings } = useData();
 
   // Local state for editing
   const [facultyForm, setFacultyForm] = useState<Record<string, DirectoryData>>(facultyData);
@@ -624,6 +624,26 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
         saveSuccess={false}
         onReset={handleResetToDefaults}
         resetLabel="Reset All Directories"
+      />
+
+      <PageVisibilityBanner
+        pageName="Faculty & School Directories"
+        routePath="/management/faculty"
+        isHidden={Boolean(siteSettings.hiddenPages?.["/management/faculty"])}
+        onToggle={() => {
+          const nextHidden = !siteSettings.hiddenPages?.["/management/faculty"];
+          updateSiteSettings({
+            ...siteSettings,
+            hiddenPages: {
+              ...(siteSettings.hiddenPages || {}),
+              "/management/faculty": nextHidden,
+              "/management/faculty/computing": nextHidden,
+              "/management/faculty/engineering": nextHidden,
+              "/management/faculty/business": nextHidden
+            }
+          });
+          notifySave(nextHidden ? "Faculty directory pages hidden from visitors" : "Faculty directory pages published & visible");
+        }}
       />
 
       {/* Main Mode Toggle: Esteemed Faculty (School-wise) vs Board of Governance */}
