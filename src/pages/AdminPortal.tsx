@@ -86,6 +86,7 @@ import { PagesCMS } from "../components/admin/PagesCMS";
 import { CertificationsCMS } from "../components/admin/CertificationsCMS";
 import { PopupCMS } from "../components/admin/PopupCMS";
 import { AcademicsCMS } from "../components/admin/AcademicsCMS";
+import { ApplyOnlineCMS } from "../components/admin/ApplyOnlineCMS";
 
 import { 
   DEFAULT_PROGRAM_SECTIONS, 
@@ -167,7 +168,7 @@ export default function AdminPortal() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    "dashboard" | "pages" | "homepage" | "about" | "academics" | "certifications" | "admissions" | 
+    "dashboard" | "pages" | "homepage" | "about" | "academics" | "certifications" | "admissions" | "apply-online" |
     "research" | "directories" | "campus-life" | "placements" | "news" | "events" | "news-events" | 
     "contact" | "links" | "gallery" | "footer" | "settings" | "popup"
   >("dashboard");
@@ -1458,7 +1459,7 @@ export default function AdminPortal() {
   }
 
   const navItems: {
-    id: "dashboard" | "pages" | "homepage" | "about" | "academics" | "certifications" | "admissions" | "research" | "directories" | "campus-life" | "placements" | "news" | "events" | "news-events" | "contact" | "links" | "gallery" | "footer" | "settings" | "popup";
+    id: "dashboard" | "pages" | "homepage" | "about" | "academics" | "certifications" | "admissions" | "apply-online" | "research" | "directories" | "campus-life" | "placements" | "news" | "events" | "news-events" | "contact" | "links" | "gallery" | "footer" | "settings" | "popup";
     label: string;
     icon: any;
     badge?: string;
@@ -1467,14 +1468,16 @@ export default function AdminPortal() {
     // Dashboard
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, badge: `${enquiries.length}` },
 
-    // PAGE MANAGER
-    { id: "pages", label: "Pages & Page Builder", icon: Layers, badge: `${cmsPages.length}` },
+    // PAGE BUILDERS & MANAGERS
+    { id: "pages", label: "Dynamic Page Builder", icon: Layers, badge: `${cmsPages.length}` },
+    { id: "homepage", label: "Home Page Builder", icon: Sparkles },
 
     // MAIN WEBSITE PAGES
-    { id: "homepage", label: "Home Page Builder", icon: Sparkles, section: "MAIN WEBSITE PAGES" },
-    { id: "about", label: "Genesis & About Us", icon: Building },
+    { id: "about", label: "Genesis & About Us", icon: Building, section: "MAIN WEBSITE PAGES" },
     { id: "academics", label: "Academics", icon: GraduationCap },
+    { id: "certifications", label: "Global Certifications", icon: Award },
     { id: "admissions", label: "Admissions & Leads", icon: UserPlus, badge: `${enquiries.filter(e => e.status === "New").length || ""}` },
+    { id: "apply-online", label: "Apply Online Portal", icon: CreditCard },
     { id: "research", label: "Research & Innovation", icon: Trophy },
     { id: "directories", label: "Faculty & Directories", icon: Users },
     { id: "campus-life", label: "Campus Life", icon: Library },
@@ -1482,8 +1485,9 @@ export default function AdminPortal() {
     { id: "news-events", label: "News & Events", icon: Calendar, badge: `${news.length + events.length}` },
     { id: "contact", label: "Contact Us", icon: Phone },
 
-    // EXTRA
-    { id: "popup", label: "Popup Modal Manager", icon: MessageSquare, section: "EXTRA", badge: "Custom" },
+    // NAVIGATION & UTILITIES
+    { id: "links", label: "Navigation & Quick Links", icon: Link2, section: "NAVIGATION & UTILITIES" },
+    { id: "popup", label: "Popup Modal Manager", icon: MessageSquare, badge: "Custom" },
     { id: "gallery", label: "Gallery & Media", icon: ImageIcon },
     { id: "footer", label: "Footer", icon: Layers },
     { id: "settings", label: "Website Settings", icon: Settings },
@@ -10242,6 +10246,13 @@ export default function AdminPortal() {
           {/* ════════════════════════════════════════════════════ */}
           {activeTab === "admissions" && (
             <AdmissionsCMS notifySave={notifySave} />
+          )}
+
+          {/* ════════════════════════════════════════════════════ */}
+          {/* TAB: APPLY ONLINE PORTAL CMS                         */}
+          {/* ════════════════════════════════════════════════════ */}
+          {activeTab === "apply-online" && (
+            <ApplyOnlineCMS notifySave={notifySave} />
           )}
 
           {/* ════════════════════════════════════════════════════ */}
