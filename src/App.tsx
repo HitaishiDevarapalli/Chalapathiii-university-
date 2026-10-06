@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route, useLocation, Link } from "react-router-dom";
+import React, { useEffect, useState, useMemo } from "react";
+import { BrowserRouter, Routes, Route, useLocation, Link, useNavigate } from "react-router-dom";
 import { X, RefreshCw, CheckCircle2, Megaphone, Bell, Calendar, GraduationCap, FileText, Award, BookOpen, User, Phone, Mail, MapPin, Landmark, MessageSquare, ArrowRight, Send, ShieldCheck, ChevronDown, ChevronUp } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import Header from "./components/layout/Header";
@@ -15,6 +15,7 @@ import AnnouncementDetails from "./pages/AnnouncementDetails";
 import AllEvents from "./pages/AllEvents";
 import AdminPortal from "./pages/AdminPortal";
 import { DataProvider, useData, DEFAULT_ADMISSIONS_CONTENT } from "./context/DataContext";
+import { DEFAULT_POPUP_DATA, PopupCMSData, PopupItem } from "./components/admin/PopupCMS";
 
 // Scroll to top helper on route change
 function ScrollToTop() {
@@ -151,6 +152,7 @@ const ENQUIRY_SCHOOLS_DATA = [
 
 function AppContent() {
   const location = useLocation();
+  const navigate = useNavigate();
   const isAdminPage = location.pathname.startsWith("/admin");
   const { 
     announcements, 
@@ -162,6 +164,37 @@ function AppContent() {
   } = useData();
 
   const enquiryPopupConfig = admissionsContent?.enquiryPopup || DEFAULT_ADMISSIONS_CONTENT.enquiryPopup;
+
+  // Dynamic Popup CMS configuration from Admin
+  const [popupCmsData, setPopupCmsData] = useState<PopupCMSData>(() => {
+    try {
+      const saved = localStorage.getItem("chalapathi_popup_cms_data");
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return DEFAULT_POPUP_DATA;
+  });
+
+  useEffect(() => {
+    const handlePopupSync = () => {
+      try {
+        const saved = localStorage.getItem("chalapathi_popup_cms_data");
+        if (saved) setPopupCmsData(JSON.parse(saved));
+      } catch (e) {}
+    };
+    window.addEventListener("chalapathi_cms_updated", handlePopupSync);
+    window.addEventListener("storage", handlePopupSync);
+    return () => {
+      window.removeEventListener("chalapathi_cms_updated", handlePopupSync);
+      window.removeEventListener("storage", handlePopupSync);
+    };
+  }, []);
+
+  const activePopup = useMemo(() => {
+    if (!popupCmsData.masterEnabled) return null;
+    const found = popupCmsData.popups.find((p) => p.id === popupCmsData.activePopupId && p.enabled !== false);
+    if (found) return found;
+    return popupCmsData.popups.find((p) => p.enabled !== false) || null;
+  }, [popupCmsData]);
 
   const [showSplash, setShowSplash] = useState(siteSettings?.enableSplash !== false);
 
@@ -228,17 +261,18 @@ function AppContent() {
     setActiveAccordion(activeAccordion === id ? null : id);
   };
 
-  // Automatic popup trigger on every page load/reload (Public Pages Only)
+  // Automatic popup trigger on page load (Public Pages Only, respects Admin popup settings)
   useEffect(() => {
-    if (!isAdminPage && !showSplash) {
+    if (!isAdminPage && !showSplash && activePopup && activePopup.autoOpen !== false) {
+      const delayMs = (activePopup.autoOpenDelay ?? 1) * 1000;
       const timer = setTimeout(() => {
         setShowEnquiryModal(true);
-      }, 500);
+      }, delayMs);
       return () => clearTimeout(timer);
-    } else if (isAdminPage) {
+    } else if (isAdminPage || !activePopup) {
       setShowEnquiryModal(false);
     }
-  }, [showSplash, isAdminPage]);
+  }, [showSplash, isAdminPage, activePopup]);
 
   useEffect(() => {
     if (showEnquiryModal) {
@@ -492,9 +526,9 @@ function AppContent() {
       {/* ======================================================== */}
       {/* 🌟 SLIMMED NON-OVERLAPPING STACKED RIGHT-SIDE TABS       */}
       {/* ======================================================== */}
-      {!isAdminPage && enquiryPopupConfig.enabled !== false && (
+      {!isAdminPage && activePopup && (
         <div className="fixed right-0 top-[40%] -translate-y-1/2 z-40 flex flex-col gap-3 items-end font-[var(--font-poppins)]">
-          {/* Admission Enquiry Tab (Navy Blue/White Text) */}
+          {/* Admission Enquiry / Event Tab (Navy Blue/White Text) */}
           <button
             onClick={() => setShowEnquiryModal(true)}
             style={{
@@ -503,7 +537,7 @@ function AppContent() {
             }}
             className="w-[48px] h-[220px] hover:brightness-110 font-bold text-[10px] tracking-[1.5px] rounded-l-xl shadow-md transition-all duration-300 hover:-translate-x-1 flex items-center justify-center [writing-mode:vertical-lr] rotate-180 whitespace-nowrap cursor-pointer select-none uppercase border border-r-0 border-white/10 outline-none"
           >
-            {enquiryPopupConfig.tabLabel || "Admission Enquiry"}
+            {activePopup.type === "event" ? (activePopup.badge || "Campus Event") : (enquiryPopupConfig.tabLabel || "Admission Enquiry")}
           </button>
         </div>
       )}
@@ -578,9 +612,9 @@ function AppContent() {
       )}
 
       {/* ======================================================== */}
-      {/* 🌟 ADMISSION ENQUIRY POPUP MODAL (SRM DESIGN)             */}
+      {/* 🌟 ADMISSION ENQUIRY / EVENT / BANNER POPUP MODAL        */}
       {/* ======================================================== */}
-      {showEnquiryModal && (
+      {showEnquiryModal && activePopup && (
         <div 
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4 md:p-6 overflow-y-auto"
           onClick={() => setShowEnquiryModal(false)}
@@ -594,27 +628,131 @@ function AppContent() {
               scrollbar-width: none !important;
             }
           `}} />
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.35, ease: "easeOut" }}
-            className="bg-white w-full max-w-[1240px] md:h-auto md:max-h-[92vh] rounded-[24px] shadow-2xl relative flex flex-col md:flex-row overflow-hidden border border-gray-100 font-[var(--font-poppins)] text-left select-none"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Left Panel: Schools & Programs */}
-            <div className="w-full md:w-1/2 p-5 md:p-6 border-r border-gray-100 flex flex-col bg-slate-50/30 overflow-y-auto scrollbar-none">
-              {/* Logo */}
-              <div className="flex items-center justify-center mb-6 mt-2">
-                <img 
-                  src={siteSettings?.logoUrl || "/logo.png?v=3"} 
-                  alt={siteSettings?.universityName || "Chalapathi University"} 
-                  loading="eager"
-                  // @ts-ignore
-                  fetchpriority="high"
-                  className="h-20 w-auto object-contain" 
-                />
+
+          {activePopup.type !== "enquiry" ? (
+            /* Custom Event / Promo Banner / Announcement Modal */
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              className="bg-white w-full max-w-[580px] rounded-[24px] shadow-2xl relative flex flex-col overflow-hidden border border-gray-100 font-[var(--font-poppins)] text-left select-none my-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setShowEnquiryModal(false)}
+                className="absolute top-4 right-4 z-20 w-9 h-9 rounded-full bg-black/50 hover:bg-black/75 text-white backdrop-blur-md flex items-center justify-center transition-all hover:scale-105 cursor-pointer shadow-md"
+                aria-label="Close Modal"
+              >
+                <X size={17} />
+              </button>
+
+              {/* Poster Image */}
+              {activePopup.image ? (
+                <div className="relative w-full h-56 sm:h-64 bg-slate-900 overflow-hidden flex items-center justify-center">
+                  <img 
+                    src={activePopup.image} 
+                    alt={activePopup.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+                  
+                  {/* Floating Badge */}
+                  {activePopup.badge && (
+                    <div className="absolute bottom-4 left-5 z-10">
+                      <span className="px-3 py-1 rounded-full bg-[#FAB005] text-[#072A6C] text-[10px] sm:text-[11px] font-black uppercase tracking-wider shadow-md">
+                        {activePopup.badge}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="bg-gradient-to-r from-[#072A6C] to-[#0D47A1] p-6 text-white relative">
+                  {activePopup.badge && (
+                    <span className="px-3 py-1 rounded-full bg-white/20 text-[#FAB005] text-[11px] font-black uppercase tracking-wider inline-block">
+                      {activePopup.badge}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Modal Body */}
+              <div className="p-6 sm:p-7 flex flex-col">
+                {!activePopup.image && activePopup.badge && (
+                  <div className="mb-2">
+                    <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-[11px] font-black uppercase tracking-wider inline-block">
+                      {activePopup.badge}
+                    </span>
+                  </div>
+                )}
+
+                <h3 className="text-xl sm:text-2xl font-black text-[#072A6C] tracking-tight leading-snug">
+                  {activePopup.title}
+                </h3>
+
+                {activePopup.subtitle && (
+                  <p className="text-xs sm:text-sm font-bold text-[#FAB005] uppercase tracking-wide mt-1">
+                    {activePopup.subtitle}
+                  </p>
+                )}
+
+                {activePopup.description && (
+                  <p className="text-xs sm:text-sm text-gray-600 font-medium leading-relaxed mt-3">
+                    {activePopup.description}
+                  </p>
+                )}
+
+                {/* Action CTA Buttons */}
+                <div className="mt-6 pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-center gap-3">
+                  <button
+                    onClick={() => {
+                      setShowEnquiryModal(false);
+                      if (activePopup.redirectUrl) {
+                        if (activePopup.redirectUrl.startsWith("http://") || activePopup.redirectUrl.startsWith("https://")) {
+                          window.open(activePopup.redirectUrl, "_blank");
+                        } else {
+                          navigate(activePopup.redirectUrl);
+                        }
+                      }
+                    }}
+                    className="w-full sm:flex-1 h-12 bg-gradient-to-r from-[#072A6C] to-[#0A388D] hover:from-[#062154] hover:to-[#082e75] text-white font-extrabold text-xs sm:text-sm rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 cursor-pointer uppercase tracking-wider"
+                  >
+                    <span>{activePopup.buttonText || "Learn More & Register"}</span>
+                    <ArrowRight size={15} />
+                  </button>
+
+                  <button
+                    onClick={() => setShowEnquiryModal(false)}
+                    className="w-full sm:w-auto px-5 h-12 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                  >
+                    Dismiss
+                  </button>
+                </div>
               </div>
+            </motion.div>
+          ) : (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              className="bg-white w-full max-w-[1240px] md:h-auto md:max-h-[92vh] rounded-[24px] shadow-2xl relative flex flex-col md:flex-row overflow-hidden border border-gray-100 font-[var(--font-poppins)] text-left select-none"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Left Panel: Schools & Programs */}
+              <div className="w-full md:w-1/2 p-5 md:p-6 border-r border-gray-100 flex flex-col bg-slate-50/30 overflow-y-auto scrollbar-none">
+                {/* Logo */}
+                <div className="flex items-center justify-center mb-6 mt-2">
+                  <img 
+                    src={siteSettings?.logoUrl || "/logo.png?v=3"} 
+                    alt={siteSettings?.universityName || "Chalapathi University"} 
+                    loading="eager"
+                    // @ts-ignore
+                    fetchpriority="high"
+                    className="h-20 w-auto object-contain" 
+                  />
+                </div>
 
               <h3 className="text-[12px] font-black uppercase text-[#072A6C] tracking-wide mb-0.5">
                 {enquiryPopupConfig.leftPanelTitle || "EXPLORE OUR SCHOOLS & PROGRAMS"}
@@ -703,10 +841,10 @@ function AppContent() {
 
               <div className="mb-3.5">
                 <h2 className="text-[18px] font-black text-[#072A6C] tracking-tight uppercase leading-none">
-                  {enquiryPopupConfig.modalTitle || "ADMISSIONS OPEN 2026-27"}
+                  {activePopup?.title || enquiryPopupConfig.modalTitle || "ADMISSIONS OPEN 2026-27"}
                 </h2>
                 <p className="text-[10.5px] text-gray-500 font-medium mt-1">
-                  {enquiryPopupConfig.modalSubtitle || "Build Your Future. Lead with Innovation."}
+                  {activePopup?.subtitle || enquiryPopupConfig.modalSubtitle || "Build Your Future. Lead with Innovation."}
                 </p>
               </div>
 
@@ -911,7 +1049,7 @@ function AppContent() {
                       className="w-full h-11 bg-[#FAB005] hover:bg-[#e09e00] text-gray-900 font-extrabold text-[12px] uppercase tracking-wider rounded-xl flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer outline-none"
                     >
                       <Send size={13} className="rotate-45 -translate-y-0.5" />
-                      <span>{enquiryPopupConfig.ctaButtonText || "APPLY ENQUIRY"}</span>
+                      <span>{activePopup?.buttonText || enquiryPopupConfig.ctaButtonText || "APPLY ENQUIRY"}</span>
                     </button>
 
                     {/* Privacy */}
@@ -924,6 +1062,7 @@ function AppContent() {
               )}
             </div>
           </motion.div>
+          )}
         </div>
       )}
 

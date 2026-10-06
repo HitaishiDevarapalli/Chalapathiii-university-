@@ -83,6 +83,7 @@ import LinksCMS from "../components/admin/LinksCMS";
 import { SettingsCMS } from "../components/admin/SettingsCMS";
 import { PagesCMS } from "../components/admin/PagesCMS";
 import { CertificationsCMS } from "../components/admin/CertificationsCMS";
+import { PopupCMS } from "../components/admin/PopupCMS";
 import { AcademicsCMS } from "../components/admin/AcademicsCMS";
 
 import { 
@@ -167,7 +168,7 @@ export default function AdminPortal() {
   const [activeTab, setActiveTab] = useState<
     "dashboard" | "pages" | "homepage" | "about" | "academics" | "certifications" | "admissions" | 
     "research" | "directories" | "campus-life" | "placements" | "news" | "events" | "news-events" | 
-    "contact" | "links" | "gallery" | "footer" | "settings"
+    "contact" | "links" | "gallery" | "footer" | "settings" | "popup"
   >("dashboard");
 
   const [newsEventsModuleTab, setNewsEventsModuleTab] = useState<"news" | "events">("news");
@@ -1437,7 +1438,7 @@ export default function AdminPortal() {
   }
 
   const navItems: {
-    id: "dashboard" | "pages" | "homepage" | "about" | "academics" | "certifications" | "admissions" | "research" | "directories" | "campus-life" | "placements" | "news" | "events" | "news-events" | "contact" | "links" | "gallery" | "footer" | "settings";
+    id: "dashboard" | "pages" | "homepage" | "about" | "academics" | "certifications" | "admissions" | "research" | "directories" | "campus-life" | "placements" | "news" | "events" | "news-events" | "contact" | "links" | "gallery" | "footer" | "settings" | "popup";
     label: string;
     icon: any;
     badge?: string;
@@ -1461,7 +1462,8 @@ export default function AdminPortal() {
     { id: "contact", label: "Contact Us", icon: Phone },
 
     // EXTRA
-    { id: "gallery", label: "Gallery & Media", icon: ImageIcon, section: "EXTRA" },
+    { id: "popup", label: "Popup Modal Manager", icon: MessageSquare, section: "EXTRA", badge: "Custom" },
+    { id: "gallery", label: "Gallery & Media", icon: ImageIcon },
     { id: "footer", label: "Footer", icon: Layers },
     { id: "settings", label: "Website Settings", icon: Settings },
   ];
@@ -10086,6 +10088,13 @@ export default function AdminPortal() {
           )}
 
           {/* ════════════════════════════════════════════════════ */}
+          {/* TAB: POPUP MODAL MANAGER                             */}
+          {/* ════════════════════════════════════════════════════ */}
+          {activeTab === "popup" && (
+            <PopupCMS notifySave={notifySave} />
+          )}
+
+          {/* ════════════════════════════════════════════════════ */}
           {/* TAB 5b: CAMPUS LIFE & FACILITIES CMS                 */}
           {/* ════════════════════════════════════════════════════ */}
           {activeTab === "campus-life" && (
@@ -11349,6 +11358,13 @@ export default function AdminPortal() {
           {/* ════════════════════════════════════════════════════ */}
           {activeTab === "footer" && (
             <FooterCMS />
+          )}
+
+          {/* ════════════════════════════════════════════════════ */}
+          {/* TAB: POPUP MODAL MANAGER CMS                         */}
+          {/* ════════════════════════════════════════════════════ */}
+          {activeTab === "popup" && (
+            <PopupCMS notifySave={notifySave} />
           )}
 
           {/* ════════════════════════════════════════════════════ */}
