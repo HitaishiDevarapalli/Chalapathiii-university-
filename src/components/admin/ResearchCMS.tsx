@@ -57,7 +57,7 @@ export const DEFAULT_RESEARCH_DATA: ResearchCMSData = {
   pageTitle: "Research & Innovation",
   pageSubtitle: "Fostering academic inquiry, scientific research, and technological development.",
   isUnderConstruction: true,
-  underConstructionMessage: "This section is currently under development. Our new Research & Innovation portal featuring doctoral programs, active grants, publications, and patents is coming soon.",
+  underConstructionMessage: "This page is currently under construction.",
   contactEmail: "research@chalapathi.ac.in",
   contactPhone: "+91 95055 05566",
   hidden: false,
