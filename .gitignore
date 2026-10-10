@@ -44,3 +44,11 @@ next-env.d.ts
 
 /src/generated/prisma
 dev.db
+
+# Server & Docker
+server/node_modules/
+server/dist/
+server/.env
+server/prisma/dev.db*
+uploads/
+

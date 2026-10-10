@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: supersecurepassword123
+      POSTGRES_DB: chalapathi
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  # 2. Node.js Express Backend
+  backend:
+    build:
+      context: ./server
+    restart: unless-stopped
+    environment:
+      # Connects to the 'db' container internally
+      - DATABASE_URL=postgresql://postgres:supersecurepassword123@db:5432/chalapathi?schema=public
+      - PORT=5000
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    volumes:
+      # Persist uploaded files on the host machine
+      - ./uploads:/app/uploads
+    # Automatically run migrations and start the server
+    command: sh -c "npx prisma migrate deploy && npm run prisma:seed && npm start"
+
+  # 3. React Frontend + Nginx (Serves UI and proxies /api to backend)
+  frontend:
+    build:
+      context: .
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      # Uncomment below and configure SSL later for https
+      # - "443:443"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:

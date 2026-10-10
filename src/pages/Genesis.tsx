@@ -331,8 +331,16 @@ export default function Genesis() {
                 { title: "Service to Society" }
               ]
             ).map((item, idx) => {
-              const icons = [BookOpen, Lightbulb, Globe, HeartHandshake];
-              const IconComp = icons[idx % icons.length];
+              const svgIcons = [
+                // BookOpen - Knowledge
+                <svg key="book" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>,
+                // Lightbulb - Innovation
+                <svg key="bulb" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>,
+                // Globe - Global Opportunities
+                <svg key="globe" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>,
+                // HeartHandshake - Service to Society
+                <svg key="heart" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M12 5 9.04 7.96a2.17 2.17 0 0 0 0 3.08c.82.82 2.13.85 3 .07l2.07-1.9a2.82 2.82 0 0 1 3.79 0l2.96 2.66"/><path d="m18 15-2-2"/><path d="m15 18-2-2"/></svg>
+              ];
               return (
                 <motion.div
                   key={idx}
@@ -342,7 +350,7 @@ export default function Genesis() {
                   <div className="absolute inset-0 bg-gradient-to-br from-sky-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   
                   <div className="w-16 h-16 rounded-2xl bg-white shadow-sm border border-slate-100 text-[#123A7A] group-hover:bg-[#123A7A] group-hover:text-white group-hover:border-[#123A7A] transition-colors duration-500 flex items-center justify-center mb-6 relative z-10">
-                    <IconComp size={28} strokeWidth={1.5} />
+                    {svgIcons[idx % svgIcons.length]}
                   </div>
                   <h3 className="text-[18px] font-[800] text-[#0F172A] leading-tight relative z-10 group-hover:text-[#123A7A] transition-colors mb-2">
                     {item.title}
@@ -419,9 +427,22 @@ export default function Genesis() {
               const isTablet = windowWidth >= 768 && windowWidth < 1024;
               const isLaptop = windowWidth >= 1024 && windowWidth < 1300;
               
-              const icons = [HeartHandshake, Microscope, Lightbulb, Target, Briefcase, Library];
+              const nepSvgIcons = [
+                // HeartHandshake
+                <svg key="hh" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M12 5 9.04 7.96a2.17 2.17 0 0 0 0 3.08c.82.82 2.13.85 3 .07l2.07-1.9a2.82 2.82 0 0 1 3.79 0l2.96 2.66"/><path d="m18 15-2-2"/><path d="m15 18-2-2"/></svg>,
+                // Microscope
+                <svg key="mic" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 18h8"/><path d="M3 22h18"/><path d="M14 22a7 7 0 1 0 0-14h-1"/><path d="M9 14h2"/><path d="M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2Z"/><path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"/></svg>,
+                // Lightbulb
+                <svg key="lb" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>,
+                // Target
+                <svg key="tgt" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
+                // Briefcase
+                <svg key="bc" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>,
+                // Library
+                <svg key="lib" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/></svg>
+              ];
               const nepNodes = nepNodesList.map((node, i) => {
-                const IconComponent = icons[i % icons.length];
+                const iconElement = nepSvgIcons[i % nepSvgIcons.length];
                 const angle = (i * 360) / nepNodesList.length;
                 let x = 0;
                 let y = 0;
@@ -442,7 +463,7 @@ export default function Genesis() {
                   y = Math.sin(angleRad) * radiusY;
                 }
                 
-                return { ...node, icon: IconComponent, x, y };
+                return { ...node, iconElement, x, y };
               });
 
               return (
@@ -534,7 +555,7 @@ export default function Genesis() {
                         
                         <div className="flex items-center justify-between mb-3">
                           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400/20 to-purple-500/20 border border-white/10 flex items-center justify-center text-sky-400 group-hover:text-white group-hover:scale-110 transition-all duration-300 shadow-inner">
-                            <node.icon size={20} />
+                            {node.iconElement}
                           </div>
                           <span className="text-xs font-bold text-sky-300 bg-sky-900/40 px-2 py-1 rounded-md border border-sky-500/20">{node.stat}</span>
                         </div>
@@ -575,8 +596,14 @@ export default function Genesis() {
                 "from-[#0F172A] to-[#334155]",
                 "from-[#B45309] to-[#F59E0B]"
               ];
-              const schoolIcons = [Code, Cpu, Briefcase];
-              const SchoolIcon = schoolIcons[i % schoolIcons.length];
+              const schoolSvgIcons = [
+                // Code
+                <svg key="code" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#123A7A] group-hover:text-white transition-colors"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>,
+                // Cpu
+                <svg key="cpu" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#123A7A] group-hover:text-white transition-colors"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg>,
+                // Briefcase
+                <svg key="bcase" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#123A7A] group-hover:text-white transition-colors"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>
+              ];
               const colorGrad = colors[i % colors.length];
 
               return (
@@ -592,7 +619,7 @@ export default function Genesis() {
                   
                   <div className="relative z-10 flex flex-col h-full">
                     <div className="w-16 h-16 rounded-2xl bg-[#F8FAFC] border border-[#E7EDF4] flex items-center justify-center mb-8 group-hover:bg-white/20 group-hover:border-white/30 transition-colors">
-                      <SchoolIcon size={28} className="text-[#123A7A] group-hover:text-white transition-colors" />
+                      {schoolSvgIcons[i % schoolSvgIcons.length]}
                     </div>
                     
                     <h3 className="text-[22px] font-[800] text-[#123A7A] group-hover:text-white transition-colors mb-6">{school.title}</h3>

@@ -1,0 +1,352 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────
+// 1. ADMIN USERS
+// ─────────────────────────────────────────────────────────────
+model AdminUser {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  passwordHash String   @map("password_hash")
+  role         String   @default("admin") // admin | superadmin
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("admin_users")
+}
+
+// ─────────────────────────────────────────────────────────────
+// 2. NEWS ARTICLES
+// ─────────────────────────────────────────────────────────────
+model NewsArticle {
+  id        Int      @id @default(autoincrement())
+  title     String
+  slug      String   @unique
+  date      String
+  time      String   @default("")
+  location  String   @default("")
+  category  String   @default("General")
+  excerpt   String   @default("")
+  bodyText  String   @default("") @map("body_text")
+  image     String   @default("")
+  images    String   @default("[]") // JSON array of image URLs
+  sourceUrl String?  @map("source_url")
+  featured  Boolean  @default(false)
+  readTime  String?  @map("read_time")
+  hidden    Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("news_articles")
+}
+
+// ─────────────────────────────────────────────────────────────
+// 3. ANNOUNCEMENTS
+// ─────────────────────────────────────────────────────────────
+model Announcement {
+  id          Int    @id @default(autoincrement())
+  title       String
+  description String @default("")
+  date        String
+  iconName    String @default("Bell") @map("icon_name")
+  sortOrder   Int    @default(0) @map("sort_order")
+
+  @@map("announcements")
+}
+
+// ─────────────────────────────────────────────────────────────
+// 4. EVENTS
+// ─────────────────────────────────────────────────────────────
+model Event {
+  id               Int      @id @default(autoincrement())
+  slug             String   @unique
+  title            String
+  date             String
+  time             String   @default("")
+  location         String   @default("")
+  category         String   @default("General")
+  image            String   @default("")
+  images           String   @default("[]") // JSON array
+  bodyText         String   @default("") @map("body_text")
+  registrationUrl  String?  @map("registration_url")
+  registrationOpen Boolean  @default(true) @map("registration_open")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  registrations EventRegistration[]
+
+  @@map("events")
+}
+
+// ─────────────────────────────────────────────────────────────
+// 5. EVENT REGISTRATIONS (Attendee CRM)
+// ─────────────────────────────────────────────────────────────
+model EventRegistration {
+  id           String   @id @default(uuid())
+  fullName     String   @map("full_name")
+  email        String
+  phone        String
+  eventId      Int      @map("event_id")
+  eventTitle   String   @default("") @map("event_title")
+  registeredAt DateTime @default(now()) @map("registered_at")
+  status       String   @default("Confirmed") // Confirmed | Attended | Cancelled
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@map("event_registrations")
+}
+
+// ─────────────────────────────────────────────────────────────
+// 6. HERO SLIDES
+// ─────────────────────────────────────────────────────────────
+model HeroSlide {
+  id        Int     @id @default(autoincrement())
+  image     String
+  title     String  @default("")
+  subtitle  String  @default("")
+  hidden    Boolean @default(false)
+  sortOrder Int     @default(0) @map("sort_order")
+
+  @@map("hero_slides")
+}
+
+// ─────────────────────────────────────────────────────────────
+// 7. ENQUIRY LEADS (Admission Enquiries)
+// ─────────────────────────────────────────────────────────────
+model EnquiryLead {
+  id            String   @id @default(uuid())
+  name          String
+  mobile        String
+  email         String
+  city          String   @default("")
+  state         String   @default("")
+  qualification String   @default("")
+  yearOfPassing String   @default("") @map("year_of_passing")
+  program       String   @default("")
+  query         String?
+  date          String
+  status        String   @default("New") // New | Contacted | Admitted | Closed
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("enquiry_leads")
+}
+
+// ─────────────────────────────────────────────────────────────
+// 8. ONLINE APPLICATIONS
+// ─────────────────────────────────────────────────────────────
+model OnlineApplication {
+  id                 String   @id @default(uuid())
+  applicationNo      String   @unique @map("application_no")
+  fullName           String   @map("full_name")
+  email              String
+  mobile             String
+  state              String   @default("")
+  city               String?
+  program            String
+  qualification      String   @default("")
+  yearOfPassing      String   @default("") @map("year_of_passing")
+  parentName         String?  @map("parent_name")
+  gender             String?
+  dob                String?
+  applicationFeePaid Boolean  @default(false) @map("application_fee_paid")
+  transactionId      String?  @map("transaction_id")
+  submittedAt        DateTime @default(now()) @map("submitted_at")
+  status             String   @default("Submitted") // Submitted | Verified | Under Review | Admitted | Rejected
+
+  @@map("online_applications")
+}
+
+// ─────────────────────────────────────────────────────────────
+// 9. FACULTY MEMBERS (Faculty + Board + Staff directories)
+// ─────────────────────────────────────────────────────────────
+model FacultyMember {
+  id            Int    @id @default(autoincrement())
+  name          String
+  title         String @default("") // Designation
+  edu           String @default("") // Qualifications
+  interests     String @default("") // Research areas
+  phone         String @default("")
+  email         String @default("")
+  avatar        String @default("") // Image URL
+  age           String @default("")
+  experience    String @default("")
+  idNo          String @default("") @map("id_no") // Employee ID
+  department    String @default("")
+  school        String @default("")
+  isHod         Boolean @default(false) @map("is_hod")
+  directoryType String  @default("faculty") @map("directory_type") // faculty | board | staff
+
+  @@map("faculty_members")
+}
+
+// ─────────────────────────────────────────────────────────────
+// 10. PLACED STUDENTS
+// ─────────────────────────────────────────────────────────────
+model PlacedStudent {
+  id      Int    @id @default(autoincrement())
+  name    String
+  branch  String @default("")
+  company String @default("")
+  ctc     String @default("")
+  image   String @default("")
+
+  @@map("placed_students")
+}
+
+// ─────────────────────────────────────────────────────────────
+// 11. RECRUITERS
+// ─────────────────────────────────────────────────────────────
+model Recruiter {
+  id        Int    @id @default(autoincrement())
+  name      String
+  logo      String @default("")
+  sortOrder Int    @default(0) @map("sort_order")
+
+  @@map("recruiters")
+}
+
+// ─────────────────────────────────────────────────────────────
+// 12. SUCCESS STORIES
+// ─────────────────────────────────────────────────────────────
+model SuccessStory {
+  id             Int    @id @default(autoincrement())
+  studentName    String @map("student_name")
+  studentImage   String @default("") @map("student_image")
+  department     String @default("")
+  batch          String @default("")
+  companyName    String @default("") @map("company_name")
+  companyLogo    String @default("") @map("company_logo")
+  packageOffered String @default("") @map("package_offered")
+  description    String @default("")
+  skills         String @default("[]") // JSON array
+  internshipExp  String @default("") @map("internship_exp")
+  achievement    String @default("")
+  milestones     String @default("{}") // JSON object
+
+  @@map("success_stories")
+}
+
+// ─────────────────────────────────────────────────────────────
+// 13. PROGRAMS (Academic Programs)
+// ─────────────────────────────────────────────────────────────
+model Program {
+  id         Int    @id @default(autoincrement())
+  slug       String @unique
+  name       String
+  school     String @default("")
+  department String @default("")
+  level      String @default("") // UG | PG | Ph.D | Diploma
+  duration   String @default("")
+  dataJson   String @default("{}") @map("data_json") // Full program detail JSON
+
+  @@map("programs")
+}
+
+// ─────────────────────────────────────────────────────────────
+// 14. CERTIFICATIONS
+// ─────────────────────────────────────────────────────────────
+model Certification {
+  id          Int    @id @default(autoincrement())
+  title       String
+  provider    String @default("")
+  description String @default("")
+  image       String @default("")
+  dataJson    String @default("{}") @map("data_json") // Full certification data
+
+  @@map("certifications")
+}
+
+// ─────────────────────────────────────────────────────────────
+// 15. CMS PAGES (Dynamic Pages)
+// ─────────────────────────────────────────────────────────────
+model CmsPage {
+  id               String   @id @default(uuid())
+  slug             String   @unique
+  name             String
+  title            String   @default("")
+  type             String   @default("custom")
+  status           String   @default("draft") // draft | published
+  displayOrder     Int      @default(0) @map("display_order")
+  showInNav        Boolean  @default(false) @map("show_in_nav")
+  parentNav        String?  @map("parent_nav")
+  dataJson         String   @default("{}") @map("data_json") // Page sections JSON
+  seoTitle         String?  @map("seo_title")
+  seoDescription   String?  @map("seo_description")
+  seoKeywords      String?  @map("seo_keywords")
+  shortDescription String?  @map("short_description")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  versions CmsPageVersion[]
+
+  @@map("cms_pages")
+}
+
+// ─────────────────────────────────────────────────────────────
+// 16. CMS PAGE VERSIONS (Rollback History)
+// ─────────────────────────────────────────────────────────────
+model CmsPageVersion {
+  id           String   @id @default(uuid())
+  pageSlug     String   @map("page_slug")
+  author       String   @default("admin")
+  note         String?
+  snapshotJson String   @default("{}") @map("snapshot_json")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  page CmsPage @relation(fields: [pageSlug], references: [slug], onDelete: Cascade)
+
+  @@map("cms_page_versions")
+}
+
+// ─────────────────────────────────────────────────────────────
+// 17. DEPARTMENT CONTACTS
+// ─────────────────────────────────────────────────────────────
+model DepartmentContact {
+  id            String @id @default(uuid())
+  name          String
+  contactPerson String? @map("contact_person")
+  phones        String  @default("[]") // JSON array
+  emails        String  @default("[]") // JSON array
+  note          String?
+
+  @@map("department_contacts")
+}
+
+// ─────────────────────────────────────────────────────────────
+// 18. HOMEPAGE SECTIONS (Ordering & Config)
+// ─────────────────────────────────────────────────────────────
+model HomepageSection {
+  id          Int     @id @default(autoincrement())
+  sectionId   String  @unique @map("section_id")
+  name        String
+  enabled     Boolean @default(true)
+  sortOrder   Int     @default(0) @map("sort_order")
+  title       String?
+  subtitle    String?
+  description String?
+  buttonText  String? @map("button_text")
+  buttonUrl   String? @map("button_url")
+  bgColor     String? @map("bg_color")
+  textColor   String? @map("text_color")
+  accentColor String? @map("accent_color")
+  extraData   String? @map("extra_data") // JSON
+
+  @@map("homepage_sections")
+}
+
+// ─────────────────────────────────────────────────────────────
+// 19. SITE CONFIGS (Key-Value JSON Store)
+// ─────────────────────────────────────────────────────────────
+model SiteConfig {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  valueJson String   @map("value_json") // Full JSON blob
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("site_configs")
+}
