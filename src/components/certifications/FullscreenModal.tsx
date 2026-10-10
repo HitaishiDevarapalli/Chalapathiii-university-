@@ -69,9 +69,10 @@ export default function FullscreenModal({ cert, onClose }: FullscreenModalProps)
     >
       <button 
         onClick={onClose}
-        className="fixed top-6 right-6 z-50 w-12 h-12 bg-black/5 hover:bg-black/10 backdrop-blur-md rounded-full flex items-center justify-center text-gray-800 transition-colors cursor-pointer"
+        className="fixed top-4 right-4 sm:top-6 sm:right-6 z-50 w-10 h-10 sm:w-12 sm:h-12 bg-white/90 hover:bg-white border border-gray-200 shadow-md rounded-full flex items-center justify-center text-gray-800 transition-colors cursor-pointer outline-none"
+        aria-label="Close Modal"
       >
-        <X size={24} />
+        <X size={20} className="sm:w-6 sm:h-6" />
       </button>
 
       {renderLayout()}

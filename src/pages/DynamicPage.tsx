@@ -413,6 +413,7 @@ const getPageContent = (path: string, programs: any[], newsPageConfig?: any) => 
         title: "Global Certifications",
         category: "Academics",
         desc: "Graduate with internationally respected certifications that complement your academic degree.",
+        isFullBleed: true,
         body: <GlobalCertifications />
       };
     }
@@ -507,8 +508,8 @@ const getPageContent = (path: string, programs: any[], newsPageConfig?: any) => 
               ))}
             </div>
 
-            {/* Global Certifications Section (Full Width Breakout) */}
-            <div className="mt-20 w-[100vw] relative left-[50%] right-[50%] -ml-[50vw] -mr-[50vw]">
+            {/* Global Certifications Section */}
+            <div className="mt-12 sm:mt-16 w-full overflow-hidden">
               <GlobalCertifications />
             </div>
 
@@ -634,8 +635,8 @@ const getPageContent = (path: string, programs: any[], newsPageConfig?: any) => 
             </Link>
           </div>
           
-          {/* Global Certifications Section (Full Width Breakout) */}
-          <div className="mt-20 w-[100vw] relative left-[50%] right-[50%] -ml-[50vw] -mr-[50vw]">
+          {/* Global Certifications Section */}
+          <div className="mt-12 sm:mt-16 w-full overflow-hidden">
             <GlobalCertifications />
           </div>
         </div>
@@ -1258,32 +1259,32 @@ function InteractiveCalendarWidget({ year, courseKey }: { year: string; courseKe
   const activeEvent = getEventDetail(rawActiveEvent);
 
   return (
-    <div className="p-4 bg-gray-50/70 border-t border-gray-100 animate-slide-down">
-      <div className="flex justify-between items-center mb-3">
-        <span className="text-[10px] font-bold text-[#072A6C] uppercase tracking-wider">Visual Academic Calendar ({year})</span>
+    <div className="p-2 sm:p-4 bg-gray-50/70 border-t border-gray-100 animate-slide-down">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1 sm:gap-0 mb-3">
+        <span className="text-[10px] sm:text-xs font-bold text-[#072A6C] uppercase tracking-wider">Visual Academic Calendar ({year})</span>
         <button 
           onClick={() => alert(`Academic Calendar PDF for ${year} is queued for download.`)}
-          className="text-[10px] font-bold text-[#D4AF37] hover:text-[#072A6C] transition-colors cursor-pointer"
+          className="text-[10px] sm:text-xs font-bold text-[#D4AF37] hover:text-[#072A6C] transition-colors cursor-pointer"
         >
           Download Calendar PDF
         </button>
       </div>
 
       {/* Main split box matching reference visual styling */}
-      <div className="flex flex-col md:flex-row rounded-3xl border border-gray-200 overflow-hidden shadow-md">
+      <div className="flex flex-col md:flex-row rounded-2xl sm:rounded-3xl border border-gray-200 overflow-hidden shadow-md">
         {/* Left Side: Calendar Grid */}
-        <div className="w-full md:w-3/5 bg-gray-50/90 p-6 flex flex-col justify-between min-h-[340px]">
+        <div className="w-full md:w-3/5 bg-gray-50/90 p-3 sm:p-6 flex flex-col justify-between min-h-[300px] sm:min-h-[340px]">
           {/* Header Month/Year Selection */}
-          <div className="flex justify-between items-center mb-6">
-            <span className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-widest">{displayYear - 1}</span>
-            <div className="flex items-center gap-2">
+          <div className="flex justify-between items-center mb-3 sm:mb-6">
+            <span className="text-[9px] sm:text-[10px] font-bold text-[#D4AF37] uppercase tracking-widest">{displayYear - 1}</span>
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <button 
                 onClick={prevMonth}
                 className="w-6 h-6 rounded-full bg-white border border-gray-200 hover:bg-gray-100 flex items-center justify-center text-[10px] text-[#072A6C] shadow-xs cursor-pointer outline-none"
               >
                 ◀
               </button>
-              <h5 className="text-sm font-extrabold text-[#072A6C] uppercase tracking-widest px-2">
+              <h5 className="text-xs sm:text-sm font-extrabold text-[#072A6C] uppercase tracking-wider sm:tracking-widest px-1 sm:px-2">
                 {currentMonth.name}, {displayYear}
               </h5>
               <button 
@@ -1293,22 +1294,22 @@ function InteractiveCalendarWidget({ year, courseKey }: { year: string; courseKe
                 ▶
               </button>
             </div>
-            <span className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-widest">{displayYear + 1}</span>
+            <span className="text-[9px] sm:text-[10px] font-bold text-[#D4AF37] uppercase tracking-widest">{displayYear + 1}</span>
           </div>
 
           {/* Weekday headers */}
-          <div className="grid grid-cols-7 gap-y-2 text-center text-[10px] font-bold text-[#072A6C]/70 uppercase mb-3 tracking-wider">
-            <span>Sun</span>
-            <span>Mon</span>
-            <span>Tue</span>
-            <span>Wed</span>
-            <span>Thur</span>
-            <span>Fri</span>
-            <span>Sat</span>
+          <div className="grid grid-cols-7 gap-1 text-center text-[10px] sm:text-xs font-bold text-[#072A6C]/80 uppercase mb-2 sm:mb-3">
+            <span><span className="sm:hidden">S</span><span className="hidden sm:inline">Sun</span></span>
+            <span><span className="sm:hidden">M</span><span className="hidden sm:inline">Mon</span></span>
+            <span><span className="sm:hidden">T</span><span className="hidden sm:inline">Tue</span></span>
+            <span><span className="sm:hidden">W</span><span className="hidden sm:inline">Wed</span></span>
+            <span><span className="sm:hidden">T</span><span className="hidden sm:inline">Thu</span></span>
+            <span><span className="sm:hidden">F</span><span className="hidden sm:inline">Fri</span></span>
+            <span><span className="sm:hidden">S</span><span className="hidden sm:inline">Sat</span></span>
           </div>
 
           {/* Grid Cells */}
-          <div className="grid grid-cols-7 gap-y-2.5 text-center items-center relative">
+          <div className="grid grid-cols-7 gap-y-1.5 sm:gap-y-2.5 gap-x-0.5 sm:gap-x-1 text-center items-center relative">
             {dayCells.map((day, idx) => {
               if (day === null) return <div key={`empty-${idx}`} />;
               
@@ -1335,9 +1336,9 @@ function InteractiveCalendarWidget({ year, courseKey }: { year: string; courseKe
                         ? itemColor 
                         : "#072A6C"
                   }}
-                  className={`w-9 h-9 mx-auto rounded-full flex flex-col items-center justify-center text-[12px] font-bold transition-all relative cursor-pointer outline-none ${
+                  className={`w-7 h-7 xs:w-8 xs:h-8 sm:w-9 sm:h-9 mx-auto rounded-full flex flex-col items-center justify-center text-[10px] sm:text-[12px] font-bold transition-all relative cursor-pointer outline-none ${
                     isSelected 
-                      ? "shadow-md scale-110 ring-2 ring-white/60" 
+                      ? "shadow-md scale-105 sm:scale-110 ring-1 sm:ring-2 ring-white/60" 
                       : hasEvent 
                         ? "border-2 hover:scale-105 shadow-xs font-black" 
                         : "hover:bg-gray-200/60"
@@ -1347,7 +1348,7 @@ function InteractiveCalendarWidget({ year, courseKey }: { year: string; courseKe
                   <span className="leading-none">{day}</span>
                   {hasEvent && !isSelected && (
                     <span 
-                      className="w-1.5 h-1.5 rounded-full absolute bottom-1"
+                      className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full absolute bottom-0.5 sm:bottom-1"
                       style={{ backgroundColor: itemColor }}
                     />
                   )}
@@ -1357,15 +1358,15 @@ function InteractiveCalendarWidget({ year, courseKey }: { year: string; courseKe
           </div>
 
           {/* Color Legend & Bottom Actions */}
-          <div className="mt-5 pt-3 border-t border-gray-200/70 space-y-3">
-            <div className="flex flex-wrap items-center justify-center gap-3 text-[9px] font-bold text-gray-500">
-              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#10B981]"></span> Commencement / Starts</span>
-              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#EF4444]"></span> Exams & Deadlines</span>
-              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#F59E0B]"></span> Holidays</span>
-              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#D4AF37]"></span> Cultural & Fests</span>
-              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#8B5CF6]"></span> Vacations</span>
+          <div className="mt-4 sm:mt-5 pt-3 border-t border-gray-200/70 space-y-3">
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-[8.5px] sm:text-[9.5px] font-bold text-gray-500">
+              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#10B981]"></span> Starts</span>
+              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#EF4444]"></span> Exams</span>
+              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#F59E0B]"></span> Holidays</span>
+              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#D4AF37]"></span> Fests</span>
+              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#8B5CF6]"></span> Vacations</span>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <button 
                 onClick={() => alert(`Full academic schedule for ${currentMonth.name} is displayed in the sidebar.`)}
                 className="flex-1 py-2 bg-[#072A6C] hover:bg-[#072A6C]/90 text-white text-[9.5px] font-bold rounded-lg tracking-widest uppercase transition-colors outline-none cursor-pointer"
@@ -1383,20 +1384,20 @@ function InteractiveCalendarWidget({ year, courseKey }: { year: string; courseKe
         </div>
 
         {/* Right Side: University Blue Events Panel */}
-        <div className="w-full md:w-2/5 bg-[#072A6C] p-6 text-white flex flex-col justify-between min-h-[340px]">
+        <div className="w-full md:w-2/5 bg-[#072A6C] p-4 sm:p-6 text-white flex flex-col justify-between min-h-[280px] sm:min-h-[340px]">
           <div>
             <div className="flex items-center justify-between mb-1">
               <span className="text-[10px] font-extrabold text-[#D4AF37] uppercase tracking-widest">Schedule & Details</span>
               <span className="text-[9px] font-bold bg-white/10 px-2 py-0.5 rounded text-white/80">{currentMonth.name} {displayYear}</span>
             </div>
-            <h5 className="text-xs font-extrabold uppercase tracking-widest pb-2 border-b border-white/10 mb-4">
+            <h5 className="text-xs font-extrabold uppercase tracking-widest pb-2 border-b border-white/10 mb-3 sm:mb-4">
               Academic Milestones
             </h5>
 
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {/* Display specific event if selected date has one */}
               {activeEvent ? (
-                <div className="space-y-2 animate-slide-down bg-white/5 p-3.5 rounded-xl border border-white/10">
+                <div className="space-y-2 animate-slide-down bg-white/5 p-3 sm:p-3.5 rounded-xl border border-white/10">
                   <div className="flex items-center justify-between">
                     <span 
                       className="text-[9px] font-black uppercase px-2 py-0.5 rounded text-white shadow-xs"
@@ -1409,7 +1410,7 @@ function InteractiveCalendarWidget({ year, courseKey }: { year: string; courseKe
                     </span>
                   </div>
                   <div 
-                    className="text-[13px] font-black uppercase tracking-wide leading-snug"
+                    className="text-[12px] sm:text-[13px] font-black uppercase tracking-wide leading-snug"
                     style={{ color: activeEvent.color === "#072A6C" ? "#93C5FD" : activeEvent.color }}
                   >
                     {activeEvent.eventName}
@@ -1437,11 +1438,11 @@ function InteractiveCalendarWidget({ year, courseKey }: { year: string; courseKe
             </div>
           </div>
 
-          <div className="pt-4 border-t border-white/10 space-y-2">
+          <div className="pt-3 sm:pt-4 border-t border-white/10 space-y-2 mt-3 sm:mt-0">
             <span className="text-[9px] font-bold text-amber-300 uppercase tracking-widest block">
               {currentMonth.name} Events ({Object.keys(currentMonth.events).length}):
             </span>
-            <div className="max-h-36 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
+            <div className="max-h-32 sm:max-h-36 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
               {Object.keys(currentMonth.events).length > 0 ? (
                 Object.entries(currentMonth.events).map(([dayStr, rawEv]) => {
                   const evDay = parseInt(dayStr);
@@ -1484,9 +1485,9 @@ function InteractiveCalendarWidget({ year, courseKey }: { year: string; courseKe
 }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* 5-Year Selection Pills */}
-      <div className="flex flex-wrap gap-2 pb-2 border-b border-gray-100">
+      <div className="flex flex-wrap gap-1.5 sm:gap-2 pb-2 border-b border-gray-100">
         {years.map((year) => (
           <button
             key={year}
@@ -1494,7 +1495,7 @@ function InteractiveCalendarWidget({ year, courseKey }: { year: string; courseKe
               setSelectedYear(year);
               setActiveCourse(null);
             }}
-            className={`px-4 py-2 text-xs font-bold rounded-full transition-all cursor-pointer outline-none ${
+            className={`px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold rounded-full transition-all cursor-pointer outline-none ${
               selectedYear === year
                 ? "bg-[#D4AF37] text-white shadow-sm"
                 : "bg-white text-gray-600 border border-gray-200 hover:border-gray-300"
@@ -1506,17 +1507,17 @@ function InteractiveCalendarWidget({ year, courseKey }: { year: string; courseKe
       </div>
 
       {/* University Categories & Course Lists */}
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {Object.entries(universitysData[selectedYear] || {}).map(([schoolName, departments]) => (
-          <div key={schoolName} className="bg-white border border-gray-200/60 rounded-[16px] p-6 shadow-sm">
-            <h4 className="text-sm font-extrabold text-[#072A6C] mb-6 border-l-4 border-[#D4AF37] pl-3 tracking-wide uppercase">
+          <div key={schoolName} className="bg-white border border-gray-200/60 rounded-[14px] sm:rounded-[16px] p-3.5 sm:p-6 shadow-sm">
+            <h4 className="text-xs sm:text-sm font-extrabold text-[#072A6C] mb-4 sm:mb-6 border-l-4 border-[#D4AF37] pl-3 tracking-wide uppercase">
               {schoolName}
             </h4>
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-4 sm:gap-6">
               {Object.entries(departments).map(([deptName, courses]) => (
-                <div key={deptName} className="flex flex-col gap-3">
-                  <h5 className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">{deptName}</h5>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-2 border-l border-gray-100">
+                <div key={deptName} className="flex flex-col gap-2.5 sm:gap-3">
+                  <h5 className="text-[10.5px] sm:text-[11px] font-bold text-gray-500 uppercase tracking-wider">{deptName}</h5>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 pl-1.5 sm:pl-2 border-l border-gray-100">
                     {courses.map((course) => {
                       const uniqueKey = `${selectedYear}-${course.key}`;
                       const isExpanded = activeCourse === uniqueKey;
@@ -1524,10 +1525,10 @@ function InteractiveCalendarWidget({ year, courseKey }: { year: string; courseKe
                         <div key={course.key} className="border border-gray-100 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:border-blue-100 transition-all duration-300 col-span-1 md:col-span-full">
                           <button
                             onClick={() => setActiveCourse(isExpanded ? null : uniqueKey)}
-                            className="w-full px-4 py-3 flex items-center justify-between text-xs font-bold text-gray-700 hover:text-[#D4AF37] bg-white transition-colors text-left outline-none cursor-pointer"
+                            className="w-full px-3.5 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between text-xs font-bold text-gray-700 hover:text-[#D4AF37] bg-white transition-colors text-left outline-none cursor-pointer"
                           >
-                            <span>• {course.label}</span>
-                            <ChevronDown size={14} className={`transition-transform duration-200 ${isExpanded ? "rotate-180 text-[#D4AF37]" : "text-gray-400"}`} />
+                            <span className="line-clamp-1">• {course.label}</span>
+                            <ChevronDown size={14} className={`shrink-0 ml-2 transition-transform duration-200 ${isExpanded ? "rotate-180 text-[#D4AF37]" : "text-gray-400"}`} />
                           </button>
                           {isExpanded && <InteractiveCalendarWidget year={selectedYear} courseKey={course.key} />}
                         </div>
@@ -1602,17 +1603,17 @@ function AcademicGradingSystem() {
   const currentProgram = gradingData[activeTab] || gradingData.computing;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Top Header Controls */}
-      <div className="flex justify-start items-center bg-gray-50 border border-gray-100 p-4 rounded-2xl">
-        <div className="flex gap-2">
+      <div className="flex justify-start items-center bg-gray-50 border border-gray-100 p-2 sm:p-3 rounded-xl sm:rounded-2xl overflow-x-auto scrollbar-none">
+        <div className="flex flex-wrap sm:flex-nowrap gap-1.5 sm:gap-2">
           {Object.entries(gradingData).map(([key, data]: [string, any]) => (
             <button
               key={key}
               onClick={() => setActiveTab(key)}
-              className={`px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer outline-none ${
+              className={`px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold rounded-xl transition-all cursor-pointer outline-none shrink-0 sm:shrink ${
                 activeTab === key
-                  ? "bg-[#072A6C] text-white"
+                  ? "bg-[#072A6C] text-white shadow-xs"
                   : "bg-white text-gray-600 border border-gray-200 hover:border-gray-300"
               }`}
             >
@@ -1624,32 +1625,32 @@ function AcademicGradingSystem() {
         </div>
       </div>
 
-      <div className="space-y-8">
-        <h3 className="text-lg font-extrabold text-[#072A6C]">{currentProgram.title}</h3>
+      <div className="space-y-6 sm:space-y-8">
+        <h3 className="text-base sm:text-lg font-extrabold text-[#072A6C]">{currentProgram.title}</h3>
         
         {/* Render Absolute Grading if it exists */}
         {currentProgram.absolute && (
-          <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
-            <div className="flex justify-between items-center mb-4">
+          <div className="bg-white border border-gray-100 rounded-xl sm:rounded-2xl p-3.5 sm:p-5 shadow-sm">
+            <div className="flex justify-between items-center mb-3 sm:mb-4">
               <span className="text-xs font-extrabold text-[#D4AF37] uppercase tracking-wider">Absolute Grading System</span>
             </div>
-            <div className="border border-gray-100 rounded-xl overflow-hidden shadow-sm bg-white">
-              <table className="w-full text-left text-xs border-collapse">
+            <div className="border border-gray-100 rounded-xl overflow-x-auto shadow-sm bg-white scrollbar-thin">
+              <table className="w-full min-w-[500px] text-left text-xs border-collapse">
                 <thead>
                   <tr className="bg-[#072A6C] text-white font-extrabold border-b-2 border-[#D4AF37]">
-                    <th className="p-3.5 text-[10px] font-extrabold uppercase tracking-widest text-white/95">Performance</th>
-                    <th className="p-3.5 text-[10px] font-extrabold uppercase tracking-widest text-white/95">Letter Grade</th>
-                    <th className="p-3.5 text-[10px] font-extrabold uppercase tracking-widest text-white/95">Grade Point</th>
-                    <th className="p-3.5 text-[10px] font-extrabold uppercase tracking-widest text-white/95">Percentage of Marks</th>
+                    <th className="p-3 text-[10px] font-extrabold uppercase tracking-widest text-white/95">Performance</th>
+                    <th className="p-3 text-[10px] font-extrabold uppercase tracking-widest text-white/95">Letter Grade</th>
+                    <th className="p-3 text-[10px] font-extrabold uppercase tracking-widest text-white/95">Grade Point</th>
+                    <th className="p-3 text-[10px] font-extrabold uppercase tracking-widest text-white/95">Percentage of Marks</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {currentProgram.absolute.map((row: any, idx: number) => (
                     <tr key={idx} className="hover:bg-[#D4AF37]/10 odd:bg-gray-50/40 transition-colors">
-                      <td className="p-3.5 font-medium text-gray-800">{row.perf}</td>
-                      <td className="p-3.5 font-extrabold text-[#D4AF37] text-sm">{row.grade}</td>
-                      <td className="p-3.5 font-bold text-[#072A6C] text-xs">{row.gp}</td>
-                      <td className="p-3.5 text-gray-500 font-light">{row.range}</td>
+                      <td className="p-3 font-medium text-gray-800">{row.perf}</td>
+                      <td className="p-3 font-extrabold text-[#D4AF37] text-sm">{row.grade}</td>
+                      <td className="p-3 font-bold text-[#072A6C] text-xs">{row.gp}</td>
+                      <td className="p-3 text-gray-500 font-light">{row.range}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -1660,25 +1661,25 @@ function AcademicGradingSystem() {
 
         {/* Render Relative Grading if it exists */}
         {currentProgram.relative && (
-          <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
-            <div className="flex justify-between items-center mb-4">
+          <div className="bg-white border border-gray-100 rounded-xl sm:rounded-2xl p-3.5 sm:p-5 shadow-sm">
+            <div className="flex justify-between items-center mb-3 sm:mb-4">
               <span className="text-xs font-extrabold text-[#072A6C] uppercase tracking-wider">Relative Grading System</span>
             </div>
-            <div className="border border-gray-100 rounded-xl overflow-hidden shadow-sm bg-white">
-              <table className="w-full text-left text-xs border-collapse">
+            <div className="border border-gray-100 rounded-xl overflow-x-auto shadow-sm bg-white scrollbar-thin">
+              <table className="w-full min-w-[460px] text-left text-xs border-collapse">
                 <thead>
                   <tr className="bg-[#072A6C] text-white font-extrabold border-b-2 border-[#D4AF37]">
-                    <th className="p-3.5 text-[10px] font-extrabold uppercase tracking-widest text-white/95">Letter Grade</th>
-                    <th className="p-3.5 text-[10px] font-extrabold uppercase tracking-widest text-white/95">Grade Point</th>
-                    <th className="p-3.5 text-[10px] font-extrabold uppercase tracking-widest text-white/95">Grade Calculation Formula</th>
+                    <th className="p-3 text-[10px] font-extrabold uppercase tracking-widest text-white/95">Letter Grade</th>
+                    <th className="p-3 text-[10px] font-extrabold uppercase tracking-widest text-white/95">Grade Point</th>
+                    <th className="p-3 text-[10px] font-extrabold uppercase tracking-widest text-white/95">Grade Calculation Formula</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {currentProgram.relative.map((row: any, idx: number) => (
                     <tr key={idx} className="hover:bg-[#D4AF37]/10 odd:bg-gray-50/40 transition-colors">
-                      <td className="p-3.5 font-extrabold text-[#D4AF37] text-sm">{row.grade}</td>
-                      <td className="p-3.5 font-bold text-[#072A6C] text-xs">{row.gp}</td>
-                      <td className="p-3.5 text-gray-600 font-mono text-[11px]">{row.calc}</td>
+                      <td className="p-3 font-extrabold text-[#D4AF37] text-sm">{row.grade}</td>
+                      <td className="p-3 font-bold text-[#072A6C] text-xs">{row.gp}</td>
+                      <td className="p-3 text-gray-600 font-mono text-[11px]">{row.calc}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -1688,7 +1689,7 @@ function AcademicGradingSystem() {
         )}
       </div>
 
-      <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-xl text-[11px] text-yellow-900 font-light leading-relaxed">
+      <div className="bg-yellow-50 border-l-4 border-yellow-500 p-3.5 sm:p-4 rounded-r-xl text-[11px] sm:text-xs text-yellow-900 font-light leading-relaxed">
         <strong>Definitions:</strong>
         <br />• <strong>Mean (µ):</strong> The average score of all passing students in the specific subject class.
         <br />• <strong>Standard Deviation (σ):</strong> Represents the variance / score distribution of the student cohort.
@@ -1715,14 +1716,14 @@ function AwardOfDegrees() {
   const activeGradeIndex = getActiveGradeIndex();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Category Tabs */}
-      <div className="flex gap-2 pb-2 border-b border-gray-100">
+      <div className="flex flex-wrap gap-1.5 sm:gap-2 pb-2 border-b border-gray-100">
         {Object.entries(categories).map(([key, value]) => (
           <button
             key={key}
             onClick={() => setActiveCategory(key)}
-            className={`px-4 py-2 text-xs font-bold rounded-full transition-all cursor-pointer outline-none ${
+            className={`px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold rounded-full transition-all cursor-pointer outline-none ${
               activeCategory === key
                 ? "bg-[#072A6C] text-white shadow-sm"
                 : "bg-white text-gray-600 border border-gray-200 hover:border-gray-300"
@@ -1735,7 +1736,7 @@ function AwardOfDegrees() {
         ))}
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-2 sm:space-y-4">
         <h4 className="text-xs font-extrabold text-[#072A6C] uppercase tracking-wider">
           {selectedData.title}
         </h4>
@@ -1743,23 +1744,23 @@ function AwardOfDegrees() {
       </div>
 
       {/* Degree Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
         {selectedData.grades.map((grade, index) => {
           const isActive = index === activeGradeIndex;
           return (
             <div
               key={grade.class}
-              className={`p-5 rounded-2xl border-2 transition-all duration-300 select-none hover:shadow-md ${grade.color} ${grade.glow} ${
+              className={`p-4 sm:p-5 rounded-xl sm:rounded-2xl border-2 transition-all duration-300 select-none hover:shadow-md ${grade.color} ${grade.glow} ${
                 isActive
-                  ? "ring-4 ring-offset-2 ring-[#072A6C] border-[#072A6C] scale-[1.02] shadow-md"
+                  ? "ring-2 sm:ring-4 ring-offset-2 ring-[#072A6C] border-[#072A6C] scale-[1.01] sm:scale-[1.02] shadow-md"
                   : "scale-100 shadow-sm"
               }`}
             >
-              <div className="flex justify-between items-start mb-3">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 sm:gap-2 mb-2 sm:mb-3">
                 <span className="text-xs font-extrabold tracking-wide block uppercase">
                   {grade.class}
                 </span>
-                <span className="text-[10px] font-bold bg-white/70 px-2 py-0.5 rounded border border-gray-200">
+                <span className="text-[10px] font-bold bg-white/80 px-2 py-0.5 rounded border border-gray-200 w-fit">
                   {grade.min} ≤ CGPA &lt; {grade.max === 10.0 ? "10.00" : grade.max}
                 </span>
               </div>
@@ -1767,7 +1768,7 @@ function AwardOfDegrees() {
                 Awarded to students finishing all academic credits and clearing modules with a cumulative GPA of {grade.min} to {grade.max}.
               </p>
               {grade.note && (
-                <div className="mt-3 pt-3 border-t border-amber-200/50 text-[10px] text-[#C9A84C] font-medium leading-relaxed">
+                <div className="mt-2.5 sm:mt-3 pt-2.5 sm:pt-3 border-t border-amber-200/50 text-[10px] text-[#C9A84C] font-medium leading-relaxed">
                   <strong>Note:</strong> {grade.note}
                 </div>
               )}
@@ -1777,15 +1778,15 @@ function AwardOfDegrees() {
       </div>
 
       {/* Interactive CGPA Classification Slider */}
-      <div className="bg-[#072A6C]/5 border border-[#072A6C]/10 rounded-2xl p-5 shadow-sm space-y-4 mt-6">
+      <div className="bg-[#072A6C]/5 border border-[#072A6C]/10 rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-sm space-y-3 sm:space-y-4 mt-4 sm:mt-6">
         <h5 className="text-xs font-extrabold text-[#072A6C] uppercase tracking-wider">
           Interactive Degree Classifier
         </h5>
-        <p className="text-[11.5px] text-gray-500 font-light">
+        <p className="text-[11px] sm:text-[11.5px] text-gray-500 font-light">
           Drag the slider to select a target CGPA and view your expected graduation classification.
         </p>
         
-        <div className="flex flex-col md:flex-row items-center gap-6">
+        <div className="flex flex-col md:flex-row items-center gap-4 sm:gap-6">
           <div className="w-full md:w-3/5 space-y-2">
             <input
               type="range"
@@ -1803,10 +1804,10 @@ function AwardOfDegrees() {
             </div>
           </div>
 
-          <div className="w-full md:w-2/5 bg-white border border-gray-100 rounded-xl p-4 text-center shadow-sm">
+          <div className="w-full md:w-2/5 bg-white border border-gray-100 rounded-xl p-3.5 sm:p-4 text-center shadow-sm">
             <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block mb-1">Target CGPA</span>
-            <div className="text-[26px] font-[800] text-[#072A6C] leading-none mb-2">{testCgpa.toFixed(2)}</div>
-            <div className="inline-block px-3 py-1 bg-[#D4AF37]/10 text-[#D4AF37] text-[10.5px] font-extrabold rounded-full uppercase tracking-wider">
+            <div className="text-2xl sm:text-[26px] font-[800] text-[#072A6C] leading-none mb-1.5 sm:mb-2">{testCgpa.toFixed(2)}</div>
+            <div className="inline-block px-3 py-1 bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] sm:text-[10.5px] font-extrabold rounded-full uppercase tracking-wider">
               {activeGradeIndex !== -1 ? selectedData.grades[activeGradeIndex].class : "Does Not Qualify"}
             </div>
           </div>
@@ -2438,12 +2439,12 @@ export default function DynamicPage() {
   const pathSegments = pathname.split("/").filter((x) => x);
 
   return (
-    <div className="flex-1 w-full bg-[#F7F8FC] py-10 font-[var(--font-poppins)]">
-      <div className="max-w-[1440px] mx-auto px-5">
+    <div className="flex-1 w-full bg-[#F7F8FC] py-6 sm:py-10 font-[var(--font-poppins)]">
+      <div className="max-w-[1440px] mx-auto px-3 sm:px-5">
         
         {/* Breadcrumb Navigation */}
-        <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-6 bg-white py-2.5 px-4 rounded-full border border-gray-100 shadow-sm w-fit">
-          <Link to="/" className="hover:text-[#D4AF37] flex items-center gap-1 transition-colors">
+        <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-gray-400 mb-4 sm:mb-6 bg-white py-2 sm:py-2.5 px-3.5 sm:px-4 rounded-full border border-gray-100 shadow-sm w-fit max-w-full overflow-x-auto scrollbar-none">
+          <Link to="/" className="hover:text-[#D4AF37] flex items-center gap-1 transition-colors shrink-0">
             <Home size={12} /> Home
           </Link>
           {pathSegments.map((segment, index) => {
@@ -2455,7 +2456,7 @@ export default function DynamicPage() {
               <React.Fragment key={url}>
                 <ChevronRight size={10} className="text-gray-300 shrink-0" />
                 {isLast ? (
-                  <span className="text-gray-600 font-semibold truncate max-w-[150px]">{cleanLabel}</span>
+                  <span className="text-gray-600 font-semibold truncate max-w-[120px] sm:max-w-[180px] shrink-0">{cleanLabel}</span>
                 ) : (
                   <Link to={url} className="hover:text-[#D4AF37] transition-colors shrink-0">
                     {cleanLabel}
@@ -2467,21 +2468,21 @@ export default function DynamicPage() {
         </div>
 
         {/* Layout Cards */}
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8">
           {/* Main Info */}
           <motion.div
-            className="bg-white border border-gray-200/60 rounded-[16px] p-6 md:p-8 shadow-sm w-full"
+            className="bg-white border border-gray-200/60 rounded-[14px] sm:rounded-[16px] p-3.5 sm:p-6 md:p-8 shadow-sm w-full overflow-hidden"
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
             {!content.hideHeader && (
               <>
-                <span className="text-[11px] font-bold text-[#D4AF37] uppercase tracking-wider block mb-1">{content.category}</span>
-                <h1 className="text-[28px] md:text-[34px] font-[800] text-[#072A6C] leading-snug tracking-tight mb-4">
+                <span className="text-[10px] sm:text-[11px] font-bold text-[#D4AF37] uppercase tracking-wider block mb-1">{content.category}</span>
+                <h1 className="text-2xl sm:text-[28px] md:text-[34px] font-[800] text-[#072A6C] leading-snug tracking-tight mb-3 sm:mb-4 break-words">
                   {content.title}
                 </h1>
-                <p className="text-[14px] text-gray-500 leading-relaxed font-light mb-8 pb-6 border-b border-gray-100">
+                <p className="text-xs sm:text-[14px] text-gray-500 leading-relaxed font-light mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-gray-100">
                   {content.desc}
                 </p>
               </>
