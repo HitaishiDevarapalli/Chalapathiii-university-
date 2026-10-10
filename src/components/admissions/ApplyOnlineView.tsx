@@ -139,7 +139,6 @@ export const ApplyOnlineView: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [generatedAppNo, setGeneratedAppNo] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showEnquiryDrawer, setShowEnquiryDrawer] = useState(false);
 
   // Step 1: Registration Form State
   const [regForm, setRegForm] = useState({
@@ -795,98 +794,6 @@ export const ApplyOnlineView: React.FC = () => {
         </div>
 
       </div>
-
-      {/* Floating Vertical ADMISSION ENQUIRY Button on Right Edge (Matching media_1789894063332.png) */}
-      <button
-        type="button"
-        onClick={() => setShowEnquiryDrawer(true)}
-        className="fixed right-0 top-1/2 -translate-y-1/2 bg-[#072A6C] hover:bg-[#051e4d] text-white font-extrabold text-[11px] tracking-widest px-2.5 py-4 rounded-l-xl shadow-2xl z-40 transition-all hover:pr-3 cursor-pointer outline-none border-l border-y border-white/20"
-        style={{ writingMode: "vertical-rl" }}
-        title="Open Admission Enquiry"
-      >
-        <span>{applyConfig.floatingEnquiryButtonText || "ADMISSION ENQUIRY"}</span>
-      </button>
-
-      {/* Admission Enquiry Drawer Modal */}
-      {showEnquiryDrawer && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/45 backdrop-blur-xs z-50 transition-opacity duration-300 cursor-pointer"
-            onClick={() => setShowEnquiryDrawer(false)}
-          />
-          <div
-            className="fixed right-0 top-0 bottom-0 w-full max-w-[360px] bg-white shadow-2xl z-50 p-6 flex flex-col justify-between text-left transform transition-transform duration-300 animate-slide-in font-[var(--font-poppins)]"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div>
-              <div className="flex items-center justify-between pb-4 border-b border-gray-100">
-                <div className="flex items-center gap-2 text-[#072A6C]">
-                  <Phone size={18} className="text-[#D4AF37]" />
-                  <h3 className="font-extrabold text-sm uppercase tracking-wide">
-                    {applyConfig.floatingEnquiryButtonText || "ADMISSION ENQUIRY"}
-                  </h3>
-                </div>
-                <button
-                  onClick={() => setShowEnquiryDrawer(false)}
-                  className="text-gray-400 hover:text-gray-600 cursor-pointer p-1 rounded-full hover:bg-gray-100"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              <div className="py-5 space-y-4">
-                <p className="text-xs text-gray-500 font-light font-[var(--font-inter)] leading-relaxed">
-                  Have questions regarding programs, eligibility criteria, or scholarship concessions? Contact our admissions counselors directly.
-                </p>
-
-                <div className="space-y-3">
-                  <div className="p-3 bg-slate-50 border border-gray-100 rounded-xl space-y-1">
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Helpline Numbers</span>
-                    <div className="space-y-1">
-                      {(applyConfig.floatingEnquiryPhones || ["+91 91773 24999", "+91 863 222 5555"]).map((ph, i) => (
-                        <a
-                          key={i}
-                          href={`tel:${ph.replace(/\s+/g, "")}`}
-                          className="block text-xs font-bold text-[#072A6C] hover:text-[#D4AF37] transition-colors"
-                        >
-                          {ph}
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="p-3 bg-slate-50 border border-gray-100 rounded-xl space-y-1">
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Email Helpdesk</span>
-                    <a
-                      href={`mailto:${applyConfig.floatingEnquiryEmail || "admissions@chalapathiengg.ac.in"}`}
-                      className="block text-xs font-bold text-[#072A6C] hover:text-[#D4AF37] transition-colors truncate"
-                    >
-                      {applyConfig.floatingEnquiryEmail || "admissions@chalapathiengg.ac.in"}
-                    </a>
-                  </div>
-
-                  <div className="p-3 bg-slate-50 border border-gray-100 rounded-xl space-y-1">
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Office Hours</span>
-                    <p className="text-xs font-semibold text-gray-700">
-                      {applyConfig.floatingEnquiryTimings || "Mon - Sat: 9:00 AM - 5:30 PM"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-gray-100">
-              <button
-                type="button"
-                onClick={() => setShowEnquiryDrawer(false)}
-                className="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition-colors cursor-pointer"
-              >
-                Close Helpline
-              </button>
-            </div>
-          </div>
-        </>
-      )}
 
     </div>
   );

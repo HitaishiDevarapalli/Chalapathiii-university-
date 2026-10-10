@@ -154,6 +154,7 @@ function AppContent() {
   const location = useLocation();
   const navigate = useNavigate();
   const isAdminPage = location.pathname.startsWith("/admin");
+  const isApplyPage = location.pathname.startsWith("/admissions/apply");
   const { 
     announcements, 
     showAnnouncementsDrawer, 
@@ -540,8 +541,8 @@ function AppContent() {
             )}
           </button>
 
-          {/* Admission Enquiry Tab (Corrected Orientation, Fits Comfortably) */}
-          {activePopup && (
+          {/* Admission Enquiry Tab (Corrected Orientation, Fits Comfortably - Hidden on Apply page) */}
+          {activePopup && !isApplyPage && (
             <button
               onClick={() => setShowEnquiryModal(true)}
               style={{
