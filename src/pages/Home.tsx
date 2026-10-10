@@ -384,10 +384,9 @@ export default function Home() {
         title="Best University in andhraPradesh -ChalapathiUniversity" 
         description="Chalapathi University offers world-class higher education with premium undergraduate, postgraduate, and research programs. Admissions Open for 2026–2027." 
       />
-      {/* ═══ HERO SECTION (720px height) ═══ */}
+      {/* ═══ HERO SECTION (Responsive height for mobile & desktop) ═══ */}
       <section 
-        className="relative w-full overflow-hidden bg-white select-none" 
-        style={{ height: "720px" }}
+        className="relative w-full overflow-hidden bg-white select-none h-[220px] min-[375px]:h-[240px] min-[420px]:h-[270px] min-[520px]:h-[340px] sm:h-[440px] md:h-[580px] lg:h-[720px]" 
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}

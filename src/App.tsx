@@ -256,6 +256,7 @@ function AppContent() {
   });
   
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [mobilePopupTab, setMobilePopupTab] = useState<"form" | "schools">("form");
 
   const toggleAccordion = (id: string) => {
     setActiveAccordion(activeAccordion === id ? null : id);
@@ -521,24 +522,39 @@ function AppContent() {
       </div>
 
       {/* ======================================================== */}
-      {/* 🌟 SLIMMED NON-OVERLAPPING STACKED RIGHT-SIDE TABS       */}
-      {/* ======================================================== */}
       {/* ======================================================== */}
       {/* 🌟 SLIMMED NON-OVERLAPPING STACKED RIGHT-SIDE TABS       */}
       {/* ======================================================== */}
-      {!isAdminPage && activePopup && (
-        <div className="fixed right-0 top-[40%] -translate-y-1/2 z-40 flex flex-col gap-3 items-end font-[var(--font-poppins)]">
-          {/* Admission Enquiry / Event Tab (Navy Blue/White Text) */}
+      {!isAdminPage && (
+        <div className="fixed right-0 top-[48%] -translate-y-1/2 z-40 flex flex-col gap-2.5 items-end font-[var(--font-poppins)] select-none">
+          {/* Announcements Tab (Stacked Above Admission Enquiry) */}
           <button
-            onClick={() => setShowEnquiryModal(true)}
-            style={{
-              backgroundColor: enquiryPopupConfig.tabBgColor || "#072A6C",
-              color: enquiryPopupConfig.tabTextColor || "#FFFFFF"
-            }}
-            className="w-[48px] h-[220px] hover:brightness-110 font-bold text-[10px] tracking-[1.5px] rounded-l-xl shadow-md transition-all duration-300 hover:-translate-x-1 flex items-center justify-center [writing-mode:vertical-lr] rotate-180 whitespace-nowrap cursor-pointer select-none uppercase border border-r-0 border-white/10 outline-none"
+            onClick={() => setShowAnnouncementsDrawer(true)}
+            aria-label="Announcements"
+            className="w-[38px] sm:w-[44px] h-[145px] sm:h-[160px] bg-[#D4AF37] hover:bg-[#c49f2e] text-[#072A6C] hover:brightness-105 font-black text-[9.5px] sm:text-[10px] tracking-[1.5px] rounded-l-xl shadow-lg transition-all duration-300 hover:-translate-x-1 flex flex-col items-center justify-center [writing-mode:vertical-rl] whitespace-nowrap cursor-pointer uppercase border border-r-0 border-amber-300/40 outline-none relative group"
           >
-            {activePopup.type === "event" ? (activePopup.badge || "Campus Event") : (enquiryPopupConfig.tabLabel || "Admission Enquiry")}
+            <div className="flex items-center gap-1.5">
+              <Megaphone size={13} className="shrink-0 -rotate-90 text-[#072A6C]" />
+              <span>Announcements</span>
+            </div>
+            {announcements && announcements.length > 0 && (
+              <span className="absolute -top-1 -left-1 w-2.5 h-2.5 bg-red-600 rounded-full border-2 border-white animate-pulse" />
+            )}
           </button>
+
+          {/* Admission Enquiry Tab (Corrected Orientation, Starts Top-to-Bottom) */}
+          {activePopup && (
+            <button
+              onClick={() => setShowEnquiryModal(true)}
+              style={{
+                backgroundColor: enquiryPopupConfig.tabBgColor || "#072A6C",
+                color: enquiryPopupConfig.tabTextColor || "#FFFFFF"
+              }}
+              className="w-[38px] sm:w-[44px] h-[175px] sm:h-[195px] hover:brightness-110 font-black text-[9.5px] sm:text-[10px] tracking-[1.5px] rounded-l-xl shadow-lg transition-all duration-300 hover:-translate-x-1 flex items-center justify-center [writing-mode:vertical-rl] whitespace-nowrap cursor-pointer uppercase border border-r-0 border-white/20 outline-none"
+            >
+              {activePopup.type === "event" ? (activePopup.badge || "Campus Event") : (enquiryPopupConfig.tabLabel || "Admission Enquiry")}
+            </button>
+          )}
         </div>
       )}
       {/* ======================================================== */}
@@ -737,131 +753,191 @@ function AppContent() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.35, ease: "easeOut" }}
-              className="bg-white w-full max-w-[1240px] md:h-auto md:max-h-[92vh] rounded-[24px] shadow-2xl relative flex flex-col md:flex-row overflow-hidden border border-gray-100 font-[var(--font-poppins)] text-left select-none"
+              className="bg-white w-full max-w-[1240px] max-h-[92vh] md:max-h-[90vh] rounded-[20px] md:rounded-[24px] shadow-2xl relative flex flex-col md:flex-row overflow-hidden border border-gray-100 font-[var(--font-poppins)] text-left select-none my-auto"
               onClick={(e) => e.stopPropagation()}
             >
+              {/* Global Close Button - safely positioned at top-right corner */}
+              <button 
+                onClick={() => setShowEnquiryModal(false)}
+                className="absolute top-3 right-3 sm:top-4 sm:right-4 z-50 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/95 hover:bg-white text-gray-700 hover:text-red-600 border border-gray-200 shadow-md flex items-center justify-center transition-all hover:scale-105 duration-200 cursor-pointer outline-none"
+                aria-label="Close modal"
+              >
+                <X size={16} />
+              </button>
+
+              {/* Mobile Tab Switcher (< md screens only) */}
+              <div className="md:hidden flex items-center p-2 bg-slate-100 border-b border-gray-200 shrink-0 pr-14">
+                <button
+                  type="button"
+                  onClick={() => setMobilePopupTab("form")}
+                  className={`flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all ${
+                    mobilePopupTab === "form"
+                      ? "bg-[#072A6C] text-white shadow-sm"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  📝 Enquiry Form
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMobilePopupTab("schools")}
+                  className={`flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all ${
+                    mobilePopupTab === "schools"
+                      ? "bg-[#072A6C] text-white shadow-sm"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  🏫 Explore Programs
+                </button>
+              </div>
+
               {/* Left Panel: Schools & Programs */}
-              <div className="w-full md:w-1/2 p-5 md:p-6 border-r border-gray-100 flex flex-col bg-slate-50/30 overflow-y-auto scrollbar-none">
+              <div className={`w-full md:w-1/2 p-4 sm:p-5 md:p-6 border-r border-gray-100 flex flex-col bg-slate-50/50 overflow-y-auto scrollbar-none ${
+                mobilePopupTab === "schools" ? "flex" : "hidden md:flex"
+              }`}>
                 {/* Logo */}
-                <div className="flex items-center justify-center mb-6 mt-2">
+                <div className="flex items-center justify-center mb-5 mt-1">
                   <img 
                     src={siteSettings?.logoUrl || "/logo.png?v=3"} 
                     alt={siteSettings?.universityName || "Chalapathi University"} 
                     loading="eager"
                     // @ts-ignore
                     fetchpriority="high"
-                    className="h-20 w-auto object-contain" 
+                    className="h-14 md:h-18 w-auto object-contain" 
                   />
                 </div>
 
-              <h3 className="text-[12px] font-black uppercase text-[#072A6C] tracking-wide mb-0.5">
-                {enquiryPopupConfig.leftPanelTitle || "EXPLORE OUR SCHOOLS & PROGRAMS"}
-              </h3>
-              <p className="text-[10px] text-gray-400 font-medium mb-4">
-                {enquiryPopupConfig.leftPanelSubtitle || "Select a school to view its programs"}
-              </p>
-
-              {/* Accordions */}
-              <div className="space-y-2.5">
-                {(enquiryPopupConfig.schools && enquiryPopupConfig.schools.length > 0 ? enquiryPopupConfig.schools : ENQUIRY_SCHOOLS_DATA).map((school) => {
-                  const isOpen = activeAccordion === school.id;
-                  return (
-                    <div key={school.id} className="border border-gray-150 rounded-[12px] bg-white overflow-hidden shadow-sm transition-all duration-300">
-                      {/* Accordion Head */}
-                      <button
-                        type="button"
-                        onClick={() => toggleAccordion(school.id)}
-                        className={`w-full flex items-center justify-between py-2.5 px-4 transition-all duration-300 text-left outline-none cursor-pointer ${
-                          isOpen ? "bg-[#072A6C] text-white" : "bg-white text-[#072A6C] hover:bg-slate-50"
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          {school.id === "computing" && <User size={16} />}
-                          {school.id === "engineering" && <GraduationCap size={16} />}
-                          {school.id === "business" && <Landmark size={16} />}
-                          {!["computing", "engineering", "business"].includes(school.id) && <GraduationCap size={16} />}
-                          <div className="flex flex-col">
-                            <span className="text-[10.5px] md:text-[11.5px] font-extrabold uppercase tracking-wider">{school.title}</span>
-                            <span className={`text-[8.5px] md:text-[9.5px] ${isOpen ? "text-blue-100" : "text-gray-400"} mt-0.5`}>{school.subtitle}</span>
-                          </div>
-                        </div>
-                        <ChevronDown size={14} className={`transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
-                      </button>
-
-                      {/* Accordion Body */}
-                      {isOpen && (
-                        <div className="p-3.5 bg-white border-t border-gray-100 grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fade-in">
-                          {(school.groups || []).map((group, groupIdx) => (
-                            <div key={groupIdx} className="space-y-2.5">
-                              <h4 className="text-[10.5px] font-extrabold text-[#072A6C] border-b border-gray-100 pb-1">{group.name}</h4>
-                              <div className="flex flex-col gap-1.5">
-                                {(group.courses || []).map((course, courseIdx) => {
-                                  let badgeColor = "bg-blue-50 text-blue-600 border-blue-100/50";
-                                  if (course.level === "PG") badgeColor = "bg-emerald-50 text-emerald-600 border-emerald-100/50";
-                                  if (course.level === "Ph.D") badgeColor = "bg-amber-50 text-amber-600 border-amber-100/50";
-                                  if (course.level === "Diploma") badgeColor = "bg-purple-50 text-purple-600 border-purple-100/50";
-                                  return (
-                                    <button
-                                      key={courseIdx}
-                                      type="button"
-                                      onClick={() => setFormData({ ...formData, program: course.name })}
-                                      className={`flex items-start gap-2 py-1 px-2 rounded-md border border-transparent hover:border-blue-100 hover:bg-blue-50/30 text-left transition-all duration-200 cursor-pointer ${
-                                        formData.program === course.name ? "bg-blue-50/55 border-blue-200" : ""
-                                      }`}
-                                    >
-                                      <span className={`px-1.5 py-0.5 rounded text-[7.5px] font-black uppercase tracking-wider border shrink-0 ${badgeColor}`}>
-                                        {course.level}
-                                      </span>
-                                      <span className="text-[9.5px] text-gray-700 font-bold leading-tight group-hover:text-blue-600">
-                                        {course.name}
-                                      </span>
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Right Panel: Enquiry Form */}
-            <div className="w-full md:w-1/2 p-5 md:p-6 flex flex-col bg-white relative overflow-y-auto scrollbar-none">
-              {/* Close Button */}
-              <button 
-                onClick={() => setShowEnquiryModal(false)}
-                className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-155 flex items-center justify-center transition-all hover:scale-105 hover:rotate-90 duration-200 cursor-pointer"
-              >
-                <X size={15} />
-              </button>
-
-              <div className="mb-3.5">
-                <h2 className="text-[18px] font-black text-[#072A6C] tracking-tight uppercase leading-none">
-                  {activePopup?.title || enquiryPopupConfig.modalTitle || "ADMISSIONS OPEN 2026-27"}
-                </h2>
-                <p className="text-[10.5px] text-gray-500 font-medium mt-1">
-                  {activePopup?.subtitle || enquiryPopupConfig.modalSubtitle || "Build Your Future. Lead with Innovation."}
-                </p>
-              </div>
-
-              {/* Form Title Card */}
-              <div className="bg-[#072A6C]/3 border border-[#072A6C]/10 rounded-xl p-3 flex items-center gap-3 mb-4">
-                <div className="w-8.5 h-8.5 rounded-lg bg-[#072A6C]/10 flex items-center justify-center text-[#072A6C] shrink-0">
-                  <FileText size={16} />
+                <div className="flex items-center justify-between mb-1">
+                  <h3 className="text-[12px] font-black uppercase text-[#072A6C] tracking-wide">
+                    {enquiryPopupConfig.leftPanelTitle || "EXPLORE OUR SCHOOLS & PROGRAMS"}
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setMobilePopupTab("form")}
+                    className="md:hidden text-[11px] text-blue-600 font-bold hover:underline"
+                  >
+                    Go to Form →
+                  </button>
                 </div>
-                <div className="text-left">
-                  <h4 className="text-[10.5px] font-black text-[#072A6C] uppercase tracking-wider leading-none mb-1">
-                    {enquiryPopupConfig.formBadgeTitle || "ENQUIRY FORM"}
-                  </h4>
-                  <p className="text-[9.5px] text-gray-500 font-medium leading-none">
-                    {enquiryPopupConfig.formBadgeDesc || "Fill in your details. Our admission team will contact you soon."}
+                <p className="text-[10px] text-gray-400 font-medium mb-3">
+                  {enquiryPopupConfig.leftPanelSubtitle || "Select a school to view its programs. Tap any course to auto-fill the enquiry."}
+                </p>
+
+                {/* Accordions */}
+                <div className="space-y-2.5">
+                  {(enquiryPopupConfig.schools && enquiryPopupConfig.schools.length > 0 ? enquiryPopupConfig.schools : ENQUIRY_SCHOOLS_DATA).map((school) => {
+                    const isOpen = activeAccordion === school.id;
+                    return (
+                      <div key={school.id} className="border border-gray-150 rounded-[12px] bg-white overflow-hidden shadow-sm transition-all duration-300">
+                        {/* Accordion Head */}
+                        <button
+                          type="button"
+                          onClick={() => toggleAccordion(school.id)}
+                          className={`w-full flex items-center justify-between py-2.5 px-4 transition-all duration-300 text-left outline-none cursor-pointer ${
+                            isOpen ? "bg-[#072A6C] text-white" : "bg-white text-[#072A6C] hover:bg-slate-50"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            {school.id === "computing" && <User size={16} />}
+                            {school.id === "engineering" && <GraduationCap size={16} />}
+                            {school.id === "business" && <Landmark size={16} />}
+                            {!["computing", "engineering", "business"].includes(school.id) && <GraduationCap size={16} />}
+                            <div className="flex flex-col">
+                              <span className="text-[10.5px] md:text-[11.5px] font-extrabold uppercase tracking-wider">{school.title}</span>
+                              <span className={`text-[8.5px] md:text-[9.5px] ${isOpen ? "text-blue-100" : "text-gray-400"} mt-0.5`}>{school.subtitle}</span>
+                            </div>
+                          </div>
+                          <ChevronDown size={14} className={`transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
+                        </button>
+
+                        {/* Accordion Body */}
+                        {isOpen && (
+                          <div className="p-3 bg-white border-t border-gray-100 grid grid-cols-1 sm:grid-cols-2 gap-3.5 animate-fade-in">
+                            {(school.groups || []).map((group, groupIdx) => (
+                              <div key={groupIdx} className="space-y-2">
+                                <h4 className="text-[10.5px] font-extrabold text-[#072A6C] border-b border-gray-100 pb-1">{group.name}</h4>
+                                <div className="flex flex-col gap-1.5">
+                                  {(group.courses || []).map((course, courseIdx) => {
+                                    let badgeColor = "bg-blue-50 text-blue-600 border-blue-100/50";
+                                    if (course.level === "PG") badgeColor = "bg-emerald-50 text-emerald-600 border-emerald-100/50";
+                                    if (course.level === "Ph.D") badgeColor = "bg-amber-50 text-amber-600 border-amber-100/50";
+                                    if (course.level === "Diploma") badgeColor = "bg-purple-50 text-purple-600 border-purple-100/50";
+                                    return (
+                                      <button
+                                        key={courseIdx}
+                                        type="button"
+                                        onClick={() => {
+                                          setFormData({ ...formData, program: course.name });
+                                          setMobilePopupTab("form");
+                                        }}
+                                        className={`flex items-start gap-2 py-1 px-2 rounded-md border border-transparent hover:border-blue-100 hover:bg-blue-50/30 text-left transition-all duration-200 cursor-pointer ${
+                                          formData.program === course.name ? "bg-blue-50/70 border-blue-200" : ""
+                                        }`}
+                                      >
+                                        <span className={`px-1.5 py-0.5 rounded text-[7.5px] font-black uppercase tracking-wider border shrink-0 ${badgeColor}`}>
+                                          {course.level}
+                                        </span>
+                                        <span className="text-[9.5px] text-gray-700 font-bold leading-tight group-hover:text-blue-600">
+                                          {course.name}
+                                        </span>
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Right Panel: Enquiry Form */}
+              <div className={`w-full md:w-1/2 p-4 sm:p-5 md:p-6 flex flex-col bg-white relative overflow-y-auto scrollbar-none ${
+                mobilePopupTab === "form" ? "flex" : "hidden md:flex"
+              }`}>
+                {/* Mobile-only University Logo */}
+                <div className="md:hidden flex items-center justify-center mb-3">
+                  <img 
+                    src={siteSettings?.logoUrl || "/logo.png?v=3"} 
+                    alt={siteSettings?.universityName || "Chalapathi University"} 
+                    className="h-12 w-auto object-contain" 
+                  />
+                </div>
+
+                <div className="mb-3 pr-8">
+                  <h2 className="text-[16px] sm:text-[18px] font-black text-[#072A6C] tracking-tight uppercase leading-snug">
+                    {activePopup?.title || enquiryPopupConfig.modalTitle || "ADMISSIONS OPEN 2026-27"}
+                  </h2>
+                  <p className="text-[10px] sm:text-[10.5px] text-gray-500 font-medium mt-0.5">
+                    {activePopup?.subtitle || enquiryPopupConfig.modalSubtitle || "Build Your Future. Lead with Innovation."}
                   </p>
                 </div>
-              </div>
+
+                {/* Form Title Card */}
+                <div className="bg-[#072A6C]/3 border border-[#072A6C]/10 rounded-xl p-2.5 sm:p-3 flex items-center gap-3 mb-3.5">
+                  <div className="w-8 h-8 rounded-lg bg-[#072A6C]/10 flex items-center justify-center text-[#072A6C] shrink-0">
+                    <FileText size={16} />
+                  </div>
+                  <div className="text-left flex-1 min-w-0">
+                    <h4 className="text-[10.5px] font-black text-[#072A6C] uppercase tracking-wider leading-none mb-1">
+                      {enquiryPopupConfig.formBadgeTitle || "ENQUIRY FORM"}
+                    </h4>
+                    <p className="text-[9.5px] text-gray-500 font-medium leading-tight">
+                      {enquiryPopupConfig.formBadgeDesc || "Fill in your details. Our admission team will contact you soon."}
+                    </p>
+                  </div>
+                  {/* Shortcut to schools tab on mobile */}
+                  <button
+                    type="button"
+                    onClick={() => setMobilePopupTab("schools")}
+                    className="md:hidden text-[10px] text-[#072A6C] bg-blue-50 hover:bg-blue-100 font-bold px-2 py-1 rounded-md shrink-0 border border-blue-100"
+                  >
+                    Programs ➔
+                  </button>
+                </div>
 
               {formSubmitted ? (
                 <div className="flex flex-col items-center justify-center py-12 space-y-4 my-auto">

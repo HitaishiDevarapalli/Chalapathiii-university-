@@ -711,28 +711,12 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
 
           {/* Mobile menu trigger */}
           <div className="flex min-[1024px]:hidden items-center gap-1">
-            <button
-              onClick={() => setIsGlobalSearchOpen(true)}
-              style={{
-                color: searchConfig?.headerSearchBtnIconColor || "#222222"
-              }}
-              className="p-2 transition-colors cursor-pointer"
-              title="Search"
-            >
-              <Search size={18} style={{ color: searchConfig?.headerSearchBtnIconColor || "#222222" }} />
-            </button>
             <button 
-              onClick={() => setShowAnnouncementsDrawer(!showAnnouncementsDrawer)} 
-              className="p-2 text-[#222222] relative hover:text-[#D4AF37] transition-colors"
-              title="View Announcements"
+              onClick={() => setMobileOpen(!mobileOpen)} 
+              className="p-2 text-[#222222] hover:text-[#D4AF37] transition-colors cursor-pointer outline-none"
+              aria-label="Toggle mobile menu"
             >
-              <Megaphone size={18} />
-              {announcements.length > 0 && (
-                <span className="absolute top-1 right-1 bg-[#D4AF37] w-2 h-2 rounded-full border border-white" />
-              )}
-            </button>
-            <button onClick={() => setMobileOpen(!mobileOpen)} className="p-2 text-[#222222] hover:text-[#D4AF37] transition-colors">
-              {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+              {mobileOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
         </div>
