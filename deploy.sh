@@ -13,6 +13,8 @@ git pull
 echo "[2/4] Installing & Building Frontend..."
 npm install
 npm run build
+sudo rm -rf /var/www/chalapathi
+sudo cp -r dist /var/www/chalapathi
 
 echo "[3/4] Installing & Setting up Backend..."
 cd server
