@@ -326,31 +326,37 @@ export default function Home() {
           </motion.div>
 
           <motion.div
-            className="bg-[#072A6C] text-white rounded-[16px] p-5 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4"
+            className="bg-[#072A6C] text-white rounded-[16px] p-4 sm:p-5 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.15 }}
           >
             <div className="text-center md:text-left min-w-[200px]">
-              <h3 className="text-[15px] font-[700]">Find Your Way</h3>
-              <p className="text-[11px] text-white font-[300] mt-0.5">Get directions to Chalapathi University</p>
+              <h3 className="text-[15px] sm:text-[16px] font-[700]">Find Your Way</h3>
+              <p className="text-[11px] sm:text-[12px] text-blue-100 font-[300] mt-0.5">Get directions to Chalapathi University</p>
             </div>
 
             {/* Combined Input Bar */}
-            <form onSubmit={handleDirections} className="w-full md:w-auto flex-1 flex max-w-xl bg-white rounded-full p-1 overflow-hidden shadow-sm border border-gray-100">
-              <div className="flex items-center gap-2 pl-3 flex-1">
+            <form 
+              onSubmit={handleDirections} 
+              className="w-full md:w-auto flex-1 flex flex-col sm:flex-row gap-2 sm:gap-0 max-w-xl bg-transparent sm:bg-white sm:rounded-full sm:p-1 overflow-hidden sm:shadow-sm sm:border sm:border-gray-100"
+            >
+              <div className="flex items-center gap-2 px-3.5 py-2.5 sm:py-1 bg-white rounded-full flex-1 border border-gray-100 sm:border-none shadow-xs sm:shadow-none min-w-0">
                 <Search size={15} className="text-gray-400 shrink-0" />
                 <input
                   type="text"
                   value={directionsFrom}
                   onChange={(e) => setDirectionsFrom(e.target.value)}
                   placeholder="Enter your location"
-                  className="w-full text-black text-[12px] outline-none bg-transparent"
+                  className="w-full text-black text-[12px] sm:text-[13px] outline-none bg-transparent min-w-0"
                 />
               </div>
-              <button type="submit" className="bg-[#D4AF37] hover:bg-[#C9A84C] text-white font-[700] px-5 py-2 rounded-full text-[12px] flex items-center gap-1 shrink-0 whitespace-nowrap active:scale-95 transition-transform">
-                Get Directions <MapPin size={12} />
+              <button 
+                type="submit" 
+                className="w-full sm:w-auto bg-[#D4AF37] hover:bg-[#C9A84C] text-white font-[700] px-5 py-2.5 sm:py-2 rounded-full text-[12px] flex items-center justify-center gap-1.5 shrink-0 whitespace-nowrap active:scale-95 transition-all shadow-xs"
+              >
+                <span>Get Directions</span> <MapPin size={12} />
               </button>
             </form>
           </motion.div>
