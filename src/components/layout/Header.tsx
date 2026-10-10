@@ -330,21 +330,32 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
     setMobileNewsEventsOpen(false);
   }, [location.pathname]);
 
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
   return (
     <>
       <header
         className={`sticky top-0 z-40 w-full bg-white transition-all duration-300 ${
           scrolled ? "shadow-md" : ""
-        } h-[100px]`}
+        } h-[78px] sm:h-[88px] md:h-[98px] min-[1280px]:h-[105px]`}
         style={{ borderBottom: "1px solid #E8E8E8" }}
       >
         <div className="max-w-[1440px] mx-auto h-full px-3 min-[1280px]:px-5 flex items-center justify-between gap-2 min-[1280px]:gap-3 relative">
-          {/* Logo */}
+          {/* Logo - Prominently Sized */}
           <Link to="/" className="flex items-center shrink-0 py-1">
             <img
               src={siteSettings?.logoUrl || "/logo.png?v=3"}
               alt={siteSettings?.universityName || "Chalapathi University"}
-              className="h-10 min-[1280px]:h-14 min-[1440px]:h-18 w-auto object-contain no-lift transition-all duration-300"
+              className="h-12 sm:h-14 md:h-16 min-[1280px]:h-18 min-[1440px]:h-20 w-auto max-w-[260px] sm:max-w-[320px] object-contain no-lift transition-all duration-300"
             />
           </Link>
 
@@ -798,7 +809,7 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
 
       {/* Mobile drawer */}
       {mobileOpen && (
-        <div className="fixed inset-0 top-[90px] z-30 bg-white flex flex-col p-6 overflow-y-auto min-[1024px]:hidden shadow-2xl">
+        <div className="fixed inset-x-0 bottom-0 top-[78px] sm:top-[88px] md:top-[98px] z-50 bg-white flex flex-col p-6 overflow-y-auto min-[1024px]:hidden shadow-2xl border-t border-gray-100">
           {visibleNavLinks.map((name) => {
             if (name === "About Us") {
               return (

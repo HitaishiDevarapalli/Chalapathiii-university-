@@ -332,7 +332,8 @@ const getPageContent = (path: string, programs: any[], newsPageConfig?: any) => 
         title: "Leadership & Governing Body",
         category: "About Us",
         desc: "Meet the visionary leaders directing the strategic progress of Chalapathi University.",
-        body: <LeadershipView />
+        body: <LeadershipView />,
+        isFullBleed: true
       };
     }
     if (cleanPath.includes("advantage")) {
@@ -2230,8 +2231,8 @@ export default function DynamicPage() {
 
   const campusPage = campusLifeContent ? (campusLifeContent[cleanPath] || campusLifeContent["/campus-life"]) : undefined;
 
-  // Dedicated Full-Bleed Academic Program View (Prevents duplicate outer breadcrumbs & duplicate title cards)
-  if ((content as any).isProgramDetail) {
+  // Dedicated Full-Bleed View (e.g. Academic Program Detail, Leadership)
+  if ((content as any).isProgramDetail || (content as any).isFullBleed) {
     return (
       <div className="flex-grow w-full">
         {content.body}
@@ -2807,31 +2808,39 @@ function BoardDirectory() {
         ))}
       </div>
 
-      {/* Profile Details Modal */}
+      {/* Profile Details Modal with Clear Exit & Mobile Scrolling */}
       {selectedFaculty && createPortal(
         <div 
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in"
+          className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto animate-fade-in"
           onClick={() => setSelectedFaculty(null)}
         >
           <div 
-            className="bg-white w-full max-w-[550px] overflow-hidden shadow-2xl relative flex flex-col text-center"
+            className="bg-white w-full max-w-[540px] max-h-[88vh] sm:max-h-[90vh] rounded-[24px] overflow-hidden shadow-2xl relative flex flex-col text-center my-auto border border-gray-100"
             onClick={(e) => e.stopPropagation()}
           >
+            {/* Top-Right High Contrast Exit Button */}
             <button 
               onClick={() => setSelectedFaculty(null)}
-              className="absolute top-3 right-3 z-10 text-gray-300 hover:text-gray-500 transition-colors"
+              className="absolute top-3.5 right-3.5 z-20 w-9 h-9 rounded-full bg-white/90 hover:bg-white text-gray-700 hover:text-red-600 border border-gray-200 shadow-md flex items-center justify-center transition-all hover:scale-105 cursor-pointer outline-none"
+              aria-label="Close Profile"
             >
-              <X size={24} />
+              <X size={18} />
             </button>
 
-            <div className="pt-8 pb-5 px-8 bg-[#fafafa] border-b border-gray-100">
-              <h3 className="text-xl md:text-2xl font-normal text-[#8B0000] leading-tight">
-                {selectedFaculty.name}, {selectedFaculty.title}
+            {/* Modal Header */}
+            <div className="pt-6 pb-4 px-6 bg-slate-50 border-b border-gray-100 pr-14 text-left">
+              <span className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-wider block">Board Member Profile</span>
+              <h3 className="text-lg sm:text-xl font-extrabold text-[#072A6C] leading-snug">
+                {selectedFaculty.name}
               </h3>
+              <p className="text-xs text-gray-500 font-semibold mt-0.5">
+                {selectedFaculty.title}
+              </p>
             </div>
 
-            <div className="p-8 relative bg-white bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
-              <div className="w-56 h-64 md:w-64 md:h-72 mx-auto shadow-md border-4 border-white bg-gray-100 overflow-hidden flex items-center justify-center">
+            {/* Scrollable Modal Content */}
+            <div className="p-5 sm:p-7 overflow-y-auto flex-1 bg-white">
+              <div className="w-36 h-44 sm:w-52 sm:h-60 mx-auto shadow-md border-4 border-white bg-gray-100 rounded-2xl overflow-hidden flex items-center justify-center mb-5">
                 <MemberAvatar 
                   avatar={selectedFaculty.avatar} 
                   name={selectedFaculty.name} 
@@ -2839,9 +2848,36 @@ function BoardDirectory() {
                 />
               </div>
               
-              <p className="text-[14px] md:text-[15px] text-gray-600 mt-8 leading-loose text-justify">
-                {selectedFaculty.name}, {selectedFaculty.edu?.replace(/M\.Tech/gi, "B.Tech")}, is renowned for their focus on {selectedFaculty.interests.toLowerCase()} and educational excellence. With {selectedFaculty.experience} in educational management and leadership, they continue to drive forward the institution's core mission and global footprint.
-              </p>
+              <div className="space-y-3 text-left">
+                {selectedFaculty.edu && (
+                  <div className="bg-blue-50/60 border border-blue-100/80 rounded-xl p-3">
+                    <span className="text-[10px] font-bold text-blue-900 uppercase tracking-wider block">Qualification & Background</span>
+                    <p className="text-xs text-gray-700 font-medium mt-0.5">{selectedFaculty.edu}</p>
+                  </div>
+                )}
+                
+                {selectedFaculty.interests && (
+                  <div className="bg-amber-50/60 border border-amber-100/80 rounded-xl p-3">
+                    <span className="text-[10px] font-bold text-amber-900 uppercase tracking-wider block">Focus & Key Areas</span>
+                    <p className="text-xs text-gray-700 font-medium mt-0.5">{selectedFaculty.interests}</p>
+                  </div>
+                )}
+
+                <p className="text-[13px] sm:text-[14px] text-gray-600 leading-relaxed text-justify pt-2">
+                  {selectedFaculty.name}, {selectedFaculty.edu?.replace(/M\.Tech/gi, "B.Tech")}, is renowned for their focus on {selectedFaculty.interests ? selectedFaculty.interests.toLowerCase() : "academic governance"} and educational excellence. With {selectedFaculty.experience || "extensive leadership"} in educational management and leadership, they continue to drive forward the institution's core mission and global footprint.
+                </p>
+              </div>
+            </div>
+
+            {/* Bottom Exit Button */}
+            <div className="p-3.5 bg-gray-50 border-t border-gray-100 flex items-center justify-end">
+              <button
+                type="button"
+                onClick={() => setSelectedFaculty(null)}
+                className="px-5 py-2 bg-[#072A6C] hover:bg-[#051c4a] text-white font-bold text-xs rounded-xl transition-all shadow-sm cursor-pointer"
+              >
+                ✕ Close Profile
+              </button>
             </div>
           </div>
         </div>,
@@ -3208,26 +3244,26 @@ function LeadershipView() {
   const leadership = aboutContent.leadership;
 
   return (
-    <div className="w-full text-left font-[var(--font-poppins)] overflow-hidden relative bg-white -mt-10 -mx-5 px-5">
+    <div className="w-full text-left font-[var(--font-poppins)] overflow-hidden relative bg-white">
       
-      {/* SECTION 1 – PREMIUM HERO (Full Viewport Height / Rich Gradient Mesh) */}
-      <section className="relative min-h-[90vh] flex items-center justify-center py-20 px-4 md:px-12 overflow-hidden bg-radial from-[#072A6C] via-[#081A36] to-[#020B18] text-white rounded-b-[40px] shadow-2xl">
+      {/* SECTION 1 – PREMIUM HERO (Mobile-friendly responsive heights and paddings) */}
+      <section className="relative min-h-[75vh] sm:min-h-[85vh] lg:min-h-[90vh] flex items-center justify-center py-12 sm:py-16 md:py-20 px-4 sm:px-6 md:px-12 overflow-hidden bg-radial from-[#072A6C] via-[#081A36] to-[#020B18] text-white rounded-b-[24px] sm:rounded-b-[40px] shadow-2xl">
         {/* Animated Mesh Gradients & Floating Blobs */}
-        <div className="absolute inset-0 z-0 opacity-40">
-          <div className="absolute top-10 left-10 w-[300px] h-[300px] rounded-full bg-[#D4AF37] blur-[150px] animate-pulse" />
-          <div className="absolute bottom-10 right-10 w-[400px] h-[400px] rounded-full bg-[#D4AF37] blur-[200px] animate-pulse" />
-          <div className="absolute top-1/2 left-1/3 w-[350px] h-[350px] rounded-full bg-[#2563EB] blur-[180px]" />
+        <div className="absolute inset-0 z-0 opacity-40 pointer-events-none">
+          <div className="absolute top-10 left-10 w-[200px] sm:w-[300px] h-[200px] sm:h-[300px] rounded-full bg-[#D4AF37] blur-[120px] sm:blur-[150px] animate-pulse" />
+          <div className="absolute bottom-10 right-10 w-[250px] sm:w-[400px] h-[250px] sm:h-[400px] rounded-full bg-[#D4AF37] blur-[140px] sm:blur-[200px] animate-pulse" />
+          <div className="absolute top-1/2 left-1/3 w-[220px] sm:w-[350px] h-[220px] sm:h-[350px] rounded-full bg-[#2563EB] blur-[120px] sm:blur-[180px]" />
         </div>
 
-        <div className="max-w-[1440px] mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
-          {/* Left Side: Portrait & Floating 3D Bezel */}
+        <div className="max-w-[1440px] mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 items-center relative z-10">
+          {/* Portrait & Floating 3D Bezel */}
           <div className="lg:col-span-5 flex justify-center relative">
             <div className="relative group">
               {/* Soft Golden Glow Ring */}
               <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#D4AF37] to-[#D71920] opacity-40 blur-2xl group-hover:opacity-60 transition-opacity duration-500" />
               
               {/* 3D Glass Frame bezel */}
-              <div className="relative w-[320px] h-[320px] md:w-[400px] md:h-[400px] rounded-full p-2.5 bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl overflow-hidden">
+              <div className="relative w-[210px] h-[210px] sm:w-[300px] sm:h-[300px] md:w-[380px] md:h-[380px] rounded-full p-2 sm:p-2.5 bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl overflow-hidden mx-auto">
                 <img 
                   src={leadership.chairmanImage || "/chairman_v4.png"} 
                   alt="Chairman" 
@@ -3238,41 +3274,45 @@ function LeadershipView() {
             </div>
           </div>
 
-          {/* Right Side: Large Headings & Titles */}
-          <div className="lg:col-span-7 space-y-6">
-            <span className="px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-xs font-bold uppercase tracking-widest text-[#D4AF37] inline-block">University Leadership</span>
-            <h1 className="text-4xl md:text-6xl font-black tracking-tight leading-tight uppercase bg-gradient-to-r from-white via-gray-100 to-[#D4AF37] bg-clip-text text-transparent">
+          {/* Right Side: Headings & Titles */}
+          <div className="lg:col-span-7 space-y-4 sm:space-y-6 text-center lg:text-left">
+            <span className="px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-[#D4AF37] inline-block">
+              University Leadership
+            </span>
+            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-tight uppercase bg-gradient-to-r from-white via-gray-100 to-[#D4AF37] bg-clip-text text-transparent break-words">
               {leadership.chairmanName}
             </h1>
-            <p className="text-lg md:text-2xl text-blue-200 font-medium italic">
+            <p className="text-base sm:text-xl md:text-2xl text-blue-200 font-medium italic">
               {leadership.designation}
             </p>
-            <div className="h-[3px] w-24 bg-[#D4AF37] rounded-full" />
-            <div className="space-y-1">
-              <h3 className="text-xl md:text-2xl font-extrabold text-white">Chairman's Message</h3>
-              <p className="text-xs uppercase tracking-wider text-white font-bold">"{leadership.messageQuote}"</p>
+            <div className="h-[3px] w-20 sm:w-24 bg-[#D4AF37] rounded-full mx-auto lg:mx-0" />
+            <div className="space-y-1 sm:space-y-2">
+              <h3 className="text-lg sm:text-xl md:text-2xl font-extrabold text-white">Chairman's Message</h3>
+              <p className="text-xs sm:text-sm uppercase tracking-wider text-amber-200/90 font-bold max-w-[600px] mx-auto lg:mx-0">
+                "{leadership.messageQuote}"
+              </p>
             </div>
           </div>
         </div>
 
         {/* Scroll Indicator */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 animate-bounce flex flex-col items-center gap-1.5 opacity-60">
-          <span className="text-[10px] uppercase font-bold tracking-widest text-white">Scroll Down</span>
-          <div className="w-1 h-6 bg-white/40 rounded-full relative overflow-hidden">
+        <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 animate-bounce flex flex-col items-center gap-1 opacity-60">
+          <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-white">Scroll Down</span>
+          <div className="w-1 h-5 sm:h-6 bg-white/40 rounded-full relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1/2 bg-[#D4AF37] rounded-full animate-infinite-scroll" />
           </div>
         </div>
       </section>
 
       {/* SECTION 2 – THE MESSAGE BODY (Premium Glassmorphic container) */}
-      <section className="py-20 md:py-28 max-w-[1000px] mx-auto px-5 relative z-10">
-        <div className="bg-white border border-gray-100 rounded-[32px] p-8 md:p-16 shadow-2xl relative overflow-hidden group">
+      <section className="py-12 sm:py-20 md:py-28 max-w-[1000px] mx-auto px-4 sm:px-6 relative z-10">
+        <div className="bg-white border border-gray-100 rounded-[20px] sm:rounded-[32px] p-6 sm:p-10 md:p-16 shadow-xl relative overflow-hidden group">
           {/* Dynamic soft perimeter glow on hover */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-[#D4AF37]/5 via-[#D4AF37]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+          <div className="absolute inset-0 bg-gradient-to-tr from-[#D4AF37]/5 via-[#D4AF37]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
           
-          <span className="text-8xl font-serif text-[#D4AF37] opacity-25 absolute -top-4 -left-2 select-none">“</span>
+          <span className="text-6xl sm:text-8xl font-serif text-[#D4AF37] opacity-20 absolute -top-2 sm:-top-4 -left-1 sm:-left-2 select-none">“</span>
           
-          <div className="relative z-10 space-y-6 text-gray-600 text-[15px] md:text-[17px] leading-relaxed font-medium text-justify">
+          <div className="relative z-10 space-y-4 sm:space-y-6 text-gray-600 text-sm sm:text-[15px] md:text-[17px] leading-relaxed font-medium text-left sm:text-justify">
             {leadership.messageParagraphs.map((pText, pIdx) => (
               <p key={pIdx}>{pText}</p>
             ))}
@@ -3281,9 +3321,9 @@ function LeadershipView() {
       </section>
 
       {/* SECTION 2.5 – GOVERNING BOARD MEMBERS */}
-      <section className="py-16 max-w-[1440px] mx-auto px-5">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl md:text-3xl font-black text-[#072A6C] tracking-tight uppercase">GOVERNING BOARD MEMBERS</h2>
+      <section className="py-10 sm:py-16 max-w-[1440px] mx-auto px-4 sm:px-6">
+        <div className="text-center mb-6 sm:mb-8">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-[#072A6C] tracking-tight uppercase">GOVERNING BOARD MEMBERS</h2>
           <div className="h-1 w-16 bg-[#D4AF37] mx-auto mt-3 rounded-full" />
         </div>
         <BoardDirectory />
