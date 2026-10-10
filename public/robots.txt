@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://chalapathi-university.vercel.app/sitemap.xml
+Sitemap: https://chalapathiuniversity.edu.in/sitemap.xml
