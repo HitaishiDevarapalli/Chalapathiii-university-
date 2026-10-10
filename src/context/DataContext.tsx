@@ -3705,10 +3705,20 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     recordSave();
   };
 
-  const updateNews = (list: NewsArticle[]) => {
+  const updateNews = async (list: NewsArticle[]) => {
     setNews(list);
     safeSetItem("chalapathi_news_v3", JSON.stringify(list));
     recordSave();
+    // Synchronize to PostgreSQL Backend
+    try {
+      await fetch('/api/news/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ articles: list })
+      });
+    } catch (e) {
+      console.error("Backend sync failed for news", e);
+    }
   };
 
   const updateNewsPageConfig = (config: NewsPageConfig) => {
@@ -3961,7 +3971,22 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.warn("Initial CMS API sync:", err);
       }
     };
+    
+    const fetchNews = async () => {
+      try {
+        const res = await fetch('/api/news');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setNews(data);
+            safeSetItem("chalapathi_news_v3", JSON.stringify(data));
+          }
+        }
+      } catch (err) {}
+    };
+
     initCmsFromApi();
+    fetchNews();
   }, []);
 
   const updateCmsPages = (pages: CmsPage[]) => {

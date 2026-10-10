@@ -32,6 +32,66 @@ function slugify(text: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+// POST /sync - Bulk sync from frontend
+router.post("/sync", async (req: Request, res: Response) => {
+  try {
+    const { articles } = req.body;
+    if (!Array.isArray(articles)) return res.status(400).json({ error: "Invalid articles array" });
+
+    // 1. Get existing IDs
+    const existing = await prisma.newsArticle.findMany({ select: { id: true } });
+    const existingIds = existing.map(e => e.id);
+    const incomingIds = articles.filter(a => a.id).map(a => Number(a.id));
+
+    // 2. Delete ones that are no longer in the array
+    const toDelete = existingIds.filter(id => !incomingIds.includes(id));
+    if (toDelete.length > 0) {
+      await prisma.newsArticle.deleteMany({ where: { id: { in: toDelete } } });
+    }
+
+    // 3. Upsert articles
+    for (const article of articles) {
+      const finalSlug = article.slug || slugify(article.title || `news-${Date.now()}`);
+      let imagesStr = "[]";
+      if (article.images) {
+        imagesStr = Array.isArray(article.images) ? JSON.stringify(article.images) : article.images;
+      }
+
+      const data = {
+        title: article.title || "Untitled",
+        slug: finalSlug,
+        date: article.date || new Date().toISOString().split("T")[0],
+        time: article.time || "",
+        location: article.location || "",
+        category: article.category || "General",
+        excerpt: article.excerpt || "",
+        bodyText: article.bodyText || "",
+        image: article.image || "",
+        images: imagesStr,
+        sourceUrl: article.sourceUrl || null,
+        featured: Boolean(article.featured),
+        readTime: article.readTime || null,
+        hidden: Boolean(article.hidden)
+      };
+
+      if (article.id) {
+        await prisma.newsArticle.upsert({
+          where: { id: Number(article.id) },
+          update: data,
+          create: { id: Number(article.id), ...data }
+        });
+      } else {
+        await prisma.newsArticle.create({ data });
+      }
+    }
+
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("Error syncing news articles:", error);
+    return res.status(500).json({ error: "Failed to sync articles" });
+  }
+});
+
 // GET / - List all news articles with optional filters
 router.get("/", async (req: Request, res: Response) => {
   try {
