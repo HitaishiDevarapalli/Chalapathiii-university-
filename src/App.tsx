@@ -527,18 +527,16 @@ function AppContent() {
       {/* ======================================================== */}
       {!isAdminPage && (
         <div className="fixed right-0 top-[48%] -translate-y-1/2 z-40 flex flex-col gap-2 items-end font-[var(--font-poppins)] select-none">
-          {/* Announcements Tab (Stacked Above Admission Enquiry) */}
+          {/* Announcements Icon Button (Clean icon-only matching navbar symbol) */}
           <button
             onClick={() => setShowAnnouncementsDrawer(true)}
-            aria-label="Announcements"
-            className="w-[34px] sm:w-[38px] h-[170px] sm:h-[185px] py-4 bg-[#D4AF37] hover:bg-[#c49f2e] text-[#072A6C] hover:brightness-105 font-black text-[8.5px] sm:text-[9.5px] tracking-[0.5px] rounded-l-xl shadow-lg transition-all duration-300 hover:-translate-x-1 flex flex-col items-center justify-center [writing-mode:vertical-rl] whitespace-nowrap cursor-pointer uppercase border border-r-0 border-amber-300/40 outline-none relative group overflow-visible"
+            aria-label="View Announcements"
+            title="View Announcements"
+            className="w-10 h-10 sm:w-11 sm:h-11 bg-[#D4AF37] hover:bg-[#c49f2e] text-[#072A6C] hover:brightness-105 rounded-l-2xl shadow-xl transition-all duration-300 hover:-translate-x-1 flex items-center justify-center cursor-pointer border border-r-0 border-amber-300/50 outline-none relative group"
           >
-            <div className="flex items-center gap-1.5">
-              <Megaphone size={12} className="shrink-0 -rotate-90 text-[#072A6C]" />
-              <span>Announcements</span>
-            </div>
+            <Megaphone size={20} className="text-[#072A6C] transition-transform duration-200 group-hover:scale-110" />
             {announcements && announcements.length > 0 && (
-              <span className="absolute top-1.5 left-1 w-2 h-2 bg-red-600 rounded-full border border-white animate-pulse" />
+              <span className="absolute top-1.5 left-1.5 w-2.5 h-2.5 bg-red-600 rounded-full border-2 border-white animate-pulse" />
             )}
           </button>
 

@@ -244,10 +244,10 @@ export const AdmissionsPortalView: React.FC = () => {
         </div>
 
         {/* GenRush Two-Column Split (Left Info + Right Dynamic Device Mockup) */}
-        <div className="max-w-5xl mx-auto bg-gradient-to-br from-slate-50 via-white to-emerald-50/30 rounded-3xl p-6 md:p-10 border border-gray-100 shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        <div className="max-w-5xl mx-auto bg-gradient-to-br from-slate-50 via-white to-emerald-50/30 rounded-2xl sm:rounded-3xl p-4 sm:p-8 md:p-10 border border-gray-100 shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-center">
           
           {/* Left Column: Active Step Details */}
-          <div className="lg:col-span-6 space-y-6">
+          <div className="lg:col-span-6 space-y-5 sm:space-y-6 text-left">
             <AnimatePresence mode="wait">
               <motion.div
                 key={current.id}
@@ -255,7 +255,7 @@ export const AdmissionsPortalView: React.FC = () => {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ duration: 0.4 }}
-                className="space-y-5"
+                className="space-y-4 sm:space-y-5"
               >
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#10B981]/15 text-[#10B981] text-xs font-extrabold uppercase tracking-wider">
                   <Zap size={14} />
@@ -283,10 +283,10 @@ export const AdmissionsPortalView: React.FC = () => {
                 </div>
 
                 {/* CTA Button */}
-                <div className="pt-4 flex items-center gap-4">
+                <div className="pt-3 sm:pt-4 flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-4">
                   <Link
                     to={current.ctaLink}
-                    className="px-7 py-3.5 bg-[#072A6C] hover:bg-[#10B981] text-white text-xs md:text-sm font-extrabold rounded-full inline-flex items-center gap-2 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 uppercase tracking-wider cursor-pointer"
+                    className="px-5 sm:px-7 py-3 sm:py-3.5 bg-[#072A6C] hover:bg-[#10B981] text-white text-xs md:text-sm font-extrabold rounded-full inline-flex items-center gap-2 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 uppercase tracking-wider cursor-pointer"
                   >
                     <span>{current.ctaText}</span>
                     <ArrowRight size={16} />
@@ -294,7 +294,7 @@ export const AdmissionsPortalView: React.FC = () => {
 
                   <button
                     onClick={() => setActiveStep((prev) => (prev + 1) % steps.length)}
-                    className="px-4 py-3.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-full inline-flex items-center gap-1.5 transition-colors cursor-pointer border-none"
+                    className="px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-full inline-flex items-center gap-1.5 transition-colors cursor-pointer border-none"
                   >
                     <span>Next Step</span>
                     <ChevronRight size={14} />
@@ -305,11 +305,11 @@ export const AdmissionsPortalView: React.FC = () => {
           </div>
 
           {/* Right Column: GenRush Mobile Screen / Dynamic Interface Preview */}
-          <div className="lg:col-span-6 flex justify-center">
-            <div className="relative w-full max-w-[320px] md:max-w-[360px] aspect-[9/16] max-h-[480px] bg-slate-950 rounded-[40px] p-3 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] border-4 border-slate-800 relative overflow-hidden flex flex-col justify-between">
+          <div className="lg:col-span-6 flex justify-center w-full">
+            <div className="relative w-full max-w-[310px] sm:max-w-[340px] bg-slate-950 rounded-[36px] sm:rounded-[40px] p-2.5 sm:p-3 shadow-2xl border-4 border-slate-800 relative overflow-hidden flex flex-col justify-between mx-auto">
               
               {/* iPhone Notch */}
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-5 bg-slate-800 rounded-b-2xl z-30 flex items-center justify-center gap-2">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 sm:w-32 h-5 bg-slate-800 rounded-b-2xl z-30 flex items-center justify-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-slate-900" />
                 <div className="w-2 h-2 rounded-full bg-[#10B981]/80 animate-pulse" />
               </div>

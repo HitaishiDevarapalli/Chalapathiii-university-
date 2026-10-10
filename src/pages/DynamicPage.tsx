@@ -3175,14 +3175,14 @@ function FacultyDirectory() {
           Faculty records are currently being updated for this school.
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-6">
           {allFacultyMembers.map((faculty, fIdx) => (
             <div 
               key={fIdx}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center gap-5 group min-h-[140px]"
+              className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 sm:p-4 flex items-center gap-3.5 sm:gap-5 group min-h-[120px] sm:min-h-[140px]"
             >
               {/* Photo / Icon */}
-              <div className="w-[100px] h-[110px] shrink-0 rounded-lg overflow-hidden bg-[#072A6C]/5 border border-gray-100 shadow-inner flex items-center justify-center">
+              <div className="w-20 h-24 sm:w-[100px] sm:h-[110px] shrink-0 rounded-lg overflow-hidden bg-[#072A6C]/5 border border-gray-100 shadow-inner flex items-center justify-center">
                 <MemberAvatar 
                   avatar={faculty.avatar} 
                   name={faculty.name} 
@@ -3191,14 +3191,14 @@ function FacultyDirectory() {
               </div>
               
               {/* Info */}
-              <div className="flex flex-col flex-1 justify-center">
-                <h4 className="text-[14px] font-black text-[#072A6C] uppercase leading-snug mb-1 group-hover:text-red-800 transition-colors">
+              <div className="flex flex-col flex-1 justify-center min-w-0">
+                <h4 className="text-[13px] sm:text-[14px] font-black text-[#072A6C] uppercase leading-snug mb-1 group-hover:text-red-800 transition-colors break-words">
                   {faculty.name}
                 </h4>
-                <p className="text-[12px] font-bold text-red-700/90 uppercase tracking-wider mb-1">
+                <p className="text-[11px] sm:text-[12px] font-bold text-red-700/90 uppercase tracking-wider mb-1 line-clamp-1">
                   {faculty.title.replace("HOD & ", "").replace("Principal & ", "")}
                 </p>
-                <p className="text-[11px] font-semibold text-red-600/70">
+                <p className="text-[10px] sm:text-[11px] font-semibold text-red-600/70 truncate">
                   {faculty.edu.split('-')[0].trim()}
                 </p>
               </div>
@@ -5038,36 +5038,36 @@ function ContactUsView() {
   return (
     <div className="space-y-10 text-left font-[var(--font-poppins)] mt-4">
       {/* Hero Banner header matching Placements page styling but with Contact details */}
-      <div className="bg-[#072A6C] rounded-3xl p-6 md:p-8 text-white relative overflow-hidden border border-gray-100 shadow-sm mb-6">
+      <div className="bg-[#072A6C] rounded-2xl sm:rounded-3xl p-4 sm:p-8 text-white relative overflow-hidden border border-gray-100 shadow-sm mb-4 sm:mb-6">
         <div className="absolute inset-y-0 right-0 w-1/3 opacity-15 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white to-transparent pointer-events-none" />
-        <div className="z-10 relative space-y-2">
-          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 bg-white/10 text-white rounded-lg font-bold text-[10px] uppercase tracking-wider">
+        <div className="z-10 relative space-y-1.5 sm:space-y-2">
+          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 bg-white/10 text-white rounded-lg font-bold text-[9px] sm:text-[10px] uppercase tracking-wider">
             {content.heroBadge || "CONTACT SUPPORT"}
           </div>
-          <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight">{content.heroTitle || "CONTACT US"}</h1>
-          <p className="text-xs text-blue-100 font-light max-w-xl">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-tight">{content.heroTitle || "CONTACT US"}</h1>
+          <p className="text-xs text-blue-100 font-light max-w-xl leading-relaxed">
             {content.heroDescription || "Whether you're a prospective student, parent, recruiter, alumnus, or visitor, we're here to help. Reach out to us for admissions, academic inquiries, placements, scholarships, or any assistance regarding campus life."}
           </p>
         </div>
       </div>
 
       {/* Main Two-Column Block (Matching screenshot layout) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-8 items-stretch">
         
         {/* Left Side: Get In Touch Cards Grid */}
         <div className="lg:col-span-6 bg-white border border-gray-200/80 rounded-2xl overflow-hidden shadow-sm flex flex-col">
-          <div className="bg-[#072A6C] text-white py-4 px-6 text-center font-extrabold text-sm uppercase tracking-wider">
+          <div className="bg-[#072A6C] text-white py-3 sm:py-4 px-4 sm:px-6 text-center font-extrabold text-xs sm:text-sm uppercase tracking-wider">
             {content.getInTouchTitle || "GET IN TOUCH WITH US NOW!"}
           </div>
           
-          <div className="grid grid-cols-2 gap-px bg-gray-100 flex-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-gray-100 flex-1">
             
             {/* Phone */}
-            <div className="bg-white p-6 flex flex-col items-center text-center justify-center space-y-2.5">
-              <span className="p-3 bg-[#072A6C]/5 text-[#072A6C] rounded-full">
-                <Phone size={20} />
+            <div className="bg-white p-4 sm:p-6 flex flex-col items-center text-center justify-center space-y-2 sm:space-y-2.5">
+              <span className="p-2.5 sm:p-3 bg-[#072A6C]/5 text-[#072A6C] rounded-full">
+                <Phone size={18} className="sm:w-5 sm:h-5" />
               </span>
-              <span className="font-extrabold text-[#072A6C] text-xs uppercase tracking-wide">{content.phoneTitle || "PHONE NUMBER"}</span>
+              <span className="font-extrabold text-[#072A6C] text-[11px] sm:text-xs uppercase tracking-wide">{content.phoneTitle || "PHONE NUMBER"}</span>
               <a 
                 href={`tel:${(content.phoneNumber || "+91 95055 05566").replace(/[^0-9+]/g, "")}`} 
                 className="text-xs font-semibold text-gray-700 hover:text-[#072A6C] hover:underline"
@@ -5077,37 +5077,37 @@ function ContactUsView() {
             </div>
 
             {/* Email */}
-            <div className="bg-white p-6 flex flex-col items-center text-center justify-center space-y-2.5">
-              <span className="p-3 bg-[#072A6C]/5 text-[#072A6C] rounded-full">
-                <Mail size={20} />
+            <div className="bg-white p-4 sm:p-6 flex flex-col items-center text-center justify-center space-y-2 sm:space-y-2.5">
+              <span className="p-2.5 sm:p-3 bg-[#072A6C]/5 text-[#072A6C] rounded-full">
+                <Mail size={18} className="sm:w-5 sm:h-5" />
               </span>
-              <span className="font-extrabold text-[#072A6C] text-xs uppercase tracking-wide">{content.emailTitle || "EMAIL"}</span>
+              <span className="font-extrabold text-[#072A6C] text-[11px] sm:text-xs uppercase tracking-wide">{content.emailTitle || "EMAIL"}</span>
               <a 
                 href={`mailto:${content.emailAddress || "info@city.ac.in"}`} 
-                className="text-xs font-semibold text-gray-700 hover:text-[#072A6C] hover:underline truncate max-w-[140px] md:max-w-[200px]"
+                className="text-xs font-semibold text-gray-700 hover:text-[#072A6C] hover:underline truncate max-w-[200px]"
               >
                 {content.emailAddress || "info@city.ac.in"}
               </a>
             </div>
 
             {/* Location */}
-            <div className="bg-white p-6 flex flex-col items-center text-center justify-center space-y-2.5">
-              <span className="p-3 bg-[#072A6C]/5 text-[#072A6C] rounded-full">
-                <Globe size={20} />
+            <div className="bg-white p-4 sm:p-6 flex flex-col items-center text-center justify-center space-y-2 sm:space-y-2.5">
+              <span className="p-2.5 sm:p-3 bg-[#072A6C]/5 text-[#072A6C] rounded-full">
+                <Globe size={18} className="sm:w-5 sm:h-5" />
               </span>
-              <span className="font-extrabold text-[#072A6C] text-xs uppercase tracking-wide">{content.locationTitle || "LOCATION"}</span>
-              <span className="text-[10px] text-gray-500 leading-normal font-light whitespace-pre-line">
+              <span className="font-extrabold text-[#072A6C] text-[11px] sm:text-xs uppercase tracking-wide">{content.locationTitle || "LOCATION"}</span>
+              <span className="text-[10px] sm:text-[11px] text-gray-500 leading-normal font-light whitespace-pre-line">
                 {content.locationAddress || "A.R. Nagar, Mothadaka,\nGuntur, AP – 522016"}
               </span>
             </div>
 
             {/* Working Hours */}
-            <div className="bg-white p-6 flex flex-col items-center text-center justify-center space-y-2.5">
-              <span className="p-3 bg-[#072A6C]/5 text-[#072A6C] rounded-full">
-                <Clock size={20} />
+            <div className="bg-white p-4 sm:p-6 flex flex-col items-center text-center justify-center space-y-2 sm:space-y-2.5">
+              <span className="p-2.5 sm:p-3 bg-[#072A6C]/5 text-[#072A6C] rounded-full">
+                <Clock size={18} className="sm:w-5 sm:h-5" />
               </span>
-              <span className="font-extrabold text-[#072A6C] text-xs uppercase tracking-wide">{content.workingHoursTitle || "WORKING HOURS"}</span>
-              <span className="text-[10px] text-gray-500 font-semibold leading-normal">
+              <span className="font-extrabold text-[#072A6C] text-[11px] sm:text-xs uppercase tracking-wide">{content.workingHoursTitle || "WORKING HOURS"}</span>
+              <span className="text-[10px] sm:text-[11px] text-gray-500 font-semibold leading-normal">
                 {content.workingHoursDays || "Mon - Sat: 09:00 AM - 05:00 PM"}<br />
                 <span className="text-[#D4AF37] font-normal">{content.workingHoursClosed || "Sunday: Closed"}</span>
               </span>
@@ -5118,12 +5118,12 @@ function ContactUsView() {
 
         {/* Right Side: Message Submission Form */}
         <div className="lg:col-span-6 bg-white border border-gray-200/80 rounded-2xl overflow-hidden shadow-sm flex flex-col">
-          <div className="bg-[#072A6C] text-white py-4 px-6 text-center font-extrabold text-sm uppercase tracking-wider">
+          <div className="bg-[#072A6C] text-white py-3 sm:py-4 px-4 sm:px-6 text-center font-extrabold text-xs sm:text-sm uppercase tracking-wider">
             {content.formTitle || "CONTACT US"}
           </div>
           
-          <form onSubmit={handleSubmit} className="p-6 space-y-4 text-left bg-gray-50/55 flex-1">
-            <div className="grid grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-3.5 sm:space-y-4 text-left bg-gray-50/55 flex-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <label className="block text-[10px] font-bold text-gray-600 uppercase tracking-wider mb-1">First Name *</label>
                 <input 
@@ -5147,7 +5147,7 @@ function ContactUsView() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <label className="block text-[10px] font-bold text-gray-600 uppercase tracking-wider mb-1">Mobile No *</label>
                 <input 

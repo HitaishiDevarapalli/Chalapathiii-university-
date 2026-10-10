@@ -173,22 +173,22 @@ export default function Genesis() {
         </motion.div>
 
         {/* TOP LEFT: TITLE BLOCK */}
-        <div className="max-w-[1400px] mx-auto w-full relative z-30 pt-10">
+        <div className="max-w-[1400px] mx-auto w-full relative z-30 pt-6 sm:pt-10 px-4 sm:px-6 md:px-12">
           <motion.div 
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 1.2, ease: "easeOut" }}
             className="max-w-3xl"
           >
-            <div className="flex items-center gap-4 mb-6">
-              <div className="h-[2px] w-12 bg-[#123A7A]/30"></div>
-              <span className="text-[#123A7A] font-[700] tracking-[0.2em] uppercase text-[12px] md:text-[14px]">{heroTagline}</span>
-              <div className="h-[2px] w-12 bg-[#123A7A]/30"></div>
+            <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+              <div className="h-[2px] w-8 sm:w-12 bg-[#123A7A]/30"></div>
+              <span className="text-[#123A7A] font-[700] tracking-[0.15em] sm:tracking-[0.2em] uppercase text-[11px] sm:text-[12px] md:text-[14px]">{heroTagline}</span>
+              <div className="h-[2px] w-8 sm:w-12 bg-[#123A7A]/30"></div>
             </div>
-            <h1 className="text-[44px] md:text-[72px] font-[900] leading-[1.1] text-[#0F172A] mb-8 drop-shadow-sm tracking-tight whitespace-pre-line">
+            <h1 className="text-[26px] xs:text-[32px] sm:text-[44px] md:text-[64px] lg:text-[72px] font-[900] leading-[1.15] text-[#0F172A] mb-6 sm:mb-8 drop-shadow-sm tracking-tight whitespace-normal sm:whitespace-pre-line break-words hyphens-auto">
               {heroTitle}
             </h1>
-            <p className="text-[18px] md:text-[22px] text-[#0F172A]/70 font-[400] leading-relaxed max-w-2xl">
+            <p className="text-[14px] sm:text-[18px] md:text-[22px] text-[#0F172A]/70 font-[400] leading-relaxed max-w-2xl">
               {heroSubtitle}
             </p>
           </motion.div>

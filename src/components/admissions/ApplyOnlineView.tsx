@@ -264,13 +264,13 @@ export const ApplyOnlineView: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] font-[var(--font-poppins)] relative text-left py-8 px-4 sm:px-8 select-none">
+    <div className="min-h-screen bg-[#FAFAFA] font-[var(--font-poppins)] relative text-left py-4 sm:py-8 px-2 sm:px-6 md:px-8 select-none">
       
       {/* Outer wrapper max width matching screenshot media_1789894063332.png */}
-      <div className="max-w-[1320px] mx-auto bg-white rounded-[28px] border border-gray-100 shadow-sm p-6 sm:p-12 relative min-h-[85vh]">
+      <div className="max-w-[1320px] mx-auto bg-white rounded-2xl sm:rounded-[28px] border border-gray-100 shadow-sm p-4 sm:p-8 md:p-12 relative min-h-[85vh]">
         
-        {/* Header Section (Matching screenshot media_1789894063332.png 1:1) */}
-        <div className="mb-10 text-left">
+        {/* Header Section */}
+        <div className="mb-6 sm:mb-10 text-left">
           <span className="text-[11px] font-black uppercase tracking-widest text-[#D4AF37] block mb-1">
             {applyConfig.headerBadge || "ADMISSIONS"}
           </span>
@@ -282,30 +282,30 @@ export const ApplyOnlineView: React.FC = () => {
           </p>
         </div>
 
-        {/* Centered Step-by-Step Card (Matching media_1789894063332.png) */}
-        <div className="max-w-[540px] mx-auto bg-white rounded-[24px] border border-gray-100/90 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 sm:p-10 text-left relative z-10">
+        {/* Centered Step-by-Step Card */}
+        <div className="max-w-[540px] mx-auto bg-white rounded-2xl sm:rounded-[24px] border border-gray-100/90 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-4 sm:p-8 md:p-10 text-left relative z-10 w-full">
           
           {/* Horizontal Stepper Row */}
-          <div className="flex items-center justify-between gap-1 pb-8 mb-6 border-b border-gray-50">
+          <div className="flex items-center justify-between gap-1 pb-4 sm:pb-8 mb-4 sm:mb-6 border-b border-gray-50">
             {stepsList.map((step) => {
               const isCurrent = currentStep === step.num;
               const isDone = currentStep > step.num;
 
               return (
-                <div key={step.num} className="flex flex-col items-center flex-1">
+                <div key={step.num} className="flex flex-col items-center flex-1 min-w-0">
                   <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                    className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold transition-all ${
                       isCurrent
-                        ? "bg-[#D4AF37] text-white shadow-sm ring-4 ring-[#D4AF37]/15 scale-105"
+                        ? "bg-[#D4AF37] text-white shadow-sm ring-2 sm:ring-4 ring-[#D4AF37]/15 scale-105"
                         : isDone
                         ? "bg-emerald-500 text-white"
                         : "bg-gray-100 text-gray-400"
                     }`}
                   >
-                    {isDone ? <Check size={13} /> : step.num}
+                    {isDone ? <Check size={12} /> : step.num}
                   </div>
                   <span
-                    className={`text-[9px] font-extrabold uppercase tracking-wider mt-2 text-center ${
+                    className={`text-[7.5px] sm:text-[9px] font-extrabold uppercase tracking-tight sm:tracking-wider mt-1 sm:mt-2 text-center truncate max-w-[50px] sm:max-w-none ${
                       isCurrent
                         ? "text-[#D4AF37]"
                         : isDone
@@ -412,7 +412,7 @@ export const ApplyOnlineView: React.FC = () => {
                 <div className="pt-3">
                   <button
                     type="submit"
-                    className="w-full py-3 px-4 bg-[#D4AF37] hover:bg-[#c49f2e] active:scale-98 text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-sm hover:shadow transition-all cursor-pointer font-[var(--font-poppins)]"
+                    className="w-full py-3 px-3 sm:px-4 bg-[#D4AF37] hover:bg-[#c49f2e] active:scale-98 text-white text-[11px] sm:text-xs font-bold uppercase tracking-wider rounded-xl shadow-sm hover:shadow transition-all cursor-pointer font-[var(--font-poppins)] leading-snug text-center"
                   >
                     {applyConfig.step1ButtonText || "REGISTER & SEND VERIFICATION CODE"}
                   </button>
