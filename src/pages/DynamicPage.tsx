@@ -378,18 +378,24 @@ const getPageContent = (path: string, programs: any[], newsPageConfig?: any) => 
       .replace("/academics/", "")
       .replace("/programs/", "")
       .replace(/\/$/, "");
-    const reservedRoutes = ["schools", "departments", "calendar", "flexibilities", "programmes", "grading", "degrees", "electives", "rules", "teaching", "certifications", "bos", "computer-science", "artificial-intelligence", "data-science"];
+    const reservedRoutes = ["schools", "departments", "calendar", "flexibilities", "programmes", "grading", "degrees", "electives", "rules", "teaching", "certifications", "bos"];
     
     // Check if this is a program detail route
     if (slug && !reservedRoutes.includes(slug)) {
-      const matchedProgram = programs.find(p => p.slug === slug || cleanPath.endsWith(p.slug));
+      // Map alias slugs
+      let targetSlug = slug;
+      if (slug === "computer-science") targetSlug = "btech-cse";
+      else if (slug === "artificial-intelligence") targetSlug = "btech-aiml";
+      else if (slug === "data-science") targetSlug = "btech-cse-data-science";
+
+      const matchedProgram = programs.find(p => p.slug === targetSlug || cleanPath.endsWith(p.slug));
       return {
-        title: matchedProgram ? matchedProgram.title : `About ${slug.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}`,
+        title: matchedProgram ? matchedProgram.title : `About ${targetSlug.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}`,
         category: "Academics",
         desc: matchedProgram ? matchedProgram.desc : "Academic program information, curriculum, faculty, laboratories, and career prospects.",
         isProgramDetail: true,
         hideHeader: true,
-        body: <ProgramDetailPage slug={matchedProgram ? matchedProgram.slug : slug} defaultData={matchedProgram} />
+        body: <ProgramDetailPage slug={matchedProgram ? matchedProgram.slug : targetSlug} defaultData={matchedProgram} />
       };
     }
 

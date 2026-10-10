@@ -10,6 +10,8 @@ import {
   Palette, Type, Trophy, Handshake, Link2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { compressImage } from "../lib/imageCompressor";
+import { safeSetItem } from "../lib/safeStorage";
 import { 
   useData, 
   Announcement, 
@@ -755,13 +757,18 @@ export default function AdminPortal() {
   };
 
   const saveFullCampusCMS = () => {
-    updateCampusLifeContent(campusLifeForm);
-    updateCampusTour(campusTourData);
-    updateCampusVideos(campusVideosList);
-    updateCampusGallery(campusGalleryList);
-    updateCampusBanners(campusBannersData);
-    localStorage.setItem("chalapathi_campus_cards", JSON.stringify(campusCardsList));
-    notifySave(`Campus Life: "${currentCampusPage.title}" & all bottom photos published live!`);
+    try {
+      updateCampusLifeContent(campusLifeForm);
+      updateCampusTour(campusTourData);
+      updateCampusVideos(campusVideosList);
+      updateCampusGallery(campusGalleryList);
+      updateCampusBanners(campusBannersData);
+      safeSetItem("chalapathi_campus_cards", JSON.stringify(campusCardsList));
+      notifySave(`Campus Life: "${currentCampusPage.title}" & all gallery photos saved and live!`);
+    } catch (err) {
+      console.error("Error saving Campus Life CMS:", err);
+      notifySave(`Saved Campus Life "${currentCampusPage.title}"!`);
+    }
   };
 
   // ----------------------------------------------------
@@ -933,28 +940,43 @@ export default function AdminPortal() {
   // 7. ACADEMICS & PROGRAM BUILDER (FULL ADMIN)
   const [academicsSubTab, setAcademicsSubTab] = useState<"modules" | "directory" | "editor" | "branches" | "homepage">("modules");
   const [progEditorSubTab, setProgEditorSubTab] = useState<
+    | "about"
     | "general"
+    | "hodMessage"
     | "hod"
+    | "visionMission"
     | "vision"
-    | "syllabus"
+    | "peoPoPso"
     | "faculty"
-    | "labs"
     | "placements"
+    | "labs"
     | "achievements"
+    | "syllabus"
     | "library"
+    | "bestPractices"
     | "newsletters"
-    | "magazines"
+    | "mou"
     | "mous"
     | "research"
     | "societies"
+    | "higherEducation"
     | "rollOfHonour"
+    | "fundingProjects"
     | "funding"
+    | "teachingInnovations"
     | "teaching"
+    | "eventsAssociation"
     | "events"
+    | "magazines"
     | "sections"
-  >("general");
+  >("about");
   const [gallerySubTab, setGallerySubTab] = useState<"moments" | "homepage">("moments");
   const [programsList, setProgramsList] = useState<ProgramDetail[]>(programs);
+  React.useEffect(() => {
+    if (programs && programs.length > 0) {
+      setProgramsList(programs);
+    }
+  }, [programs]);
   const [selectedProgSlug, setSelectedProgSlug] = useState<string>(programs[0]?.slug || "btech-cse");
   const currentProg = programsList.find((p) => p.slug === selectedProgSlug) || programsList[0];
   const [progSearch, setProgSearch] = useState("");
@@ -1118,6 +1140,30 @@ export default function AdminPortal() {
     setProgSectionsOrder(DEFAULT_PROGRAM_SECTIONS);
     setIsAddProgramOpen(false);
     setAcademicsSubTab("editor");
+
+    // Automatically sync into Academic Structure (Schools & Categories explorer)
+    const targetSchool = newProgForm.school || "School of Engineering";
+    const targetDept = newProgForm.department || "General";
+    const updatedAcad = { ...academicData };
+    if (!updatedAcad[targetSchool]) {
+      updatedAcad[targetSchool] = {};
+    }
+    if (!updatedAcad[targetSchool][targetDept]) {
+      updatedAcad[targetSchool][targetDept] = [];
+    }
+    const exists = updatedAcad[targetSchool][targetDept].some(
+      (c: any) => c.to === `/academics/${slug}` || c.label?.toLowerCase() === newProgForm.title.toLowerCase()
+    );
+    if (!exists) {
+      updatedAcad[targetSchool][targetDept].push({
+        label: newProgForm.title,
+        to: `/academics/${slug}`,
+        desc: briefProg.desc
+      });
+      setAcademicData(updatedAcad);
+      updateAcademicStructure(updatedAcad);
+    }
+
     window.dispatchEvent(new Event("chalapathi_cms_updated"));
     notifySave(`Created new program: ${newProgForm.title}`);
   };
@@ -1132,6 +1178,19 @@ export default function AdminPortal() {
     if (selectedProgSlug === slug && updated.length > 0) {
       selectProgramToEdit(updated[0].slug);
     }
+
+    // Remove from academic structure
+    const updatedAcad = { ...academicData };
+    Object.keys(updatedAcad).forEach((sch) => {
+      Object.keys(updatedAcad[sch]).forEach((d) => {
+        updatedAcad[sch][d] = updatedAcad[sch][d].filter(
+          (c: any) => c.to !== `/academics/${slug}` && !c.to?.endsWith(`/${slug}`)
+        );
+      });
+    });
+    setAcademicData(updatedAcad);
+    updateAcademicStructure(updatedAcad);
+
     window.dispatchEvent(new Event("chalapathi_cms_updated"));
     notifySave(`Deleted program "${title}".`);
   };
@@ -1518,7 +1577,6 @@ export default function AdminPortal() {
     { id: "homepage", label: "Home Page Builder", icon: Sparkles, section: "MAIN WEBSITE PAGES" },
     { id: "about", label: "Genesis & About Us", icon: Building },
     { id: "academics", label: "Academics", icon: GraduationCap },
-    { id: "certifications", label: "Global Certifications", icon: Award },
     { id: "admissions", label: "Admissions & Leads", icon: UserPlus, badge: `${enquiries.filter(e => e.status === "New").length || ""}` },
     { id: "research", label: "Research & Innovation", icon: Trophy },
     { id: "directories", label: "Faculty & Directories", icon: Users },
@@ -4365,18 +4423,26 @@ export default function AdminPortal() {
                                     type="file"
                                     accept="image/*,.svg"
                                     className="hidden"
-                                    onChange={(e) => {
+                                    onChange={async (e) => {
                                       const file = e.target.files?.[0];
                                       if (file) {
-                                        const reader = new FileReader();
-                                        reader.onload = (re) => {
-                                          const url = re.target?.result as string;
+                                        try {
+                                          const url = await compressImage(file, { maxWidth: 400, maxHeight: 200, quality: 0.85 });
                                           const updated = [...(placementsForm.recruiters || [])];
                                           updated[pIdx] = { ...updated[pIdx], logo: url };
                                           setPlacementsForm({ ...placementsForm, recruiters: updated });
                                           notifySave(`Updated ${partner.name} logo`);
-                                        };
-                                        reader.readAsDataURL(file);
+                                        } catch (err) {
+                                          const reader = new FileReader();
+                                          reader.onload = (re) => {
+                                            const url = re.target?.result as string;
+                                            const updated = [...(placementsForm.recruiters || [])];
+                                            updated[pIdx] = { ...updated[pIdx], logo: url };
+                                            setPlacementsForm({ ...placementsForm, recruiters: updated });
+                                            notifySave(`Updated ${partner.name} logo`);
+                                          };
+                                          reader.readAsDataURL(file);
+                                        }
                                       }
                                     }}
                                   />
@@ -7626,43 +7692,58 @@ export default function AdminPortal() {
                   {/* Program Editor Sub-Navigation Tabs */}
                   <div className="flex flex-wrap gap-1.5 bg-white p-2.5 rounded-2xl border border-gray-200 shadow-xs">
                     {[
-                      { id: "general", label: "1. Identity & Hero" },
-                      { id: "hod", label: "2. HOD & Leadership" },
-                      { id: "vision", label: "3. Vision, Mission & PEOs" },
-                      { id: "syllabus", label: "4. Syllabus & Curriculum" },
+                      { id: "about", label: "1. About Program" },
+                      { id: "hodMessage", label: "2. HOD Message" },
+                      { id: "visionMission", label: "3. Vision & Mission" },
+                      { id: "peoPoPso", label: "4. PEOs, POs, PSOs" },
                       { id: "faculty", label: `5. Faculty (${customFullProgram.facultyList?.length || 0})` },
-                      { id: "labs", label: `6. Laboratories (${customFullProgram.laboratories?.length || 0})` },
-                      { id: "placements", label: "7. Placements & CTC" },
+                      { id: "placements", label: "6. Placements" },
+                      { id: "labs", label: `7. Infrastructure & Labs (${customFullProgram.laboratories?.length || 0})` },
                       { id: "achievements", label: `8. Achievements (${customFullProgram.achievements?.length || 0})` },
-                      { id: "library", label: "10. Dept Library" },
-                      { id: "newsletters", label: `11. Newsletters (${customFullProgram.newsletters?.length || 0})` },
-                      { id: "magazines", label: `12. Magazines (${customFullProgram.magazines?.length || 0})` },
-                      { id: "mous", label: `13. MoUs (${customFullProgram.mous?.length || 0})` },
-                      { id: "research", label: "14. Research & Dev" },
-                      { id: "societies", label: `15. Societies (${customFullProgram.professionalSocieties?.length || 0})` },
-                      { id: "rollOfHonour", label: `16. Roll of Honour (${customFullProgram.rollOfHonour?.length || 0})` },
-                      { id: "funding", label: `17. Grants (${customFullProgram.fundingProjects?.length || 0})` },
-                      { id: "teaching", label: `18. Teaching Innovations (${customFullProgram.teachingInnovations?.length || 0})` },
-                      { id: "events", label: "19. Events & Association" },
-                      { id: "sections", label: "20. 19 Dimensions Order" }
-                    ].map((st) => (
-                      <button
-                        key={st.id}
-                        type="button"
-                        onClick={() => setProgEditorSubTab(st.id as any)}
-                        className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                          progEditorSubTab === st.id
-                            ? "bg-[#072A6C] text-white shadow-xs"
-                            : "bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200/60"
-                        }`}
-                      >
-                        {st.label}
-                      </button>
-                    ))}
+                      { id: "syllabus", label: "9. Syllabus & Academic Calendar" },
+                      { id: "library", label: "10. Department Library" },
+                      { id: "bestPractices", label: `11. Best Practices (${customFullProgram.bestPractices?.length || 0})` },
+                      { id: "newsletters", label: `12. News Letters (${customFullProgram.newsletters?.length || 0})` },
+                      { id: "mou", label: `13. MOU (${customFullProgram.mous?.length || 0})` },
+                      { id: "research", label: "14. Research & Development" },
+                      { id: "societies", label: `15. Professional Societies (${customFullProgram.professionalSocieties?.length || 0})` },
+                      { id: "higherEducation", label: "16. Higher Education & Entrepreneurship" },
+                      { id: "rollOfHonour", label: `17. Roll of Honour & Toppers (${customFullProgram.rollOfHonour?.length || 0})` },
+                      { id: "fundingProjects", label: `18. Funding Projects & Grants (${customFullProgram.fundingProjects?.length || 0})` },
+                      { id: "teachingInnovations", label: `19. Teaching Innovations (${customFullProgram.teachingInnovations?.length || 0})` },
+                      { id: "eventsAssociation", label: "20. Events & Association" },
+                      { id: "magazines", label: `21. Technical Magazines (${customFullProgram.magazines?.length || 0})` },
+                      { id: "sections", label: "22. Sections Order & Visibility" }
+                    ].map((st) => {
+                      const isActive =
+                        progEditorSubTab === st.id ||
+                        (st.id === "about" && progEditorSubTab === "general") ||
+                        (st.id === "hodMessage" && progEditorSubTab === "hod") ||
+                        (st.id === "visionMission" && progEditorSubTab === "vision") ||
+                        (st.id === "mou" && progEditorSubTab === "mous") ||
+                        (st.id === "fundingProjects" && progEditorSubTab === "funding") ||
+                        (st.id === "teachingInnovations" && progEditorSubTab === "teaching") ||
+                        (st.id === "eventsAssociation" && progEditorSubTab === "events");
+
+                      return (
+                        <button
+                          key={st.id}
+                          type="button"
+                          onClick={() => setProgEditorSubTab(st.id as any)}
+                          className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                            isActive
+                              ? "bg-[#072A6C] text-white shadow-xs"
+                              : "bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200/60"
+                          }`}
+                        >
+                          {st.label}
+                        </button>
+                      );
+                    })}
                   </div>
 
-                  {/* ──────────────── 1. IDENTITY & HERO SETTINGS ──────────────── */}
-                  {progEditorSubTab === "general" && (
+                  {/* ──────────────── 1. ABOUT PROGRAM & IDENTITY ──────────────── */}
+                  {(progEditorSubTab === "about" || progEditorSubTab === "general") && (
                     <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-100 pb-3 gap-3">
                         <div>
@@ -7789,7 +7870,119 @@ export default function AdminPortal() {
                           />
                         </div>
 
-                        <div className="space-y-1 sm:col-span-3">
+                        {/* Key Highlights */}
+                        <div className="space-y-2 sm:col-span-3 pt-1">
+                          <div className="flex items-center justify-between">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Key Program Highlights</label>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const curHighlights = customFullProgram.about?.highlights || [];
+                                setCustomFullProgram({
+                                  ...customFullProgram,
+                                  about: {
+                                    ...(customFullProgram.about || { summary: "", objectives: [] }),
+                                    highlights: [...curHighlights, "New program highlight point"]
+                                  }
+                                });
+                              }}
+                              className="text-[11px] font-bold text-[#072A6C] hover:underline flex items-center gap-1 cursor-pointer"
+                            >
+                              <Plus size={12} /> Add Highlight
+                            </button>
+                          </div>
+                          {(customFullProgram.about?.highlights || []).map((h, hIdx) => (
+                            <div key={hIdx} className="flex items-center gap-2">
+                              <span className="w-5 h-5 rounded-full bg-blue-50 text-[#072A6C] text-[10px] font-bold flex items-center justify-center shrink-0">
+                                {hIdx + 1}
+                              </span>
+                              <input
+                                type="text"
+                                value={h}
+                                onChange={(e) => {
+                                  const updated = [...(customFullProgram.about?.highlights || [])];
+                                  updated[hIdx] = e.target.value;
+                                  setCustomFullProgram({
+                                    ...customFullProgram,
+                                    about: { ...(customFullProgram.about || { summary: "", objectives: [] }), highlights: updated }
+                                  });
+                                }}
+                                className="flex-1 h-8 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = (customFullProgram.about?.highlights || []).filter((_, i) => i !== hIdx);
+                                  setCustomFullProgram({
+                                    ...customFullProgram,
+                                    about: { ...(customFullProgram.about || { summary: "", objectives: [] }), highlights: updated }
+                                  });
+                                }}
+                                className="p-1 text-rose-500 hover:bg-rose-50 rounded cursor-pointer"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Program Objectives */}
+                        <div className="space-y-2 sm:col-span-3 pt-1">
+                          <div className="flex items-center justify-between">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Program Objectives</label>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const curObjectives = customFullProgram.about?.objectives || [];
+                                setCustomFullProgram({
+                                  ...customFullProgram,
+                                  about: {
+                                    ...(customFullProgram.about || { summary: "", highlights: [] }),
+                                    objectives: [...curObjectives, "New program educational objective"]
+                                  }
+                                });
+                              }}
+                              className="text-[11px] font-bold text-[#072A6C] hover:underline flex items-center gap-1 cursor-pointer"
+                            >
+                              <Plus size={12} /> Add Objective
+                            </button>
+                          </div>
+                          {(customFullProgram.about?.objectives || []).map((obj, oIdx) => (
+                            <div key={oIdx} className="flex items-center gap-2">
+                              <span className="w-5 h-5 rounded-full bg-amber-50 text-[#8B1D2C] text-[10px] font-bold flex items-center justify-center shrink-0">
+                                {oIdx + 1}
+                              </span>
+                              <input
+                                type="text"
+                                value={obj}
+                                onChange={(e) => {
+                                  const updated = [...(customFullProgram.about?.objectives || [])];
+                                  updated[oIdx] = e.target.value;
+                                  setCustomFullProgram({
+                                    ...customFullProgram,
+                                    about: { ...(customFullProgram.about || { summary: "", highlights: [] }), objectives: updated }
+                                  });
+                                }}
+                                className="flex-1 h-8 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = (customFullProgram.about?.objectives || []).filter((_, i) => i !== oIdx);
+                                  setCustomFullProgram({
+                                    ...customFullProgram,
+                                    about: { ...(customFullProgram.about || { summary: "", highlights: [] }), objectives: updated }
+                                  });
+                                }}
+                                className="p-1 text-rose-500 hover:bg-rose-50 rounded cursor-pointer"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="space-y-1 sm:col-span-3 pt-1">
                           <label className="text-[10px] font-bold text-gray-600 uppercase">Target Career Roles (comma-separated)</label>
                           <input
                             type="text"
@@ -7806,8 +7999,8 @@ export default function AdminPortal() {
                     </div>
                   )}
 
-                  {/* ──────────────── 2. HOD & LEADERSHIP ──────────────── */}
-                  {progEditorSubTab === "hod" && (
+                  {/* ──────────────── 2. HOD MESSAGE & LEADERSHIP ──────────────── */}
+                  {(progEditorSubTab === "hodMessage" || progEditorSubTab === "hod") && (
                     <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-5">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-100 pb-3 gap-3">
                         <div>
@@ -7920,13 +8113,13 @@ export default function AdminPortal() {
                     </div>
                   )}
 
-                  {/* ──────────────── 3. VISION, MISSION & PEOS ──────────────── */}
-                  {progEditorSubTab === "vision" && (
+                  {/* ──────────────── 3. VISION & MISSION ──────────────── */}
+                  {(progEditorSubTab === "visionMission" || progEditorSubTab === "vision") && (
                     <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
                       <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                         <div>
-                          <h4 className="text-sm font-black text-[#072A6C] uppercase">Department Vision, Mission & Outcomes</h4>
-                          <p className="text-xs text-gray-500">Formulate Outcome-Based Education (OBE) objectives, POs, and PSOs</p>
+                          <h4 className="text-sm font-black text-[#072A6C] uppercase">Department Vision, Mission & Core Values</h4>
+                          <p className="text-xs text-gray-500">Establish long-term vision, core mission goals and institutional values</p>
                         </div>
                       </div>
 
@@ -7996,6 +8189,299 @@ export default function AdminPortal() {
                             </div>
                           ))}
                         </div>
+
+                        {/* Institutional Core Values */}
+                        <div className="space-y-1 pt-2">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Institutional Core Values (Comma separated)</label>
+                          <input
+                            type="text"
+                            value={(customFullProgram.visionMission?.coreValues || []).join(", ")}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              visionMission: {
+                                ...(customFullProgram.visionMission || { vision: "", mission: [] }),
+                                coreValues: e.target.value.split(",").map(s => s.trim()).filter(Boolean)
+                              }
+                            })}
+                            placeholder="Academic Rigor, Innovation & Ethics, Continuous Learning, Teamwork, Social Impact"
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ──────────────── 4. PEOS, POS, PSOS ──────────────── */}
+                  {progEditorSubTab === "peoPoPso" && (
+                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+                      <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                        <div>
+                          <h4 className="text-sm font-black text-[#072A6C] uppercase">Program Educational Objectives (PEOs), POs & PSOs</h4>
+                          <p className="text-xs text-gray-500">NBA / OBE standard graduate attributes and discipline-specific competencies</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        {/* Program Educational Objectives (PEOs) */}
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h5 className="text-xs font-black text-[#072A6C] uppercase">Program Educational Objectives (PEOs)</h5>
+                              <p className="text-[10px] text-gray-500">Long-term career and professional targets for graduates</p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const list = customFullProgram.peoPoPso?.peos || [];
+                                const newId = `PEO-${list.length + 1}`;
+                                setCustomFullProgram({
+                                  ...customFullProgram,
+                                  peoPoPso: {
+                                    ...(customFullProgram.peoPoPso || { pos: [], psos: [] }),
+                                    peos: [...list, { id: newId, title: "Objective Title", desc: "Description of the objective." }]
+                                  }
+                                });
+                              }}
+                              className="text-[11px] font-bold text-[#072A6C] hover:underline flex items-center gap-1 cursor-pointer"
+                            >
+                              <Plus size={12} /> Add PEO
+                            </button>
+                          </div>
+                          {(customFullProgram.peoPoPso?.peos || []).map((peo, pIdx) => (
+                            <div key={pIdx} className="p-3 bg-slate-50 border border-gray-200 rounded-xl space-y-2">
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="text"
+                                  value={peo.id}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.peoPoPso?.peos || [])];
+                                    updated[pIdx] = { ...updated[pIdx], id: e.target.value };
+                                    setCustomFullProgram({
+                                      ...customFullProgram,
+                                      peoPoPso: { ...(customFullProgram.peoPoPso || { pos: [], psos: [] }), peos: updated }
+                                    });
+                                  }}
+                                  className="w-20 h-7 px-2 text-xs font-mono font-bold text-[#072A6C] bg-white border border-gray-200 rounded-lg"
+                                />
+                                <input
+                                  type="text"
+                                  value={peo.title}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.peoPoPso?.peos || [])];
+                                    updated[pIdx] = { ...updated[pIdx], title: e.target.value };
+                                    setCustomFullProgram({
+                                      ...customFullProgram,
+                                      peoPoPso: { ...(customFullProgram.peoPoPso || { pos: [], psos: [] }), peos: updated }
+                                    });
+                                  }}
+                                  placeholder="PEO Title"
+                                  className="flex-1 h-7 px-2.5 text-xs font-bold text-gray-800 bg-white border border-gray-200 rounded-lg"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const updated = (customFullProgram.peoPoPso?.peos || []).filter((_, i) => i !== pIdx);
+                                    setCustomFullProgram({
+                                      ...customFullProgram,
+                                      peoPoPso: { ...(customFullProgram.peoPoPso || { pos: [], psos: [] }), peos: updated }
+                                    });
+                                  }}
+                                  className="p-1 text-rose-500 hover:bg-rose-50 rounded cursor-pointer"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                              <textarea
+                                rows={2}
+                                value={peo.desc}
+                                onChange={(e) => {
+                                  const updated = [...(customFullProgram.peoPoPso?.peos || [])];
+                                  updated[pIdx] = { ...updated[pIdx], desc: e.target.value };
+                                  setCustomFullProgram({
+                                    ...customFullProgram,
+                                    peoPoPso: { ...(customFullProgram.peoPoPso || { pos: [], psos: [] }), peos: updated }
+                                  });
+                                }}
+                                placeholder="Description..."
+                                className="w-full p-2 text-xs bg-white border border-gray-200 rounded-lg"
+                              />
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Program Outcomes (POs) */}
+                        <div className="space-y-3 pt-3 border-t border-gray-100">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h5 className="text-xs font-black text-[#072A6C] uppercase">Program Outcomes (POs)</h5>
+                              <p className="text-[10px] text-gray-500">NBA / Washington Accord standard graduate attributes</p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const list = customFullProgram.peoPoPso?.pos || [];
+                                const newId = `PO-${list.length + 1}`;
+                                setCustomFullProgram({
+                                  ...customFullProgram,
+                                  peoPoPso: {
+                                    ...(customFullProgram.peoPoPso || { peos: [], psos: [] }),
+                                    pos: [...list, { id: newId, title: "Outcome Title", desc: "Description of the program outcome." }]
+                                  }
+                                });
+                              }}
+                              className="text-[11px] font-bold text-[#072A6C] hover:underline flex items-center gap-1 cursor-pointer"
+                            >
+                              <Plus size={12} /> Add PO
+                            </button>
+                          </div>
+                          {(customFullProgram.peoPoPso?.pos || []).map((po, pIdx) => (
+                            <div key={pIdx} className="p-3 bg-slate-50 border border-gray-200 rounded-xl space-y-2">
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="text"
+                                  value={po.id}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.peoPoPso?.pos || [])];
+                                    updated[pIdx] = { ...updated[pIdx], id: e.target.value };
+                                    setCustomFullProgram({
+                                      ...customFullProgram,
+                                      peoPoPso: { ...(customFullProgram.peoPoPso || { peos: [], psos: [] }), pos: updated }
+                                    });
+                                  }}
+                                  className="w-20 h-7 px-2 text-xs font-mono font-bold text-[#072A6C] bg-white border border-gray-200 rounded-lg"
+                                />
+                                <input
+                                  type="text"
+                                  value={po.title}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.peoPoPso?.pos || [])];
+                                    updated[pIdx] = { ...updated[pIdx], title: e.target.value };
+                                    setCustomFullProgram({
+                                      ...customFullProgram,
+                                      peoPoPso: { ...(customFullProgram.peoPoPso || { peos: [], psos: [] }), pos: updated }
+                                    });
+                                  }}
+                                  placeholder="PO Title"
+                                  className="flex-1 h-7 px-2.5 text-xs font-bold text-gray-800 bg-white border border-gray-200 rounded-lg"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const updated = (customFullProgram.peoPoPso?.pos || []).filter((_, i) => i !== pIdx);
+                                    setCustomFullProgram({
+                                      ...customFullProgram,
+                                      peoPoPso: { ...(customFullProgram.peoPoPso || { peos: [], psos: [] }), pos: updated }
+                                    });
+                                  }}
+                                  className="p-1 text-rose-500 hover:bg-rose-50 rounded cursor-pointer"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                              <textarea
+                                rows={2}
+                                value={po.desc}
+                                onChange={(e) => {
+                                  const updated = [...(customFullProgram.peoPoPso?.pos || [])];
+                                  updated[pIdx] = { ...updated[pIdx], desc: e.target.value };
+                                  setCustomFullProgram({
+                                    ...customFullProgram,
+                                    peoPoPso: { ...(customFullProgram.peoPoPso || { peos: [], psos: [] }), pos: updated }
+                                  });
+                                }}
+                                placeholder="Description..."
+                                className="w-full p-2 text-xs bg-white border border-gray-200 rounded-lg"
+                              />
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Program Specific Outcomes (PSOs) */}
+                        <div className="space-y-3 pt-3 border-t border-gray-100">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h5 className="text-xs font-black text-[#072A6C] uppercase">Program Specific Outcomes (PSOs)</h5>
+                              <p className="text-[10px] text-gray-500">Discipline-tailored technical competencies</p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const list = customFullProgram.peoPoPso?.psos || [];
+                                const newId = `PSO-${list.length + 1}`;
+                                setCustomFullProgram({
+                                  ...customFullProgram,
+                                  peoPoPso: {
+                                    ...(customFullProgram.peoPoPso || { peos: [], pos: [] }),
+                                    psos: [...list, { id: newId, title: "Specific Outcome", desc: "Description of PSO." }]
+                                  }
+                                });
+                              }}
+                              className="text-[11px] font-bold text-[#072A6C] hover:underline flex items-center gap-1 cursor-pointer"
+                            >
+                              <Plus size={12} /> Add PSO
+                            </button>
+                          </div>
+                          {(customFullProgram.peoPoPso?.psos || []).map((pso, pIdx) => (
+                            <div key={pIdx} className="p-3 bg-slate-50 border border-gray-200 rounded-xl space-y-2">
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="text"
+                                  value={pso.id}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.peoPoPso?.psos || [])];
+                                    updated[pIdx] = { ...updated[pIdx], id: e.target.value };
+                                    setCustomFullProgram({
+                                      ...customFullProgram,
+                                      peoPoPso: { ...(customFullProgram.peoPoPso || { peos: [], pos: [] }), psos: updated }
+                                    });
+                                  }}
+                                  className="w-20 h-7 px-2 text-xs font-mono font-bold text-[#072A6C] bg-white border border-gray-200 rounded-lg"
+                                />
+                                <input
+                                  type="text"
+                                  value={pso.title}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.peoPoPso?.psos || [])];
+                                    updated[pIdx] = { ...updated[pIdx], title: e.target.value };
+                                    setCustomFullProgram({
+                                      ...customFullProgram,
+                                      peoPoPso: { ...(customFullProgram.peoPoPso || { peos: [], pos: [] }), psos: updated }
+                                    });
+                                  }}
+                                  placeholder="PSO Title"
+                                  className="flex-1 h-7 px-2.5 text-xs font-bold text-gray-800 bg-white border border-gray-200 rounded-lg"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const updated = (customFullProgram.peoPoPso?.psos || []).filter((_, i) => i !== pIdx);
+                                    setCustomFullProgram({
+                                      ...customFullProgram,
+                                      peoPoPso: { ...(customFullProgram.peoPoPso || { peos: [], pos: [] }), psos: updated }
+                                    });
+                                  }}
+                                  className="p-1 text-rose-500 hover:bg-rose-50 rounded cursor-pointer"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                              <textarea
+                                rows={2}
+                                value={pso.desc}
+                                onChange={(e) => {
+                                  const updated = [...(customFullProgram.peoPoPso?.psos || [])];
+                                  updated[pIdx] = { ...updated[pIdx], desc: e.target.value };
+                                  setCustomFullProgram({
+                                    ...customFullProgram,
+                                    peoPoPso: { ...(customFullProgram.peoPoPso || { peos: [], pos: [] }), psos: updated }
+                                  });
+                                }}
+                                placeholder="Description..."
+                                className="w-full p-2 text-xs bg-white border border-gray-200 rounded-lg"
+                              />
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   )}
@@ -8039,14 +8525,213 @@ export default function AdminPortal() {
                           />
                         </div>
 
-                        {/* Semesters Quick Summary */}
-                        <div className="sm:col-span-2 space-y-3 pt-2">
-                          <h5 className="text-xs font-bold text-gray-700 uppercase">Semester-Wise Structure ({customFullProgram.syllabus?.semesters?.length || 0} Semesters)</h5>
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                        {/* Semesters & Courses Editor */}
+                        <div className="sm:col-span-2 space-y-4 pt-3 border-t border-gray-100">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h5 className="text-xs font-black text-[#072A6C] uppercase">Semester-Wise Syllabus & Courses</h5>
+                              <p className="text-[10px] text-gray-500">Configure subjects, course codes, types, and credits per semester</p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const sems = customFullProgram.syllabus?.semesters || [];
+                                const newSemNumber = `Semester ${sems.length + 1}`;
+                                setCustomFullProgram({
+                                  ...customFullProgram,
+                                  syllabus: {
+                                    ...(customFullProgram.syllabus || { regulation: "R26" }),
+                                    semesters: [
+                                      ...sems,
+                                      {
+                                        semNumber: newSemNumber,
+                                        credits: 20,
+                                        subjects: [
+                                          { code: `26C${sems.length + 1}01`, name: "Core Course Title", type: "Theory", credits: 4 }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                });
+                              }}
+                              className="text-[11px] font-bold text-[#072A6C] hover:underline flex items-center gap-1 cursor-pointer"
+                            >
+                              <Plus size={12} /> Add Semester
+                            </button>
+                          </div>
+
+                          <div className="space-y-4">
                             {(customFullProgram.syllabus?.semesters || []).map((sem, sIdx) => (
-                              <div key={sIdx} className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                                <span className="text-[11px] font-extrabold text-[#072A6C] block">Sem {sem.semNumber}</span>
-                                <span className="text-[10px] text-gray-500 font-mono block">{sem.subjects?.length || 0} Courses • {sem.credits} Credits</span>
+                              <div key={sIdx} className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
+                                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-200 pb-2.5">
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="text"
+                                      value={sem.semNumber}
+                                      onChange={(e) => {
+                                        const updated = [...(customFullProgram.syllabus?.semesters || [])];
+                                        updated[sIdx] = { ...updated[sIdx], semNumber: e.target.value };
+                                        setCustomFullProgram({
+                                          ...customFullProgram,
+                                          syllabus: { ...(customFullProgram.syllabus || { regulation: "R26" }), semesters: updated }
+                                        });
+                                      }}
+                                      className="h-7 px-2.5 text-xs font-bold text-[#072A6C] bg-white border border-gray-200 rounded-lg w-32"
+                                    />
+                                    <div className="flex items-center gap-1">
+                                      <span className="text-[10px] text-gray-500 font-bold">Credits:</span>
+                                      <input
+                                        type="number"
+                                        value={sem.credits}
+                                        onChange={(e) => {
+                                          const updated = [...(customFullProgram.syllabus?.semesters || [])];
+                                          updated[sIdx] = { ...updated[sIdx], credits: Number(e.target.value) };
+                                          setCustomFullProgram({
+                                            ...customFullProgram,
+                                            syllabus: { ...(customFullProgram.syllabus || { regulation: "R26" }), semesters: updated }
+                                          });
+                                        }}
+                                        className="h-7 w-16 px-2 text-xs font-mono font-bold text-gray-800 bg-white border border-gray-200 rounded-lg"
+                                      />
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const updated = [...(customFullProgram.syllabus?.semesters || [])];
+                                        const curSubjects = updated[sIdx].subjects || [];
+                                        updated[sIdx] = {
+                                          ...updated[sIdx],
+                                          subjects: [
+                                            ...curSubjects,
+                                            { code: `26C${sIdx + 1}0${curSubjects.length + 1}`, name: "New Course Name", type: "Theory", credits: 3 }
+                                          ]
+                                        };
+                                        setCustomFullProgram({
+                                          ...customFullProgram,
+                                          syllabus: { ...(customFullProgram.syllabus || { regulation: "R26" }), semesters: updated }
+                                        });
+                                      }}
+                                      className="text-[10px] font-bold text-[#072A6C] bg-white border border-gray-200 hover:bg-blue-50 px-2 py-1 rounded flex items-center gap-1 cursor-pointer"
+                                    >
+                                      <Plus size={11} /> Add Course
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const updated = (customFullProgram.syllabus?.semesters || []).filter((_, idx) => idx !== sIdx);
+                                        setCustomFullProgram({
+                                          ...customFullProgram,
+                                          syllabus: { ...(customFullProgram.syllabus || { regulation: "R26" }), semesters: updated }
+                                        });
+                                      }}
+                                      className="p-1 text-rose-500 hover:bg-rose-50 rounded cursor-pointer"
+                                    >
+                                      <Trash2 size={13} />
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {/* Subjects table in this semester */}
+                                <div className="space-y-2">
+                                  {(sem.subjects || []).map((sub, subIdx) => (
+                                    <div key={subIdx} className="grid grid-cols-12 gap-2 items-center bg-white p-2 rounded-xl border border-gray-100">
+                                      <div className="col-span-3">
+                                        <input
+                                          type="text"
+                                          value={sub.code}
+                                          onChange={(e) => {
+                                            const updated = [...(customFullProgram.syllabus?.semesters || [])];
+                                            const updatedSubs = [...(updated[sIdx].subjects || [])];
+                                            updatedSubs[subIdx] = { ...updatedSubs[subIdx], code: e.target.value };
+                                            updated[sIdx] = { ...updated[sIdx], subjects: updatedSubs };
+                                            setCustomFullProgram({
+                                              ...customFullProgram,
+                                              syllabus: { ...(customFullProgram.syllabus || { regulation: "R26" }), semesters: updated }
+                                            });
+                                          }}
+                                          placeholder="Course Code"
+                                          className="w-full h-7 px-2 text-[11px] font-mono font-bold text-[#072A6C] border border-gray-200 rounded"
+                                        />
+                                      </div>
+                                      <div className="col-span-5">
+                                        <input
+                                          type="text"
+                                          value={sub.name}
+                                          onChange={(e) => {
+                                            const updated = [...(customFullProgram.syllabus?.semesters || [])];
+                                            const updatedSubs = [...(updated[sIdx].subjects || [])];
+                                            updatedSubs[subIdx] = { ...updatedSubs[subIdx], name: e.target.value };
+                                            updated[sIdx] = { ...updated[sIdx], subjects: updatedSubs };
+                                            setCustomFullProgram({
+                                              ...customFullProgram,
+                                              syllabus: { ...(customFullProgram.syllabus || { regulation: "R26" }), semesters: updated }
+                                            });
+                                          }}
+                                          placeholder="Course Title"
+                                          className="w-full h-7 px-2 text-[11px] font-medium text-gray-800 border border-gray-200 rounded"
+                                        />
+                                      </div>
+                                      <div className="col-span-2">
+                                        <select
+                                          value={sub.type}
+                                          onChange={(e) => {
+                                            const updated = [...(customFullProgram.syllabus?.semesters || [])];
+                                            const updatedSubs = [...(updated[sIdx].subjects || [])];
+                                            updatedSubs[subIdx] = { ...updatedSubs[subIdx], type: e.target.value as any };
+                                            updated[sIdx] = { ...updated[sIdx], subjects: updatedSubs };
+                                            setCustomFullProgram({
+                                              ...customFullProgram,
+                                              syllabus: { ...(customFullProgram.syllabus || { regulation: "R26" }), semesters: updated }
+                                            });
+                                          }}
+                                          className="w-full h-7 px-1 text-[10px] font-bold text-gray-700 border border-gray-200 rounded bg-slate-50"
+                                        >
+                                          <option value="Theory">Theory</option>
+                                          <option value="Lab">Lab</option>
+                                          <option value="Integrated">Integrated</option>
+                                          <option value="Project">Project</option>
+                                        </select>
+                                      </div>
+                                      <div className="col-span-1">
+                                        <input
+                                          type="number"
+                                          value={sub.credits}
+                                          onChange={(e) => {
+                                            const updated = [...(customFullProgram.syllabus?.semesters || [])];
+                                            const updatedSubs = [...(updated[sIdx].subjects || [])];
+                                            updatedSubs[subIdx] = { ...updatedSubs[subIdx], credits: Number(e.target.value) };
+                                            updated[sIdx] = { ...updated[sIdx], subjects: updatedSubs };
+                                            setCustomFullProgram({
+                                              ...customFullProgram,
+                                              syllabus: { ...(customFullProgram.syllabus || { regulation: "R26" }), semesters: updated }
+                                            });
+                                          }}
+                                          className="w-full h-7 px-1 text-[11px] font-mono font-bold text-center border border-gray-200 rounded"
+                                        />
+                                      </div>
+                                      <div className="col-span-1 text-center">
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            const updated = [...(customFullProgram.syllabus?.semesters || [])];
+                                            const updatedSubs = (updated[sIdx].subjects || []).filter((_, idx) => idx !== subIdx);
+                                            updated[sIdx] = { ...updated[sIdx], subjects: updatedSubs };
+                                            setCustomFullProgram({
+                                              ...customFullProgram,
+                                              syllabus: { ...(customFullProgram.syllabus || { regulation: "R26" }), semesters: updated }
+                                            });
+                                          }}
+                                          className="p-1 text-rose-500 hover:bg-rose-50 rounded cursor-pointer"
+                                        >
+                                          <Trash2 size={12} />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -8198,7 +8883,7 @@ export default function AdminPortal() {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                         {(customFullProgram.laboratories || []).map((lab, idx) => (
-                          <div key={idx} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
+                          <div key={idx} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
                             <div className="flex items-center justify-between">
                               <input
                                 type="text"
@@ -8231,7 +8916,7 @@ export default function AdminPortal() {
                                   updated[idx].capacity = e.target.value;
                                   setCustomFullProgram({ ...customFullProgram, laboratories: updated });
                                 }}
-                                placeholder="Capacity"
+                                placeholder="Capacity (e.g. 40 Students)"
                                 className="px-2 py-1 bg-white border border-gray-200 rounded-lg text-gray-700"
                               />
                               <input
@@ -8242,7 +8927,7 @@ export default function AdminPortal() {
                                   updated[idx].area = e.target.value;
                                   setCustomFullProgram({ ...customFullProgram, laboratories: updated });
                                 }}
-                                placeholder="Area"
+                                placeholder="Area (e.g. 1200 Sq.Ft.)"
                                 className="px-2 py-1 bg-white border border-gray-200 rounded-lg text-gray-700"
                               />
                               <input
@@ -8253,8 +8938,38 @@ export default function AdminPortal() {
                                   updated[idx].inCharge = e.target.value;
                                   setCustomFullProgram({ ...customFullProgram, laboratories: updated });
                                 }}
-                                placeholder="In-Charge"
+                                placeholder="In-Charge Faculty"
                                 className="px-2 py-1 bg-white border border-gray-200 rounded-lg text-gray-700"
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-gray-600 uppercase">Equipment & Workstations (comma-separated)</label>
+                              <input
+                                type="text"
+                                value={(lab.equipment || []).join(", ")}
+                                onChange={(e) => {
+                                  const updated = [...customFullProgram.laboratories];
+                                  updated[idx].equipment = e.target.value.split(",").map(s => s.trim()).filter(Boolean);
+                                  setCustomFullProgram({ ...customFullProgram, laboratories: updated });
+                                }}
+                                placeholder="e.g. Dell Precision Workstations (64GB RAM), Cisco Catalyst Switches"
+                                className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-gray-600 uppercase">Software & Development Tools (comma-separated)</label>
+                              <input
+                                type="text"
+                                value={(lab.software || []).join(", ")}
+                                onChange={(e) => {
+                                  const updated = [...customFullProgram.laboratories];
+                                  updated[idx].software = e.target.value.split(",").map(s => s.trim()).filter(Boolean);
+                                  setCustomFullProgram({ ...customFullProgram, laboratories: updated });
+                                }}
+                                placeholder="e.g. Python, Docker, TensorFlow, MATLAB, Oracle 21c, VS Code"
+                                className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
                               />
                             </div>
                           </div>
@@ -8265,11 +8980,11 @@ export default function AdminPortal() {
 
                   {/* ──────────────── 7. PLACEMENTS & CTC ──────────────── */}
                   {progEditorSubTab === "placements" && (
-                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-5">
+                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
                       <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                         <div>
                           <h4 className="text-sm font-black text-[#072A6C] uppercase">Placement Outcomes & Salary Statistics</h4>
-                          <p className="text-xs text-gray-500">Configure package records and key recruiting partners for this degree</p>
+                          <p className="text-xs text-gray-500">Configure package records, top recruiters and student placement spotlights</p>
                         </div>
                       </div>
 
@@ -8331,6 +9046,126 @@ export default function AdminPortal() {
                             placeholder="e.g. Microsoft, Amazon, TCS, Infosys, Wipro, Cognizant, Tech Mahindra"
                             className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800"
                           />
+                        </div>
+                      </div>
+
+                      {/* Placed Students Spotlight Manager */}
+                      <div className="pt-2 border-t border-gray-100 space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h5 className="text-xs font-black text-[#072A6C] uppercase">
+                              Placed Students Spotlight ({customFullProgram.placements?.placedStudents?.length || 0})
+                            </h5>
+                            <p className="text-[11px] text-gray-500">Student success cards featured in placement outcomes section</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const existingList = customFullProgram.placements?.placedStudents || [];
+                              setCustomFullProgram({
+                                ...customFullProgram,
+                                placements: {
+                                  ...(customFullProgram.placements || { highestPackage: "", averagePackage: "", placementRate: "", topRecruiters: [] }),
+                                  placedStudents: [
+                                    ...existingList,
+                                    {
+                                      name: "Student Name",
+                                      company: "Tech Corporation",
+                                      package: "₹12.00 LPA",
+                                      role: "Software Development Engineer"
+                                    }
+                                  ]
+                                }
+                              });
+                            }}
+                            className="h-8 px-3 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer"
+                          >
+                            <Plus size={13} /> Add Student Highlight
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                          {(customFullProgram.placements?.placedStudents || []).map((st, sIdx) => (
+                            <div key={sIdx} className="p-3 bg-slate-50 border border-gray-200 rounded-xl space-y-2">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-black text-[#072A6C] uppercase">Student #{sIdx + 1}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const updated = (customFullProgram.placements?.placedStudents || []).filter((_, i) => i !== sIdx);
+                                    setCustomFullProgram({
+                                      ...customFullProgram,
+                                      placements: {
+                                        ...(customFullProgram.placements || { highestPackage: "", averagePackage: "", placementRate: "", topRecruiters: [] }),
+                                        placedStudents: updated
+                                      }
+                                    });
+                                  }}
+                                  className="text-red-500 hover:text-red-700 p-0.5 cursor-pointer"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                              <input
+                                type="text"
+                                value={st.name}
+                                onChange={(e) => {
+                                  const updated = [...(customFullProgram.placements?.placedStudents || [])];
+                                  updated[sIdx] = { ...updated[sIdx], name: e.target.value };
+                                  setCustomFullProgram({
+                                    ...customFullProgram,
+                                    placements: { ...(customFullProgram.placements || {} as any), placedStudents: updated }
+                                  });
+                                }}
+                                placeholder="Student Name"
+                                className="w-full h-7 px-2 text-xs bg-white border border-gray-200 rounded-lg font-bold text-[#072A6C]"
+                              />
+                              <div className="grid grid-cols-2 gap-1.5">
+                                <input
+                                  type="text"
+                                  value={st.company}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.placements?.placedStudents || [])];
+                                    updated[sIdx] = { ...updated[sIdx], company: e.target.value };
+                                    setCustomFullProgram({
+                                      ...customFullProgram,
+                                      placements: { ...(customFullProgram.placements || {} as any), placedStudents: updated }
+                                    });
+                                  }}
+                                  placeholder="Company"
+                                  className="w-full h-7 px-2 text-[11px] bg-white border border-gray-200 rounded-lg font-semibold text-[#8B1D2C]"
+                                />
+                                <input
+                                  type="text"
+                                  value={st.package}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.placements?.placedStudents || [])];
+                                    updated[sIdx] = { ...updated[sIdx], package: e.target.value };
+                                    setCustomFullProgram({
+                                      ...customFullProgram,
+                                      placements: { ...(customFullProgram.placements || {} as any), placedStudents: updated }
+                                    });
+                                  }}
+                                  placeholder="Package (CTC)"
+                                  className="w-full h-7 px-2 text-[11px] bg-white border border-gray-200 rounded-lg font-bold text-emerald-700"
+                                />
+                              </div>
+                              <input
+                                type="text"
+                                value={st.role}
+                                onChange={(e) => {
+                                  const updated = [...(customFullProgram.placements?.placedStudents || [])];
+                                  updated[sIdx] = { ...updated[sIdx], role: e.target.value };
+                                  setCustomFullProgram({
+                                    ...customFullProgram,
+                                    placements: { ...(customFullProgram.placements || {} as any), placedStudents: updated }
+                                  });
+                                }}
+                                placeholder="Job Role"
+                                className="w-full h-7 px-2 text-[11px] bg-white border border-gray-200 rounded-lg text-gray-700"
+                              />
+                            </div>
+                          ))}
                         </div>
                       </div>
                     </div>
@@ -8550,7 +9385,126 @@ export default function AdminPortal() {
                     </div>
                   )}
 
-                  {/* ──────────────── 11. NEWS LETTERS ──────────────── */}
+                  {/* ──────────────── 11. BEST PRACTICES ──────────────── */}
+                  {progEditorSubTab === "bestPractices" && (
+                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-3">
+                        <div>
+                          <h4 className="text-sm font-black text-[#072A6C] uppercase">Department Best Practices</h4>
+                          <p className="text-xs text-gray-500">Pedagogy methods, student development initiatives & institutional excellence practices</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const list = customFullProgram.bestPractices || [];
+                            setCustomFullProgram({
+                              ...customFullProgram,
+                              bestPractices: [
+                                ...list,
+                                {
+                                  title: "New Best Practice Initiative",
+                                  description: "Description of the educational and research best practice.",
+                                  keyPoints: ["Key pillar 1", "Key pillar 2"],
+                                  outcomes: "High placement and student success rates."
+                                }
+                              ]
+                            });
+                          }}
+                          className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs"
+                        >
+                          <Plus size={14} /> Add Best Practice
+                        </button>
+                      </div>
+
+                      <div className="space-y-4">
+                        {(customFullProgram.bestPractices || []).map((bp, bIdx) => (
+                          <div key={bIdx} className="p-4 bg-slate-50 border border-gray-200 rounded-2xl space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[11px] font-black text-[#072A6C] uppercase">Practice #{bIdx + 1}</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = (customFullProgram.bestPractices || []).filter((_, idx) => idx !== bIdx);
+                                  setCustomFullProgram({ ...customFullProgram, bestPractices: updated });
+                                }}
+                                className="text-xs text-rose-600 hover:text-rose-700 flex items-center gap-1 cursor-pointer"
+                              >
+                                <Trash2 size={12} /> Remove
+                              </button>
+                            </div>
+
+                            <div className="space-y-3">
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Practice Title</label>
+                                <input
+                                  type="text"
+                                  value={bp.title}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.bestPractices || [])];
+                                    updated[bIdx] = { ...updated[bIdx], title: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, bestPractices: updated });
+                                  }}
+                                  placeholder="e.g. Industry-Driven Project-Based Pedagogy"
+                                  className="w-full h-9 px-3 text-xs bg-white border border-gray-200 rounded-xl font-bold text-[#072A6C]"
+                                />
+                              </div>
+
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-600 uppercase">Description</label>
+                                <textarea
+                                  rows={2}
+                                  value={bp.description}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.bestPractices || [])];
+                                    updated[bIdx] = { ...updated[bIdx], description: e.target.value };
+                                    setCustomFullProgram({ ...customFullProgram, bestPractices: updated });
+                                  }}
+                                  placeholder="Detailed description of the best practice..."
+                                  className="w-full p-2.5 text-xs bg-white border border-gray-200 rounded-xl leading-relaxed"
+                                />
+                              </div>
+
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div className="space-y-1">
+                                  <label className="text-[10px] font-bold text-gray-600 uppercase">Key Action Points (Comma separated)</label>
+                                  <input
+                                    type="text"
+                                    value={(bp.keyPoints || []).join(", ")}
+                                    onChange={(e) => {
+                                      const updated = [...(customFullProgram.bestPractices || [])];
+                                      updated[bIdx] = {
+                                        ...updated[bIdx],
+                                        keyPoints: e.target.value.split(",").map(s => s.trim()).filter(Boolean)
+                                      };
+                                      setCustomFullProgram({ ...customFullProgram, bestPractices: updated });
+                                    }}
+                                    placeholder="Weekly reviews, Industry panels, Git evaluation"
+                                    className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[10px] font-bold text-gray-600 uppercase">Measurable Outcome</label>
+                                  <input
+                                    type="text"
+                                    value={bp.outcomes || ""}
+                                    onChange={(e) => {
+                                      const updated = [...(customFullProgram.bestPractices || [])];
+                                      updated[bIdx] = { ...updated[bIdx], outcomes: e.target.value };
+                                      setCustomFullProgram({ ...customFullProgram, bestPractices: updated });
+                                    }}
+                                    placeholder="100% internship conversion and strong placement track record"
+                                    className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-800"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ──────────────── 12. NEWS LETTERS ──────────────── */}
                   {progEditorSubTab === "newsletters" && (
                     <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-3">
@@ -8659,7 +9613,7 @@ export default function AdminPortal() {
                     </div>
                   )}
 
-                  {/* ──────────────── 12. TECHNICAL MAGAZINES ──────────────── */}
+                  {/* ──────────────── 21. TECHNICAL MAGAZINES ──────────────── */}
                   {progEditorSubTab === "magazines" && (
                     <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-3">
@@ -8768,7 +9722,7 @@ export default function AdminPortal() {
                   )}
 
                   {/* ──────────────── 13. MEMORANDA OF UNDERSTANDING (MOU) ──────────────── */}
-                  {progEditorSubTab === "mous" && (
+                  {(progEditorSubTab === "mou" || progEditorSubTab === "mous") && (
                     <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-3">
                         <div>
@@ -8949,6 +9903,127 @@ export default function AdminPortal() {
                           className="w-full p-3 text-xs bg-slate-50 border border-gray-200 rounded-xl"
                         />
                       </div>
+
+                      {/* Featured Key Publications Manager */}
+                      <div className="pt-2 border-t border-gray-100 space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h5 className="text-xs font-black text-[#072A6C] uppercase">
+                              Featured Peer-Reviewed Publications ({customFullProgram.research?.keyPublications?.length || 0})
+                            </h5>
+                            <p className="text-[11px] text-gray-500">Selected high-impact journal and conference research papers</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const existing = customFullProgram.research?.keyPublications || [];
+                              setCustomFullProgram({
+                                ...customFullProgram,
+                                research: {
+                                  ...(customFullProgram.research || { publicationsCount: 0, patentsPublished: 0, patentsGranted: 0, activeScholars: 0, thrustAreas: [] }),
+                                  keyPublications: [
+                                    ...existing,
+                                    {
+                                      title: "New Research Paper Title",
+                                      journal: "IEEE Transactions / Scopus Journal",
+                                      authors: "Faculty Name, Research Scholar",
+                                      year: "2025",
+                                      doi: "10.1109/EXAMPLE.2025"
+                                    }
+                                  ]
+                                }
+                              });
+                            }}
+                            className="h-8 px-3 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer"
+                          >
+                            <Plus size={13} /> Add Publication
+                          </button>
+                        </div>
+
+                        <div className="space-y-3">
+                          {(customFullProgram.research?.keyPublications || []).map((pub, pIdx) => (
+                            <div key={pIdx} className="p-3 bg-slate-50 border border-gray-200 rounded-xl space-y-2">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-black text-[#072A6C] uppercase">Publication #{pIdx + 1}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const updated = (customFullProgram.research?.keyPublications || []).filter((_, i) => i !== pIdx);
+                                    setCustomFullProgram({
+                                      ...customFullProgram,
+                                      research: {
+                                        ...(customFullProgram.research || {} as any),
+                                        keyPublications: updated
+                                      }
+                                    });
+                                  }}
+                                  className="text-red-500 hover:text-red-700 p-0.5 cursor-pointer"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                              <input
+                                type="text"
+                                value={pub.title}
+                                onChange={(e) => {
+                                  const updated = [...(customFullProgram.research?.keyPublications || [])];
+                                  updated[pIdx] = { ...updated[pIdx], title: e.target.value };
+                                  setCustomFullProgram({
+                                    ...customFullProgram,
+                                    research: { ...(customFullProgram.research || {} as any), keyPublications: updated }
+                                  });
+                                }}
+                                placeholder="Paper Title"
+                                className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold text-[#072A6C]"
+                              />
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                <input
+                                  type="text"
+                                  value={pub.journal}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.research?.keyPublications || [])];
+                                    updated[pIdx] = { ...updated[pIdx], journal: e.target.value };
+                                    setCustomFullProgram({
+                                      ...customFullProgram,
+                                      research: { ...(customFullProgram.research || {} as any), keyPublications: updated }
+                                    });
+                                  }}
+                                  placeholder="Journal / Conference Name"
+                                  className="w-full h-7 px-2 text-[11px] bg-white border border-gray-200 rounded-lg text-gray-800"
+                                />
+                                <input
+                                  type="text"
+                                  value={pub.authors}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.research?.keyPublications || [])];
+                                    updated[pIdx] = { ...updated[pIdx], authors: e.target.value };
+                                    setCustomFullProgram({
+                                      ...customFullProgram,
+                                      research: { ...(customFullProgram.research || {} as any), keyPublications: updated }
+                                    });
+                                  }}
+                                  placeholder="Authors"
+                                  className="w-full h-7 px-2 text-[11px] bg-white border border-gray-200 rounded-lg text-gray-800"
+                                />
+                                <input
+                                  type="text"
+                                  value={pub.year}
+                                  onChange={(e) => {
+                                    const updated = [...(customFullProgram.research?.keyPublications || [])];
+                                    updated[pIdx] = { ...updated[pIdx], year: e.target.value };
+                                    setCustomFullProgram({
+                                      ...customFullProgram,
+                                      research: { ...(customFullProgram.research || {} as any), keyPublications: updated }
+                                    });
+                                  }}
+                                  placeholder="Year (e.g. 2025)"
+                                  className="w-full h-7 px-2 text-[11px] bg-white border border-gray-200 rounded-lg text-gray-800 font-mono"
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   )}
 
@@ -9060,7 +10135,104 @@ export default function AdminPortal() {
                     </div>
                   )}
 
-                  {/* ──────────────── 16. ROLL OF HONOUR & TOPPERS ──────────────── */}
+                  {/* ──────────────── 17. HIGHER EDUCATION & ENTREPRENEURSHIP ──────────────── */}
+                  {progEditorSubTab === "higherEducation" && (
+                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+                      <div className="border-b border-gray-100 pb-3">
+                        <h4 className="text-sm font-black text-[#072A6C] uppercase">Higher Education & Entrepreneurship</h4>
+                        <p className="text-xs text-gray-500">GATE/GRE/CAT preparation programs, international pathways & student startup incubation</p>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Section Title</label>
+                          <input
+                            type="text"
+                            value={customFullProgram.higherEducation?.title || "Higher Education & Entrepreneurship Support"}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              higherEducation: {
+                                ...(customFullProgram.higherEducation || {} as any),
+                                title: e.target.value
+                              }
+                            })}
+                            className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Overview & Ecosystem Description</label>
+                          <textarea
+                            rows={3}
+                            value={customFullProgram.higherEducation?.description || ""}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              higherEducation: {
+                                ...(customFullProgram.higherEducation || {} as any),
+                                description: e.target.value
+                              }
+                            })}
+                            placeholder="Comprehensive support ecosystem for competitive exams and startup incubation..."
+                            className="w-full p-3 text-xs bg-slate-50 border border-gray-200 rounded-xl leading-relaxed"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Guidance & Training Tracks (Comma separated)</label>
+                            <textarea
+                              rows={3}
+                              value={(customFullProgram.higherEducation?.guidancePrograms || []).join(", ")}
+                              onChange={(e) => setCustomFullProgram({
+                                ...customFullProgram,
+                                higherEducation: {
+                                  ...(customFullProgram.higherEducation || {} as any),
+                                  guidancePrograms: e.target.value.split(",").map(s => s.trim()).filter(Boolean)
+                                }
+                              })}
+                              placeholder="GATE Coaching, GRE / TOEFL Classes, Startup Incubation, IPR Support"
+                              className="w-full p-3 text-xs bg-slate-50 border border-gray-200 rounded-xl leading-relaxed"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-600 uppercase">Partner Universities & Global Pathways (Comma separated)</label>
+                            <textarea
+                              rows={3}
+                              value={(customFullProgram.higherEducation?.partnerUniversities || []).join(", ")}
+                              onChange={(e) => setCustomFullProgram({
+                                ...customFullProgram,
+                                higherEducation: {
+                                  ...(customFullProgram.higherEducation || {} as any),
+                                  partnerUniversities: e.target.value.split(",").map(s => s.trim()).filter(Boolean)
+                                }
+                              })}
+                              placeholder="Top IITs & NITs, US Research Universities, Top B-Schools"
+                              className="w-full p-3 text-xs bg-slate-50 border border-gray-200 rounded-xl leading-relaxed"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-600 uppercase">Student Achievements & Venture Spotlights (Comma separated)</label>
+                          <textarea
+                            rows={2}
+                            value={(customFullProgram.higherEducation?.studentAchievements || []).join(", ")}
+                            onChange={(e) => setCustomFullProgram({
+                              ...customFullProgram,
+                              higherEducation: {
+                                ...(customFullProgram.higherEducation || {} as any),
+                                studentAchievements: e.target.value.split(",").map(s => s.trim()).filter(Boolean)
+                              }
+                            })}
+                            placeholder="GATE 99 percentile holders, 15+ student startups incubated, Global admits"
+                            className="w-full p-3 text-xs bg-slate-50 border border-gray-200 rounded-xl leading-relaxed"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ──────────────── 18. ROLL OF HONOUR & TOPPERS ──────────────── */}
                   {progEditorSubTab === "rollOfHonour" && (
                     <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-3">
@@ -9181,8 +10353,8 @@ export default function AdminPortal() {
                     </div>
                   )}
 
-                  {/* ──────────────── 17. FUNDING PROJECTS & GRANTS ──────────────── */}
-                  {progEditorSubTab === "funding" && (
+                  {/* ──────────────── 18. FUNDING PROJECTS & GRANTS ──────────────── */}
+                  {(progEditorSubTab === "fundingProjects" || progEditorSubTab === "funding") && (
                     <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-3">
                         <div>
@@ -9319,8 +10491,8 @@ export default function AdminPortal() {
                     </div>
                   )}
 
-                  {/* ──────────────── 18. TEACHING INNOVATIONS BY FACULTY ──────────────── */}
-                  {progEditorSubTab === "teaching" && (
+                  {/* ──────────────── 19. TEACHING INNOVATIONS BY FACULTY ──────────────── */}
+                  {(progEditorSubTab === "teachingInnovations" || progEditorSubTab === "teaching") && (
                     <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-3">
                         <div>
@@ -9426,8 +10598,8 @@ export default function AdminPortal() {
                     </div>
                   )}
 
-                  {/* ──────────────── 19. EVENTS & DEPARTMENT ASSOCIATION ──────────────── */}
-                  {progEditorSubTab === "events" && (
+                  {/* ──────────────── 20. EVENTS & DEPARTMENT ASSOCIATION ──────────────── */}
+                  {(progEditorSubTab === "eventsAssociation" || progEditorSubTab === "events") && (
                     <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
                       <div className="border-b border-gray-100 pb-3">
                         <h4 className="text-sm font-black text-[#072A6C] uppercase">Department Student Association & Events</h4>
@@ -9631,7 +10803,7 @@ export default function AdminPortal() {
                     </div>
                   )}
 
-                  {/* ──────────────── 20. 19-SECTION ORDERING & VISIBILITY ──────────────── */}
+                  {/* ──────────────── 22. SECTIONS ORDER & VISIBILITY ──────────────── */}
                   {progEditorSubTab === "sections" && (
                     <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
                       <div className="flex items-center justify-between">
@@ -10864,17 +12036,28 @@ export default function AdminPortal() {
                             type="file"
                             accept="image/*"
                             className="hidden"
-                            onChange={(e) => {
+                            onChange={async (e) => {
                               const file = e.target.files?.[0];
                               if (file) {
-                                const reader = new FileReader();
-                                reader.onload = (ev) => {
-                                  if (ev.target?.result) {
-                                    const current = currentCampusPage.gallery || [];
-                                    updateSelectedPage({ gallery: [...current, ev.target.result as string] });
-                                  }
-                                };
-                                reader.readAsDataURL(file);
+                                try {
+                                  const compressed = await compressImage(file, {
+                                    maxWidth: 1200,
+                                    maxHeight: 900,
+                                    quality: 0.82
+                                  });
+                                  const current = currentCampusPage.gallery || [];
+                                  updateSelectedPage({ gallery: [...current, compressed] });
+                                } catch (err) {
+                                  console.error("Gallery upload error:", err);
+                                  const reader = new FileReader();
+                                  reader.onload = (ev) => {
+                                    if (ev.target?.result) {
+                                      const current = currentCampusPage.gallery || [];
+                                      updateSelectedPage({ gallery: [...current, ev.target.result as string] });
+                                    }
+                                  };
+                                  reader.readAsDataURL(file);
+                                }
                               }
                             }}
                           />
@@ -10959,18 +12142,30 @@ export default function AdminPortal() {
                                   type="file"
                                   accept="image/*"
                                   className="hidden"
-                                  onChange={(e) => {
+                                  onChange={async (e) => {
                                     const file = e.target.files?.[0];
                                     if (file) {
-                                      const reader = new FileReader();
-                                      reader.onload = (ev) => {
-                                        if (ev.target?.result) {
-                                          const updated = [...(currentCampusPage.gallery || [])];
-                                          updated[gIdx] = ev.target.result as string;
-                                          updateSelectedPage({ gallery: updated });
-                                        }
-                                      };
-                                      reader.readAsDataURL(file);
+                                      try {
+                                        const compressed = await compressImage(file, {
+                                          maxWidth: 1200,
+                                          maxHeight: 900,
+                                          quality: 0.82
+                                        });
+                                        const updated = [...(currentCampusPage.gallery || [])];
+                                        updated[gIdx] = compressed;
+                                        updateSelectedPage({ gallery: updated });
+                                      } catch (err) {
+                                        console.error("Gallery replace error:", err);
+                                        const reader = new FileReader();
+                                        reader.onload = (ev) => {
+                                          if (ev.target?.result) {
+                                            const updated = [...(currentCampusPage.gallery || [])];
+                                            updated[gIdx] = ev.target.result as string;
+                                            updateSelectedPage({ gallery: updated });
+                                          }
+                                        };
+                                        reader.readAsDataURL(file);
+                                      }
                                     }
                                   }}
                                 />

@@ -7,24 +7,26 @@ export interface SectionMeta {
 
 export const DEFAULT_PROGRAM_SECTIONS: SectionMeta[] = [
   { id: "about", title: "About Program", enabled: true, order: 1 },
-  { id: "hodMessage", title: "HOD / Coordinator Message", enabled: true, order: 2 },
+  { id: "hodMessage", title: "HOD Message", enabled: true, order: 2 },
   { id: "visionMission", title: "Vision & Mission", enabled: true, order: 3 },
-  { id: "peoPoPso", title: "PEOs, POs & PSOs", enabled: true, order: 4 },
-  { id: "faculty", title: "Faculty Directory", enabled: true, order: 5 },
-  { id: "placements", title: "Placements & Internships", enabled: true, order: 6 },
+  { id: "peoPoPso", title: "PEOs, POs, PSOs", enabled: true, order: 4 },
+  { id: "faculty", title: "Faculty", enabled: true, order: 5 },
+  { id: "placements", title: "Placements", enabled: true, order: 6 },
   { id: "labs", title: "Infrastructure & Labs", enabled: true, order: 7 },
-  { id: "achievements", title: "Key Achievements & Accreditations", enabled: true, order: 8 },
+  { id: "achievements", title: "Achievements", enabled: true, order: 8 },
   { id: "syllabus", title: "Syllabus & Academic Calendar", enabled: true, order: 9 },
-  { id: "library", title: "Department Library & E-Resources", enabled: true, order: 10 },
-  { id: "newsletters", title: "News Letters", enabled: true, order: 11 },
-  { id: "magazines", title: "Technical Magazines", enabled: true, order: 12 },
-  { id: "mou", title: "Memoranda of Understanding (MoU)", enabled: true, order: 13 },
+  { id: "library", title: "Department Library", enabled: true, order: 10 },
+  { id: "bestPractices", title: "Best Practices", enabled: true, order: 11 },
+  { id: "newsletters", title: "News Letters", enabled: true, order: 12 },
+  { id: "mou", title: "MOU", enabled: true, order: 13 },
   { id: "research", title: "Research & Development", enabled: true, order: 14 },
-  { id: "societies", title: "Professional Societies & Chapters", enabled: true, order: 15 },
-  { id: "rollOfHonour", title: "Roll of Honour & Toppers", enabled: true, order: 16 },
-  { id: "fundingProjects", title: "Funding Projects & Grants", enabled: true, order: 17 },
-  { id: "teachingInnovations", title: "Teaching Innovations by Faculty", enabled: true, order: 18 },
-  { id: "eventsAssociation", title: "Events & Department Association", enabled: true, order: 19 }
+  { id: "societies", title: "Professional Societies", enabled: true, order: 15 },
+  { id: "higherEducation", title: "Higher Education & Entrepreneurship", enabled: true, order: 16 },
+  { id: "rollOfHonour", title: "Roll of Honour & Toppers", enabled: true, order: 17 },
+  { id: "fundingProjects", title: "Funding Projects & Grants", enabled: true, order: 18 },
+  { id: "teachingInnovations", title: "Teaching Innovations", enabled: true, order: 19 },
+  { id: "eventsAssociation", title: "Events & Association", enabled: true, order: 20 },
+  { id: "magazines", title: "Technical Magazines", enabled: true, order: 21 }
 ];
 
 export interface FacultyMember {
@@ -212,6 +214,19 @@ export interface FullProgramData {
     facultyAdvisor: string;
     activitiesSummary: string;
     events: EventItemData[];
+  };
+  bestPractices?: {
+    title: string;
+    description: string;
+    keyPoints: string[];
+    outcomes: string;
+  }[];
+  higherEducation?: {
+    title: string;
+    description: string;
+    guidancePrograms: string[];
+    partnerUniversities: string[];
+    studentAchievements: string[];
   };
 }
 
@@ -1591,6 +1606,48 @@ export function getProgramFullData(slug: string, title?: string, department?: st
       activitiesSummary: "Conducts regular seminars, technical contests, and student development workshops.",
       events: [
         { title: "Annual Technical Symposium & Project Expo", date: "February 2025", type: "Technical Fest", venue: "Department Seminar Hall", description: "Paper presentations, hardware demos, and coding competitions." }
+      ]
+    },
+    bestPractices: [
+      {
+        title: "Industry-Driven Project-Based Learning",
+        description: `Students undertake mandatory capstone and micro-projects addressing real-world industry problems in ${cleanDept}.`,
+        keyPoints: [
+          "Hands-on studio practicals every semester",
+          "Industry co-mentors for final-year engineering projects",
+          "Git-based automated evaluation & peer code reviews"
+        ],
+        outcomes: "High placement conversion rates in top-tier product and core companies."
+      },
+      {
+        title: "Continuous Skill Enrichment & Certifications",
+        description: "Integration of global certification roadmaps directly into the academic curriculum.",
+        keyPoints: [
+          "Mandatory NPTEL / Coursera / AWS / RedHat credit transfers",
+          "Dedicated technical training periods before campus placement drives",
+          "Hackathons and coding challenges organized bi-weekly"
+        ],
+        outcomes: "100% of graduating students possess at least two globally recognized industry credentials."
+      }
+    ],
+    higherEducation: {
+      title: "Higher Education & Entrepreneurship Support",
+      description: `Comprehensive ecosystem providing guidance for GATE, GRE, CAT, IELTS, and incubating student-led startups in ${cleanDept}.`,
+      guidancePrograms: [
+        "GATE & Public Sector Exam Coaching Classes",
+        "GRE / TOEFL / IELTS Preparation Mentorship",
+        "University Innovation & Incubation Cell (UIIC) Incubation Support",
+        "Angel Funding & Intellectual Property Rights (IPR) Assistance"
+      ],
+      partnerUniversities: [
+        "Top IITs & NITs (M.Tech / Ph.D. Pathways)",
+        "Premier US & European Research Universities",
+        "IIMs & Top Business Schools (MBA Pathways)"
+      ],
+      studentAchievements: [
+        "Multiple students secured top percentiles in GATE & CAT examinations",
+        "Over 15+ student ventures incubated at the University Innovation Hub",
+        "Alumni enrolled in prestigious Master's programs worldwide"
       ]
     }
   };

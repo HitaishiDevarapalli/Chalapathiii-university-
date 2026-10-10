@@ -18,8 +18,7 @@ const FEATURED_IMAGES = [
   "/prog_management.png",
   "/prog_pharmacy.png"
 ];
-import { useData } from "../context/DataContext";
-import { ACADEMIC_PROGRAMS_STRUCTURE } from "../components/layout/Header";
+import { useData, DEFAULT_ACADEMIC_STRUCTURE } from "../context/DataContext";
 
 /* ── animation helpers ────────────────────────── */
 const fadeUp = {
@@ -132,13 +131,38 @@ export default function Home() {
     };
   }, []);
 
-  // Active tab state for Schools & Programs
-  const structure = academicStructure && Object.keys(academicStructure).length > 0
-    ? academicStructure
-    : ACADEMIC_PROGRAMS_STRUCTURE;
+  // Dynamic Active tab state for Schools & Programs
+  const structure = useMemo(() => {
+    const base: Record<string, Record<string, any[]>> = {};
+
+    const rawStructure = academicStructure && Object.keys(academicStructure).length > 0
+      ? academicStructure
+      : DEFAULT_ACADEMIC_STRUCTURE;
+
+    Object.entries(rawStructure).forEach(([school, depts]) => {
+      base[school] = {};
+      Object.entries(depts).forEach(([dept, courses]) => {
+        if (Array.isArray(courses) && courses.length > 0) {
+          base[school][dept] = courses.map((c: any) => {
+            const slug = c.to ? c.to.split("/").pop() : "";
+            const matchedProg = (programs || []).find((p) => p.slug === slug);
+            return {
+              ...c,
+              label: matchedProg?.title || c.label,
+              desc: matchedProg?.overview || matchedProg?.desc || c.desc,
+              duration: matchedProg?.duration || c.duration,
+              degreeType: matchedProg?.degreeType || c.degreeType
+            };
+          });
+        }
+      });
+    });
+
+    return base;
+  }, [academicStructure, programs]);
 
   const schools = Object.keys(structure);
-  const [activeSchoolTab, setActiveSchoolTab] = useState<string>(schools[0] || "School of Engineering");
+  const [activeSchoolTab, setActiveSchoolTab] = useState<string>(() => schools[0] || "School of Computing Sciences");
   const [activeDepartmentTab, setActiveDepartmentTab] = useState<string | null>(null);
 
   // Sync activeSchoolTab if structure updates
@@ -522,81 +546,123 @@ export default function Home() {
       </section>
 
       {/* ═══ WHY CHOOSE US SECTION ═══ */}
-      <section className="bg-[#F8FAFC] w-full py-10 md:py-12 border-y border-gray-100">
-        <div className="max-w-[1440px] mx-auto w-full px-5 text-center">
+      <section className="bg-[#F8FAFC]/60 w-full py-14 md:py-20 border-y border-gray-100">
+        <div className="max-w-[1400px] mx-auto w-full px-5 sm:px-6 text-center">
 
           <motion.h2
-            className="text-[32px] md:text-[40px] font-[800] text-[#0F172A] mb-4"
+            className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#072A6C] tracking-tight mb-4"
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            Why To Choose Chalapathi University?
+            {homepageSections?.find((s: any) => s.id === "whyChooseUs" || s.id === "whyChoose")?.title || "Why To Choose Chalapathi University?"}
           </motion.h2>
           <motion.p
-            className="text-[#64748B] max-w-3xl mx-auto text-[15px] md:text-[17px] leading-relaxed mb-8 font-[500]"
+            className="text-slate-500 max-w-3xl mx-auto text-xs sm:text-sm md:text-base leading-relaxed mb-12 font-normal"
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
           >
-            Experience an education that blends academic excellence, innovation, industry collaboration, research, global exposure, and holistic development—preparing students to become future-ready professionals and responsible global leaders.
+            {homepageSections?.find((s: any) => s.id === "whyChooseUs" || s.id === "whyChoose")?.subtitle || "Experience an education that blends academic excellence, innovation, industry collaboration, research, global exposure, and holistic development—preparing students to become future-ready professionals and responsible global leaders."}
           </motion.p>
 
-        <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 text-left mt-8"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
-          variants={staggerContainer}
-        >
-          {[
-            {
-              num: "01",
-              title: "Industry Integrated Curriculum",
-              desc: "Curriculum designed with practical learning and industry collaboration to ensure graduates are career-ready."
-            },
-            {
-              num: "02",
-              title: "Expert Faculty & Research",
-              desc: "Learn from accomplished faculty members, researchers, and industry experts who inspire innovation."
-            },
-            {
-              num: "03",
-              title: "Smart Campus Infrastructure",
-              desc: "Technology-enabled classrooms, modern laboratories, and collaborative learning spaces designed for excellence."
-            },
-            {
-              num: "04",
-              title: "Career & Placement Excellence",
-              desc: "Industry partnerships, internships, and placement training help students launch successful careers."
-            },
-            {
-              num: "05",
-              title: "Global Learning Opportunities",
-              desc: "International certifications, collaborative learning, and global industry exposure."
-            },
-            {
-              num: "06",
-              title: "Leadership & Holistic Development",
-              desc: "Develop leadership, communication, creativity, and life skills through a vibrant campus ecosystem."
-            }
-          ].map((item, idx) => (
-            <motion.div
-              key={idx}
-              className="border-t-2 border-[#072A6C]/30 hover:border-[#072A6C] pt-6 flex flex-col justify-start transition-colors duration-300"
-              variants={fadeUp}
-            >
-              <span className="text-2xl font-black text-[#D4AF37] mb-2">{item.num}</span>
-              <h3 className="font-[800] text-[17px] text-[#072A6C] mb-2 leading-snug">
-                {item.title}
-              </h3>
-              <p className="text-[13px] text-gray-600 leading-relaxed font-medium">
-                {item.desc}
-              </p>
-            </motion.div>
-          ))}
-        </motion.div>
+          <motion.div
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={staggerContainer}
+          >
+            {(
+              homepageSections?.find((s: any) => s.id === "whyChooseUs" || s.id === "whyChoose")?.extraData?.length
+                ? homepageSections.find((s: any) => s.id === "whyChooseUs" || s.id === "whyChoose")!.extraData
+                : [
+                    {
+                      title: "Industry integrated curriculum",
+                      desc: "Curriculum designed with practical learning and industry collaboration to ensure graduates are career-ready.",
+                      icon: "Trophy"
+                    },
+                    {
+                      title: "Expert Faculty & Research",
+                      desc: "Learn from accomplished faculty members, researchers, and industry experts who inspire innovation.",
+                      icon: "Users"
+                    },
+                    {
+                      title: "Smart Campus Infrastructure",
+                      desc: "Technology-enabled classrooms, modern laboratories, and collaborative learning spaces designed for excellence.",
+                      icon: "Building2"
+                    },
+                    {
+                      title: "Career & Placement Excellence",
+                      desc: "Industry partnerships, internships, and placement training help students launch successful careers.",
+                      icon: "Handshake"
+                    },
+                    {
+                      title: "Global Learning Opportunities",
+                      desc: "International certifications, collaborative learning, and global industry exposure.",
+                      icon: "Globe"
+                    },
+                    {
+                      title: "Leadership & Holistic Development",
+                      desc: "Develop leadership, communication, creativity, and life skills through a vibrant campus ecosystem.",
+                      icon: "Sparkles"
+                    }
+                  ]
+            ).map((item: any, idx: number) => {
+              const title = (item.title || "").toLowerCase();
+              const iconKey = (item.icon || "").toLowerCase();
+
+              const renderIcon = () => {
+                if (title.includes("curriculum") || title.includes("industry") || iconKey.includes("trophy") || idx === 0) {
+                  return <Trophy className="w-5 h-5 text-white" strokeWidth={2.2} />;
+                }
+                if (title.includes("faculty") || title.includes("research") || iconKey.includes("user") || idx === 1) {
+                  return <Users className="w-5 h-5 text-white" strokeWidth={2.2} />;
+                }
+                if (title.includes("infrastructure") || title.includes("campus") || title.includes("smart") || iconKey.includes("build") || idx === 2) {
+                  return <Building2 className="w-5 h-5 text-white" strokeWidth={2.2} />;
+                }
+                if (title.includes("placement") || title.includes("career") || iconKey.includes("handshake") || idx === 3) {
+                  return <Handshake className="w-5 h-5 text-white" strokeWidth={2.2} />;
+                }
+                if (title.includes("global") || title.includes("international") || title.includes("learning opportunities") || iconKey.includes("globe") || idx === 4) {
+                  return (
+                    <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+                      <path d="M2 12h20" />
+                    </svg>
+                  );
+                }
+                return <Sparkles className="w-5 h-5 text-white" strokeWidth={2.2} />;
+              };
+
+              const isHighlighted = idx === 3;
+
+              return (
+                <motion.div
+                  key={idx}
+                  className={`bg-white rounded-3xl p-5 xl:p-6 border transition-all duration-300 flex flex-col items-center text-center h-full group hover:-translate-y-1.5 ${
+                    isHighlighted
+                      ? "border-amber-300/80 shadow-md ring-1 ring-amber-300/30"
+                      : "border-slate-200/70 shadow-xs hover:shadow-lg hover:border-[#072A6C]/30"
+                  }`}
+                  variants={fadeUp}
+                >
+                  <div className="w-12 h-12 rounded-2xl bg-[#072A6C] text-white flex items-center justify-center mb-4 shrink-0 shadow-xs group-hover:bg-[#8B1D2C] group-hover:scale-105 transition-all duration-300">
+                    {renderIcon()}
+                  </div>
+                  <h3 className="font-extrabold text-sm md:text-[15px] text-[#072A6C] leading-snug mb-3">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs text-slate-500 leading-relaxed font-normal">
+                    {item.desc}
+                  </p>
+                </motion.div>
+              );
+            })}
+          </motion.div>
         </div>
       </section>
 
@@ -609,14 +675,17 @@ export default function Home() {
             </h2>
             
             {/* Main Tabs (Schools) */}
-            <div className="flex flex-wrap justify-center gap-4 md:gap-6 w-full max-w-6xl mb-12">
+            <div className="flex flex-wrap justify-center gap-4 md:gap-6 w-full max-w-6xl mb-8">
               {schools.map((school) => {
                 const isActive = activeSchoolTab === school;
                 return (
                   <button
                     key={school}
-                    onClick={() => setActiveSchoolTab(school)}
-                    className={`px-5 py-4 rounded-2xl flex items-center justify-center gap-2.5 text-[14px] sm:text-[16px] md:text-[22px] font-[700] tracking-[0.5px] border transition-all duration-300 transform active:scale-98 cursor-pointer relative ${
+                    onClick={() => {
+                      setActiveSchoolTab(school);
+                      setActiveDepartmentTab(null);
+                    }}
+                    className={`px-5 py-3.5 rounded-2xl flex items-center justify-center gap-2.5 text-[14px] sm:text-[16px] md:text-[20px] font-[700] tracking-[0.5px] border transition-all duration-300 transform active:scale-98 cursor-pointer relative ${
                       isActive
                         ? "bg-[#0B3D91] text-white border-transparent shadow-lg shadow-[#0B3D91]/25 scale-105 border-b-[3px] border-b-[#D4AF37]"
                         : "bg-white text-[#0B3D91] border-[#0B3D91]/20 hover:bg-[#0B3D91] hover:text-white hover:border-transparent hover:shadow-md"
@@ -634,22 +703,25 @@ export default function Home() {
               })}
             </div>
 
-            {/* Sub Tabs (Departments) */}
+            {/* Sub Tabs (Departments / Branches) */}
             {activeSchoolTab && structure[activeSchoolTab] && (
-              <div className="flex flex-wrap justify-center gap-6 md:gap-10 w-full max-w-5xl mb-6">
-                {Object.keys(structure[activeSchoolTab]).map((dept) => (
-                  <button
-                    key={dept}
-                    onClick={() => setActiveDepartmentTab(dept)}
-                    className={`text-[13px] md:text-[16px] font-[700] transition-colors ${
-                      currentDepartment === dept 
-                        ? "text-[#072A6C]" 
-                        : "text-gray-400 hover:text-[#072A6C]"
-                    }`}
-                  >
-                    {dept}
-                  </button>
-                ))}
+              <div className="flex flex-wrap justify-center gap-3 md:gap-6 w-full max-w-5xl mb-6">
+                {Object.keys(structure[activeSchoolTab]).map((dept) => {
+                  const isDeptActive = currentDepartment === dept;
+                  return (
+                    <button
+                      key={dept}
+                      onClick={() => setActiveDepartmentTab(dept)}
+                      className={`text-[13px] md:text-[15px] font-[700] px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${
+                        isDeptActive 
+                          ? "text-[#072A6C] bg-blue-100/60 font-black shadow-xs" 
+                          : "text-gray-500 hover:text-[#072A6C] hover:bg-gray-100"
+                      }`}
+                    >
+                      {dept}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>

@@ -52,8 +52,7 @@ export const ACADEMIC_PROGRAMS_STRUCTURE: Record<string, Record<string, { label:
       { label: "B.Tech. Civil Engineering", to: "/academics/btech-civil" },
       { label: "M.Tech. Structural Engineering", to: "/academics/mtech-structural" },
       { label: "Ph.D. Structural Engineering", to: "/academics/phd-structural" }
-    ],
-    "Basic Science & Humanities": []
+    ]
   },
   "School of Business & Management": {
     "Business and Management": [
