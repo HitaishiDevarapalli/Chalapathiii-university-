@@ -1584,6 +1584,9 @@ export default function Home() {
 
       {/* ═══ DYNAMIC PLACEMENT SUCCESS STORIES SHOWCASE ═══ */}
       {(() => {
+        // Temporarily hide this entire section as requested
+        return null;
+        
         const placementsSection = (homepageSections || []).find((s) => s.id === "placements" || s.id === "certifications");
         if (placementsSection && placementsSection.enabled === false) return null;
         const placementsData = placementsSection?.extraData || {};
