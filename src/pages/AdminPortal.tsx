@@ -1416,64 +1416,23 @@ export default function AdminPortal() {
             </p>
           </div>
 
-          {/* Bottom Feature Badges */}
-          <div className="relative z-10 grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t border-white/10 mt-6 text-left">
-            <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl p-3 backdrop-blur-sm">
-              <div className="w-9 h-9 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37] shrink-0">
-                <Shield size={18} />
-              </div>
-              <div>
-                <div className="text-[11px] font-extrabold text-white leading-tight">Secure Access</div>
-                <div className="text-[9px] text-gray-400 font-medium">Encrypted System</div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl p-3 backdrop-blur-sm">
-              <div className="w-9 h-9 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37] shrink-0">
-                <Users size={18} />
-              </div>
-              <div>
-                <div className="text-[11px] font-extrabold text-white leading-tight">Role Based</div>
-                <div className="text-[9px] text-gray-400 font-medium">Custom Control</div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl p-3 backdrop-blur-sm">
-              <div className="w-9 h-9 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37] shrink-0">
-                <BarChart3 size={18} />
-              </div>
-              <div>
-                <div className="text-[11px] font-extrabold text-white leading-tight">Real-time</div>
-                <div className="text-[9px] text-gray-400 font-medium">Live Analytics</div>
-              </div>
-            </div>
-          </div>
-
         </div>
 
         {/* RIGHT PANEL: Floating Login Card */}
         <div className="w-full lg:w-[50%] xl:w-[48%] min-h-screen flex flex-col justify-between p-6 sm:p-10 lg:p-12 z-10 relative bg-[#F8F9FD]">
           
-          {/* Top Right Branding */}
-          <div className="flex justify-end items-center">
-            <div className="flex items-center gap-2.5">
-              <img 
-                src="/logo.png?v=3" 
-                alt="Chalapathi University" 
-                className="h-10 sm:h-12 w-auto object-contain" 
-              />
-            </div>
-          </div>
+          {/* Top spacer */}
+          <div className="hidden sm:block h-4" />
 
           {/* Center Floating White Login Card */}
           <div className="my-auto max-w-[440px] w-full mx-auto bg-white rounded-[32px] p-8 sm:p-10 shadow-[0_20px_60px_rgba(7,26,58,0.07)] border border-gray-100/80 text-left font-[var(--font-poppins)]">
             
-            {/* Circular Crest Badge */}
-            <div className="w-20 h-20 rounded-full bg-white border border-gray-200/90 shadow-md flex items-center justify-center mx-auto mb-5 p-3">
+            {/* University Logo above form */}
+            <div className="flex items-center justify-center mx-auto mb-6">
               <img 
-                src="/logo.png?v=3" 
-                alt="Chalapathi Crest" 
-                className="w-full h-full object-contain" 
+                src={siteSettings?.logoUrl || "/logo.png?v=3"} 
+                alt={siteSettings?.universityName || "Chalapathi University"} 
+                className="h-16 sm:h-20 w-auto object-contain max-w-[280px]" 
               />
             </div>
 
