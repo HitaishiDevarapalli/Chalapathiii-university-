@@ -205,9 +205,8 @@ router.put("/:key", async (req: Request, res: Response) => {
 
 // DELETE /:key - delete config by key
 router.delete("/:key", async (req: Request, res: Response) => {
+  const { key } = req.params;
   try {
-    const { key } = req.params;
-
     await prisma.siteConfig.delete({
       where: { key },
     });
