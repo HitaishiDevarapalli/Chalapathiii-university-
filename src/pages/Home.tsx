@@ -1584,10 +1584,11 @@ export default function Home() {
 
       {/* ═══ DYNAMIC PLACEMENT SUCCESS STORIES SHOWCASE ═══ */}
       {(() => {
-        // Temporarily hide this entire section as requested
-        return null;
-        
         const placementsSection = (homepageSections || []).find((s) => s.id === "placements" || s.id === "certifications");
+        
+        // Temporarily hide this entire section as requested by returning null here
+        if (true) return null;
+
         if (placementsSection && placementsSection.enabled === false) return null;
         const placementsData = placementsSection?.extraData || {};
         const storiesBadge = placementsData.storiesBadge || "PLACEMENT SUCCESS STORIES";
