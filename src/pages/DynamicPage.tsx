@@ -686,6 +686,7 @@ const getPageContent = (path: string, programs: any[], newsPageConfig?: any) => 
         category: "Admissions",
         desc: "Start your journey today. Fill out our online application form to secure your seat.",
         hideHeader: true,
+        isFullBleed: true,
         body: <ApplyOnlineView />
       };
     }

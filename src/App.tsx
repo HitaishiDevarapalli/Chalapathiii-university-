@@ -154,7 +154,7 @@ function AppContent() {
   const location = useLocation();
   const navigate = useNavigate();
   const isAdminPage = location.pathname.startsWith("/admin");
-  const isApplyPage = location.pathname.startsWith("/admissions/apply");
+  const isApplyPage = location.pathname.includes("apply");
   const { 
     announcements, 
     showAnnouncementsDrawer, 
