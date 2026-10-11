@@ -52,6 +52,12 @@ export const AcademicsCMS: React.FC<AcademicsCMSProps> = ({ notifySave, defaultS
     "grading" | "degrees" | "rules" | "teaching"
   >(defaultSubTab as any);
 
+  React.useEffect(() => {
+    if (defaultSubTab) {
+      setActiveModule(defaultSubTab as any);
+    }
+  }, [defaultSubTab]);
+
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (msg?: string) => {

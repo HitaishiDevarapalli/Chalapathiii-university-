@@ -957,6 +957,7 @@ export default function AdminPortal() {
   // ----------------------------------------------------
   // 7. ACADEMICS & PROGRAM BUILDER (FULL ADMIN)
   const [academicsSubTab, setAcademicsSubTab] = useState<"modules" | "directory" | "editor" | "branches" | "homepage">("modules");
+  const [academicsModuleTab, setAcademicsModuleTab] = useState<string>("programmes");
   const [progEditorSubTab, setProgEditorSubTab] = useState<
     | "about"
     | "general"
@@ -1537,36 +1538,122 @@ export default function AdminPortal() {
     );
   }
 
-  const navItems: {
+  // Navigation expansion state
+  const [expandedNavSections, setExpandedNavSections] = useState<Record<string, boolean>>({
+    homepage: false,
+    about: true,
+    academics: true,
+    "news-events": false,
+  });
+
+  const isSectionExpanded = (id: string) => {
+    if (expandedNavSections[id] !== undefined) return expandedNavSections[id];
+    return activeTab === id;
+  };
+
+  const toggleNavSection = (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setExpandedNavSections(prev => ({
+      ...prev,
+      [id]: !isSectionExpanded(id)
+    }));
+  };
+
+  interface SubNavItem {
+    id: string;
+    label: string;
+    onClick: () => void;
+    isActive: boolean;
+  }
+
+  interface AdminNavItem {
     id: "dashboard" | "pages" | "homepage" | "about" | "academics" | "certifications" | "admissions" | "research" | "directories" | "campus-life" | "placements" | "news" | "events" | "news-events" | "contact" | "links" | "gallery" | "footer" | "settings" | "popup";
     label: string;
     icon: any;
     badge?: string;
     section?: string;
-  }[] = [
-    // Dashboard
-    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, badge: `${enquiries.length}` },
+    subItems?: SubNavItem[];
+  }
 
-    // PAGE MANAGER
+  const navItems: AdminNavItem[] = [
+    // ══════════════════════════════════════════════════════
+    // 1. MAIN WEBSITE PAGES (1st: Main Page, then About to Contact)
+    // ══════════════════════════════════════════════════════
+    {
+      id: "homepage",
+      label: "Main Page Settings",
+      icon: Sparkles,
+      section: "MAIN WEBSITE PAGES",
+      subItems: [
+        { id: "ordering", label: "Ordering & Visibility", onClick: () => { setActiveTab("homepage"); setActiveHomeSubTab("ordering"); }, isActive: activeTab === "homepage" && activeHomeSubTab === "ordering" },
+        { id: "hero", label: "Hero Banner Slides", onClick: () => { setActiveTab("homepage"); setActiveHomeSubTab("hero"); }, isActive: activeTab === "homepage" && activeHomeSubTab === "hero" },
+        { id: "ticker", label: "Admissions Alert Ticker", onClick: () => { setActiveTab("homepage"); setActiveHomeSubTab("ticker"); }, isActive: activeTab === "homepage" && activeHomeSubTab === "ticker" },
+        { id: "chairman", label: "Chairman / VC Message", onClick: () => { setActiveTab("homepage"); setActiveHomeSubTab("chairman"); }, isActive: activeTab === "homepage" && activeHomeSubTab === "chairman" },
+        { id: "programs", label: "Schools & Programs Explorer", onClick: () => { setActiveTab("homepage"); setActiveHomeSubTab("programs"); }, isActive: activeTab === "homepage" && activeHomeSubTab === "programs" },
+        { id: "stats", label: "Statistics Bar", onClick: () => { setActiveTab("homepage"); setActiveHomeSubTab("stats"); }, isActive: activeTab === "homepage" && activeHomeSubTab === "stats" },
+        { id: "whyChoose", label: "Why Choose Us", onClick: () => { setActiveTab("homepage"); setActiveHomeSubTab("whyChoose"); }, isActive: activeTab === "homepage" && activeHomeSubTab === "whyChoose" },
+        { id: "placements", label: "Placements Highlights", onClick: () => { setActiveTab("homepage"); setActiveHomeSubTab("placements"); }, isActive: activeTab === "homepage" && activeHomeSubTab === "placements" },
+        { id: "newsEvents", label: "News & Events Highlights", onClick: () => { setActiveTab("homepage"); setActiveHomeSubTab("newsEvents"); }, isActive: activeTab === "homepage" && activeHomeSubTab === "newsEvents" },
+        { id: "virtualTour", label: "Admissions Banner & Visit Us", onClick: () => { setActiveTab("homepage"); setActiveHomeSubTab("virtualTour"); }, isActive: activeTab === "homepage" && activeHomeSubTab === "virtualTour" },
+      ]
+    },
+    {
+      id: "about",
+      label: "About Us Page Settings",
+      icon: Building,
+      subItems: [
+        { id: "genesis", label: "1. Genesis & Heritage", onClick: () => { setActiveTab("about"); setActiveAboutSubTab("genesis"); }, isActive: activeTab === "about" && activeAboutSubTab === "genesis" },
+        { id: "vision", label: "2. Vision & Mission", onClick: () => { setActiveTab("about"); setActiveAboutSubTab("vision"); }, isActive: activeTab === "about" && activeAboutSubTab === "vision" },
+        { id: "leadership", label: "3. Leadership & Governance", onClick: () => { setActiveTab("about"); setActiveAboutSubTab("leadership"); }, isActive: activeTab === "about" && activeAboutSubTab === "leadership" },
+        { id: "advantage", label: "4. Chalapathi Advantage", onClick: () => { setActiveTab("about"); setActiveAboutSubTab("advantage"); }, isActive: activeTab === "about" && activeAboutSubTab === "advantage" },
+        { id: "homepage", label: "5. Homepage About & Journey", onClick: () => { setActiveTab("about"); setActiveAboutSubTab("homepage"); }, isActive: activeTab === "about" && activeAboutSubTab === "homepage" },
+      ]
+    },
+    {
+      id: "academics",
+      label: "Academics Page Settings",
+      icon: GraduationCap,
+      subItems: [
+        { id: "programmes", label: "1. Programmes Offered", onClick: () => { setActiveTab("academics"); setAcademicsSubTab("modules"); setAcademicsModuleTab("programmes"); }, isActive: activeTab === "academics" && academicsSubTab === "modules" && academicsModuleTab === "programmes" },
+        { id: "certifications", label: "2. Global Certifications", onClick: () => { setActiveTab("academics"); setAcademicsSubTab("modules"); setAcademicsModuleTab("certifications"); }, isActive: activeTab === "academics" && academicsSubTab === "modules" && academicsModuleTab === "certifications" },
+        { id: "calendar", label: "3. Academic Calendar", onClick: () => { setActiveTab("academics"); setAcademicsSubTab("modules"); setAcademicsModuleTab("calendar"); }, isActive: activeTab === "academics" && academicsSubTab === "modules" && academicsModuleTab === "calendar" },
+        { id: "flexibilities", label: "4. Academic Flexibilities", onClick: () => { setActiveTab("academics"); setAcademicsSubTab("modules"); setAcademicsModuleTab("flexibilities"); }, isActive: activeTab === "academics" && academicsSubTab === "modules" && academicsModuleTab === "flexibilities" },
+        { id: "grading", label: "5. Grading System", onClick: () => { setActiveTab("academics"); setAcademicsSubTab("modules"); setAcademicsModuleTab("grading"); }, isActive: activeTab === "academics" && academicsSubTab === "modules" && academicsModuleTab === "grading" },
+        { id: "degrees", label: "6. Award of Degrees", onClick: () => { setActiveTab("academics"); setAcademicsSubTab("modules"); setAcademicsModuleTab("degrees"); }, isActive: activeTab === "academics" && academicsSubTab === "modules" && academicsModuleTab === "degrees" },
+        { id: "rules", label: "7. Rules & Regulations", onClick: () => { setActiveTab("academics"); setAcademicsSubTab("modules"); setAcademicsModuleTab("rules"); }, isActive: activeTab === "academics" && academicsSubTab === "modules" && academicsModuleTab === "rules" },
+        { id: "teaching", label: "8. Teaching & Evaluation", onClick: () => { setActiveTab("academics"); setAcademicsSubTab("modules"); setAcademicsModuleTab("teaching"); }, isActive: activeTab === "academics" && academicsSubTab === "modules" && academicsModuleTab === "teaching" },
+        { id: "directory", label: "9. Degrees & Programs Catalog", onClick: () => { setActiveTab("academics"); setAcademicsSubTab("directory"); }, isActive: activeTab === "academics" && academicsSubTab === "directory" },
+        { id: "editor", label: "10. Program Details Editor", onClick: () => { setActiveTab("academics"); setAcademicsSubTab("editor"); }, isActive: activeTab === "academics" && academicsSubTab === "editor" },
+        { id: "branches", label: "11. Schools & Branches", onClick: () => { setActiveTab("academics"); setAcademicsSubTab("branches"); }, isActive: activeTab === "academics" && academicsSubTab === "branches" },
+      ]
+    },
+    { id: "admissions", label: "Admissions Page Settings", icon: UserPlus, badge: `${enquiries.filter(e => e.status === "New").length || ""}` },
+    { id: "research", label: "Research & Innovation Settings", icon: Trophy },
+    { id: "directories", label: "Faculty & Directories Settings", icon: Users },
+    { id: "campus-life", label: "Campus Life Page Settings", icon: Library },
+    { id: "placements", label: "Placements Page Settings", icon: Briefcase },
+    {
+      id: "news-events",
+      label: "News & Events Settings",
+      icon: Calendar,
+      badge: `${news.length + events.length}`,
+      subItems: [
+        { id: "news", label: "News & Articles CMS", onClick: () => { setActiveTab("news-events"); setNewsEventsModuleTab("news"); }, isActive: (activeTab === "news-events" || activeTab === "news") && newsEventsModuleTab === "news" },
+        { id: "events", label: "Events & Registrations", onClick: () => { setActiveTab("news-events"); setNewsEventsModuleTab("events"); }, isActive: (activeTab === "news-events" || activeTab === "events") && newsEventsModuleTab === "events" },
+      ]
+    },
+    { id: "contact", label: "Contact Us Page Settings", icon: Phone },
+
+    // ══════════════════════════════════════════════════════
+    // 2. EXTRA OPTIONS (Remaining options organized below)
+    // ══════════════════════════════════════════════════════
+    { id: "dashboard", label: "Dashboard Overview", icon: LayoutDashboard, section: "EXTRA OPTIONS", badge: `${enquiries.length}` },
     { id: "pages", label: "Pages & Page Builder", icon: Layers, badge: `${cmsPages.length}` },
-
-    // MAIN WEBSITE PAGES
-    { id: "homepage", label: "Home Page Builder", icon: Sparkles, section: "MAIN WEBSITE PAGES" },
-    { id: "about", label: "Genesis & About Us", icon: Building },
-    { id: "academics", label: "Academics", icon: GraduationCap },
-    { id: "admissions", label: "Admissions & Leads", icon: UserPlus, badge: `${enquiries.filter(e => e.status === "New").length || ""}` },
-    { id: "research", label: "Research & Innovation", icon: Trophy },
-    { id: "directories", label: "Faculty & Directories", icon: Users },
-    { id: "campus-life", label: "Campus Life", icon: Library },
-    { id: "placements", label: "Placements", icon: Briefcase },
-    { id: "news-events", label: "News & Events", icon: Calendar, badge: `${news.length + events.length}` },
-    { id: "contact", label: "Contact Us", icon: Phone },
-
-    // EXTRA
-    { id: "popup", label: "Popup Modal Manager", icon: MessageSquare, section: "EXTRA", badge: "Custom" },
+    { id: "popup", label: "Popup Modal Manager", icon: MessageSquare, badge: "Custom" },
     { id: "gallery", label: "Gallery & Media", icon: ImageIcon },
-    { id: "footer", label: "Footer", icon: Layers },
-    { id: "settings", label: "Website Settings", icon: Settings },
+    { id: "footer", label: "Footer Builder", icon: Layers },
+    { id: "settings", label: "Website Settings & Branding", icon: Settings },
+    { id: "links", label: "Header & Navigation Links", icon: Link2 },
   ];
 
 
@@ -1673,18 +1760,19 @@ export default function AdminPortal() {
         {/* Sidebar */}
         <aside
           className={`bg-[#051c4a] text-white flex flex-col shrink-0 transition-all duration-300 ${
-            sidebarOpen ? "w-64" : "w-18"
+            sidebarOpen ? "w-72" : "w-18"
           } hidden md:flex border-r border-blue-950/40 select-none`}
         >
           <div className="flex-1 overflow-y-auto p-3 space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
+              const isExpanded = isSectionExpanded(item.id);
               return (
                 <React.Fragment key={item.id}>
                   {item.section && sidebarOpen && (
                     <div className="pt-3 pb-1 px-3">
-                      <span className="text-[10px] font-black uppercase tracking-wider text-blue-300/80">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-[#D4AF37]">
                         {item.section}
                       </span>
                     </div>
@@ -1692,27 +1780,96 @@ export default function AdminPortal() {
                   {item.section && !sidebarOpen && (
                     <div className="my-2 border-t border-white/10" />
                   )}
-                  <button
-                    onClick={() => setActiveTab(item.id as any)}
-                    className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all text-left cursor-pointer ${
-                      isActive
-                        ? "bg-[#D4AF37] text-slate-900 shadow-md"
-                        : "text-blue-100 hover:bg-white/10 hover:text-white"
-                    }`}
-                    title={item.label}
-                  >
-                    {sidebarOpen && <span className="flex-1 truncate">{item.label}</span>}
-                    {!sidebarOpen && <span className="truncate text-[10px] font-black">{item.label.slice(0, 3)}</span>}
-                    {sidebarOpen && item.badge && (
-                      <span
-                        className={`text-[9px] px-1.5 py-0.5 rounded-full font-extrabold ${
-                          isActive ? "bg-slate-900 text-white" : "bg-blue-600 text-white"
-                        }`}
-                      >
-                        {item.badge}
+
+                  {sidebarOpen ? (
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => {
+                            setActiveTab(item.id as any);
+                            if (item.subItems && !isExpanded) {
+                              toggleNavSection(item.id);
+                            }
+                          }}
+                          className={`flex-1 flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all text-left cursor-pointer ${
+                            isActive
+                              ? "bg-[#D4AF37] text-slate-900 shadow-md font-extrabold"
+                              : "text-blue-100 hover:bg-white/10 hover:text-white"
+                          }`}
+                          title={item.label}
+                        >
+                          <div className="flex items-center gap-2.5 truncate">
+                            <Icon size={16} className={isActive ? "text-slate-900 shrink-0" : "text-blue-300 shrink-0"} />
+                            <span className="truncate">{item.label}</span>
+                          </div>
+                          {item.badge && (
+                            <span
+                              className={`text-[9px] px-1.5 py-0.5 rounded-full font-extrabold ${
+                                isActive ? "bg-slate-900 text-white" : "bg-blue-600 text-white"
+                              }`}
+                            >
+                              {item.badge}
+                            </span>
+                          )}
+                        </button>
+
+                        {item.subItems && (
+                          <button
+                            type="button"
+                            onClick={(e) => toggleNavSection(item.id, e)}
+                            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                              isActive
+                                ? "text-slate-900 hover:bg-black/10"
+                                : "text-blue-300 hover:text-white hover:bg-white/10"
+                            }`}
+                            title={isExpanded ? "Collapse sub-options" : "Expand sub-options"}
+                          >
+                            {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Sub-items accordion */}
+                      {item.subItems && isExpanded && (
+                        <div className="ml-5 pl-2.5 border-l-2 border-white/20 py-1 space-y-1">
+                          {item.subItems.map((sub) => (
+                            <button
+                              key={sub.id}
+                              type="button"
+                              onClick={() => sub.onClick()}
+                              className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all text-left cursor-pointer ${
+                                sub.isActive
+                                  ? "bg-[#D4AF37] text-slate-900 font-black shadow-xs"
+                                  : "text-blue-200 hover:text-white hover:bg-white/10"
+                              }`}
+                            >
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                                  sub.isActive ? "bg-slate-900" : "bg-blue-400"
+                                }`}
+                              />
+                              <span className="truncate">{sub.label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setActiveTab(item.id as any)}
+                      className={`w-full flex flex-col items-center justify-center p-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        isActive
+                          ? "bg-[#D4AF37] text-slate-900 shadow-md"
+                          : "text-blue-100 hover:bg-white/10 hover:text-white"
+                      }`}
+                      title={item.label}
+                    >
+                      <Icon size={18} />
+                      <span className="truncate text-[9px] font-bold mt-1 max-w-[50px]">
+                        {item.label.split(" ")[0]}
                       </span>
-                    )}
-                  </button>
+                    </button>
+                  )}
                 </React.Fragment>
               );
             })}
@@ -1735,7 +1892,7 @@ export default function AdminPortal() {
             onClick={() => setMobileSidebarOpen(false)}
           >
             <div
-              className="w-64 bg-[#051c4a] text-white h-full p-4 flex flex-col space-y-1 overflow-y-auto"
+              className="w-72 bg-[#051c4a] text-white h-full p-4 flex flex-col space-y-1 overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between pb-3 mb-2 border-b border-white/10">
@@ -1745,32 +1902,81 @@ export default function AdminPortal() {
                 </button>
               </div>
               {navItems.map((item) => {
+                const Icon = item.icon;
                 const isActive = activeTab === item.id;
+                const isExpanded = isSectionExpanded(item.id);
                 return (
                   <React.Fragment key={item.id}>
                     {item.section && (
                       <div className="pt-3 pb-1 px-3">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-blue-300/80">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-[#D4AF37]">
                           {item.section}
                         </span>
                       </div>
                     )}
-                    <button
-                      onClick={() => {
-                        setActiveTab(item.id as any);
-                        setMobileSidebarOpen(false);
-                      }}
-                      className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all text-left cursor-pointer ${
-                        isActive ? "bg-[#D4AF37] text-slate-900 shadow-md" : "text-blue-100 hover:bg-white/10"
-                      }`}
-                    >
-                      <span className="flex-1 truncate">{item.label}</span>
-                      {item.badge && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded-full font-extrabold bg-blue-600 text-white">
-                          {item.badge}
-                        </span>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => {
+                            setActiveTab(item.id as any);
+                            if (item.subItems) {
+                              toggleNavSection(item.id);
+                            } else {
+                              setMobileSidebarOpen(false);
+                            }
+                          }}
+                          className={`flex-1 flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all text-left cursor-pointer ${
+                            isActive ? "bg-[#D4AF37] text-slate-900 shadow-md font-extrabold" : "text-blue-100 hover:bg-white/10"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 truncate">
+                            <Icon size={16} className={isActive ? "text-slate-900 shrink-0" : "text-blue-300 shrink-0"} />
+                            <span className="truncate">{item.label}</span>
+                          </div>
+                          {item.badge && (
+                            <span className="text-[9px] px-1.5 py-0.5 rounded-full font-extrabold bg-blue-600 text-white">
+                              {item.badge}
+                            </span>
+                          )}
+                        </button>
+                        {item.subItems && (
+                          <button
+                            type="button"
+                            onClick={(e) => toggleNavSection(item.id, e)}
+                            className="p-2 text-blue-200 hover:text-white"
+                          >
+                            {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                          </button>
+                        )}
+                      </div>
+
+                      {item.subItems && isExpanded && (
+                        <div className="ml-5 pl-2.5 border-l-2 border-white/20 py-1 space-y-1">
+                          {item.subItems.map((sub) => (
+                            <button
+                              key={sub.id}
+                              type="button"
+                              onClick={() => {
+                                sub.onClick();
+                                setMobileSidebarOpen(false);
+                              }}
+                              className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all text-left cursor-pointer ${
+                                sub.isActive
+                                  ? "bg-[#D4AF37] text-slate-900 font-black shadow-xs"
+                                  : "text-blue-200 hover:text-white hover:bg-white/10"
+                              }`}
+                            >
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                                  sub.isActive ? "bg-slate-900" : "bg-blue-400"
+                                }`}
+                              />
+                              <span className="truncate">{sub.label}</span>
+                            </button>
+                          ))}
+                        </div>
                       )}
-                    </button>
+                    </div>
                   </React.Fragment>
                 );
               })}
@@ -7275,7 +7481,7 @@ export default function AdminPortal() {
                   SUBTAB 0: ACADEMICS MENU SUB-MODULES SUITE
               ═══════════════════════════════════════════════════════════════ */}
               {academicsSubTab === "modules" && (
-                <AcademicsCMS notifySave={notifySave} />
+                <AcademicsCMS notifySave={notifySave} defaultSubTab={academicsModuleTab} />
               )}
 
               {/* ═══════════════════════════════════════════════════════════════
