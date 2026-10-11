@@ -7,6 +7,7 @@ interface SEOProps {
   type?: string;
   image?: string;
   url?: string;
+  keywords?: string;
 }
 
 export default function SEO({ 
@@ -15,30 +16,17 @@ export default function SEO({
   name = "Chalapathi University", 
   type = "website", 
   image = "https://chalapathiuniversity.edu.in/logo.png",
-  url = "https://chalapathiuniversity.edu.in/"
+  url = "https://chalapathiuniversity.edu.in/",
+  keywords = "Chalapathi University, ChalapathiUniversity, Chalapathi University Andhra Pradesh, Chalapathi University Guntur"
 }: SEOProps) {
   
-  // JSON-LD Structured Data for Google Rich Snippets
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "EducationalOrganization",
-    "name": name,
-    "url": url,
-    "logo": "https://chalapathiuniversity.edu.in/logo.png",
-    "description": description,
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": "Guntur",
-      "addressRegion": "Andhra Pradesh",
-      "addressCountry": "IN"
-    }
-  };
-
   return (
     <Helmet>
       {/* Standard metadata tags */}
       <title>{title}</title>
       <meta name='description' content={description} />
+      <meta name='keywords' content={keywords} />
+      <link rel='canonical' href={url} />
       
       {/* OpenGraph tags */}
       <meta property="og:type" content={type} />
@@ -54,11 +42,6 @@ export default function SEO({
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={image} />
-      
-      {/* Structured Data for SEO */}
-      <script type="application/ld+json">
-        {JSON.stringify(structuredData)}
-      </script>
     </Helmet>
   );
 }

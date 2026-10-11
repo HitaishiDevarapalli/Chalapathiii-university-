@@ -382,9 +382,13 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-[#F7F8FC] text-[#222222] overflow-x-hidden font-[var(--font-poppins)]">
       <SEO 
-        title="Best University in andhraPradesh -ChalapathiUniversity" 
-        description="Chalapathi University offers world-class higher education with premium undergraduate, postgraduate, and research programs. Admissions Open for 2026–2027." 
+        title="Best University in Andhra Pradesh - Chalapathi University" 
+        description="Chalapathi University offers world-class higher education with premium undergraduate, postgraduate, and research programs in Engineering, Management, Pharmacy, Agriculture, Law, and Sciences. Admissions Open for 2026–2027." 
+        url="https://chalapathiuniversity.edu.in/"
+        keywords="Chalapathi University, ChalapathiUniversity, Chalapathi University official website, Chalapathi University Andhra Pradesh, Best university in Andhra Pradesh, Chalapathi University admissions, Chalapathi University Guntur"
       />
+      {/* SEO: Always-present H1 for search engines */}
+      <h1 className="sr-only">Chalapathi University</h1>
       {/* ═══ HERO SECTION (Responsive height for mobile & desktop) ═══ */}
       <section 
         className="relative w-full overflow-hidden bg-white select-none h-[220px] min-[375px]:h-[240px] min-[420px]:h-[270px] min-[520px]:h-[340px] sm:h-[440px] md:h-[580px] lg:h-[720px]" 

@@ -12,6 +12,7 @@ import { AdmissionsPortalView } from "../components/admissions/AdmissionsPortalV
 import { ApplyOnlineView } from "../components/admissions/ApplyOnlineView";
 import ProgramDetailPage from "../components/academics/ProgramDetailPage";
 import { ResearchView } from "../components/research/ResearchView";
+import SEO from "../components/SEO";
 
 
 const getProgramTimeline = (title: string) => {
@@ -2200,9 +2201,8 @@ export default function DynamicPage() {
     (content.title && (hiddenMap[content.title] || hiddenMap[content.title.toLowerCase()]));
 
   useEffect(() => {
-    document.title = `${content.title} | Chalapathi University`;
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [pathname, content.title]);
+  }, [pathname]);
 
   if (isHidden) {
     return (
@@ -2237,6 +2237,11 @@ export default function DynamicPage() {
   if ((content as any).isProgramDetail || (content as any).isFullBleed) {
     return (
       <div className="flex-grow w-full">
+        <SEO
+          title={`${content.title} | Chalapathi University`}
+          description={(content as any).desc || `${content.title} at Chalapathi University, Guntur, Andhra Pradesh.`}
+          url={`https://chalapathiuniversity.edu.in${pathname}`}
+        />
         {content.body}
       </div>
     );
@@ -2256,6 +2261,11 @@ export default function DynamicPage() {
 
     return (
       <div className="flex-grow w-full bg-white font-[var(--font-poppins)] overflow-hidden">
+        <SEO
+          title={`${campusPage.title || content.title} | Chalapathi University`}
+          description={(campusPage as any).subtitle || `${content.title} at Chalapathi University – campus facilities and student life.`}
+          url={`https://chalapathiuniversity.edu.in${pathname}`}
+        />
         {/* Hero Banner with University Red Gradient Overlay */}
         <div 
           className="relative h-[360px] md:h-[480px] w-full flex items-center justify-start bg-cover bg-center"
@@ -2441,6 +2451,11 @@ export default function DynamicPage() {
 
   return (
     <div className="flex-1 w-full bg-[#F7F8FC] py-6 sm:py-10 font-[var(--font-poppins)]">
+      <SEO
+        title={`${content.title} | Chalapathi University`}
+        description={content.desc || `${content.title} at Chalapathi University, Guntur, Andhra Pradesh.`}
+        url={`https://chalapathiuniversity.edu.in${pathname}`}
+      />
       <div className="max-w-[1440px] mx-auto px-3 sm:px-5">
         
         {/* Breadcrumb Navigation */}
