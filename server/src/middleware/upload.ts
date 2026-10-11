@@ -2,9 +2,19 @@ import multer from "multer";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 
+import fs from "fs";
+
+const getUploadsDir = () => {
+  const dir = path.resolve(__dirname, "../../uploads");
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  return dir;
+};
+
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
-    cb(null, path.join(__dirname, "../../uploads"));
+    cb(null, getUploadsDir());
   },
   filename: (_req, file, cb) => {
     const ext = path.extname(file.originalname);
