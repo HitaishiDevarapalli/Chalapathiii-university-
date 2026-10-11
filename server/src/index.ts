@@ -21,6 +21,7 @@ import pagesRoutes from "./routes/pages";
 import homepageSectionsRoutes from "./routes/homepageSections";
 import configRoutes from "./routes/config";
 import uploadRoutes from "./routes/upload";
+import cmsRoutes from "./routes/cms";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -67,6 +68,7 @@ app.use("/api/pages", pagesRoutes);
 app.use("/api/homepage-sections", homepageSectionsRoutes);
 app.use("/api/config", configRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/cms", cmsRoutes);
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
