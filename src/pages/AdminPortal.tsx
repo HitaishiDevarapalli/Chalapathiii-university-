@@ -1008,14 +1008,29 @@ export default function AdminPortal() {
 
     // Direct PUT to persist directly to PostgreSQL
     try {
-      await fetch("/api/config/aboutContent", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(aboutForm),
-      });
-    } catch (e) {}
+      updateBoardData(boardForm);
+      await Promise.all([
+        fetch("/api/config/aboutContent", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(aboutForm),
+        }),
+        fetch("/api/config/boardData", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(boardForm),
+        }),
+        fetch("/api/config/homepageSections", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(sectionsList),
+        }),
+      ]);
+    } catch (e) {
+      console.warn("Direct DB sync error:", e);
+    }
 
-    notifySave("About Us content published live!");
+    notifySave("About Us & Leadership content published live!");
   };
 
   // ----------------------------------------------------
