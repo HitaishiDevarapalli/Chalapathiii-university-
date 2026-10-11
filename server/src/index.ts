@@ -43,12 +43,13 @@ app.use(
 );
 
 // Ensure uploads directory exists
-const uploadsDir = path.resolve(__dirname, "../uploads");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
+const uploadsDir1 = path.resolve(__dirname, "../uploads");
+const uploadsDir2 = path.resolve(__dirname, "../../uploads");
+if (!fs.existsSync(uploadsDir1)) fs.mkdirSync(uploadsDir1, { recursive: true });
+if (!fs.existsSync(uploadsDir2)) fs.mkdirSync(uploadsDir2, { recursive: true });
 
-app.use("/uploads", express.static(uploadsDir));
+app.use("/uploads", express.static(uploadsDir1));
+app.use("/uploads", express.static(uploadsDir2));
 
 // Routes
 app.use("/api/auth", authRoutes);
