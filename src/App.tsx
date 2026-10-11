@@ -527,7 +527,7 @@ function AppContent() {
       {/* 🌟 SLIMMED NON-OVERLAPPING STACKED RIGHT-SIDE TABS       */}
       {/* ======================================================== */}
       {!isAdminPage && (
-        <div className="fixed right-0 top-[48%] -translate-y-1/2 z-40 flex flex-col gap-2 items-end font-[var(--font-poppins)] select-none">
+        <div className="fixed right-0 top-[90px] sm:top-[100px] md:top-[110px] min-[1280px]:top-[120px] z-40 flex flex-col gap-2 items-end font-[var(--font-poppins)] select-none">
           {/* Announcements Icon Button (Clean icon-only matching navbar symbol) */}
           <button
             onClick={() => setShowAnnouncementsDrawer(true)}
