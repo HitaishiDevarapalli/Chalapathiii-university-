@@ -587,11 +587,11 @@ export default function Home() {
                 </div>
                 <div className="flex items-start gap-1.5">
                   <Mail size={12} className="shrink-0 mt-0.5 text-gray-400" />
-                  <span>admissions@city.ac.in</span>
+                  <span>admissions@chalapathiuniversity.edu.in</span>
                 </div>
                 <div className="flex items-start gap-1.5">
                   <Globe size={12} className="shrink-0 mt-0.5 text-gray-400" />
-                  <span>www.city.ac.in</span>
+                  <span>www.chalapathiuniversity.edu.in</span>
                 </div>
               </div>
             </div>

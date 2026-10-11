@@ -264,7 +264,7 @@ export const PROGRAM_DETAILS_DATABASE: Record<string, FullProgramData> = {
       designation: "Professor & Head of the Department",
       qualification: "Ph.D. (Computer Science - IIT Madras), M.Tech., SMIEEE, FIETE",
       message: "Welcome to the Department of Computer Science & Engineering at Chalapathi University. Our mission is to blend intellectual rigor with technological mastery. In this era of rapid AI breakthroughs and cloud revolution, we prepare our scholars not just to adapt to industry changes, but to spearhead them through innovation, research publications, and entrepreneurship.",
-      email: "hod.cse@city.ac.in"
+      email: "hod.cse@chalapathiuniversity.edu.in"
     },
     visionMission: {
       vision: "To become a globally recognized center of academic excellence and impactful computing research, cultivating socially responsible software leaders and innovators.",
@@ -295,12 +295,12 @@ export const PROGRAM_DETAILS_DATABASE: Record<string, FullProgramData> = {
       ]
     },
     facultyList: [
-      { name: "Dr. K. Srinivasa Rao", designation: "Professor & HOD", qualification: "Ph.D. (IIT Madras)", specialization: "Distributed Systems & Cloud Computing", experience: "22 Years", email: "ksrao.cse@city.ac.in" },
-      { name: "Dr. P. Venkata Ramana", designation: "Professor", qualification: "Ph.D. (NIT Warangal)", specialization: "Algorithms & Machine Learning", experience: "18 Years", email: "pvramana.cse@city.ac.in" },
-      { name: "Dr. M. Lakshmi Prasanna", designation: "Associate Professor", qualification: "Ph.D. (JNTUK)", specialization: "Cyber Security & Cryptography", experience: "14 Years", email: "mlprasanna.cse@city.ac.in" },
-      { name: "Prof. S. Raghunath", designation: "Associate Professor", qualification: "M.Tech., (Ph.D.)", specialization: "Database Management & Big Data", experience: "12 Years", email: "sraghu.cse@city.ac.in" },
-      { name: "Prof. Anitha Kumari", designation: "Assistant Professor", qualification: "M.Tech. (CSE)", specialization: "Full Stack Web Technologies & DevOps", experience: "8 Years", email: "anitha.cse@city.ac.in" },
-      { name: "Prof. Ch. Rajesh Babu", designation: "Assistant Professor", qualification: "M.Tech. (CSE)", specialization: "Computer Networks & Operating Systems", experience: "7 Years", email: "rajesh.cse@city.ac.in" }
+      { name: "Dr. K. Srinivasa Rao", designation: "Professor & HOD", qualification: "Ph.D. (IIT Madras)", specialization: "Distributed Systems & Cloud Computing", experience: "22 Years", email: "ksrao.cse@chalapathiuniversity.edu.in" },
+      { name: "Dr. P. Venkata Ramana", designation: "Professor", qualification: "Ph.D. (NIT Warangal)", specialization: "Algorithms & Machine Learning", experience: "18 Years", email: "pvramana.cse@chalapathiuniversity.edu.in" },
+      { name: "Dr. M. Lakshmi Prasanna", designation: "Associate Professor", qualification: "Ph.D. (JNTUK)", specialization: "Cyber Security & Cryptography", experience: "14 Years", email: "mlprasanna.cse@chalapathiuniversity.edu.in" },
+      { name: "Prof. S. Raghunath", designation: "Associate Professor", qualification: "M.Tech., (Ph.D.)", specialization: "Database Management & Big Data", experience: "12 Years", email: "sraghu.cse@chalapathiuniversity.edu.in" },
+      { name: "Prof. Anitha Kumari", designation: "Assistant Professor", qualification: "M.Tech. (CSE)", specialization: "Full Stack Web Technologies & DevOps", experience: "8 Years", email: "anitha.cse@chalapathiuniversity.edu.in" },
+      { name: "Prof. Ch. Rajesh Babu", designation: "Assistant Professor", qualification: "M.Tech. (CSE)", specialization: "Computer Networks & Operating Systems", experience: "7 Years", email: "rajesh.cse@chalapathiuniversity.edu.in" }
     ],
     placements: {
       highestPackage: "₹44.00 LPA",
@@ -488,7 +488,7 @@ export const PROGRAM_DETAILS_DATABASE: Record<string, FullProgramData> = {
       designation: "Professor & Head of the Department",
       qualification: "Ph.D. (IIT Madras), M.Tech., SMIEEE, FIETE",
       message: "Our M.Tech. CSE program is designed for students with a genuine passion for algorithmic rigor and deep technical investigation. We provide an intellectually stimulating environment with specialized compute facilities, generous research grants, and direct mentorship from experienced doctorate professors.",
-      email: "hod.cse@city.ac.in"
+      email: "hod.cse@chalapathiuniversity.edu.in"
     },
     visionMission: {
       vision: "To be a leading center for advanced postgraduate computing education and frontier research in scalable computing systems.",
@@ -516,9 +516,9 @@ export const PROGRAM_DETAILS_DATABASE: Record<string, FullProgramData> = {
       ]
     },
     facultyList: [
-      { name: "Dr. K. Srinivasa Rao", designation: "Professor & HOD", qualification: "Ph.D. (IIT Madras)", specialization: "Distributed Systems & Cloud Computing", experience: "22 Years", email: "ksrao.cse@city.ac.in" },
-      { name: "Dr. P. Venkata Ramana", designation: "Professor", qualification: "Ph.D. (NIT Warangal)", specialization: "Algorithms & Machine Learning", experience: "18 Years", email: "pvramana.cse@city.ac.in" },
-      { name: "Dr. M. Lakshmi Prasanna", designation: "Associate Professor", qualification: "Ph.D. (JNTUK)", specialization: "Cyber Security & Cryptography", experience: "14 Years", email: "mlprasanna.cse@city.ac.in" }
+      { name: "Dr. K. Srinivasa Rao", designation: "Professor & HOD", qualification: "Ph.D. (IIT Madras)", specialization: "Distributed Systems & Cloud Computing", experience: "22 Years", email: "ksrao.cse@chalapathiuniversity.edu.in" },
+      { name: "Dr. P. Venkata Ramana", designation: "Professor", qualification: "Ph.D. (NIT Warangal)", specialization: "Algorithms & Machine Learning", experience: "18 Years", email: "pvramana.cse@chalapathiuniversity.edu.in" },
+      { name: "Dr. M. Lakshmi Prasanna", designation: "Associate Professor", qualification: "Ph.D. (JNTUK)", specialization: "Cyber Security & Cryptography", experience: "14 Years", email: "mlprasanna.cse@chalapathiuniversity.edu.in" }
     ],
     placements: {
       highestPackage: "₹24.00 LPA",
@@ -663,7 +663,7 @@ export const PROGRAM_DETAILS_DATABASE: Record<string, FullProgramData> = {
       designation: "Program Coordinator & Associate Professor",
       qualification: "Ph.D. (Computer Science), M.Tech. (CSE), MCA",
       message: "The MCA program at Chalapathi University is specifically structured for fast-paced professional translation. We bridge the gap between degree education and corporate demands by immersing our scholars in full-stack coding, real-world industry projects, and continuous mock interview drills.",
-      email: "mca.coordinator@city.ac.in"
+      email: "mca.coordinator@chalapathiuniversity.edu.in"
     },
     visionMission: {
       vision: "To be recognized as a premier destination for computer applications education, transforming graduates into dynamic software architects and technopreneurs.",
@@ -691,10 +691,10 @@ export const PROGRAM_DETAILS_DATABASE: Record<string, FullProgramData> = {
       ]
     },
     facultyList: [
-      { name: "Dr. M. Lakshmi Prasanna", designation: "Program Coordinator & Assoc. Prof.", qualification: "Ph.D., MCA, M.Tech.", specialization: "Enterprise Application Security & Web Tech", experience: "14 Years", email: "mlprasanna.cse@city.ac.in" },
-      { name: "Prof. S. Raghunath", designation: "Associate Professor", qualification: "M.Tech., MCA, (Ph.D.)", specialization: "Database Management & Java Tech", experience: "12 Years", email: "sraghu.cse@city.ac.in" },
-      { name: "Prof. Anitha Kumari", designation: "Assistant Professor", qualification: "M.Tech., MCA", specialization: "React, Node.js & Full Stack", experience: "8 Years", email: "anitha.cse@city.ac.in" },
-      { name: "Prof. Ch. Rajesh Babu", designation: "Assistant Professor", qualification: "M.Tech., MCA", specialization: "Software Engineering & Cloud DevOps", experience: "7 Years", email: "rajesh.cse@city.ac.in" }
+      { name: "Dr. M. Lakshmi Prasanna", designation: "Program Coordinator & Assoc. Prof.", qualification: "Ph.D., MCA, M.Tech.", specialization: "Enterprise Application Security & Web Tech", experience: "14 Years", email: "mlprasanna.cse@chalapathiuniversity.edu.in" },
+      { name: "Prof. S. Raghunath", designation: "Associate Professor", qualification: "M.Tech., MCA, (Ph.D.)", specialization: "Database Management & Java Tech", experience: "12 Years", email: "sraghu.cse@chalapathiuniversity.edu.in" },
+      { name: "Prof. Anitha Kumari", designation: "Assistant Professor", qualification: "M.Tech., MCA", specialization: "React, Node.js & Full Stack", experience: "8 Years", email: "anitha.cse@chalapathiuniversity.edu.in" },
+      { name: "Prof. Ch. Rajesh Babu", designation: "Assistant Professor", qualification: "M.Tech., MCA", specialization: "Software Engineering & Cloud DevOps", experience: "7 Years", email: "rajesh.cse@chalapathiuniversity.edu.in" }
     ],
     placements: {
       highestPackage: "₹16.50 LPA",
@@ -847,7 +847,7 @@ export const PROGRAM_DETAILS_DATABASE: Record<string, FullProgramData> = {
       designation: "Professor, HOD & Research Coordinator",
       qualification: "Ph.D. (IIT Madras), Post-Doc",
       message: "Our doctoral program in CSE provides the highest degree of academic and research independence backed by world-class computational facilities, experienced research guides, and generous research funding support.",
-      email: "hod.cse@city.ac.in"
+      email: "hod.cse@chalapathiuniversity.edu.in"
     },
     visionMission: {
       vision: "To be an internationally recognized center of doctoral research producing transformative computing breakthroughs.",
@@ -872,9 +872,9 @@ export const PROGRAM_DETAILS_DATABASE: Record<string, FullProgramData> = {
       ]
     },
     facultyList: [
-      { name: "Dr. K. Srinivasa Rao", designation: "Professor & Doctoral Supervisor", qualification: "Ph.D. (IIT Madras)", specialization: "Distributed Systems, Cloud Architecture", experience: "22 Years", email: "ksrao.cse@city.ac.in" },
-      { name: "Dr. P. Venkata Ramana", designation: "Professor & Doctoral Supervisor", qualification: "Ph.D. (NIT Warangal)", specialization: "Algorithms, Neural Machine Learning", experience: "18 Years", email: "pvramana.cse@city.ac.in" },
-      { name: "Dr. M. Lakshmi Prasanna", designation: "Associate Professor & Doctoral Supervisor", qualification: "Ph.D. (JNTUK)", specialization: "Cybersecurity, Cryptographic Systems", experience: "14 Years", email: "mlprasanna.cse@city.ac.in" }
+      { name: "Dr. K. Srinivasa Rao", designation: "Professor & Doctoral Supervisor", qualification: "Ph.D. (IIT Madras)", specialization: "Distributed Systems, Cloud Architecture", experience: "22 Years", email: "ksrao.cse@chalapathiuniversity.edu.in" },
+      { name: "Dr. P. Venkata Ramana", designation: "Professor & Doctoral Supervisor", qualification: "Ph.D. (NIT Warangal)", specialization: "Algorithms, Neural Machine Learning", experience: "18 Years", email: "pvramana.cse@chalapathiuniversity.edu.in" },
+      { name: "Dr. M. Lakshmi Prasanna", designation: "Associate Professor & Doctoral Supervisor", qualification: "Ph.D. (JNTUK)", specialization: "Cybersecurity, Cryptographic Systems", experience: "14 Years", email: "mlprasanna.cse@chalapathiuniversity.edu.in" }
     ],
     placements: {
       highestPackage: "₹38.00 LPA",
@@ -983,7 +983,7 @@ export const PROGRAM_DETAILS_DATABASE: Record<string, FullProgramData> = {
       designation: "Professor & Head of the Department",
       qualification: "Ph.D. (ECE - IIT Kharagpur), M.Tech., FIE, SMIEEE",
       message: "The semiconductor and communications sector is experiencing explosive growth globally with India's semiconductor mission. At Chalapathi University, our ECE department is at the forefront of this revolution, training students in advanced VLSI, chip layout, and modern 5G communications.",
-      email: "hod.ece@city.ac.in"
+      email: "hod.ece@chalapathiuniversity.edu.in"
     },
     visionMission: {
       vision: "To be a premier center of excellence in electronics and communication engineering education, producing industry-ready chip designers and communication engineers.",
@@ -1010,10 +1010,10 @@ export const PROGRAM_DETAILS_DATABASE: Record<string, FullProgramData> = {
       ]
     },
     facultyList: [
-      { name: "Dr. P. Mallikarjuna Rao", designation: "Professor & HOD", qualification: "Ph.D. (IIT Kharagpur)", specialization: "VLSI Design & Nanoelectronics", experience: "24 Years", email: "pmrao.ece@city.ac.in" },
-      { name: "Dr. K. Radha Krishna", designation: "Professor", qualification: "Ph.D. (NIT Trichy)", specialization: "Wireless Communications & 5G Systems", experience: "19 Years", email: "krkrishna.ece@city.ac.in" },
-      { name: "Dr. B. V. S. Sailaja", designation: "Associate Professor", qualification: "Ph.D. (JNTUK)", specialization: "Digital Signal & Image Processing", experience: "15 Years", email: "sailaja.ece@city.ac.in" },
-      { name: "Prof. N. Srinivasa Rao", designation: "Associate Professor", qualification: "M.Tech., (Ph.D.)", specialization: "Embedded Systems & IoT Architectures", experience: "11 Years", email: "nsrao.ece@city.ac.in" }
+      { name: "Dr. P. Mallikarjuna Rao", designation: "Professor & HOD", qualification: "Ph.D. (IIT Kharagpur)", specialization: "VLSI Design & Nanoelectronics", experience: "24 Years", email: "pmrao.ece@chalapathiuniversity.edu.in" },
+      { name: "Dr. K. Radha Krishna", designation: "Professor", qualification: "Ph.D. (NIT Trichy)", specialization: "Wireless Communications & 5G Systems", experience: "19 Years", email: "krkrishna.ece@chalapathiuniversity.edu.in" },
+      { name: "Dr. B. V. S. Sailaja", designation: "Associate Professor", qualification: "Ph.D. (JNTUK)", specialization: "Digital Signal & Image Processing", experience: "15 Years", email: "sailaja.ece@chalapathiuniversity.edu.in" },
+      { name: "Prof. N. Srinivasa Rao", designation: "Associate Professor", qualification: "M.Tech., (Ph.D.)", specialization: "Embedded Systems & IoT Architectures", experience: "11 Years", email: "nsrao.ece@chalapathiuniversity.edu.in" }
     ],
     placements: {
       highestPackage: "₹36.00 LPA",
@@ -1154,7 +1154,7 @@ export const PROGRAM_DETAILS_DATABASE: Record<string, FullProgramData> = {
       designation: "Professor & Head of the Department",
       qualification: "Ph.D. (Civil - IIT Roorkee), M.Tech. (Structures), FIE, MIRC",
       message: "Civil Engineering is the timeless mother discipline that builds nations. At Chalapathi University, our civil engineers combine classical structural mastery with cutting-edge BIM modeling, drone surveying, and sustainable geo-materials.",
-      email: "hod.civil@city.ac.in"
+      email: "hod.civil@chalapathiuniversity.edu.in"
     },
     visionMission: {
       vision: "To produce world-class civil engineers committed to sustainable infrastructure development, innovative structural research, and nation building.",
@@ -1180,9 +1180,9 @@ export const PROGRAM_DETAILS_DATABASE: Record<string, FullProgramData> = {
       ]
     },
     facultyList: [
-      { name: "Dr. K. Chandrasekhara Rao", designation: "Professor & HOD", qualification: "Ph.D. (IIT Roorkee)", specialization: "Structural Engineering & Concrete Tech", experience: "26 Years", email: "kcrao.civil@city.ac.in" },
-      { name: "Dr. M. Suneel Kumar", designation: "Associate Professor", qualification: "Ph.D. (NIT Warangal)", specialization: "Geotechnical & Foundation Engineering", experience: "16 Years", email: "suneel.civil@city.ac.in" },
-      { name: "Prof. G. Ramesh Babu", designation: "Assistant Professor", qualification: "M.Tech. (Structural Engg)", specialization: "Transportation & Highway Engineering", experience: "10 Years", email: "ramesh.civil@city.ac.in" }
+      { name: "Dr. K. Chandrasekhara Rao", designation: "Professor & HOD", qualification: "Ph.D. (IIT Roorkee)", specialization: "Structural Engineering & Concrete Tech", experience: "26 Years", email: "kcrao.civil@chalapathiuniversity.edu.in" },
+      { name: "Dr. M. Suneel Kumar", designation: "Associate Professor", qualification: "Ph.D. (NIT Warangal)", specialization: "Geotechnical & Foundation Engineering", experience: "16 Years", email: "suneel.civil@chalapathiuniversity.edu.in" },
+      { name: "Prof. G. Ramesh Babu", designation: "Assistant Professor", qualification: "M.Tech. (Structural Engg)", specialization: "Transportation & Highway Engineering", experience: "10 Years", email: "ramesh.civil@chalapathiuniversity.edu.in" }
     ],
     placements: {
       highestPackage: "₹14.50 LPA",
@@ -1308,7 +1308,7 @@ export const PROGRAM_DETAILS_DATABASE: Record<string, FullProgramData> = {
       designation: "Professor & Director, School of Business & Management",
       qualification: "Ph.D. (Management - IIM Bangalore), MBA (Finance & Marketing), UGC-NET",
       message: "At Chalapathi School of Business & Management, we do not just teach management theories — we build business leaders who navigate volatility, spark innovation, and lead global teams with ethical conviction and analytical precision.",
-      email: "director.mgmt@city.ac.in"
+      email: "director.mgmt@chalapathiuniversity.edu.in"
     },
     visionMission: {
       vision: "To be recognized as a premier center for transformative management education, business research, and visionary executive leadership.",
@@ -1335,10 +1335,10 @@ export const PROGRAM_DETAILS_DATABASE: Record<string, FullProgramData> = {
       ]
     },
     facultyList: [
-      { name: "Dr. S. K. Venkatesh", designation: "Professor & Director", qualification: "Ph.D. (IIM Bangalore), MBA", specialization: "Financial Strategies & Corporate Governance", experience: "25 Years", email: "skvenkatesh.mba@city.ac.in" },
-      { name: "Dr. V. Uma Maheswari", designation: "Professor", qualification: "Ph.D. (Andhra University), MBA", specialization: "Marketing Management & Consumer Analytics", experience: "18 Years", email: "uma.mba@city.ac.in" },
-      { name: "Dr. P. Kishore Kumar", designation: "Associate Professor", qualification: "Ph.D. (JNTUK), MBA", specialization: "Human Resource Strategy & Organizational Behavior", experience: "14 Years", email: "kishore.mba@city.ac.in" },
-      { name: "Prof. K. Swetha", designation: "Assistant Professor", qualification: "MBA, (Ph.D.)", specialization: "Business Analytics & Fintech", experience: "8 Years", email: "swetha.mba@city.ac.in" }
+      { name: "Dr. S. K. Venkatesh", designation: "Professor & Director", qualification: "Ph.D. (IIM Bangalore), MBA", specialization: "Financial Strategies & Corporate Governance", experience: "25 Years", email: "skvenkatesh.mba@chalapathiuniversity.edu.in" },
+      { name: "Dr. V. Uma Maheswari", designation: "Professor", qualification: "Ph.D. (Andhra University), MBA", specialization: "Marketing Management & Consumer Analytics", experience: "18 Years", email: "uma.mba@chalapathiuniversity.edu.in" },
+      { name: "Dr. P. Kishore Kumar", designation: "Associate Professor", qualification: "Ph.D. (JNTUK), MBA", specialization: "Human Resource Strategy & Organizational Behavior", experience: "14 Years", email: "kishore.mba@chalapathiuniversity.edu.in" },
+      { name: "Prof. K. Swetha", designation: "Assistant Professor", qualification: "MBA, (Ph.D.)", specialization: "Business Analytics & Fintech", experience: "8 Years", email: "swetha.mba@chalapathiuniversity.edu.in" }
     ],
     placements: {
       highestPackage: "₹18.00 LPA",
@@ -1490,7 +1490,7 @@ export function getProgramFullData(slug: string, title?: string, department?: st
       designation: "Program Coordinator",
       qualification: "Ph.D. / M.Tech., Senior Member IEEE",
       message: `Welcome to the ${cleanTitle} program at Chalapathi University. We are dedicated to providing our students with top-tier academic rigor, hands-on laboratory experiences, and continuous mentorship to thrive in dynamic professional careers.`,
-      email: `coordinator.${slug}@city.ac.in`
+      email: `coordinator.${slug}@chalapathiuniversity.edu.in`
     },
     visionMission: {
       vision: `To be recognized for academic excellence, innovative research, and leadership in ${cleanDept}.`,
@@ -1515,8 +1515,8 @@ export function getProgramFullData(slug: string, title?: string, department?: st
       ]
     },
     facultyList: [
-      { name: `Dr. Senior Faculty`, designation: "Professor", qualification: "Ph.D.", specialization: `${cleanDept} Specialization`, experience: "18 Years", email: `faculty1.${slug}@city.ac.in` },
-      { name: `Prof. Associate Faculty`, designation: "Associate Professor", qualification: "M.Tech., (Ph.D.)", specialization: `Advanced Core Systems`, experience: "12 Years", email: `faculty2.${slug}@city.ac.in` }
+      { name: `Dr. Senior Faculty`, designation: "Professor", qualification: "Ph.D.", specialization: `${cleanDept} Specialization`, experience: "18 Years", email: `faculty1.${slug}@chalapathiuniversity.edu.in` },
+      { name: `Prof. Associate Faculty`, designation: "Associate Professor", qualification: "M.Tech., (Ph.D.)", specialization: `Advanced Core Systems`, experience: "12 Years", email: `faculty2.${slug}@chalapathiuniversity.edu.in` }
     ],
     placements: {
       highestPackage: "₹18.00 LPA",

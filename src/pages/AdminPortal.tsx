@@ -947,8 +947,8 @@ export default function AdminPortal() {
     visitHeading: tourSection?.extraData?.visitHeading || "VISIT US",
     address: tourSection?.extraData?.address || "A.R. Nagar, Mothadaka, Guntur, Andhra Pradesh - 522034",
     phone: tourSection?.extraData?.phone || "8886630355 | 8886630356 9905505566",
-    email: tourSection?.extraData?.email || "admissions@city.ac.in",
-    website: tourSection?.extraData?.website || "www.city.ac.in",
+    email: tourSection?.extraData?.email || "admissions@chalapathiuniversity.edu.in",
+    website: tourSection?.extraData?.website || "www.chalapathiuniversity.edu.in",
     mapEmbedUrl: tourSection?.extraData?.mapEmbedUrl || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3826.974950454796!2d80.28581691486445!3d16.375218788685984!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a4a79679802cfad%3A0xe67e2a901bbd33fe!2sChalapathi%20Institute%20of%20Technology!5e0!3m2!1sen!2sin!5m2!1sen!2sin",
     mapLinkUrl: tourSection?.extraData?.mapLinkUrl || "https://www.google.com/maps/place/Chalapathi+Institute+of+Technology/@16.3752188,80.2858169,17z/data=!3m1!4b1!4m6!3m5!1s0x3a4a79679802cfad:0xe67e2a901bbd33fe!8m2!3d16.3752188!4d80.2858169!16s%2Fg%2F122r446z"
   }));
@@ -5047,8 +5047,8 @@ export default function AdminPortal() {
                               visitHeading: defVT.extraData.visitHeading || "VISIT US",
                               address: defVT.extraData.address || "A.R. Nagar, Mothadaka, Guntur, Andhra Pradesh - 522034",
                               phone: defVT.extraData.phone || "8886630355 | 8886630356 9905505566",
-                              email: defVT.extraData.email || "admissions@city.ac.in",
-                              website: defVT.extraData.website || "www.city.ac.in",
+                              email: defVT.extraData.email || "admissions@chalapathiuniversity.edu.in",
+                              website: defVT.extraData.website || "www.chalapathiuniversity.edu.in",
                               mapEmbedUrl: defVT.extraData.mapEmbedUrl || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3826.974950454796!2d80.28581691486445!3d16.375218788685984!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a4a79679802cfad%3A0xe67e2a901bbd33fe!2sChalapathi%20Institute%20of%20Technology!5e0!3m2!1sen!2sin!5m2!1sen!2sin",
                               mapLinkUrl: defVT.extraData.mapLinkUrl || "https://www.google.com/maps/place/Chalapathi+Institute+of+Technology/@16.3752188,80.2858169,17z/data=!3m1!4b1!4m6!3m5!1s0x3a4a79679802cfad:0xe67e2a901bbd33fe!8m2!3d16.3752188!4d80.2858169!16s%2Fg%2F122r446z"
                             });
@@ -5228,7 +5228,7 @@ export default function AdminPortal() {
                             value={tourData.email}
                             onChange={(e) => setTourData({ ...tourData, email: e.target.value })}
                             className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg text-gray-800"
-                            placeholder="e.g. admissions@city.ac.in"
+                            placeholder="e.g. admissions@chalapathiuniversity.edu.in"
                           />
                         </div>
 
@@ -5239,7 +5239,7 @@ export default function AdminPortal() {
                             value={tourData.website}
                             onChange={(e) => setTourData({ ...tourData, website: e.target.value })}
                             className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg text-gray-800"
-                            placeholder="e.g. www.city.ac.in"
+                            placeholder="e.g. www.chalapathiuniversity.edu.in"
                           />
                         </div>
 
@@ -7021,7 +7021,7 @@ export default function AdminPortal() {
                             edu: "Ph.D. / M.Tech",
                             interests: "Institutional planning & research governance",
                             phone: "0863 2345499",
-                            email: "member@city.ac.in",
+                            email: "member@chalapathiuniversity.edu.in",
                             avatar: "",
                             age: "45 Years",
                             experience: "15 Years",
@@ -8360,7 +8360,7 @@ export default function AdminPortal() {
                               ...customFullProgram,
                               hodMessage: { ...(customFullProgram.hodMessage || { hodName: "", designation: "", qualification: "", message: "" }), email: e.target.value }
                             })}
-                            placeholder="e.g. hod.cse@city.ac.in"
+                            placeholder="e.g. hod.cse@chalapathiuniversity.edu.in"
                             className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800"
                           />
                         </div>
@@ -9042,7 +9042,7 @@ export default function AdminPortal() {
                               qualification: "Ph.D., M.Tech.",
                               specialization: "Artificial Intelligence",
                               experience: "5+ Years",
-                              email: "faculty@city.ac.in"
+                              email: "faculty@chalapathiuniversity.edu.in"
                             };
                             setCustomFullProgram({
                               ...customFullProgram,

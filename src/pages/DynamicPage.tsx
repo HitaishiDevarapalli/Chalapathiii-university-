@@ -3240,7 +3240,7 @@ const LEADERS = [
     interests: "Strategic leadership, academic governance, public relations, and legal policies.",
     bio: "Sri Y. V. Anjaneyulu, a visionary educationist and prominent leader, has been the guiding force behind the establishment and development of Chalapathi University. With over 35 years of experience in administrative leadership, he has spearheaded numerous educational and social initiatives in the Guntur district. As Chancellor, he focuses on strategic growth, long-term policy formulation, infrastructure advancement, and cultivating partnerships with industries and global institutions to ensure academic quality and values-driven education.",
     phone: "+91 863 2345401",
-    email: "chancellor@city.ac.in",
+    email: "chancellor@chalapathiuniversity.edu.in",
     address: "Chalapathi Nagar, Lam, Guntur, Andhra Pradesh - 522034"
   },
   {
@@ -3251,7 +3251,7 @@ const LEADERS = [
     interests: "Institutional progress planning, modernization initiatives, and industry collaborations.",
     bio: "Sri Y. Sujit Kumar holds a degree in engineering and executive education in management. As Pro Chancellor, he works closely with the governing board to implement modernization initiatives, digital transformation of the campus, and strategic expansion projects. With 18 years of experience, he leads university-industry collaborations, global academic partnerships, and entrepreneurship programs, preparing students for dynamic international careers.",
     phone: "+91 863 2345402",
-    email: "prochan@city.ac.in",
+    email: "prochan@chalapathiuniversity.edu.in",
     address: "Chalapathi Nagar, Lam, Guntur, Andhra Pradesh - 522034"
   }
 ];
@@ -5099,10 +5099,10 @@ function ContactUsView() {
               </span>
               <span className="font-extrabold text-[#072A6C] text-[11px] sm:text-xs uppercase tracking-wide">{content.emailTitle || "EMAIL"}</span>
               <a 
-                href={`mailto:${content.emailAddress || "info@city.ac.in"}`} 
+                href={`mailto:${content.emailAddress || "info@chalapathiuniversity.edu.in"}`} 
                 className="text-xs font-semibold text-gray-700 hover:text-[#072A6C] hover:underline truncate max-w-[200px]"
               >
-                {content.emailAddress || "info@city.ac.in"}
+                {content.emailAddress || "info@chalapathiuniversity.edu.in"}
               </a>
             </div>
 

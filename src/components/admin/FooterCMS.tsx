@@ -778,7 +778,7 @@ export default function FooterCMS() {
                 </label>
                 <input
                   type="email"
-                  value={form.contactEmail || "admissions@city.ac.in"}
+                  value={form.contactEmail || "admissions@chalapathiuniversity.edu.in"}
                   onChange={(e) => setForm({ ...form, contactEmail: e.target.value })}
                   className="w-full text-xs p-2.5 border border-gray-300 rounded-xl font-mono text-gray-700"
                 />

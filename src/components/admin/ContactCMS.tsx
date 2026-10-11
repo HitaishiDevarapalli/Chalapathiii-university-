@@ -257,10 +257,10 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                   <label className="text-[10px] font-bold text-gray-500 uppercase">Email Value</label>
                   <input
                     type="email"
-                    value={formState.emailAddress ?? "info@city.ac.in"}
+                    value={formState.emailAddress ?? "info@chalapathiuniversity.edu.in"}
                     onChange={(e) => setFormState({ ...formState, emailAddress: e.target.value })}
                     className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold text-[#072A6C]"
-                    placeholder="info@city.ac.in"
+                    placeholder="info@chalapathiuniversity.edu.in"
                   />
                 </div>
               </div>
@@ -428,7 +428,7 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                       id: `dept_${Date.now()}`,
                       name: "NEW DEPARTMENT OFFICE",
                       phones: ["+91 88866 30000"],
-                      emails: ["dept@city.ac.in"]
+                      emails: ["dept@chalapathiuniversity.edu.in"]
                     };
                     setFormState({
                       ...formState,
@@ -562,7 +562,7 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                           setFormState({ ...formState, departments: updated });
                         }}
                         className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-semibold text-[#D4AF37]"
-                        placeholder="admissions@city.ac.in, contact@city.ac.in"
+                        placeholder="admissions@chalapathiuniversity.edu.in, contact@chalapathiuniversity.edu.in"
                       />
                     </div>
 

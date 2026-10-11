@@ -870,7 +870,7 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
                   <label className="text-[10px] font-bold text-gray-600 uppercase">Email ID</label>
                   <input
                     type="email"
-                    placeholder="e.g. kiran.cse@city.ac.in"
+                    placeholder="e.g. kiran.cse@chalapathiuniversity.edu.in"
                     value={newFaculty.email || ""}
                     onChange={(e) => setNewFaculty({ ...newFaculty, email: e.target.value })}
                     className="w-full h-8.5 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg"
@@ -1209,7 +1209,7 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
                       edu: "Ph.D",
                       interests: "Institutional Administration",
                       phone: "0863 2345400",
-                      email: "admin@city.ac.in",
+                      email: "admin@chalapathiuniversity.edu.in",
                       avatar: "OFF",
                       age: "",
                       experience: "15 Years",

@@ -1623,8 +1623,8 @@ export default function Home() {
         const visitHeading = admissionsData.visitHeading || "VISIT US";
         const visitAddress = admissionsData.address || "A.R. Nagar, Mothadaka, Guntur, Andhra Pradesh - 522034";
         const visitPhone = admissionsData.phone || "8886630355 | 8886630356 9905505566";
-        const visitEmail = admissionsData.email || "admissions@city.ac.in";
-        const visitWebsite = admissionsData.website || "www.city.ac.in";
+        const visitEmail = admissionsData.email || "admissions@chalapathiuniversity.edu.in";
+        const visitWebsite = admissionsData.website || "www.chalapathiuniversity.edu.in";
         const mapEmbedUrl = admissionsData.mapEmbedUrl || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3826.974950454796!2d80.28581691486445!3d16.375218788685984!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a4a79679802cfad%3A0xe67e2a901bbd33fe!2sChalapathi%20Institute%20of%20Technology!5e0!3m2!1sen!2sin!5m2!1sen!2sin";
         const mapLinkUrl = admissionsData.mapLinkUrl || "https://www.google.com/maps/place/Chalapathi+Institute+of+Technology/@16.3752188,80.2858169,17z/data=!3m1!4b1!4m6!3m5!1s0x3a4a79679802cfad:0xe67e2a901bbd33fe!8m2!3d16.3752188!4d80.2858169!16s%2Fg%2F122r446z";
 

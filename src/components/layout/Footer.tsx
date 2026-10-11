@@ -68,7 +68,7 @@ export default function Footer() {
   ]).filter(item => item.to !== "/admin" && !item.label?.toLowerCase().includes("admin") && !isPageHidden(item.label, item.to));
 
   const rawBrandSocials = footerContent?.brandSocials || [
-    { icon: "Globe", url: "https://city.ac.in", label: "Website" },
+    { icon: "Globe", url: "https://chalapathiuniversity.edu.in", label: "Website" },
     { icon: "Users", url: "/about", label: "Community" },
     { icon: "Briefcase", url: "/placements", label: "Careers" },
     { icon: "Play", url: "/campus-life", label: "Campus Tour" }
@@ -95,7 +95,7 @@ export default function Footer() {
 
   const contactAddress = footerContent?.contactAddress || siteSettings?.contactAddress || "A.R. Nagar, Mothadaka, Guntur, Andhra Pradesh - 522034";
   const contactPhones = footerContent?.contactPhones || siteSettings?.contactPhone || "8886630355 | 8886630356 | 9905505566";
-  const contactEmail = footerContent?.contactEmail || siteSettings?.contactEmail || "admissions@city.ac.in";
+  const contactEmail = footerContent?.contactEmail || siteSettings?.contactEmail || "admissions@chalapathiuniversity.edu.in";
 
   return (
     <footer 
