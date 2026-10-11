@@ -151,6 +151,7 @@ export default function AdminPortal() {
     heroSlides,
     updateHeroSlides,
     cmsPages,
+    syncCmsWithBackend,
     resetToDefaults,
     lastSavedTime
   } = useData();
@@ -189,6 +190,23 @@ export default function AdminPortal() {
   const [showSyncModal, setShowSyncModal] = useState(false);
   const [syncJsonInput, setSyncJsonInput] = useState("");
   const syncFileInputRef = React.useRef<HTMLInputElement>(null);
+  const [isSyncingDb, setIsSyncingDb] = useState(false);
+
+  const handlePushAllToDatabase = async () => {
+    setIsSyncingDb(true);
+    try {
+      const ok = await syncCmsWithBackend();
+      if (ok) {
+        notifySave("✓ All website content successfully synchronized to PostgreSQL database!");
+      } else {
+        notifySave("Sync completed with warnings. Check server logs.");
+      }
+    } catch (e: any) {
+      alert("Failed to sync to database: " + e.message);
+    } finally {
+      setIsSyncingDb(false);
+    }
+  };
 
   const handleExportAllData = () => {
     const dataPayload: Record<string, any> = {};
@@ -1603,6 +1621,23 @@ export default function AdminPortal() {
               <Clock size={11} /> Last saved: {lastSavedTime}
             </span>
           )}
+
+          {/* Live PostgreSQL status badge */}
+          <span className="hidden xl:inline-flex items-center gap-1.5 text-[10.5px] bg-emerald-500/20 border border-emerald-400/40 px-2.5 py-1 rounded-full text-emerald-200 font-semibold select-none">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            Database Synced
+          </span>
+
+          <button
+            type="button"
+            disabled={isSyncingDb}
+            onClick={handlePushAllToDatabase}
+            className="h-8 px-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs disabled:opacity-50"
+            title="Push all CMS content and About Us changes directly to PostgreSQL database"
+          >
+            <UploadCloud size={13} />
+            <span className="hidden sm:inline">{isSyncingDb ? "Syncing..." : "Push to DB"}</span>
+          </button>
 
           <button
             type="button"
@@ -12783,6 +12818,31 @@ export default function AdminPortal() {
               >
                 <X size={18} />
               </button>
+            </div>
+
+            {/* Direct Server Database Sync (PostgreSQL) */}
+            <div className="p-4 rounded-2xl bg-blue-50/80 border border-blue-200 space-y-2.5">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <h4 className="text-xs font-black uppercase text-[#072A6C] tracking-wider">
+                      Live Server PostgreSQL Database Sync
+                    </h4>
+                  </div>
+                  <p className="text-xs text-blue-900 mt-1">
+                    Every edit in About Us (Genesis, Vision, Leadership, Advantage) auto-syncs to the database. Click to push all current CMS collections directly into PostgreSQL (<code className="font-mono bg-white px-1 py-0.5 rounded text-[11px] font-bold">site_configs</code> & <code className="font-mono bg-white px-1 py-0.5 rounded text-[11px] font-bold">cms_pages</code>).
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  disabled={isSyncingDb}
+                  onClick={handlePushAllToDatabase}
+                  className="h-9 px-4 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs shrink-0 transition-colors disabled:opacity-50"
+                >
+                  <UploadCloud size={14} /> {isSyncingDb ? "Syncing..." : "Sync All to PostgreSQL"}
+                </button>
+              </div>
             </div>
 
             {/* 1. Export Section */}

@@ -894,7 +894,7 @@ interface DataContextType {
   deleteCmsPage: (id: string) => void;
   duplicateCmsPage: (id: string) => void;
   restorePageVersion: (pageId: string, versionId: string) => void;
-  syncCmsWithBackend: () => Promise<void>;
+  syncCmsWithBackend: () => Promise<boolean>;
 
   certificationsData: Certification[];
   updateCertificationsData: (data: Certification[]) => void;
@@ -3644,35 +3644,52 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       root.style.setProperty("--footer-text", themeColors.footerText || "#D1D5DB");
     }
   }, [themeColors]);
+  // Helper to asynchronously persist config key-value to PostgreSQL database
+  const syncConfigToBackend = async (key: string, value: any) => {
+    try {
+      await fetch(`/api/config/${encodeURIComponent(key)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(value),
+      });
+    } catch (e) {
+      console.warn(`[Sync] Backend persist failed for ${key}:`, e);
+    }
+  };
 
   const updateSiteSettings = (settings: SiteSettings) => {
     setSiteSettings(settings);
     safeSetItem("chalapathi_site_settings", JSON.stringify(settings));
     recordSave();
+    syncConfigToBackend("siteSettings", settings);
   };
 
   const updateThemeColors = (colors: ThemeColors) => {
     setThemeColors(colors);
     safeSetItem("chalapathi_theme_colors", JSON.stringify(colors));
     recordSave();
+    syncConfigToBackend("themeColors", colors);
   };
 
   const updateHomepageSections = (sections: HomepageSectionConfig[]) => {
     setHomepageSections(sections);
     safeSetItem("chalapathi_homepage_sections_v2", JSON.stringify(sections));
     recordSave();
+    syncConfigToBackend("homepageSections", sections);
   };
 
   const updateNavigationMenu = (menu: NavMenuItem[]) => {
     setNavigationMenu(menu);
     safeSetItem("chalapathi_navigation_menu", JSON.stringify(menu));
     recordSave();
+    syncConfigToBackend("navigationMenu", menu);
   };
 
   const updateFooterContent = (content: FooterContent) => {
     setFooterContent(content);
     safeSetItem("chalapathi_footer_content", JSON.stringify(content));
     recordSave();
+    syncConfigToBackend("footerContent", content);
   };
 
   const updateEnquiries = (leads: EnquiryLead[]) => {
@@ -3697,18 +3714,21 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAnnouncements(list);
     safeSetItem("chalapathi_announcements", JSON.stringify(list));
     recordSave();
+    syncConfigToBackend("announcements", list);
   };
 
   const updatePrograms = (list: ProgramDetail[]) => {
     setPrograms(list);
     safeSetItem("chalapathi_programs_v4", JSON.stringify(list));
     recordSave();
+    syncConfigToBackend("programs", list);
   };
 
   const updateNews = async (list: NewsArticle[]) => {
     setNews(list);
     safeSetItem("chalapathi_news_v3", JSON.stringify(list));
     recordSave();
+    syncConfigToBackend("news", list);
     // Synchronize to PostgreSQL Backend
     try {
       await fetch('/api/news/sync', {
@@ -3725,54 +3745,63 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setNewsPageConfig(config);
     safeSetItem("chalapathi_news_page_config", JSON.stringify(config));
     recordSave();
+    syncConfigToBackend("newsPageConfig", config);
   };
 
   const updateEvents = (list: EventItem[]) => {
     setEvents(list);
     safeSetItem("chalapathi_events_v3", JSON.stringify(list));
     recordSave();
+    syncConfigToBackend("events", list);
   };
 
   const updateAboutContent = (content: AboutUsContent) => {
     setAboutContent(content);
     safeSetItem("chalapathi_about_v2", JSON.stringify(content));
     recordSave();
+    syncConfigToBackend("aboutContent", content);
   };
 
   const updateCalendarData = (data: MonthCalendarData[]) => {
     setCalendarData(data);
     safeSetItem("chalapathi_calendar", JSON.stringify(data));
     recordSave();
+    syncConfigToBackend("calendarData", data);
   };
 
   const updateFacultyData = (data: Record<string, DirectoryData>) => {
     setFacultyData(data);
     safeSetItem("chalapathi_faculty_data_v3", JSON.stringify(data));
     recordSave();
+    syncConfigToBackend("facultyData", data);
   };
 
   const updateBoardData = (data: Record<string, DirectoryData>) => {
     setBoardData(data);
     safeSetItem("chalapathi_board_data_v3", JSON.stringify(data));
     recordSave();
+    syncConfigToBackend("boardData", data);
   };
 
   const updateStaffData = (data: Record<string, DirectoryData>) => {
     setStaffData(data);
     safeSetItem("chalapathi_staff_data", JSON.stringify(data));
     recordSave();
+    syncConfigToBackend("staffData", data);
   };
 
   const updatePlacementsContent = (data: PlacementsContent) => {
     setPlacementsContent(data);
     safeSetItem("chalapathi_placements", JSON.stringify(data));
     recordSave();
+    syncConfigToBackend("placementsContent", data);
   };
 
   const updateSuccessStories = (list: SuccessStory[]) => {
     setSuccessStories(list);
     safeSetItem("chalapathi_success_stories", JSON.stringify(list));
     recordSave();
+    syncConfigToBackend("successStories", list);
   };
 
   // Academic Structure
@@ -3840,12 +3869,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAcademicStructure(structure);
     safeSetItem("chalapathi_academic_structure", JSON.stringify(structure));
     recordSave();
+    syncConfigToBackend("academicStructure", structure);
   };
 
   const updateCampusVideos = (list: CampusVideoItem[]) => {
     setCampusVideos(list);
     safeSetItem("chalapathi_campus_videos", JSON.stringify(list));
     recordSave();
+    syncConfigToBackend("campusVideos", list);
   };
 
   const updateCampusTour = (tour: CampusTourConfig) => {
@@ -3856,18 +3887,21 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (tour.heading) safeSetItem("chalapathi_campus_label", tour.heading);
     if (tour.subtitle) safeSetItem("chalapathi_campus_subtitle", tour.subtitle);
     recordSave();
+    syncConfigToBackend("campusTour", tour);
   };
 
   const updateCampusGallery = (list: CampusGalleryItem[]) => {
     setCampusGallery(list);
     safeSetItem("chalapathi_campus_gallery", JSON.stringify(list));
     recordSave();
+    syncConfigToBackend("campusGallery", list);
   };
 
   const updateCampusBanners = (banners: CampusBannersConfig) => {
     setCampusBanners(banners);
     safeSetItem("chalapathi_campus_banners", JSON.stringify(banners));
     recordSave();
+    syncConfigToBackend("campusBanners", banners);
   };
 
   // Campus Life Pages Content
@@ -3887,12 +3921,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCampusLifeContent(content);
     safeSetItem("chalapathi_campus_life_content", JSON.stringify(content));
     recordSave();
+    syncConfigToBackend("campusLifeContent", content);
   };
 
   const updateCampusLifePage = (path: string, pageData: CampusLifePageData) => {
     setCampusLifeContent((prev) => {
       const updated = { ...prev, [path]: pageData };
       safeSetItem("chalapathi_campus_life_content", JSON.stringify(updated));
+      syncConfigToBackend("campusLifeContent", updated);
       return updated;
     });
     recordSave();
@@ -3902,6 +3938,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setHeroSlides(list);
     safeSetItem("chalapathi_hero_slides", JSON.stringify(list));
     recordSave();
+    syncConfigToBackend("heroSlides", list);
   };
 
   // Admissions Content
@@ -3921,6 +3958,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAdmissionsContent(content);
     safeSetItem("chalapathi_admissions_content", JSON.stringify(content));
     recordSave();
+    syncConfigToBackend("admissionsContent", content);
   };
 
   // Search Bar & Search Icon CMS Config
@@ -3940,6 +3978,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setSearchConfig(config);
     safeSetItem("chalapathi_search_config", JSON.stringify(config));
     recordSave();
+    syncConfigToBackend("searchConfig", config);
   };
 
   // Dynamic CMS Pages (Single Source of Truth)
@@ -3958,17 +3997,121 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return INITIAL_CMS_PAGES;
   });
 
-  // Fetch from backend API on initial mount
+  // Hydrate from PostgreSQL backend API on initial mount
   useEffect(() => {
-    const initCmsFromApi = async () => {
+    const initCmsAndConfigs = async () => {
       try {
         const res = await CmsApiService.fetchAll();
-        if (res && res.success && Array.isArray(res.pages) && res.pages.length > 0) {
-          setCmsPages(res.pages);
-          localStorage.setItem("chalapathi_cms_pages_v3", JSON.stringify(res.pages));
+        if (res && res.success) {
+          if (Array.isArray(res.pages) && res.pages.length > 0) {
+            setCmsPages(res.pages);
+            safeSetItem("chalapathi_cms_pages_v3", JSON.stringify(res.pages));
+          }
+          if (res.settings && typeof res.settings === "object") {
+            const s = res.settings;
+            if (s.aboutContent) {
+              setAboutContent(s.aboutContent);
+              safeSetItem("chalapathi_about_v2", JSON.stringify(s.aboutContent));
+            }
+            if (s.boardData) {
+              setBoardData(s.boardData);
+              safeSetItem("chalapathi_board_data_v3", JSON.stringify(s.boardData));
+            }
+            if (s.siteSettings) {
+              setSiteSettings((prev) => ({ ...prev, ...s.siteSettings }));
+              safeSetItem("chalapathi_site_settings", JSON.stringify(s.siteSettings));
+            }
+            if (s.themeColors) {
+              setThemeColors((prev) => ({ ...prev, ...s.themeColors }));
+              safeSetItem("chalapathi_theme_colors", JSON.stringify(s.themeColors));
+            }
+            if (s.homepageSections && Array.isArray(s.homepageSections)) {
+              setHomepageSections(s.homepageSections);
+              safeSetItem("chalapathi_homepage_sections_v2", JSON.stringify(s.homepageSections));
+            }
+            if (s.navigationMenu && Array.isArray(s.navigationMenu)) {
+              setNavigationMenu(s.navigationMenu);
+              safeSetItem("chalapathi_navigation_menu", JSON.stringify(s.navigationMenu));
+            }
+            if (s.footerContent) {
+              setFooterContent((prev) => ({ ...prev, ...s.footerContent }));
+              safeSetItem("chalapathi_footer_content", JSON.stringify(s.footerContent));
+            }
+            if (s.facultyData) {
+              setFacultyData(s.facultyData);
+              safeSetItem("chalapathi_faculty_data_v3", JSON.stringify(s.facultyData));
+            }
+            if (s.staffData) {
+              setStaffData(s.staffData);
+              safeSetItem("chalapathi_staff_data", JSON.stringify(s.staffData));
+            }
+            if (s.placementsContent) {
+              setPlacementsContent((prev) => ({ ...prev, ...s.placementsContent }));
+              safeSetItem("chalapathi_placements", JSON.stringify(s.placementsContent));
+            }
+            if (s.calendarData && Array.isArray(s.calendarData)) {
+              setCalendarData(s.calendarData);
+              safeSetItem("chalapathi_calendar", JSON.stringify(s.calendarData));
+            }
+            if (s.successStories && Array.isArray(s.successStories)) {
+              setSuccessStories(s.successStories);
+              safeSetItem("chalapathi_success_stories", JSON.stringify(s.successStories));
+            }
+            if (s.academicStructure) {
+              setAcademicStructure(s.academicStructure);
+              safeSetItem("chalapathi_academic_structure", JSON.stringify(s.academicStructure));
+            }
+            if (s.campusVideos && Array.isArray(s.campusVideos)) {
+              setCampusVideos(s.campusVideos);
+              safeSetItem("chalapathi_campus_videos", JSON.stringify(s.campusVideos));
+            }
+            if (s.campusTour) {
+              setCampusTour(s.campusTour);
+            }
+            if (s.campusGallery && Array.isArray(s.campusGallery)) {
+              setCampusGallery(s.campusGallery);
+              safeSetItem("chalapathi_campus_gallery", JSON.stringify(s.campusGallery));
+            }
+            if (s.campusBanners) {
+              setCampusBanners(s.campusBanners);
+              safeSetItem("chalapathi_campus_banners", JSON.stringify(s.campusBanners));
+            }
+            if (s.campusLifeContent) {
+              setCampusLifeContent((prev) => ({ ...prev, ...s.campusLifeContent }));
+              safeSetItem("chalapathi_campus_life_content", JSON.stringify(s.campusLifeContent));
+            }
+            if (s.heroSlides && Array.isArray(s.heroSlides)) {
+              setHeroSlides(s.heroSlides);
+              safeSetItem("chalapathi_hero_slides", JSON.stringify(s.heroSlides));
+            }
+            if (s.admissionsContent) {
+              setAdmissionsContent((prev) => ({ ...prev, ...s.admissionsContent }));
+              safeSetItem("chalapathi_admissions_content", JSON.stringify(s.admissionsContent));
+            }
+            if (s.searchConfig) {
+              setSearchConfig((prev) => ({ ...prev, ...s.searchConfig }));
+              safeSetItem("chalapathi_search_config", JSON.stringify(s.searchConfig));
+            }
+            if (s.announcements && Array.isArray(s.announcements)) {
+              setAnnouncements(s.announcements);
+              safeSetItem("chalapathi_announcements", JSON.stringify(s.announcements));
+            }
+            if (s.events && Array.isArray(s.events)) {
+              setEvents(s.events);
+              safeSetItem("chalapathi_events_v3", JSON.stringify(s.events));
+            }
+            if (s.programs && Array.isArray(s.programs)) {
+              setPrograms(s.programs);
+              safeSetItem("chalapathi_programs_v4", JSON.stringify(s.programs));
+            }
+            if (s.newsPageConfig) {
+              setNewsPageConfig((prev) => ({ ...prev, ...s.newsPageConfig }));
+              safeSetItem("chalapathi_news_page_config", JSON.stringify(s.newsPageConfig));
+            }
+          }
         }
       } catch (err) {
-        console.warn("Initial CMS API sync:", err);
+        console.warn("Initial CMS & Configs API sync:", err);
       }
     };
     
@@ -3985,7 +4128,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (err) {}
     };
 
-    initCmsFromApi();
+    initCmsAndConfigs();
     fetchNews();
   }, []);
 
@@ -4248,25 +4391,47 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     recordSave();
   };
 
-  const syncCmsWithBackend = async () => {
+  const syncCmsWithBackend = async (): Promise<boolean> => {
     try {
-      await CmsApiService.saveAll({
+      const res = await CmsApiService.saveAll({
         pages: cmsPages,
         settings: {
           siteSettings,
           themeColors,
-          searchConfig
+          searchConfig,
+          aboutContent,
+          boardData,
+          facultyData,
+          staffData,
+          homepageSections,
+          navigationMenu,
+          footerContent,
+          placementsContent,
+          academicStructure,
+          campusVideos,
+          campusTour,
+          campusGallery,
+          campusBanners,
+          campusLifeContent,
+          admissionsContent,
+          heroSlides,
+          calendarData,
+          successStories,
+          newsPageConfig
         },
         collections: {
           announcements,
           news,
           events,
+          programs,
           certifications: certificationsData
         }
       });
       recordSave();
+      return res?.success ?? true;
     } catch (e) {
       console.warn("Manual backend sync error:", e);
+      return false;
     }
   };
 

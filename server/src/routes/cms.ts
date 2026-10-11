@@ -130,6 +130,73 @@ router.post("/", async (req: Request, res: Response) => {
       return res.json({ success: true });
     }
 
+    if (action === "saveAll") {
+      const { pages, settings, collections } = req.body || {};
+
+      // Upsert CMS pages
+      if (Array.isArray(pages)) {
+        for (const p of pages) {
+          if (!p.slug) continue;
+          const dataToStore = {
+            sections: p.sections || [],
+            customData: p.customData || {},
+            tableData: p.tableData || null,
+          };
+          await prisma.cmsPage.upsert({
+            where: { slug: p.slug },
+            update: {
+              name: p.name || p.title || "Untitled Page",
+              title: p.title || "Untitled Page",
+              type: p.type || "sections",
+              shortDescription: p.shortDescription || "",
+              seoTitle: p.seoTitle || p.title || "",
+              seoDescription: p.seoDescription || p.shortDescription || "",
+              seoKeywords: p.seoKeywords || "",
+              status: p.status || "published",
+              displayOrder: Number(p.displayOrder) || 0,
+              showInNav: Boolean(p.showInNav),
+              parentNav: p.parentNav || null,
+              dataJson: JSON.stringify(dataToStore),
+              updatedAt: new Date(),
+            },
+            create: {
+              slug: p.slug,
+              name: p.name || p.title || "Untitled Page",
+              title: p.title || "Untitled Page",
+              type: p.type || "sections",
+              shortDescription: p.shortDescription || "",
+              seoTitle: p.seoTitle || p.title || "",
+              seoDescription: p.seoDescription || p.shortDescription || "",
+              seoKeywords: p.seoKeywords || "",
+              status: p.status || "published",
+              displayOrder: Number(p.displayOrder) || 0,
+              showInNav: Boolean(p.showInNav),
+              parentNav: p.parentNav || null,
+              dataJson: JSON.stringify(dataToStore),
+            },
+          }).catch(() => {});
+        }
+      }
+
+      // Upsert all settings & collections into site_configs table
+      const combinedConfigs: Record<string, any> = {
+        ...(settings || {}),
+        ...(collections || {}),
+      };
+
+      for (const [k, v] of Object.entries(combinedConfigs)) {
+        if (!k || v === undefined) continue;
+        const valStr = typeof v === "string" ? v : JSON.stringify(v);
+        await prisma.siteConfig.upsert({
+          where: { key: k },
+          update: { valueJson: valStr },
+          create: { key: k, valueJson: valStr },
+        }).catch(() => {});
+      }
+
+      return res.json({ success: true, message: "All CMS pages and site configs saved successfully" });
+    }
+
     return res.json({ success: true });
   } catch (err: any) {
     console.error("Error in /api/cms POST:", err);
