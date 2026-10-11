@@ -267,6 +267,9 @@ export interface AboutUsContent {
     messageQuote: string;
     messageParagraphs: string[];
     philosophies: { title: string; desc: string }[];
+    message?: string;
+    signature?: string;
+    signatureColor?: string;
   };
   advantage: {
     cards: { title: string; desc: string; detail: string }[];
@@ -4001,18 +4004,42 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const initCmsAndConfigs = async () => {
       try {
-        const res = await CmsApiService.fetchAll();
-        if (res && res.success) {
-          if (Array.isArray(res.pages) && res.pages.length > 0) {
-            setCmsPages(res.pages);
-            safeSetItem("chalapathi_cms_pages_v3", JSON.stringify(res.pages));
-          }
-          if (res.settings && typeof res.settings === "object") {
-            const s = res.settings;
-            if (s.aboutContent) {
-              setAboutContent(s.aboutContent);
-              safeSetItem("chalapathi_about_v2", JSON.stringify(s.aboutContent));
+        let s: Record<string, any> = {};
+
+        // 1. Try CmsApiService fetchAll
+        try {
+          const res = await CmsApiService.fetchAll();
+          if (res && res.success) {
+            if (Array.isArray(res.pages) && res.pages.length > 0) {
+              setCmsPages(res.pages);
+              safeSetItem("chalapathi_cms_pages_v3", JSON.stringify(res.pages));
             }
+            if (res.settings && typeof res.settings === "object") {
+              s = { ...s, ...res.settings };
+            }
+          }
+        } catch (cmsErr) {
+          console.warn("CmsApiService fetchAll failed:", cmsErr);
+        }
+
+        // 2. Also query /api/config to ensure all site configs from PostgreSQL are merged
+        try {
+          const cfgRes = await fetch("/api/config");
+          if (cfgRes.ok) {
+            const cfgData = await cfgRes.json();
+            if (cfgData && typeof cfgData === "object") {
+              s = { ...s, ...cfgData };
+            }
+          }
+        } catch (cfgErr) {
+          console.warn("Direct /api/config fetch failed:", cfgErr);
+        }
+
+        if (Object.keys(s).length > 0) {
+          if (s.aboutContent) {
+            setAboutContent(s.aboutContent);
+            safeSetItem("chalapathi_about_v2", JSON.stringify(s.aboutContent));
+          }
             if (s.boardData) {
               setBoardData(s.boardData);
               safeSetItem("chalapathi_board_data_v3", JSON.stringify(s.boardData));
@@ -4109,10 +4136,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
               safeSetItem("chalapathi_news_page_config", JSON.stringify(s.newsPageConfig));
             }
           }
+        } catch (err) {
+          console.warn("Initial CMS & Configs API sync:", err);
         }
-      } catch (err) {
-        console.warn("Initial CMS & Configs API sync:", err);
-      }
     };
     
     const fetchNews = async () => {

@@ -419,7 +419,7 @@ export default function AdminPortal() {
     };
   });
 
-  const saveChairman = () => {
+  const saveChairman = async () => {
     const updatedSections = sectionsList.map((s) => {
       if (s.id === "chairman") {
         return { ...s, extraData: chairmanData };
@@ -428,6 +428,22 @@ export default function AdminPortal() {
     });
     setSectionsList(updatedSections);
     updateHomepageSections(updatedSections);
+
+    if (chairmanData) {
+      const updatedAbout = {
+        ...aboutForm,
+        leadership: {
+          ...aboutForm.leadership,
+          chairmanName: chairmanData.name || aboutForm.leadership?.chairmanName || "Dr. Y. V Anjaneyulu",
+          designation: chairmanData.designation || aboutForm.leadership?.designation || "Chairman",
+          chairmanImage: chairmanData.image || aboutForm.leadership?.chairmanImage || "/chairman_portrait.png",
+          messageQuote: chairmanData.quote || aboutForm.leadership?.messageQuote || "",
+          message: chairmanData.message || aboutForm.leadership?.message || "",
+        }
+      };
+      setAboutForm(updatedAbout);
+      updateAboutContent(updatedAbout);
+    }
 
     if (typeof window !== "undefined") {
       localStorage.setItem("chalapathi_chairman_name", chairmanData.name || "Dr. Y. V Anjaneyulu");
@@ -446,6 +462,14 @@ export default function AdminPortal() {
       }
       window.dispatchEvent(new Event("chalapathi_cms_updated"));
     }
+
+    try {
+      await fetch("/api/config/homepageSections", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedSections),
+      });
+    } catch (e) {}
 
     notifySave("Chairman's signature, title & message published live!");
   };
@@ -949,9 +973,49 @@ export default function AdminPortal() {
   const [activeAboutSubTab, setActiveAboutSubTab] = useState<"genesis" | "vision" | "leadership" | "advantage" | "homepage">("genesis");
   React.useEffect(() => setAboutForm(aboutContent), [aboutContent]);
 
-  const saveAbout = () => {
+  const saveAbout = async () => {
     updateAboutContent(aboutForm);
-    notifySave("About Us content published!");
+
+    // Synchronize leadership info to homepage chairman section
+    if (aboutForm.leadership) {
+      const lead = aboutForm.leadership;
+      const updatedChairman = {
+        ...chairmanData,
+        name: lead.chairmanName || chairmanData.name,
+        designation: lead.designation || chairmanData.designation,
+        image: lead.chairmanImage || chairmanData.image,
+        quote: lead.messageQuote || chairmanData.quote,
+        message: (lead.messageParagraphs && lead.messageParagraphs.length > 0 ? lead.messageParagraphs.join("\n\n") : null) || lead.message || chairmanData.message,
+      };
+      setChairmanData(updatedChairman);
+
+      const updatedSections = sectionsList.map((s) => {
+        if (s.id === "chairman") {
+          return { ...s, extraData: updatedChairman };
+        }
+        return s;
+      });
+      setSectionsList(updatedSections);
+      updateHomepageSections(updatedSections);
+
+      if (typeof window !== "undefined") {
+        if (lead.chairmanName) localStorage.setItem("chalapathi_chairman_name", lead.chairmanName);
+        if (lead.designation) localStorage.setItem("chalapathi_chairman_designation", lead.designation);
+        if (lead.chairmanImage) localStorage.setItem("chalapathi_chairman_image", lead.chairmanImage);
+        window.dispatchEvent(new Event("chalapathi_cms_updated"));
+      }
+    }
+
+    // Direct PUT to persist directly to PostgreSQL
+    try {
+      await fetch("/api/config/aboutContent", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(aboutForm),
+      });
+    } catch (e) {}
+
+    notifySave("About Us content published live!");
   };
 
   // ----------------------------------------------------
@@ -1348,10 +1412,29 @@ export default function AdminPortal() {
   React.useEffect(() => setBoardForm(boardData), [boardData]);
   React.useEffect(() => setStaffForm(staffData), [staffData]);
 
-  const saveDirectories = () => {
+  const saveDirectories = async () => {
     updateFacultyData(facultyForm);
     updateBoardData(boardForm);
     updateStaffData(staffForm);
+    try {
+      await Promise.all([
+        fetch("/api/config/boardData", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(boardForm),
+        }),
+        fetch("/api/config/facultyData", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(facultyForm),
+        }),
+        fetch("/api/config/staffData", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(staffForm),
+        }),
+      ]);
+    } catch (e) {}
     notifySave("Directories updated live!");
   };
 

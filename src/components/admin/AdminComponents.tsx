@@ -148,6 +148,34 @@ export const ImageField: React.FC<ImageFieldProps> = ({
 
     setIsUploading(true);
     try {
+      // 1. Try direct upload to backend server /api/upload endpoint first
+      const formData = new FormData();
+      formData.append("file", file);
+      
+      const uploadRes = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (uploadRes.ok) {
+        const uploadData = await uploadRes.json();
+        if (uploadData && uploadData.url) {
+          onChange(uploadData.url);
+          setImageMeta({
+            isValid: true,
+            size: uploadData.size ? `${Math.round(uploadData.size / 1024)} KB` : "Uploaded",
+            errorMsg: undefined
+          });
+          setIsUploading(false);
+          return;
+        }
+      }
+    } catch (uploadErr) {
+      console.warn("[ImageField] Server upload failed, falling back to local compression:", uploadErr);
+    }
+
+    // 2. Fallback to client-side compression if server upload is unavailable
+    try {
       const compressed = await compressImage(file, {
         maxWidth: aspectRatio === "banner" ? 1800 : 1200,
         maxHeight: aspectRatio === "banner" ? 800 : 900,

@@ -111,7 +111,8 @@ export default function Home() {
     campusTour,
     campusGallery,
     campusBanners,
-    homepageSections
+    homepageSections,
+    aboutContent
   } = useData();
   const navigate = useNavigate();
   const [directionsFrom, setDirectionsFrom] = useState("");
@@ -1307,109 +1308,123 @@ export default function Home() {
       </section>
 
       {/* ═══ FROM THE CHAIRMAN SECTION ═══ */}
-      <section className="bg-gray-50/50 py-20 relative overflow-hidden font-[var(--font-poppins)] border-t border-gray-100">
-        {/* Soft Background Blobs */}
-        <div className="absolute top-20 right-10 w-80 h-80 rounded-full bg-blue-50/30 blur-3xl -z-10" />
-        <div className="absolute bottom-10 left-10 w-96 h-96 rounded-full bg-yellow-50/20 blur-3xl -z-10" />
+      {(() => {
+        const chairmanSec = homepageSections?.find((s) => s.id === "chairman");
+        const chairmanExtra = chairmanSec?.extraData || {};
+        const leadership = aboutContent?.leadership || {};
+        const chairmanName = leadership.chairmanName || chairmanExtra.name || (typeof window !== "undefined" ? localStorage.getItem("chalapathi_chairman_name") : null) || "Dr. Y. V Anjaneyulu";
+        const chairmanImage = leadership.chairmanImage || chairmanExtra.image || (typeof window !== "undefined" ? localStorage.getItem("chalapathi_chairman_image") : null) || "/chairman_portrait.png";
+        const chairmanDesig = leadership.designation || chairmanExtra.designation || (typeof window !== "undefined" ? localStorage.getItem("chalapathi_chairman_designation") : null) || "Chairman";
+        const chairmanGroup = chairmanExtra.group || (typeof window !== "undefined" ? localStorage.getItem("chalapathi_chairman_group") : null) || "Chalapathi Educational Society";
+        const chairmanMsg = (leadership.messageParagraphs && leadership.messageParagraphs.length > 0 ? leadership.messageParagraphs.join("\n\n") : null) || leadership.message || chairmanExtra.message || (typeof window !== "undefined" ? localStorage.getItem("chalapathi_chairman_message") : null) || `At Chalapathi University, we believe education is the most powerful transformer of lives and the key to building a better society. Our mission is to empower young minds with knowledge, values, and innovation to help them lead with purpose and create a lasting impact on the world.\n\nWe are committed to providing a nurturing environment, world-class infrastructure, and industry-oriented education to shape future leaders and responsible citizens.`;
+        const chairmanSig = leadership.signature || chairmanExtra.signature || (typeof window !== "undefined" ? localStorage.getItem("chalapathi_chairman_signature") : null) || "";
+        const chairmanLabel = chairmanSec?.title || (typeof window !== "undefined" ? localStorage.getItem("chalapathi_chairman_label") : null) || "FROM THE CHAIRMAN";
+        const chairmanSub = chairmanSec?.subtitle || (typeof window !== "undefined" ? localStorage.getItem("chalapathi_chairman_subtitle") : null) || "Guiding generations through excellence, innovation, integrity, and student success.";
 
-        <div className="max-w-[1440px] mx-auto px-5">
-          {/* Header */}
-          <div className="text-center mb-16">
-            <span className="text-[11px] font-[800] uppercase tracking-widest text-[#D4AF37] bg-amber-50 py-1.5 px-4 rounded-full inline-block mb-3">
-              {localStorage.getItem("chalapathi_chairman_label") || "FROM THE CHAIRMAN"}
-            </span>
-            <h2 className="text-2xl md:text-4xl font-[900] text-[#072A6C] mb-3">
-              A Vision. A Commitment. A Legacy.
-            </h2>
-            <p className="text-xs text-gray-500 max-w-xl mx-auto font-light leading-relaxed">
-              {localStorage.getItem("chalapathi_chairman_subtitle") || "Guiding generations through excellence, innovation, integrity, and student success."}
-            </p>
-          </div>
+        return (
+          <section className="bg-gray-50/50 py-20 relative overflow-hidden font-[var(--font-poppins)] border-t border-gray-100">
+            {/* Soft Background Blobs */}
+            <div className="absolute top-20 right-10 w-80 h-80 rounded-full bg-blue-50/30 blur-3xl -z-10" />
+            <div className="absolute bottom-10 left-10 w-96 h-96 rounded-full bg-yellow-50/20 blur-3xl -z-10" />
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            
-            {/* LEFT COLUMN (45% / lg:col-span-5) */}
-            <div className="lg:col-span-5 flex justify-center relative select-none">
-              {/* Background abstract decorations */}
-              <div className="absolute -top-6 -left-6 w-16 h-16 bg-blue-500/10 rounded-full blur-lg animate-pulse" />
-              <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-yellow-500/10 rounded-full blur-xl" />
-              
-              <div className="relative w-full max-w-[380px] rounded-[32px] overflow-hidden shadow-2xl group border-4 border-white bg-white transition-all duration-500 hover:shadow-3xl">
-                {/* Chairman Portrait */}
-                <img 
-                  src={localStorage.getItem("chalapathi_chairman_image") || "/chairman_portrait.png"} 
-                  alt={localStorage.getItem("chalapathi_chairman_name") || "Chairman Dr. Y. V Anjaneyulu"} 
-                  className="w-full h-auto object-cover aspect-[4/5]"
-                  style={{ objectPosition: "50% 0%" }}
-                />
-                
-                {/* Image tint overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent pointer-events-none" />
-
-                {/* Floating Glass Information Card */}
-                <div className="absolute bottom-5 left-5 right-5 bg-[#072A6C]/75 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-white text-left transition-all duration-300">
-                  <span className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-wider block mb-0.5">
-                    {localStorage.getItem("chalapathi_chairman_designation") || "Chairman"}
-                  </span>
-                  <h4 className="text-base font-extrabold mb-0.5">{localStorage.getItem("chalapathi_chairman_name") || "Dr. Y. V Anjaneyulu"}</h4>
-                  <p className="text-[10px] text-gray-200 font-light leading-snug">
-                    {localStorage.getItem("chalapathi_chairman_group") || "Chalapathi Educational Society"}
-                  </p>
-                </div>
+            <div className="max-w-[1440px] mx-auto px-5">
+              {/* Header */}
+              <div className="text-center mb-16">
+                <span className="text-[11px] font-[800] uppercase tracking-widest text-[#D4AF37] bg-amber-50 py-1.5 px-4 rounded-full inline-block mb-3">
+                  {chairmanLabel}
+                </span>
+                <h2 className="text-2xl md:text-4xl font-[900] text-[#072A6C] mb-3">
+                  A Vision. A Commitment. A Legacy.
+                </h2>
+                <p className="text-xs text-gray-500 max-w-xl mx-auto font-light leading-relaxed">
+                  {chairmanSub}
+                </p>
               </div>
-            </div>
 
-            {/* RIGHT COLUMN (55% / lg:col-span-7) */}
-            <div className="lg:col-span-7">
-              <div className="bg-white/90 border border-gray-150 rounded-[32px] p-8 md:p-10 shadow-sm relative overflow-hidden text-left flex flex-col justify-between min-h-[420px] transition-all duration-300 hover:shadow-md">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
                 
-                {/* Campus Building outline in background */}
-                <div className="absolute right-0 bottom-0 w-80 h-80 opacity-[0.03] pointer-events-none select-none">
-                  <svg viewBox="0 0 200 200" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[#072A6C] w-full h-full">
-                    {/* Clock tower sketch */}
-                    <path d="M70 180 V100 H130 V180 M90 100 V60 H110 V100 M95 60 L100 40 L105 60 M85 180 h30 M60 180 h80 M95 80 h10 M100 70 A 5 5 0 1 0 100 80 A 5 5 0 1 0 100 70" />
-                    <rect x="75" y="110" width="12" height="20" rx="2" />
-                    <rect x="113" y="110" width="12" height="20" rx="2" />
-                    <rect x="75" y="140" width="12" height="25" rx="2" />
-                    <rect x="113" y="140" width="12" height="25" rx="2" />
-                  </svg>
-                </div>
+                {/* LEFT COLUMN (45% / lg:col-span-5) */}
+                <div className="lg:col-span-5 flex justify-center relative select-none">
+                  {/* Background abstract decorations */}
+                  <div className="absolute -top-6 -left-6 w-16 h-16 bg-blue-500/10 rounded-full blur-lg animate-pulse" />
+                  <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-yellow-500/10 rounded-full blur-xl" />
+                  
+                  <div className="relative w-full max-w-[380px] rounded-[32px] overflow-hidden shadow-2xl group border-4 border-white bg-white transition-all duration-500 hover:shadow-3xl">
+                    {/* Chairman Portrait */}
+                    <img 
+                      src={chairmanImage} 
+                      alt={chairmanName} 
+                      className="w-full h-auto object-cover aspect-[4/5]"
+                      style={{ objectPosition: "50% 0%" }}
+                    />
+                    
+                    {/* Image tint overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent pointer-events-none" />
 
-                {/* Quotation Mark */}
-                <span className="text-7xl font-serif text-[#072A6C]/10 absolute top-4 left-4 select-none pointer-events-none">“</span>
-
-                {/* Message Content */}
-                <div className="space-y-5 z-10 relative">
-                  <p className="text-xs md:text-sm text-gray-700 font-light leading-relaxed whitespace-pre-line">
-                    {localStorage.getItem("chalapathi_chairman_message") || `At Chalapathi University, we believe education is the most powerful transformer of lives and the key to building a better society. Our mission is to empower young minds with knowledge, values, and innovation to help them lead with purpose and create a lasting impact on the world.\n\nWe are committed to providing a nurturing environment, world-class infrastructure, and industry-oriented education to shape future leaders and responsible citizens.`}
-                  </p>
-                </div>
-
-                {/* Signature, Name, Designation & Action Button */}
-                <div className="mt-8 pt-6 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 z-10">
-                  <div className="space-y-2">
-                    {/* Uploaded Signature Image (if provided) */}
-                    {localStorage.getItem("chalapathi_chairman_signature") && (
-                      <div className="h-10 flex items-center select-none">
-                        <img 
-                          src={localStorage.getItem("chalapathi_chairman_signature")!} 
-                          alt="Chairman Signature" 
-                          className="h-10 max-w-[180px] object-contain" 
-                        />
-                      </div>
-                    )}
-                    <div>
-                      <h5 className="text-xs font-extrabold text-[#072A6C]">{localStorage.getItem("chalapathi_chairman_name") || "Dr. Y. V Anjaneyulu"}</h5>
-                      <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{localStorage.getItem("chalapathi_chairman_designation") || "CHAIRMAN"}</span>
+                    {/* Floating Glass Information Card */}
+                    <div className="absolute bottom-5 left-5 right-5 bg-[#072A6C]/75 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-white text-left transition-all duration-300">
+                      <span className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-wider block mb-0.5">
+                        {chairmanDesig}
+                      </span>
+                      <h4 className="text-base font-extrabold mb-0.5">{chairmanName}</h4>
+                      <p className="text-[10px] text-gray-200 font-light leading-snug">
+                        {chairmanGroup}
+                      </p>
                     </div>
                   </div>
                 </div>
+
+                {/* RIGHT COLUMN (55% / lg:col-span-7) */}
+                <div className="lg:col-span-7">
+                  <div className="bg-white/90 border border-gray-150 rounded-[32px] p-8 md:p-10 shadow-sm relative overflow-hidden text-left flex flex-col justify-between min-h-[420px] transition-all duration-300 hover:shadow-md">
+                    
+                    {/* Campus Building outline in background */}
+                    <div className="absolute right-0 bottom-0 w-80 h-80 opacity-[0.03] pointer-events-none select-none">
+                      <svg viewBox="0 0 200 200" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[#072A6C] w-full h-full">
+                        <path d="M70 180 V100 H130 V180 M90 100 V60 H110 V100 M95 60 L100 40 L105 60 M85 180 h30 M60 180 h80 M95 80 h10 M100 70 A 5 5 0 1 0 100 80 A 5 5 0 1 0 100 70" />
+                        <rect x="75" y="110" width="12" height="20" rx="2" />
+                        <rect x="113" y="110" width="12" height="20" rx="2" />
+                        <rect x="75" y="140" width="12" height="25" rx="2" />
+                        <rect x="113" y="140" width="12" height="25" rx="2" />
+                      </svg>
+                    </div>
+
+                    {/* Quotation Mark */}
+                    <span className="text-7xl font-serif text-[#072A6C]/10 absolute top-4 left-4 select-none pointer-events-none">“</span>
+
+                    {/* Message Content */}
+                    <div className="space-y-5 z-10 relative">
+                      <p className="text-xs md:text-sm text-gray-700 font-light leading-relaxed whitespace-pre-line">
+                        {chairmanMsg}
+                      </p>
+                    </div>
+
+                    {/* Signature, Name, Designation & Action Button */}
+                    <div className="mt-8 pt-6 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 z-10">
+                      <div className="space-y-2">
+                        {chairmanSig && (
+                          <div className="h-10 flex items-center select-none">
+                            <img 
+                              src={chairmanSig} 
+                              alt="Chairman Signature" 
+                              className="h-10 max-w-[180px] object-contain" 
+                            />
+                          </div>
+                        )}
+                        <div>
+                          <h5 className="text-xs font-extrabold text-[#072A6C]">{chairmanName}</h5>
+                          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{chairmanDesig}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
-
-          </div>
-        </div>
-      </section>
+          </section>
+        );
+      })()}
 
       {/* Chairman Video Player Fullscreen Modal */}
       <AnimatePresence>
