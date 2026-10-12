@@ -80,7 +80,8 @@ function ImageSlider({ images }: { images: string[] }) {
             src={img} 
             alt={`Slide ${idx + 1}`} 
             className="w-full h-full object-cover shrink-0"
-            loading="lazy"
+            loading={idx === 0 ? "eager" : "lazy"}
+            decoding="async"
           />
         ))}
       </div>

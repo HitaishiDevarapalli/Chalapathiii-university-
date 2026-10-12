@@ -270,6 +270,8 @@ export default function News() {
                 alt={featuredArticle?.title || "Featured News"} 
                 onError={(e) => { (e.target as HTMLImageElement).src = "/prog_computer.png"; }}
                 className="absolute inset-0 w-full h-full object-cover transition-all duration-500"
+                loading="eager"
+                decoding="async"
               />
               <div className="absolute inset-0 bg-black/10" />
               
@@ -428,7 +430,7 @@ export default function News() {
                       <div className={`w-11 h-11 rounded-lg overflow-hidden shrink-0 bg-gray-50 border border-gray-100 transition-all duration-300 ${
                         isActive ? "scale-105" : "group-hover:scale-105"
                       }`}>
-                        <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                        <img src={item.image} alt={item.title} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                       </div>
                     </button>
                   );
@@ -555,6 +557,8 @@ export default function News() {
                       alt={item.title} 
                       onError={(e) => { (e.target as HTMLImageElement).src = "/prog_computer.png"; }}
                       className="w-full h-full object-cover" 
+                      loading="lazy"
+                      decoding="async"
                     />
                   </div>
 
@@ -758,7 +762,7 @@ export default function News() {
                         </span>
                         
                         <div className="w-16 h-12 rounded-lg overflow-hidden shrink-0 bg-gray-50 border border-gray-100">
-                          <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                          <img src={item.image} alt={item.title} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                         </div>
                       </div>
 

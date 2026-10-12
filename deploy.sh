@@ -20,6 +20,7 @@ echo "[3/4] Installing & Setting up Backend..."
 cd server
 npm install
 npx prisma generate
+npm run build
 npx prisma migrate deploy
 
 # Run seed script safely (ignores if it fails on existing data)

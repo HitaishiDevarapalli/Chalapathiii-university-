@@ -184,6 +184,7 @@ export default function Events() {
                         className="w-full h-full object-cover object-center"
                         draggable="false"
                         loading="lazy"
+                        decoding="async"
                       />
                       {closed && (
                         <div className="absolute top-4 right-4 bg-gray-600/90 text-white text-[10px] font-black px-3 py-1 rounded-full backdrop-blur-sm uppercase tracking-wider shadow-sm">

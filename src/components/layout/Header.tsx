@@ -356,6 +356,8 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
               src={siteSettings?.logoUrl || "/logo.png?v=3"}
               alt={siteSettings?.universityName || "Chalapathi University"}
               className="h-12 sm:h-14 md:h-16 min-[1280px]:h-18 min-[1440px]:h-20 w-auto max-w-[260px] sm:max-w-[320px] object-contain no-lift transition-all duration-300"
+              loading="eager"
+              decoding="async"
             />
           </Link>
 

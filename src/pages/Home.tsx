@@ -821,6 +821,8 @@ export default function Home() {
                         src={featuredSlides[activeNewsSlide].image || "/prog_computer.png"} 
                         alt={featuredSlides[activeNewsSlide].title || "Featured News"} 
                         className="absolute inset-0 w-full h-full object-cover transition-all duration-500"
+                        loading="lazy"
+                        decoding="async"
                       />
                     )}
                     <div className="absolute inset-0 bg-black/10 pointer-events-none" />
@@ -1257,6 +1259,8 @@ export default function Home() {
                       src={item.image}
                       alt={item.title}
                       className="w-full h-full object-cover"
+                      loading="lazy"
+                      decoding="async"
                       onError={(e) => {
                         (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=300&auto=format&fit=crop";
                       }}
@@ -1376,6 +1380,8 @@ export default function Home() {
                       alt={chairmanName} 
                       className="w-full h-auto object-cover aspect-[4/5]"
                       style={{ objectPosition: "50% 0%" }}
+                      loading="lazy"
+                      decoding="async"
                     />
                     
                     {/* Image tint overlay */}
@@ -1428,6 +1434,8 @@ export default function Home() {
                               src={chairmanSig} 
                               alt="Chairman Signature" 
                               className="h-10 max-w-[180px] object-contain" 
+                              loading="lazy"
+                              decoding="async"
                             />
                           </div>
                         )}
@@ -1581,7 +1589,7 @@ export default function Home() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <img src="/campus_hero.png" alt="Campus View" className="w-full h-full object-cover" />
+            <img src="/campus_hero.png" alt="Campus View" className="w-full h-full object-cover" loading="lazy" decoding="async" />
           </motion.div>
 
           <motion.div
@@ -1692,7 +1700,7 @@ export default function Home() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.5 }}
                 >
-                  <img src={bannerImage} alt="Students" className="w-full h-full object-cover object-left-top" onError={(e) => { (e.target as HTMLImageElement).src = "/students_admission.png"; }} />
+                  <img src={bannerImage} alt="Students" className="w-full h-full object-cover object-left-top" loading="lazy" decoding="async" onError={(e) => { (e.target as HTMLImageElement).src = "/students_admission.png"; }} />
                 </motion.div>
               </div>
 
@@ -1859,6 +1867,8 @@ export default function Home() {
                             src={item.image}
                             alt={item.title}
                             className="w-full h-full object-cover"
+                            loading="lazy"
+                            decoding="async"
                           />
                         </div>
                       )}

@@ -6,7 +6,7 @@ import { useLocation, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, ChevronRight, ChevronDown, Home, Calendar, BookOpen, Landmark, Info, Phone, ShieldCheck, UserPlus, FileText, UploadCloud, CreditCard, Clock, ShieldAlert, UserCheck, Scale, CalendarRange, GraduationCap, Mail, User, X, Globe, QrCode, Award, ChevronLeft } from "lucide-react";
 import { ACADEMIC_PROGRAMS_STRUCTURE } from "../components/layout/Header";
-import { useData, DEFAULT_CONTACT_PAGE_CONTENT } from "../context/DataContext";
+import { useData, DEFAULT_CONTACT_PAGE_CONTENT, INITIAL_BOARD_DATA } from "../context/DataContext";
 import GlobalCertifications from "../components/sections/GlobalCertifications";
 import { AdmissionsPortalView } from "../components/admissions/AdmissionsPortalView";
 import { ApplyOnlineView } from "../components/admissions/ApplyOnlineView";
@@ -2168,7 +2168,7 @@ function LatestNewsView() {
           className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow transition-all flex flex-col md:flex-row cursor-pointer group"
         >
           <div className="w-full md:w-1/3 h-40 bg-gray-50 border-r border-gray-100 overflow-hidden">
-            <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+            <img src={item.image} alt={item.title} className="w-full h-full object-cover" loading="lazy" decoding="async" />
           </div>
           <div className="p-5 flex-1 flex flex-col justify-between text-left">
             <div className="space-y-1.5">
@@ -2292,6 +2292,8 @@ export default function DynamicPage() {
                   alt="Video Thumbnail"
                   onError={(e) => { e.currentTarget.src = "/campus_life_bg.png"; }}
                   className="w-full h-full object-cover opacity-80"
+                  loading="lazy"
+                  decoding="async"
                 />
                 <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
                   <button 
@@ -2351,6 +2353,8 @@ export default function DynamicPage() {
                   alt={sect.title}
                   onError={(e) => { e.currentTarget.src = "/campus_hero.png"; }}
                   className="rounded-[20px] shadow-lg w-full h-[280px] md:h-[360px] object-cover" 
+                  loading="lazy"
+                  decoding="async"
                 />
               </div>
               <div className="lg:col-span-6 space-y-4">
@@ -2383,6 +2387,7 @@ export default function DynamicPage() {
                     onError={(e) => { e.currentTarget.src = "/gallery_tech_events.png"; }}
                     className="w-full h-full object-cover"
                     loading="lazy"
+                    decoding="async"
                   />
                   <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-extrabold text-sm">
                     VIEW IMAGE
@@ -2606,6 +2611,8 @@ function MemberAvatar({
         src={avatar}
         alt={name || "Member"}
         className={className}
+        loading="lazy"
+        decoding="async"
         onError={() => setHasError(true)}
       />
     );
@@ -2789,41 +2796,117 @@ function BoardDirectory() {
   const { boardData } = useData();
   const [selectedFaculty, setSelectedFaculty] = React.useState<FacultyMember | null>(null);
 
-  // Extract all board members from BOARD_DEPARTMENTS
-  const allMembers = BOARD_DEPARTMENTS.map(dept => boardData[dept]?.hod).filter(Boolean);
+  // Extract all board members dynamically from boardData with complete flexibility
+  const allMembers: FacultyMember[] = React.useMemo(() => {
+    if (!boardData || typeof boardData !== "object") return [];
+
+    const members: FacultyMember[] = [];
+    const seen = new Set<string>();
+
+    // Priority ordering for core founding / executive leadership roles if present
+    const priorityKeys = [
+      "Governing Council",
+      "Chancellor",
+      "Pro Chancellor",
+      "Vice Chancellor",
+      "Registrar",
+      "Dean – Academic Affairs",
+      "Dean – Research & Innovation"
+    ];
+    const allKeys = Object.keys(boardData);
+    const sortedKeys = [
+      ...priorityKeys.filter(k => allKeys.includes(k)),
+      ...allKeys.filter(k => !priorityKeys.includes(k))
+    ];
+
+    sortedKeys.forEach(roleKey => {
+      const dirData = boardData[roleKey];
+      if (!dirData) return;
+
+      if (dirData.hod && dirData.hod.name && dirData.hod.name.trim()) {
+        const uniqueKey = `${roleKey}-${dirData.hod.idNo || dirData.hod.name}`.toLowerCase();
+        if (!seen.has(uniqueKey)) {
+          seen.add(uniqueKey);
+          members.push({
+            ...dirData.hod,
+            department: dirData.hod.department || roleKey
+          });
+        }
+      }
+
+      if (Array.isArray(dirData.others)) {
+        dirData.others.forEach((mem, idx) => {
+          if (mem && mem.name && mem.name.trim()) {
+            const uniqueKey = `${mem.idNo || mem.name}-${mem.title || roleKey}-${idx}`.toLowerCase();
+            if (!seen.has(uniqueKey)) {
+              seen.add(uniqueKey);
+              members.push({
+                ...mem,
+                department: mem.department || roleKey
+              });
+            }
+          }
+        });
+      }
+    });
+
+    // Fallback if no members found
+    if (members.length === 0 && INITIAL_BOARD_DATA) {
+      Object.entries(INITIAL_BOARD_DATA).forEach(([roleKey, dirData]) => {
+        if (dirData?.hod && dirData.hod.name) {
+          members.push({
+            ...dirData.hod,
+            department: dirData.hod.department || roleKey
+          });
+        }
+      });
+    }
+
+    return members;
+  }, [boardData]);
 
   return (
     <div className="font-[var(--font-poppins)] text-center w-full mt-8">
-      {/* Grid Content */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {allMembers.map((member, index) => (
-          <div 
-            key={index}
-            onClick={() => setSelectedFaculty(member)}
-            className="flex flex-col bg-[#f8f9fa] shadow-sm hover:shadow-lg transition-shadow cursor-pointer group"
-          >
-            {/* Avatar / Photo */}
-            <div className="w-full aspect-[4/5] bg-gray-100 overflow-hidden relative flex items-center justify-center">
-              <MemberAvatar 
-                avatar={member.avatar} 
-                name={member.name} 
-                className="w-full h-full object-cover" 
-              />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 pointer-events-none"></div>
-            </div>
+      {allMembers.length === 0 ? (
+        <div className="text-center py-12 text-gray-500 font-medium bg-gray-50 rounded-xl">
+          Governing board records are currently being updated.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {allMembers.map((member, index) => (
+            <div 
+              key={member.idNo || `${member.name}-${index}`}
+              onClick={() => setSelectedFaculty(member)}
+              className="flex flex-col bg-[#f8f9fa] shadow-sm hover:shadow-lg transition-shadow cursor-pointer group rounded-xl overflow-hidden border border-gray-100"
+            >
+              {/* Avatar / Photo */}
+              <div className="w-full aspect-[4/5] bg-gray-100 overflow-hidden relative flex items-center justify-center">
+                <MemberAvatar 
+                  avatar={member.avatar} 
+                  name={member.name} 
+                  className="w-full h-full object-cover" 
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 pointer-events-none"></div>
+              </div>
 
-            {/* Details */}
-            <div className="py-5 px-3">
-              <h5 className="font-extrabold text-gray-900 text-[16px] leading-tight group-hover:text-[#8B0000] transition-colors">
-                {member.name}
-              </h5>
-              <span className="text-[13px] text-gray-500 mt-1 block">
-                {member.title}
-              </span>
+              {/* Details */}
+              <div className="py-5 px-3">
+                <h5 className="font-extrabold text-gray-900 text-[16px] leading-tight group-hover:text-[#8B0000] transition-colors">
+                  {member.name}
+                </h5>
+                <span className="text-[13px] text-gray-500 mt-1 block">
+                  {member.title}
+                </span>
+                {member.department && (
+                  <span className="text-[10px] text-[#D4AF37] font-semibold mt-1 block uppercase tracking-wider">
+                    {member.department}
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Profile Details Modal with Clear Exit & Mobile Scrolling */}
       {selectedFaculty && createPortal(
@@ -2877,6 +2960,23 @@ function BoardDirectory() {
                   <div className="bg-amber-50/60 border border-amber-100/80 rounded-xl p-3">
                     <span className="text-[10px] font-bold text-amber-900 uppercase tracking-wider block">Focus & Key Areas</span>
                     <p className="text-xs text-gray-700 font-medium mt-0.5">{selectedFaculty.interests}</p>
+                  </div>
+                )}
+
+                {(selectedFaculty.email || selectedFaculty.phone) && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-600 bg-slate-50 border border-gray-100 rounded-xl p-3">
+                    {selectedFaculty.email && (
+                      <div className="flex items-center gap-1.5 truncate">
+                        <Mail size={13} className="text-[#072A6C] shrink-0" />
+                        <span className="truncate">{selectedFaculty.email}</span>
+                      </div>
+                    )}
+                    {selectedFaculty.phone && (
+                      <div className="flex items-center gap-1.5 truncate">
+                        <Phone size={13} className="text-[#072A6C] shrink-0" />
+                        <span>{selectedFaculty.phone}</span>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -3286,6 +3386,8 @@ function LeadershipView() {
                   alt="Chairman" 
                   className="w-full h-full object-cover rounded-full filter saturate-110"
                   style={{ mixBlendMode: "normal", objectPosition: "50% 0%" }}
+                  loading="eager"
+                  decoding="async"
                 />
               </div>
             </div>
@@ -3342,6 +3444,9 @@ function LeadershipView() {
         <div className="text-center mb-6 sm:mb-8">
           <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-[#072A6C] tracking-tight uppercase">GOVERNING BOARD MEMBERS</h2>
           <div className="h-1 w-16 bg-[#D4AF37] mx-auto mt-3 rounded-full" />
+          <p className="text-xs sm:text-sm text-gray-500 mt-2 font-medium max-w-2xl mx-auto">
+            Visionary leaders, trustees, and governing council directing strategic progress and excellence.
+          </p>
         </div>
         <BoardDirectory />
       </section>
@@ -4490,6 +4595,8 @@ function RecruiterCard({ company }: { company: { name: string; logo: string } })
             alt={`${company.name} logo`} 
             className="max-w-full max-h-full object-contain w-auto h-auto transition-transform duration-300 group-hover:scale-108"
             onError={() => setHasError(true)}
+            loading="lazy"
+            decoding="async"
           />
         )}
       </div>
@@ -4657,6 +4764,8 @@ function PlacementsView() {
                 alt={student.name} 
                 draggable="false"
                 className="absolute inset-0 w-full h-full object-cover"
+                loading="lazy"
+                decoding="async"
               />
               {/* Bottom Dark Gradient Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent pointer-events-none" />
@@ -4750,6 +4859,8 @@ function PlacementsView() {
               src={placementsContent.heroImage || "/campus_placement.png"} 
               alt="Campus Placement Drive Illustration" 
               className="w-full h-auto object-contain rounded-xl" 
+              loading="lazy"
+              decoding="async"
             />
           </div>
         </div>
@@ -4798,6 +4909,8 @@ function PlacementsView() {
                   src={ind.img} 
                   alt={ind.name} 
                   className="w-full h-full object-cover" 
+                  loading="lazy"
+                  decoding="async"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-4">
                   <span className="text-white font-extrabold text-xs md:text-sm uppercase tracking-wide">

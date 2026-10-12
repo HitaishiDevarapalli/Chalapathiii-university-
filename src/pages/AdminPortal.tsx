@@ -80,6 +80,7 @@ import { AdmissionsCMS } from "../components/admin/AdmissionsCMS";
 import { ContactCMS } from "../components/admin/ContactCMS";
 import { EventsCMS } from "../components/admin/EventsCMS";
 import { NewsCMS } from "../components/admin/NewsCMS";
+import { AnnouncementsCMS } from "../components/admin/AnnouncementsCMS";
 import FooterCMS from "../components/admin/FooterCMS";
 import LinksCMS from "../components/admin/LinksCMS";
 import { SettingsCMS } from "../components/admin/SettingsCMS";
@@ -174,7 +175,7 @@ export default function AdminPortal() {
     "contact" | "links" | "gallery" | "footer" | "settings" | "popup"
   >("dashboard");
 
-  const [newsEventsModuleTab, setNewsEventsModuleTab] = useState<"news" | "events">("news");
+  const [newsEventsModuleTab, setNewsEventsModuleTab] = useState<"news" | "events" | "announcements">("news");
 
   // Notification / Save feedback
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -1734,10 +1735,11 @@ export default function AdminPortal() {
       id: "news-events",
       label: "News & Events Settings",
       icon: Calendar,
-      badge: `${news.length + events.length}`,
+      badge: `${news.length + events.length + announcements.length}`,
       subItems: [
         { id: "news", label: "News & Articles CMS", onClick: () => { setActiveTab("news-events"); setNewsEventsModuleTab("news"); }, isActive: (activeTab === "news-events" || activeTab === "news") && newsEventsModuleTab === "news" },
         { id: "events", label: "Events & Registrations", onClick: () => { setActiveTab("news-events"); setNewsEventsModuleTab("events"); }, isActive: (activeTab === "news-events" || activeTab === "events") && newsEventsModuleTab === "events" },
+        { id: "announcements", label: "Announcements & Notices", onClick: () => { setActiveTab("news-events"); setNewsEventsModuleTab("announcements"); }, isActive: activeTab === "news-events" && newsEventsModuleTab === "announcements" },
       ]
     },
     { id: "contact", label: "Contact Us Page Settings", icon: Phone },
@@ -7037,8 +7039,13 @@ export default function AdminPortal() {
                   <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                       <div>
-                        <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider">Governing Board Members & Leadership Council</h4>
-                        <p className="text-xs text-gray-500">Edit member photos, names, titles, qualifications, and bios displayed on /about/leadership</p>
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-xs font-black text-[#072A6C] uppercase tracking-wider">Governing Board Members & Leadership Council</h4>
+                          <span className="text-[10px] font-bold px-2.5 py-0.5 bg-blue-50 text-blue-700 rounded-full border border-blue-200">
+                            {Object.keys(boardForm).length} Members
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500">Add and edit unlimited board members, photos, titles, qualifications, and bios displayed on /about/leadership</p>
                       </div>
                       <button
                         type="button"
@@ -7063,6 +7070,7 @@ export default function AdminPortal() {
                           };
                           setBoardForm(updated);
                           updateBoardData(updated);
+                          notifySave("New Board Member added! Configure their details below.");
                         }}
                         className="h-8 px-3 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer shadow-xs"
                       >
@@ -7071,7 +7079,7 @@ export default function AdminPortal() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {Object.entries(boardForm).map(([roleKey, dirData]) => {
+                      {Object.entries(boardForm).map(([roleKey, dirData], index) => {
                         const member = dirData.hod;
                         if (!member) return null;
 
@@ -7079,7 +7087,14 @@ export default function AdminPortal() {
                           <div key={roleKey} className="p-4 rounded-xl border border-gray-200 bg-slate-50/70 space-y-3 flex flex-col justify-between">
                             <div className="space-y-2.5">
                               <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-                                <span className="text-[11px] font-black text-[#072A6C] truncate max-w-[160px]">{roleKey}</span>
+                                <div className="flex items-center gap-1.5 truncate max-w-[170px]">
+                                  <span className="w-5 h-5 rounded-full bg-[#072A6C] text-white text-[10px] font-bold flex items-center justify-center shrink-0">
+                                    {index + 1}
+                                  </span>
+                                  <span className="text-[11px] font-black text-[#072A6C] truncate">
+                                    {roleKey.startsWith("Officer_") ? (member.title || "Board Member") : roleKey}
+                                  </span>
+                                </div>
                                 <button
                                   type="button"
                                   onClick={() => {
@@ -7210,7 +7225,7 @@ export default function AdminPortal() {
                                   <label className="text-[9px] font-bold text-gray-500 uppercase">Experience</label>
                                   <input
                                     type="text"
-                                    value={member.experience}
+                                    value={member.experience || ""}
                                     onChange={(e) => {
                                       const updated = {
                                         ...boardForm,
@@ -7228,13 +7243,52 @@ export default function AdminPortal() {
                                   <label className="text-[9px] font-bold text-gray-500 uppercase">Email</label>
                                   <input
                                     type="text"
-                                    value={member.email}
+                                    value={member.email || ""}
                                     onChange={(e) => {
                                       const updated = {
                                         ...boardForm,
                                         [roleKey]: {
                                           ...dirData,
                                           hod: { ...member, email: e.target.value }
+                                        }
+                                      };
+                                      setBoardForm(updated);
+                                    }}
+                                    className="w-full h-7 px-2 text-[11px] bg-white border border-gray-200 rounded"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="space-y-1">
+                                  <label className="text-[9px] font-bold text-gray-500 uppercase">Phone / Contact</label>
+                                  <input
+                                    type="text"
+                                    value={member.phone || ""}
+                                    onChange={(e) => {
+                                      const updated = {
+                                        ...boardForm,
+                                        [roleKey]: {
+                                          ...dirData,
+                                          hod: { ...member, phone: e.target.value }
+                                        }
+                                      };
+                                      setBoardForm(updated);
+                                    }}
+                                    className="w-full h-7 px-2 text-[11px] bg-white border border-gray-200 rounded"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[9px] font-bold text-gray-500 uppercase">Body / Category</label>
+                                  <input
+                                    type="text"
+                                    value={member.department || "Governing Council"}
+                                    onChange={(e) => {
+                                      const updated = {
+                                        ...boardForm,
+                                        [roleKey]: {
+                                          ...dirData,
+                                          hod: { ...member, department: e.target.value }
                                         }
                                       };
                                       setBoardForm(updated);
@@ -12709,7 +12763,7 @@ export default function AdminPortal() {
           {(activeTab === "news-events" || activeTab === "news" || activeTab === "events") && (
             <div className="space-y-6 animate-fade-in text-left">
               {/* Module Subtab Selector */}
-              <div className="flex items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-gray-200">
+              <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-gray-200">
                 <button
                   type="button"
                   onClick={() => setNewsEventsModuleTab("news")}
@@ -12732,12 +12786,26 @@ export default function AdminPortal() {
                 >
                   <span>Events & Registrations CMS ({events.length})</span>
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setNewsEventsModuleTab("announcements")}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    newsEventsModuleTab === "announcements"
+                      ? "bg-[#072A6C] text-white shadow-md shadow-[#072A6C]/20"
+                      : "bg-white text-gray-700 hover:bg-slate-50 border border-gray-200/80"
+                  }`}
+                >
+                  <Bell size={13} />
+                  <span>Announcements & Notices ({announcements.length})</span>
+                </button>
               </div>
 
               {newsEventsModuleTab === "news" ? (
                 <NewsCMS notifySave={notifySave} saveSuccess={saveSuccess} />
-              ) : (
+              ) : newsEventsModuleTab === "events" ? (
                 <EventsCMS notifySave={notifySave} saveSuccess={saveSuccess} />
+              ) : (
+                <AnnouncementsCMS notifySave={notifySave} saveSuccess={saveSuccess} />
               )}
             </div>
           )}

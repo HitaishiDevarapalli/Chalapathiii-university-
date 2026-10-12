@@ -3048,6 +3048,22 @@ export const INITIAL_BOARD_DATA: Record<string, DirectoryData> = {
   "Pro Chancellor": {
     hod: { name: "Sri Y. Sujit Kumar", title: "Pro Chancellor", edu: "B.Tech & MBA - Executive Education", interests: "Institutional progress planning, modernization initiatives, and industry collaborations.", phone: "0863 2345402", email: "prochan@chalapathiuniversity.edu.in", avatar: "", age: "42 Years", experience: "18 Years", idNo: "CUB-PC-001", department: "Office of the Pro Chancellor" },
     others: []
+  },
+  "Vice Chancellor": {
+    hod: { name: "Prof. Dr. K. Rama Rao", title: "Vice Chancellor", edu: "Ph.D. in Computer Science & Engineering", interests: "Academic distinction, outcome-based curricula, and research innovation.", phone: "0863 2345403", email: "vc@chalapathiuniversity.edu.in", avatar: "", age: "54 Years", experience: "25 Years", idNo: "CUB-VC-001", department: "Vice Chancellor's Office" },
+    others: []
+  },
+  "Registrar": {
+    hod: { name: "Dr. M. Srinivasa Rao", title: "Registrar & Secretary, Governing Council", edu: "Ph.D. in Public Administration", interests: "Statutory governance, institutional compliances, and administrative operations.", phone: "0863 2345404", email: "registrar@chalapathiuniversity.edu.in", avatar: "", age: "50 Years", experience: "22 Years", idNo: "CUB-REG-001", department: "Governing Council" },
+    others: []
+  },
+  "Dean – Academic Affairs": {
+    hod: { name: "Dr. P. Venkata Rao", title: "Dean – Academic Affairs", edu: "Ph.D. in Electrical & Electronics Engineering", interests: "Curriculum planning, accreditation oversight, and quality audits.", phone: "0863 2345405", email: "dean.academics@chalapathiuniversity.edu.in", avatar: "", age: "48 Years", experience: "20 Years", idNo: "CUB-DAA-001", department: "Governing Council" },
+    others: []
+  },
+  "Dean – Research & Innovation": {
+    hod: { name: "Dr. S. Lakshmi", title: "Dean – Research & Innovation", edu: "Ph.D. in Materials Science", interests: "IPR, patents, sponsored projects, and technology transfer.", phone: "0863 2345406", email: "dean.research@chalapathiuniversity.edu.in", avatar: "", age: "46 Years", experience: "18 Years", idNo: "CUB-DRI-001", department: "Governing Council" },
+    others: []
   }
 };
 
@@ -3370,8 +3386,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (local) {
       try {
         const parsed = JSON.parse(local);
-        delete parsed["Vice Chancellor"];
-        delete parsed["Registrar"];
         if (parsed["Pro Chancellor"]?.hod?.edu) {
           parsed["Pro Chancellor"].hod.edu = parsed["Pro Chancellor"].hod.edu.replace(/M\.Tech/gi, "B.Tech");
         }
@@ -3600,8 +3614,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const localFaculty = localStorage.getItem("chalapathi_faculty_data_v2");
         if (localFaculty) setFacultyData(JSON.parse(localFaculty));
 
-        const localBoard = localStorage.getItem("chalapathi_board_data");
-        if (localBoard) setBoardData(JSON.parse(localBoard));
+        const localBoard = localStorage.getItem("chalapathi_board_data_v3") || localStorage.getItem("chalapathi_board_data");
+        if (localBoard) {
+          try {
+            setBoardData(JSON.parse(localBoard));
+          } catch (e) {}
+        }
 
         const localStaff = localStorage.getItem("chalapathi_staff_data");
         if (localStaff) setStaffData(JSON.parse(localStaff));

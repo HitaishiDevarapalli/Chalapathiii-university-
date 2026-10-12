@@ -249,6 +249,8 @@ export default function Genesis() {
                           ? "w-full h-[115px] md:h-[140px] object-cover"
                           : "w-full h-[95px] md:h-[115px] object-cover"
                       }
+                      loading="lazy"
+                      decoding="async"
                       onError={(e) => {
                         (e.target as HTMLImageElement).src = "https://via.placeholder.com/400x300/e0f2fe/123A7A.png?text=" + encodeURIComponent(step.title);
                       }}

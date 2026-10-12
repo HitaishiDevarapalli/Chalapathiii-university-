@@ -48,8 +48,8 @@ const uploadsDir2 = path.resolve(__dirname, "../../uploads");
 if (!fs.existsSync(uploadsDir1)) fs.mkdirSync(uploadsDir1, { recursive: true });
 if (!fs.existsSync(uploadsDir2)) fs.mkdirSync(uploadsDir2, { recursive: true });
 
-app.use("/uploads", express.static(uploadsDir1));
-app.use("/uploads", express.static(uploadsDir2));
+app.use("/uploads", express.static(uploadsDir1, { maxAge: "30d", immutable: true }));
+app.use("/uploads", express.static(uploadsDir2, { maxAge: "30d", immutable: true }));
 
 // Routes
 app.use("/api/auth", authRoutes);
