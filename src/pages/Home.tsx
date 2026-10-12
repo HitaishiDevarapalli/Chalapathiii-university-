@@ -807,130 +807,138 @@ export default function Home() {
             
             {/* LEFT COLUMN: Featured News Card (50% / lg:col-span-6) */}
             <div className="lg:col-span-6 bg-white rounded-[24px] border border-gray-100 shadow-sm overflow-hidden flex flex-col md:flex-row items-stretch select-none">
-              
-              {/* Left half: Image slider carousel */}
-              <div className="w-full md:w-1/2 relative bg-slate-900 group min-h-[300px] md:min-h-auto flex items-stretch">
-                {featuredSlides[activeNewsSlide] && (
-                  <img 
-                    src={featuredSlides[activeNewsSlide].image || "/prog_computer.png"} 
-                    alt={featuredSlides[activeNewsSlide].title || "Featured News"} 
-                    className="absolute inset-0 w-full h-full object-cover transition-all duration-500"
-                  />
-                )}
-                <div className="absolute inset-0 bg-black/10 pointer-events-none" />
-                
-                {/* Featured Badge */}
-                <span className="absolute top-4 left-4 bg-[#D4AF37] text-white text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-md shadow-sm">
-                  Featured News
-                </span>
-
-                {/* Slider arrows */}
-                {featuredSlides.length > 1 && (
-                  <>
-                    <button 
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveNewsSlide((prev) => (prev - 1 + featuredSlides.length) % featuredSlides.length);
-                      }}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 cursor-pointer border-none outline-none"
-                    >
-                      <ChevronLeft size={16} />
-                    </button>
-                    <button 
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveNewsSlide((prev) => (prev + 1) % featuredSlides.length);
-                      }}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 cursor-pointer border-none outline-none"
-                    >
-                      <ChevronRight size={16} />
-                    </button>
-                  </>
-                )}
-              </div>
-
-              {/* Right half: Text Content */}
-              <div className="w-full md:w-1/2 p-8 flex flex-col justify-between text-left">
-                {featuredSlides[activeNewsSlide] && (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] font-black uppercase tracking-wider text-[#D4AF37]">
-                        {featuredSlides[activeNewsSlide].category || "Innovation"}
-                      </span>
-                      <span className="text-gray-300">•</span>
-                      <span className="text-[10px] text-gray-400 font-semibold font-[var(--font-inter)]">
-                        {featuredSlides[activeNewsSlide].date}
-                      </span>
-                    </div>
-
-                    <h2 className="text-xl md:text-[22px] font-extrabold text-[#072A6C] leading-snug line-clamp-3">
-                      {featuredSlides[activeNewsSlide].title}
-                    </h2>
-
-                    <p className="text-[12px] text-gray-500 font-light leading-relaxed font-[var(--font-inter)] line-clamp-4">
-                      {featuredSlides[activeNewsSlide].excerpt}
-                    </p>
-                  </div>
-                )}
-
-                {/* Actions & Indicator Dots */}
-                <div className="pt-6 space-y-4">
-                  {featuredSlides[activeNewsSlide] && (
-                    <div className="flex items-center gap-3 relative">
-                      <button 
-                        type="button"
-                        onClick={() => navigate(`/news/${featuredSlides[activeNewsSlide].slug}`)}
-                        className="h-10 px-6 bg-[#072A6C] hover:bg-[#D4AF37] text-white text-[11px] font-bold rounded-xl inline-flex items-center gap-1.5 transition-all cursor-pointer shadow-sm border-none outline-none"
-                      >
-                        <span>Read Full Story</span>
-                        <ArrowRight size={12} />
-                      </button>
-                      
-                      <div className="relative">
-                        <button 
-                          type="button"
-                          onClick={(e) => handleShareFeaturedNews(e, featuredSlides[activeNewsSlide].slug || "")}
-                          className="w-10 h-10 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-150 text-gray-600 flex items-center justify-center transition-colors cursor-pointer outline-none"
-                        >
-                          <Share2 size={14} />
-                        </button>
-
-                        {/* Tooltip confirmation */}
-                        <AnimatePresence>
-                          {showCopiedTooltip && (
-                            <motion.div 
-                              initial={{ opacity: 0, y: 5 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: 5 }}
-                              className="absolute bottom-12 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-[#072A6C] text-white text-[10px] font-bold rounded-lg shadow-md whitespace-nowrap z-20 pointer-events-none"
-                            >
-                              Link Copied!
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Slider Indicator Dots */}
-                  {featuredSlides.length > 1 && (
-                    <div className="flex items-center gap-1.5">
-                      {featuredSlides.map((_, idx) => (
-                        <button 
-                          key={idx}
-                          type="button"
-                          onClick={() => setActiveNewsSlide(idx)}
-                          className={`h-2.5 rounded-full transition-all duration-300 border-none outline-none cursor-pointer ${
-                            activeNewsSlide === idx ? "bg-[#D4AF37] w-6" : "bg-gray-300 w-2.5"
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  )}
+              {featuredSlides.length === 0 ? (
+                <div className="w-full p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
+                  <span className="text-sm font-semibold text-gray-400">No Featured News Published</span>
+                  <p className="text-xs text-gray-400 mt-1">Publish news stories in the Admin Portal to highlight them here.</p>
                 </div>
-              </div>
+              ) : (
+                <>
+                  {/* Left half: Image slider carousel */}
+                  <div className="w-full md:w-1/2 relative bg-slate-900 group min-h-[300px] md:min-h-auto flex items-stretch">
+                    {featuredSlides[activeNewsSlide] && (
+                      <img 
+                        src={featuredSlides[activeNewsSlide].image || "/prog_computer.png"} 
+                        alt={featuredSlides[activeNewsSlide].title || "Featured News"} 
+                        className="absolute inset-0 w-full h-full object-cover transition-all duration-500"
+                      />
+                    )}
+                    <div className="absolute inset-0 bg-black/10 pointer-events-none" />
+                    
+                    {/* Featured Badge */}
+                    <span className="absolute top-4 left-4 bg-[#D4AF37] text-white text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-md shadow-sm">
+                      Featured News
+                    </span>
+
+                    {/* Slider arrows */}
+                    {featuredSlides.length > 1 && (
+                      <>
+                        <button 
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveNewsSlide((prev) => (prev - 1 + featuredSlides.length) % featuredSlides.length);
+                          }}
+                          className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 cursor-pointer border-none outline-none"
+                        >
+                          <ChevronLeft size={16} />
+                        </button>
+                        <button 
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveNewsSlide((prev) => (prev + 1) % featuredSlides.length);
+                          }}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 cursor-pointer border-none outline-none"
+                        >
+                          <ChevronRight size={16} />
+                        </button>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Right half: Text Content */}
+                  <div className="w-full md:w-1/2 p-8 flex flex-col justify-between text-left">
+                    {featuredSlides[activeNewsSlide] && (
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-[#D4AF37]">
+                            {featuredSlides[activeNewsSlide].category || "Innovation"}
+                          </span>
+                          <span className="text-gray-300">•</span>
+                          <span className="text-[10px] text-gray-400 font-semibold font-[var(--font-inter)]">
+                            {featuredSlides[activeNewsSlide].date}
+                          </span>
+                        </div>
+
+                        <h2 className="text-xl md:text-[22px] font-extrabold text-[#072A6C] leading-snug line-clamp-3">
+                          {featuredSlides[activeNewsSlide].title}
+                        </h2>
+
+                        <p className="text-[12px] text-gray-500 font-light leading-relaxed font-[var(--font-inter)] line-clamp-4">
+                          {featuredSlides[activeNewsSlide].excerpt}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Actions & Indicator Dots */}
+                    <div className="pt-6 space-y-4">
+                      {featuredSlides[activeNewsSlide] && (
+                        <div className="flex items-center gap-3 relative">
+                          <button 
+                            type="button"
+                            onClick={() => navigate(`/news/${featuredSlides[activeNewsSlide].slug}`)}
+                            className="h-10 px-6 bg-[#072A6C] hover:bg-[#D4AF37] text-white text-[11px] font-bold rounded-xl inline-flex items-center gap-1.5 transition-all cursor-pointer shadow-sm border-none outline-none"
+                          >
+                            <span>Read Full Story</span>
+                            <ArrowRight size={12} />
+                          </button>
+                          
+                          <div className="relative">
+                            <button 
+                              type="button"
+                              onClick={(e) => handleShareFeaturedNews(e, featuredSlides[activeNewsSlide].slug || "")}
+                              className="w-10 h-10 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-150 text-gray-600 flex items-center justify-center transition-colors cursor-pointer outline-none"
+                            >
+                              <Share2 size={14} />
+                            </button>
+
+                            {/* Tooltip confirmation */}
+                            <AnimatePresence>
+                              {showCopiedTooltip && (
+                                <motion.div 
+                                  initial={{ opacity: 0, y: 5 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: 5 }}
+                                  className="absolute bottom-12 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-[#072A6C] text-white text-[10px] font-bold rounded-lg shadow-md whitespace-nowrap z-20 pointer-events-none"
+                                >
+                                  Link Copied!
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Slider Indicator Dots */}
+                      {featuredSlides.length > 1 && (
+                        <div className="flex items-center gap-1.5">
+                          {featuredSlides.map((_, idx) => (
+                            <button 
+                              key={idx}
+                              type="button"
+                              onClick={() => setActiveNewsSlide(idx)}
+                              className={`h-2.5 rounded-full transition-all duration-300 border-none outline-none cursor-pointer ${
+                                activeNewsSlide === idx ? "bg-[#D4AF37] w-6" : "bg-gray-300 w-2.5"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
 
             </div>
 
@@ -947,35 +955,39 @@ export default function Home() {
                 </div>
 
                 <div className="space-y-4">
-                  {(visibleNews.length > 4 ? visibleNews.slice(1, 5) : visibleNews.slice(0, 4)).map((item, idx) => {
-                    const dateParts = (() => {
-                      if (!item.date) return { day: "12", month: "MAY" };
-                      const parts = item.date.trim().split(" ");
-                      return {
-                        day: parts[0] || "12",
-                        month: (parts[1] || "MAY").toUpperCase().substring(0, 3)
-                      };
-                    })();
-                    return (
-                      <div 
-                        key={item.id || idx}
-                        onClick={() => navigate(`/news/${item.slug}`)}
-                        className="flex gap-3.5 items-start cursor-pointer group"
-                      >
-                        {/* Custom Date Badge */}
-                        <div className="w-10 h-10 rounded-xl bg-white/10 text-white text-center flex flex-col items-center justify-center shadow-sm shrink-0 border border-white/5">
-                          <span className="block text-[12px] font-black leading-none">{dateParts.day}</span>
-                          <span className="block text-[7px] font-extrabold tracking-wider mt-0.5">{dateParts.month}</span>
+                  {visibleNews.length === 0 ? (
+                    <p className="text-xs text-white/50 italic py-4">No recent news available.</p>
+                  ) : (
+                    (visibleNews.length > 4 ? visibleNews.slice(1, 5) : visibleNews.slice(0, 4)).map((item, idx) => {
+                      const dateParts = (() => {
+                        if (!item.date) return { day: "12", month: "MAY" };
+                        const parts = item.date.trim().split(" ");
+                        return {
+                          day: parts[0] || "12",
+                          month: (parts[1] || "MAY").toUpperCase().substring(0, 3)
+                        };
+                      })();
+                      return (
+                        <div 
+                          key={item.id || idx}
+                          onClick={() => navigate(`/news/${item.slug}`)}
+                          className="flex gap-3.5 items-start cursor-pointer group"
+                        >
+                          {/* Custom Date Badge */}
+                          <div className="w-10 h-10 rounded-xl bg-white/10 text-white text-center flex flex-col items-center justify-center shadow-sm shrink-0 border border-white/5">
+                            <span className="block text-[12px] font-black leading-none">{dateParts.day}</span>
+                            <span className="block text-[7px] font-extrabold tracking-wider mt-0.5">{dateParts.month}</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-[11px] font-bold text-white leading-snug group-hover:text-[#D4AF37] transition-colors line-clamp-2">
+                              {item.title}
+                            </h4>
+                            <span className="text-[9.5px] text-white/60 font-medium block mt-0.5 leading-relaxed line-clamp-1">{item.excerpt || item.bodyText}</span>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-[11px] font-bold text-white leading-snug group-hover:text-[#D4AF37] transition-colors line-clamp-2">
-                            {item.title}
-                          </h4>
-                          <span className="text-[9.5px] text-white/60 font-medium block mt-0.5 leading-relaxed line-clamp-1">{item.excerpt || item.bodyText}</span>
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })
+                  )}
                 </div>
               </div>
             </div>
@@ -997,35 +1009,39 @@ export default function Home() {
                 </div>
 
                 <div className="space-y-4">
-                  {events.slice(0, 4).map((item, idx) => {
-                    const dateParts = (() => {
-                      if (!item.date) return { day: "12", month: "MAY" };
-                      const parts = item.date.trim().split(" ");
-                      return {
-                        day: parts[0] || "12",
-                        month: (parts[1] || "MAY").toUpperCase().substring(0, 3)
-                      };
-                    })();
-                    return (
-                      <div 
-                        key={item.id || idx}
-                        onClick={() => navigate(`/news/events/${item.slug}`)}
-                        className="flex gap-3.5 items-start cursor-pointer group"
-                      >
-                        {/* Custom Date Badge */}
-                        <div className="w-10 h-10 rounded-xl bg-white/10 text-white text-center flex flex-col items-center justify-center shadow-sm shrink-0 border border-white/5">
-                          <span className="block text-[12px] font-black leading-none">{dateParts.day}</span>
-                          <span className="block text-[7px] font-extrabold tracking-wider mt-0.5">{dateParts.month}</span>
+                  {events.length === 0 ? (
+                    <p className="text-xs text-white/50 italic py-4">No upcoming events scheduled.</p>
+                  ) : (
+                    events.slice(0, 4).map((item, idx) => {
+                      const dateParts = (() => {
+                        if (!item.date) return { day: "12", month: "MAY" };
+                        const parts = item.date.trim().split(" ");
+                        return {
+                          day: parts[0] || "12",
+                          month: (parts[1] || "MAY").toUpperCase().substring(0, 3)
+                        };
+                      })();
+                      return (
+                        <div 
+                          key={item.id || idx}
+                          onClick={() => navigate(`/news/events/${item.slug}`)}
+                          className="flex gap-3.5 items-start cursor-pointer group"
+                        >
+                          {/* Custom Date Badge */}
+                          <div className="w-10 h-10 rounded-xl bg-white/10 text-white text-center flex flex-col items-center justify-center shadow-sm shrink-0 border border-white/5">
+                            <span className="block text-[12px] font-black leading-none">{dateParts.day}</span>
+                            <span className="block text-[7px] font-extrabold tracking-wider mt-0.5">{dateParts.month}</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-[11px] font-bold text-white leading-snug group-hover:text-[#D4AF37] transition-colors line-clamp-2">
+                              {item.title}
+                            </h4>
+                            <span className="text-[9.5px] text-white/60 font-medium block mt-0.5 leading-none">{item.time}</span>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-[11px] font-bold text-white leading-snug group-hover:text-[#D4AF37] transition-colors line-clamp-2">
-                            {item.title}
-                          </h4>
-                          <span className="text-[9.5px] text-white/60 font-medium block mt-0.5 leading-none">{item.time}</span>
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })
+                  )}
                 </div>
               </div>
             </div>

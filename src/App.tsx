@@ -582,34 +582,46 @@ function AppContent() {
 
             {/* Scrollable list items */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {announcements.map((item, idx) => {
-                const Icon = IconMap[item.iconName] || Megaphone;
-                const slug = item.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-                return (
-                  <Link 
-                    key={idx} 
-                    to={`/announcements/${slug}`}
-                    onClick={() => setShowAnnouncementsDrawer(false)}
-                    className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow hover:border-gray-200 transition-all flex gap-3.5 items-start cursor-pointer text-left block"
-                  >
-                    <div className="w-9 h-9 rounded-full bg-[#072A6C]/5 flex items-center justify-center shrink-0">
-                      <Icon size={16} className="text-[#072A6C]" />
-                    </div>
-                    <div className="space-y-1 flex-1 min-w-0">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[9px] text-[#D71920] font-extrabold uppercase tracking-wider">Announcement</span>
-                        <span className="text-[9px] text-[#D4AF37] font-bold">{item.date}</span>
+              {announcements.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 text-center px-4">
+                  <div className="w-12 h-12 rounded-full bg-[#072A6C]/5 flex items-center justify-center mb-3">
+                    <Megaphone size={22} className="text-[#072A6C]/40" />
+                  </div>
+                  <h4 className="text-sm font-bold text-[#072A6C]">No Announcements</h4>
+                  <p className="text-xs text-gray-500 font-light mt-1 max-w-[240px]">
+                    Official circulars and notifications posted from the administration will appear here.
+                  </p>
+                </div>
+              ) : (
+                announcements.map((item, idx) => {
+                  const Icon = IconMap[item.iconName] || Megaphone;
+                  const slug = item.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+                  return (
+                    <Link 
+                      key={idx} 
+                      to={`/announcements/${slug}`}
+                      onClick={() => setShowAnnouncementsDrawer(false)}
+                      className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow hover:border-gray-200 transition-all flex gap-3.5 items-start cursor-pointer text-left block"
+                    >
+                      <div className="w-9 h-9 rounded-full bg-[#072A6C]/5 flex items-center justify-center shrink-0">
+                        <Icon size={16} className="text-[#072A6C]" />
                       </div>
-                      <h4 className="text-xs font-bold text-[#072A6C] line-clamp-1 leading-snug">
-                        {item.title}
-                      </h4>
-                      <p className="text-[11px] text-gray-500 font-light leading-relaxed">
-                        {item.desc}
-                      </p>
-                    </div>
-                  </Link>
-                );
-              })}
+                      <div className="space-y-1 flex-1 min-w-0">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[9px] text-[#D71920] font-extrabold uppercase tracking-wider">Announcement</span>
+                          <span className="text-[9px] text-[#D4AF37] font-bold">{item.date}</span>
+                        </div>
+                        <h4 className="text-xs font-bold text-[#072A6C] line-clamp-1 leading-snug">
+                          {item.title}
+                        </h4>
+                        <p className="text-[11px] text-gray-500 font-light leading-relaxed">
+                          {item.desc}
+                        </p>
+                      </div>
+                    </Link>
+                  );
+                })
+              )}
             </div>
 
             {/* Drawer Footer */}

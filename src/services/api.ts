@@ -28,16 +28,34 @@ export async function getSchoolBySlug(slug: string) {
 }
 
 /**
- * Fetch latest news items.
+ * Fetch latest news items dynamically from saved CMS or fallback.
  */
 export async function getNews(limit?: number) {
+  if (typeof window !== "undefined") {
+    try {
+      const local = localStorage.getItem("chalapathi_news_v3");
+      if (local) {
+        const parsed = JSON.parse(local);
+        if (Array.isArray(parsed)) return limit ? parsed.slice(0, limit) : parsed;
+      }
+    } catch (_) {}
+  }
   return limit ? newsItems.slice(0, limit) : newsItems;
 }
 
 /**
- * Fetch upcoming events.
+ * Fetch upcoming events dynamically from saved CMS or fallback.
  */
 export async function getEvents(limit?: number) {
+  if (typeof window !== "undefined") {
+    try {
+      const local = localStorage.getItem("chalapathi_events_v3");
+      if (local) {
+        const parsed = JSON.parse(local);
+        if (Array.isArray(parsed)) return limit ? parsed.slice(0, limit) : parsed;
+      }
+    } catch (_) {}
+  }
   return limit ? upcomingEvents.slice(0, limit) : upcomingEvents;
 }
 

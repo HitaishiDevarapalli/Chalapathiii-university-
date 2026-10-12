@@ -71,6 +71,15 @@ export function EventsCMS({
     notifySave("Campus events reset to default records!");
   };
 
+  // Clear all events handler
+  const handleClearAllEvents = () => {
+    if (window.confirm("Are you sure you want to delete ALL campus events? This will remove all events from both the public website and admin calendar.")) {
+      setEventsList([]);
+      updateEvents([]);
+      notifySave("All campus events cleared live!");
+    }
+  };
+
   // Categories list
   const categories = Array.from(new Set(eventsList.map(e => e.category).filter(Boolean)));
 
@@ -210,7 +219,7 @@ export function EventsCMS({
                 Configure event dates, times, venues, multi-slide photo galleries, and toggle registration status between Active (Open) and Closed.
               </p>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
               <button
                 type="button"
                 onClick={handleAddNewEvent}
@@ -218,6 +227,24 @@ export function EventsCMS({
               >
                 <Plus size={13} /> Add Campus Event
               </button>
+              <button
+                type="button"
+                onClick={handleResetEvents}
+                className="h-8 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer transition-all border border-gray-200"
+                title="Restore sample Chalapathi University events"
+              >
+                <RotateCcw size={12} /> Reset to Sample
+              </button>
+              {eventsList.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleClearAllEvents}
+                  className="h-8 px-3 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer transition-all"
+                  title="Remove all campus events completely"
+                >
+                  <Trash2 size={12} /> Clear All Events
+                </button>
+              )}
               <button
                 type="button"
                 onClick={handleSaveEvents}
@@ -257,7 +284,40 @@ export function EventsCMS({
 
           {/* Events List */}
           <div className="space-y-6">
-            {filteredEvents.map((event) => {
+            {eventsList.length === 0 ? (
+              <div className="p-12 text-center bg-white border border-dashed border-gray-200 rounded-2xl space-y-4">
+                <div className="w-14 h-14 bg-blue-50 text-[#072A6C] rounded-2xl mx-auto flex items-center justify-center">
+                  <Calendar size={28} />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold text-gray-800">No Campus Events Scheduled</h4>
+                  <p className="text-xs text-gray-500 max-w-md mx-auto">
+                    All campus events have been cleared. You can schedule a new event or restore the sample Chalapathi University events calendar.
+                  </p>
+                </div>
+                <div className="flex items-center justify-center gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleAddNewEvent}
+                    className="h-8 px-4 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+                  >
+                    <Plus size={13} /> + Add Campus Event
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleResetEvents}
+                    className="h-8 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer border border-gray-200"
+                  >
+                    <RotateCcw size={13} /> Restore Sample Events
+                  </button>
+                </div>
+              </div>
+            ) : filteredEvents.length === 0 ? (
+              <div className="p-8 text-center bg-white border border-gray-200 rounded-2xl text-xs text-gray-400">
+                No events matching your search or category filter.
+              </div>
+            ) : (
+              filteredEvents.map((event) => {
               const idx = eventsList.findIndex(e => e.id === event.id);
               const isOpen = event.registrationOpen !== false;
 
@@ -577,7 +637,7 @@ export function EventsCMS({
 
                 </div>
               );
-            })}
+            }))}
           </div>
         </div>
       )}

@@ -22,6 +22,42 @@ router.get("/", async (_req: Request, res: Response) => {
 });
 
 /**
+ * POST /api/announcements/sync
+ * Bulk sync all announcements (replace or clear).
+ */
+router.post("/sync", async (req: Request, res: Response) => {
+  try {
+    const items = Array.isArray(req.body) ? req.body : req.body?.announcements || [];
+    if (!Array.isArray(items)) {
+      return res.status(400).json({ error: "Expected an array of announcements" });
+    }
+
+    await prisma.$transaction([
+      prisma.announcement.deleteMany(),
+      ...items.map((item: any, idx: number) =>
+        prisma.announcement.create({
+          data: {
+            title: (item.title || "").trim(),
+            description: (item.desc || item.description || "").trim(),
+            date: item.date || new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+            iconName: item.iconName || "Bell",
+            sortOrder: typeof item.sortOrder === "number" ? item.sortOrder : idx,
+          },
+        })
+      ),
+    ]);
+
+    const updated = await prisma.announcement.findMany({
+      orderBy: { sortOrder: "asc" },
+    });
+    return res.status(200).json(updated);
+  } catch (error) {
+    console.error("Error syncing announcements:", error);
+    return res.status(500).json({ error: "Failed to sync announcements" });
+  }
+});
+
+/**
  * PUT /api/announcements/reorder
  * Bulk update sort orders.
  * Body: Array of { id: number, sortOrder: number } or { items: [...] }

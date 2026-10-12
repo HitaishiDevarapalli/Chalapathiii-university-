@@ -53,40 +53,6 @@ const ThreadsIcon = () => (
   </svg>
 );
 
-// Image sets mapping for each Event article slug
-const EVENT_IMAGES_MAP: Record<string, string[]> = {
-  "air-taxi-demonstration-aviation-forum": [
-    "/prog_engineering.png",
-    "/prog_computer.png",
-    "/prog_diploma.png",
-    "/prog_mtech.png"
-  ],
-  "smart-india-hackathon-2026": [
-    "/prog_computer.png",
-    "/prog_engineering.png",
-    "/prog_management.png",
-    "/prog_pharmacy.png"
-  ],
-  "green-chemistry-conference-2026": [
-    "/prog_pharmacy.png",
-    "/prog_diploma.png",
-    "/prog_computer.png",
-    "/prog_engineering.png"
-  ],
-  "placements-bootcamp-2026": [
-    "/prog_management.png",
-    "/prog_computer.png",
-    "/prog_engineering.png",
-    "/prog_pharmacy.png"
-  ],
-  "national-sports-meet-2026": [
-    "/prog_diploma.png",
-    "/prog_pharmacy.png",
-    "/prog_computer.png",
-    "/prog_engineering.png"
-  ]
-};
-
 function ImageSlider({ images }: { images: string[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
@@ -188,9 +154,8 @@ export default function EventDetails() {
     };
   }, [showRegForm]);
 
-  // Find current event
-  const currentIdx = events.findIndex((item) => item.slug === slug);
-  const eventItem = currentIdx !== -1 ? events[currentIdx] : null;
+  // Find current event by slug or numeric ID
+  const eventItem = events.find((item) => item.slug === slug || String(item.id) === slug) || null;
 
   // Dynamically configure meta tags for rich previews
   useEffect(() => {
@@ -311,10 +276,10 @@ export default function EventDetails() {
 
   const shareLinks = getShareLinks();
 
-  // Load slider images (prioritizing custom configured images, then preset map, then cover image)
+  // Load slider images (prioritizing custom configured images, then cover image, fallback placeholder)
   const sliderImages = (eventItem.images && eventItem.images.length > 0)
     ? eventItem.images
-    : (EVENT_IMAGES_MAP[eventItem.slug] || [eventItem.image || "/prog_engineering.png"]);
+    : (eventItem.image ? [eventItem.image] : ["/prog_engineering.png"]);
 
   return (
     <div className="min-h-screen bg-[#F7F9FC] py-10 font-[var(--font-poppins)] relative text-left">

@@ -1,10 +1,35 @@
-﻿"use client";
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { newsItems, upcomingEvents, accreditationBadges } from "@/data";
+import { useData } from "@/context/DataContext";
 
 export default function NewsEventsSection() {
+  const { news, events } = useData();
+
+  const displayNews = (news && news.length > 0)
+    ? news.slice(0, 3).map((n) => {
+        const parts = (n.date || "").trim().split(" ");
+        return {
+          day: parts[0] || "17",
+          month: (parts[1] || "MAY").toUpperCase().substring(0, 3),
+          title: n.title,
+          slug: n.slug
+        };
+      })
+    : newsItems.map((n) => ({ day: n.day, month: n.month, title: n.title, slug: n.href?.replace("/news/", "") || "" }));
+
+  const displayEvents = (events && events.length > 0)
+    ? events.slice(0, 3).map((e) => {
+        const parts = (e.date || "").trim().split(" ");
+        return {
+          day: parts[0] || "12",
+          month: (parts[1] || "NOV").toUpperCase().substring(0, 3),
+          title: e.title,
+          time: e.time,
+          slug: e.slug
+        };
+      })
+    : upcomingEvents.map((e) => ({ day: e.day, month: e.month, title: e.title, time: e.time, slug: "" }));
   return (
     <section className="bg-[#F7F7F7] border-y border-[#E5E7EB]">
       <div className="max-w-[1340px] mx-auto px-5 py-16 grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -19,7 +44,7 @@ export default function NewsEventsSection() {
             </Link>
           </div>
           <div className="space-y-4">
-            {newsItems.map((n, i) => (
+            {displayNews.map((n, i) => (
               <div
                 key={i}
                 className="flex gap-4 items-start bg-white rounded-lg p-3 border border-[#E5E7EB] shadow-sm hover:shadow transition-shadow"
@@ -31,7 +56,7 @@ export default function NewsEventsSection() {
                 <div>
                   <h4 className="text-[13px] font-bold text-[#222] leading-snug">{n.title}</h4>
                   <Link
-                    to="/news"
+                    to={n.slug ? `/news/${n.slug}` : "/news"}
                     className="text-[10px] font-bold text-[#D4AF37] hover:underline mt-1 inline-block"
                   >
                     Read More →
@@ -78,7 +103,7 @@ export default function NewsEventsSection() {
             </Link>
           </div>
           <div className="space-y-4">
-            {upcomingEvents.map((e, i) => (
+            {displayEvents.map((e, i) => (
               <div
                 key={i}
                 className="flex gap-3 items-start bg-white rounded-lg p-3 border border-[#E5E7EB] shadow-sm hover:shadow transition-shadow"

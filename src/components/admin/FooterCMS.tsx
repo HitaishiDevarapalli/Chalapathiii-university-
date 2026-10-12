@@ -16,10 +16,6 @@ import {
   Sparkles,
   ArrowUp,
   ArrowDown,
-  Globe,
-  Users,
-  Briefcase,
-  Play,
   MapPin,
   Phone,
   Mail,
@@ -141,17 +137,8 @@ export default function FooterCMS() {
     });
   };
 
-  // Helper for Brand Socials
-  const handleUpdateBrandSocial = (index: number, field: "icon" | "label" | "url", value: string) => {
-    setForm((prev) => {
-      const list = [...(prev.brandSocials || [])];
-      list[index] = { ...list[index], [field]: value };
-      return { ...prev, brandSocials: list };
-    });
-  };
-
   const panels = [
-    { id: "brand", label: "Brand Profile & Media", icon: Sparkles, count: form.brandSocials?.length || 4, color: "text-amber-500" },
+    { id: "brand", label: "Brand Profile", icon: Sparkles, count: 1, color: "text-amber-500" },
     { id: "quickLinks", label: "Quick Links Panel", icon: Compass, count: form.quickLinks?.length || 0, color: "text-blue-500" },
     { id: "academics", label: "Academics Links Panel", icon: GraduationCap, count: form.academicsLinks?.length || 0, color: "text-indigo-500" },
     { id: "admissions", label: "Admissions Links Panel", icon: FileText, count: form.admissionsLinks?.length || 0, color: "text-emerald-500" },
@@ -160,16 +147,6 @@ export default function FooterCMS() {
     { id: "legal", label: "Bottom Legal & Policies", icon: ShieldCheck, count: form.bottomLinks?.length || 0, color: "text-purple-500" },
     { id: "preview", label: "Live Visual Preview", icon: Eye, count: 6, color: "text-[#D4AF37]" },
   ] as const;
-
-  const getBrandIconComponent = (name: string) => {
-    switch (name?.toLowerCase()) {
-      case "globe": return <Globe size={13} />;
-      case "users": return <Users size={13} />;
-      case "briefcase": return <Briefcase size={13} />;
-      case "play": return <Play size={13} />;
-      default: return <Globe size={13} />;
-    }
-  };
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
@@ -273,53 +250,7 @@ export default function FooterCMS() {
               <p className="text-[11px] text-gray-400 mt-1">Displayed directly underneath the Chalapathi University logo</p>
             </div>
 
-            <div className="space-y-3 pt-2">
-              <h3 className="text-xs font-bold text-gray-800 uppercase tracking-wider">Brand Quick Action Icons (4 Circular Buttons)</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {(form.brandSocials || []).map((bs, idx) => (
-                  <div key={idx} className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#072A6C] flex items-center gap-1.5">
-                        <div className="w-6 h-6 rounded-full bg-[#072A6C] text-white flex items-center justify-center">
-                          {getBrandIconComponent(bs.icon)}
-                        </div>
-                        Icon Button #{idx + 1}
-                      </span>
-                      <select
-                        value={bs.icon}
-                        onChange={(e) => handleUpdateBrandSocial(idx, "icon", e.target.value)}
-                        className="text-xs border border-gray-300 rounded-lg p-1 bg-white font-medium"
-                      >
-                        <option value="Globe">Globe (Website)</option>
-                        <option value="Users">Users (Community)</option>
-                        <option value="Briefcase">Briefcase (Careers)</option>
-                        <option value="Play">Play (Media Tour)</option>
-                      </select>
-                    </div>
-                    <div className="space-y-2">
-                      <div>
-                        <label className="block text-[10px] font-bold text-gray-600">Tooltip Label</label>
-                        <input
-                          type="text"
-                          value={bs.label}
-                          onChange={(e) => handleUpdateBrandSocial(idx, "label", e.target.value)}
-                          className="w-full text-xs p-2 border border-gray-300 rounded-lg bg-white"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-gray-600">Target Route or URL</label>
-                        <input
-                          type="text"
-                          value={bs.url}
-                          onChange={(e) => handleUpdateBrandSocial(idx, "url", e.target.value)}
-                          className="w-full text-xs p-2 border border-gray-300 rounded-lg bg-white font-mono"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+
           </div>
         </div>
       )}
@@ -988,13 +919,7 @@ export default function FooterCMS() {
                   <img src={siteSettings?.logoUrl || "/logo.png"} alt="Logo" className="h-7 w-auto object-contain" />
                 </div>
                 <p className="text-[10px] leading-relaxed opacity-80">{form.brandDescription}</p>
-                <div className="flex items-center gap-1.5 pt-1">
-                  {(form.brandSocials || []).map((bs, i) => (
-                    <div key={i} className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-white" title={bs.label}>
-                      {getBrandIconComponent(bs.icon)}
-                    </div>
-                  ))}
-                </div>
+
               </div>
 
               {/* Col 2: Quick Links */}

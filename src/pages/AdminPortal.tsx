@@ -3225,7 +3225,11 @@ export default function AdminPortal() {
                         </span>
                       </div>
 
-                      {newsList.length > 0 && (
+                      {newsList.length === 0 ? (
+                        <div className="p-4 bg-slate-50 border border-dashed border-gray-200 rounded-xl text-center text-xs text-gray-500">
+                          No news articles currently published. Add an article in the <strong>News & Events CMS</strong> tab to feature it here.
+                        </div>
+                      ) : (
                         <div className="space-y-3">
                           <div className="space-y-1">
                             <label className="text-[10px] font-bold text-gray-600 uppercase">Article Title</label>
@@ -3347,6 +3351,11 @@ export default function AdminPortal() {
                       </div>
 
                       <div className="space-y-3">
+                        {newsList.slice(1, 5).length === 0 && (
+                          <div className="p-3 bg-white border border-dashed border-gray-200 rounded-xl text-center text-[10px] text-gray-400">
+                            No additional news items. Click "+ Add" above to add more.
+                          </div>
+                        )}
                         {newsList.slice(1, 5).map((item, sliceIdx) => {
                           const actualIdx = sliceIdx + 1;
                           return (
@@ -3422,6 +3431,11 @@ export default function AdminPortal() {
                       </div>
 
                       <div className="space-y-3">
+                        {eventsList.slice(0, 4).length === 0 && (
+                          <div className="p-3 bg-white border border-dashed border-gray-200 rounded-xl text-center text-[10px] text-gray-400">
+                            No campus events scheduled. Click "+ Add" above to add an event.
+                          </div>
+                        )}
                         {eventsList.slice(0, 4).map((item, idx) => (
                           <div key={item.id || idx} className="p-3 bg-white border border-gray-200 rounded-xl space-y-2 shadow-xs">
                             <div className="flex items-center justify-between">

@@ -1763,12 +1763,7 @@ export const DEFAULT_NAV_MENU: NavMenuItem[] = [
 
 export const DEFAULT_FOOTER_CONTENT: FooterContent = {
   brandDescription: "Empowering minds through quality education, advanced learning and real-world experience. Your future begins here.",
-  brandSocials: [
-    { icon: "Globe", url: "https://chalapathiuniversity.edu.in", label: "Official Website" },
-    { icon: "Users", url: "/about", label: "Alumni & Community" },
-    { icon: "Briefcase", url: "/placements", label: "Careers & Placements" },
-    { icon: "Play", url: "/campus-life", label: "Campus Life Media" }
-  ],
+
   quickLinksTitle: "Quick Links",
   quickLinks: [
     { label: "About Us", to: "/about" },
@@ -2256,13 +2251,7 @@ export const DEFAULT_CAMPUS_LIFE_CONTENT: CampusLifeContent = {
   }
 };
 
-export const INITIAL_ANNOUNCEMENTS: Announcement[] = [
-  { title: "Admissions 2026 Applications Open", desc: "Apply online for all undergraduate and postgraduate engineering, management, and pharmacy streams.", date: "12 May 2026", iconName: "GraduationCap" },
-  { title: "Orientation Program 2026 Schedule", desc: "Schedule and venue details released for the incoming freshers orientation week starting next month.", date: "08 May 2026", iconName: "Calendar" },
-  { title: "Semester Examination Notification", desc: "The final semester examination timetable has been officially released by the controller of examinations.", date: "02 May 2026", iconName: "FileText" },
-  { title: "Merit-Based Scholarship Applications", desc: "Tuition waiver applications open for academic top performers and sports quota achievements.", date: "28 Apr 2026", iconName: "Award" },
-  { title: "Mega Campus Placement Drive 2026", desc: "Registrations now open for eligible pre-final year candidates for upcoming on-campus MNC recruitment drives.", date: "22 Apr 2026", iconName: "BookOpen" }
-];
+export const INITIAL_ANNOUNCEMENTS: Announcement[] = [];
 
 export const INITIAL_HERO_SLIDES: HeroSlide[] = [
   { id: 1, image: "/Chalapathimain.png", title: "", subtitle: "" }
@@ -2366,7 +2355,8 @@ export const INITIAL_EVENTS: EventItem[] = [
     time: "07:00 AM", 
     location: "University Sports Arena & Athletic Track", 
     category: "Sports", 
-    image: "/prog_diploma.png", 
+    image: "/prog_diploma.png",
+    images: ["/prog_diploma.png", "/prog_pharmacy.png", "/prog_computer.png", "/prog_engineering.png"],
     bodyText: "Over 50 universities face off in the annual athletic championship, featuring track events, field sports, inter-college football, cricket leagues, and indoor badminton tournaments with cash prizes." 
   },
   { 
@@ -2377,7 +2367,8 @@ export const INITIAL_EVENTS: EventItem[] = [
     time: "08:30 AM", 
     location: "Placement Training Center", 
     category: "Placements", 
-    image: "/prog_management.png", 
+    image: "/prog_management.png",
+    images: ["/prog_management.png", "/prog_computer.png", "/prog_engineering.png", "/prog_pharmacy.png"],
     bodyText: "A comprehensive recruitment readiness workshop featuring mock HR interviews, quantitative aptitude sessions, group discussion prep, and interactive roundtables with hiring heads of Fortune 500 tech partners." 
   },
   { 
@@ -2388,7 +2379,8 @@ export const INITIAL_EVENTS: EventItem[] = [
     time: "10:00 AM", 
     location: "Saraswathi Auditorium, Block B", 
     category: "Pharmacy", 
-    image: "/prog_pharmacy.png", 
+    image: "/prog_pharmacy.png",
+    images: ["/prog_pharmacy.png", "/prog_diploma.png", "/prog_computer.png", "/prog_engineering.png"],
     bodyText: "A three-day symposium featuring keynote addresses from global scientists, researchers, and pharmaceutical experts discussing eco-friendly chemical synthesis, biological assay creations, and sustainable manufacturing processes." 
   },
   { 
@@ -2399,7 +2391,8 @@ export const INITIAL_EVENTS: EventItem[] = [
     time: "09:00 AM", 
     location: "Main Seminar Hall & Central Library Labs", 
     category: "Technology", 
-    image: "/prog_computer.png", 
+    image: "/prog_computer.png",
+    images: ["/prog_computer.png", "/prog_engineering.png", "/prog_management.png", "/prog_pharmacy.png"],
     bodyText: "Join the national-level coding hackathon where students build solutions for real-world government and corporate challenges. The campus round decides the top teams representing the university in the grand finale." 
   },
   { 
@@ -2410,7 +2403,8 @@ export const INITIAL_EVENTS: EventItem[] = [
     time: "09:30 AM", 
     location: "Aeronautics Hangar & Airfield Complex", 
     category: "Aerospace", 
-    image: "/prog_engineering.png", 
+    image: "/prog_engineering.png",
+    images: ["/prog_engineering.png", "/prog_computer.png", "/prog_diploma.png", "/prog_mtech.png"],
     bodyText: "In collaboration with global aerospace research institutions and pioneering aviation companies, Chalapathi University is proud to host the Air Taxi Demonstration and Aviation Forum. This event features real-world test flights and static exhibitions of cutting-edge electric Vertical Take-Off and Landing (eVTOL) air taxi models." 
   }
 ];
@@ -3270,8 +3264,29 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Announcements
   const [announcements, setAnnouncements] = useState<Announcement[]>(() => {
-    const local = localStorage.getItem("chalapathi_announcements");
-    return local ? JSON.parse(local) : INITIAL_ANNOUNCEMENTS;
+    try {
+      const local = localStorage.getItem("chalapathi_announcements");
+      if (local) {
+        const parsed = JSON.parse(local);
+        if (Array.isArray(parsed)) {
+          const FAKE_TITLES = new Set([
+            "Admissions 2026 Applications Open",
+            "Orientation Program 2026 Schedule",
+            "Semester Examination Notification",
+            "Merit-Based Scholarship Applications",
+            "Mega Campus Placement Drive 2026"
+          ]);
+          const cleaned = parsed.filter((item: any) => !FAKE_TITLES.has(item.title));
+          if (cleaned.length !== parsed.length) {
+            localStorage.setItem("chalapathi_announcements", JSON.stringify(cleaned));
+          }
+          return cleaned;
+        }
+      }
+    } catch (e) {
+      console.error("Failed to parse local announcements", e);
+    }
+    return [];
   });
 
   // Programs
@@ -3547,7 +3562,22 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (localEnquiries) setEnquiries(JSON.parse(localEnquiries));
 
         const localAnnounce = localStorage.getItem("chalapathi_announcements");
-        if (localAnnounce) setAnnouncements(JSON.parse(localAnnounce));
+        if (localAnnounce) {
+          try {
+            const parsed = JSON.parse(localAnnounce);
+            if (Array.isArray(parsed)) {
+              const FAKE_TITLES = new Set([
+                "Admissions 2026 Applications Open",
+                "Orientation Program 2026 Schedule",
+                "Semester Examination Notification",
+                "Merit-Based Scholarship Applications",
+                "Mega Campus Placement Drive 2026"
+              ]);
+              const cleaned = parsed.filter((item: any) => !FAKE_TITLES.has(item.title));
+              setAnnouncements(cleaned);
+            }
+          } catch (e) {}
+        }
 
         const localPrograms = localStorage.getItem("chalapathi_programs_v4") || localStorage.getItem("chalapathi_programs");
         if (localPrograms) setPrograms(JSON.parse(localPrograms));
@@ -3713,11 +3743,20 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     safeSetItem("chalapathi_enquiries", JSON.stringify(updated));
   };
 
-  const updateAnnouncements = (list: Announcement[]) => {
+  const updateAnnouncements = async (list: Announcement[]) => {
     setAnnouncements(list);
     safeSetItem("chalapathi_announcements", JSON.stringify(list));
     recordSave();
     syncConfigToBackend("announcements", list);
+    try {
+      await fetch("/api/announcements/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(list)
+      });
+    } catch (e) {
+      console.warn("Failed to sync /api/announcements/sync:", e);
+    }
   };
 
   const updatePrograms = (list: ProgramDetail[]) => {
@@ -3751,11 +3790,18 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     syncConfigToBackend("newsPageConfig", config);
   };
 
-  const updateEvents = (list: EventItem[]) => {
+  const updateEvents = async (list: EventItem[]) => {
     setEvents(list);
     safeSetItem("chalapathi_events_v3", JSON.stringify(list));
     recordSave();
     syncConfigToBackend("events", list);
+    try {
+      await fetch('/api/events/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ events: list })
+      });
+    } catch (e) {}
   };
 
   const updateAboutContent = (content: AboutUsContent) => {
@@ -4120,8 +4166,16 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
               safeSetItem("chalapathi_search_config", JSON.stringify(s.searchConfig));
             }
             if (s.announcements && Array.isArray(s.announcements)) {
-              setAnnouncements(s.announcements);
-              safeSetItem("chalapathi_announcements", JSON.stringify(s.announcements));
+              const FAKE_TITLES = new Set([
+                "Admissions 2026 Applications Open",
+                "Orientation Program 2026 Schedule",
+                "Semester Examination Notification",
+                "Merit-Based Scholarship Applications",
+                "Mega Campus Placement Drive 2026"
+              ]);
+              const cleaned = s.announcements.filter((a: any) => !FAKE_TITLES.has(a.title));
+              setAnnouncements(cleaned);
+              safeSetItem("chalapathi_announcements", JSON.stringify(cleaned));
             }
             if (s.events && Array.isArray(s.events)) {
               setEvents(s.events);
@@ -4141,6 +4195,34 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     };
     
+    const fetchAnnouncements = async () => {
+      try {
+        const res = await fetch('/api/announcements');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            const mapped: Announcement[] = data.map((item: any) => ({
+              id: String(item.id || ""),
+              title: item.title || "",
+              desc: item.desc || item.description || "",
+              date: item.date || "",
+              iconName: item.iconName || item.icon_name || "Bell"
+            }));
+            const FAKE_TITLES = new Set([
+              "Admissions 2026 Applications Open",
+              "Orientation Program 2026 Schedule",
+              "Semester Examination Notification",
+              "Merit-Based Scholarship Applications",
+              "Mega Campus Placement Drive 2026"
+            ]);
+            const cleaned = mapped.filter((a) => !FAKE_TITLES.has(a.title));
+            setAnnouncements(cleaned);
+            safeSetItem("chalapathi_announcements", JSON.stringify(cleaned));
+          }
+        }
+      } catch (err) {}
+    };
+
     const fetchNews = async () => {
       try {
         const res = await fetch('/api/news');
@@ -4154,8 +4236,23 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (err) {}
     };
 
+    const fetchEvents = async () => {
+      try {
+        const res = await fetch('/api/events');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setEvents(data);
+            safeSetItem("chalapathi_events_v3", JSON.stringify(data));
+          }
+        }
+      } catch (err) {}
+    };
+
     initCmsAndConfigs();
     fetchNews();
+    fetchEvents();
+    fetchAnnouncements();
   }, []);
 
   const updateCmsPages = (pages: CmsPage[]) => {

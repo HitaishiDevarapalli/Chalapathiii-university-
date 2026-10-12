@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useData } from "../context/DataContext";
 import { 
@@ -232,6 +232,12 @@ const getAnnouncementExtraInfo = (title: string) => {
       }
     };
   }
+  return {
+    subtitle: "",
+    overview: "",
+    sections: [],
+    actions: undefined
+  };
 };
 
 export default function AnnouncementDetails() {
@@ -358,23 +364,25 @@ export default function AnnouncementDetails() {
                   <p className="text-xs text-gray-500 font-light leading-relaxed">{extra.overview}</p>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                  {extra.sections.map((sect, sIdx) => (
-                    <div key={sIdx} className="bg-white border border-gray-150 rounded-2xl p-5 shadow-sm space-y-2">
-                      <h4 className="font-extrabold text-[#072A6C] text-xs uppercase tracking-wider border-b border-gray-100 pb-2 flex items-center justify-between">
-                        <span>{sect.title}</span>
-                      </h4>
-                      <ul className="space-y-1.5 text-xs text-gray-500 font-light list-none pl-0">
-                        {sect.items.map((item, itemIdx) => (
-                          <li key={itemIdx} className="leading-relaxed flex items-start gap-1.5">
-                            <span className="text-[#D4AF37] font-bold">▪</span>
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
+                {extra.sections && extra.sections.length > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                    {extra.sections.map((sect, sIdx) => (
+                      <div key={sIdx} className="bg-white border border-gray-150 rounded-2xl p-5 shadow-sm space-y-2">
+                        <h4 className="font-extrabold text-[#072A6C] text-xs uppercase tracking-wider border-b border-gray-100 pb-2 flex items-center justify-between">
+                          <span>{sect.title}</span>
+                        </h4>
+                        <ul className="space-y-1.5 text-xs text-gray-500 font-light list-none pl-0">
+                          {sect.items.map((item, itemIdx) => (
+                            <li key={itemIdx} className="leading-relaxed flex items-start gap-1.5">
+                              <span className="text-[#D4AF37] font-bold">▪</span>
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 {extra.actions && (
                   <div className="pt-4 flex">

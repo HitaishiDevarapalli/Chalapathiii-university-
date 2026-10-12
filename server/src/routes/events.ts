@@ -32,6 +32,63 @@ function slugify(text: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+// POST /sync - Bulk sync from frontend
+router.post("/sync", async (req: Request, res: Response) => {
+  try {
+    const { events } = req.body;
+    if (!Array.isArray(events)) return res.status(400).json({ error: "Invalid events array" });
+
+    // 1. Get existing IDs
+    const existing = await prisma.event.findMany({ select: { id: true } });
+    const existingIds = existing.map(e => e.id);
+    const incomingIds = events.filter(e => e.id).map(e => Number(e.id));
+
+    // 2. Delete ones that are no longer in the array
+    const toDelete = existingIds.filter(id => !incomingIds.includes(id));
+    if (toDelete.length > 0) {
+      await prisma.event.deleteMany({ where: { id: { in: toDelete } } });
+    }
+
+    // 3. Upsert events
+    for (const ev of events) {
+      const finalSlug = ev.slug || slugify(ev.title || `event-${Date.now()}`);
+      let imagesStr = "[]";
+      if (ev.images) {
+        imagesStr = Array.isArray(ev.images) ? JSON.stringify(ev.images) : ev.images;
+      }
+
+      const data = {
+        title: ev.title || "Untitled Event",
+        slug: finalSlug,
+        date: ev.date || new Date().toISOString().split("T")[0],
+        time: ev.time || "",
+        location: ev.location || "",
+        category: ev.category || "General",
+        image: ev.image || "",
+        images: imagesStr,
+        bodyText: ev.bodyText || "",
+        registrationUrl: ev.registrationUrl || null,
+        registrationOpen: ev.registrationOpen !== false
+      };
+
+      if (ev.id) {
+        await prisma.event.upsert({
+          where: { id: Number(ev.id) },
+          update: data,
+          create: { id: Number(ev.id), ...data }
+        });
+      } else {
+        await prisma.event.create({ data });
+      }
+    }
+
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("Error syncing events:", error);
+    return res.status(500).json({ error: "Failed to sync events" });
+  }
+});
+
 // GET / - List all events with optional filters (category, search)
 router.get("/", async (req: Request, res: Response) => {
   try {

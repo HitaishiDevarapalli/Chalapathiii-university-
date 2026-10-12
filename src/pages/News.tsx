@@ -146,21 +146,24 @@ export default function News() {
     visibleNews.find(item => item.featured) ||
     visibleNews.find(item => item.id === 1) ||
     visibleNews[0] ||
-    news[0];
+    (news && news.length > 0 ? news[0] : null) ||
+    null;
 
   // Dynamic featured images prioritizing the article's own configured image
   const featuredImages = featuredArticle?.image
     ? [featuredArticle.image, ...baseCarouselImages.filter(img => img !== featuredArticle.image)]
-    : baseCarouselImages;
+    : (baseCarouselImages.length > 0 ? baseCarouselImages : ["/prog_computer.png"]);
 
   // Handle active slide controls
   const handlePrevSlide = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (featuredImages.length === 0) return;
     setActiveSlide((prev) => (prev - 1 + featuredImages.length) % featuredImages.length);
   };
 
   const handleNextSlide = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (featuredImages.length === 0) return;
     setActiveSlide((prev) => (prev + 1) % featuredImages.length);
   };
 
@@ -169,14 +172,14 @@ export default function News() {
 
   // Filter upcoming events based on config
   const eventsCount = newsPageConfig?.eventsStripCount || 3;
-  const upcomingEventsList = events.slice(0, eventsCount);
+  const upcomingEventsList = (events || []).slice(0, eventsCount);
 
   // Filter latest news list based on config (excluding featured article)
   const latestCount = newsPageConfig?.latestNewsCount || 4;
-  const filteredLatest = visibleNews.filter(item => item.id !== featuredArticle?.id);
+  const filteredLatest = featuredArticle ? visibleNews.filter(item => item.id !== featuredArticle.id) : visibleNews;
   const latestNewsArticles = filteredLatest.length >= latestCount 
     ? filteredLatest.slice(0, latestCount) 
-    : visibleNews.slice(1, 1 + latestCount);
+    : filteredLatest;
 
   // Share setup
   const handleShareTrigger = (type: "news" | "event", id: number, e: React.MouseEvent) => {
@@ -242,174 +245,201 @@ export default function News() {
       </section>
 
       {/* 🌟 Main Grid: Featured News & Trending Now */}
-      <section className="max-w-[1440px] mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-        
-        {/* Left: Featured News Card (8 Cols) */}
-        <div className="lg:col-span-8 bg-white rounded-[24px] border border-gray-100 shadow-sm overflow-hidden flex flex-col md:flex-row items-stretch">
+      {visibleNews.length === 0 ? (
+        <section className="max-w-[1440px] mx-auto px-6">
+          <div className="bg-white rounded-[24px] border border-gray-100 shadow-sm p-12 text-center flex flex-col items-center justify-center">
+            <div className="w-16 h-16 bg-[#EEF5FF] text-[#072A6C] rounded-2xl flex items-center justify-center mb-4">
+              <Calendar size={28} />
+            </div>
+            <h3 className="text-xl font-bold text-[#072A6C]">No News Articles Published Yet</h3>
+            <p className="text-sm text-gray-500 max-w-md mt-2">
+              Stay tuned! Check back soon or visit the Admin Portal to publish campus news articles.
+            </p>
+          </div>
+        </section>
+      ) : (
+        <section className="max-w-[1440px] mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
           
-          {/* Left half: Image slider carousel */}
-          <div className="w-full md:w-1/2 relative bg-slate-900 group min-h-[320px] md:min-h-auto flex items-stretch">
-            <img 
-              src={featuredImages[activeSlide % featuredImages.length]} 
-              alt={featuredArticle?.title} 
-              onError={(e) => { (e.target as HTMLImageElement).src = "/prog_computer.png"; }}
-              className="absolute inset-0 w-full h-full object-cover transition-all duration-500"
-            />
-            <div className="absolute inset-0 bg-black/10" />
+          {/* Left: Featured News Card (8 Cols) */}
+          <div className="lg:col-span-8 bg-white rounded-[24px] border border-gray-100 shadow-sm overflow-hidden flex flex-col md:flex-row items-stretch">
             
-            {/* Featured Badge */}
-            <span className="absolute top-4 left-4 bg-[#D4AF37] text-white text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-md shadow-sm">
-              {newsPageConfig?.featuredBadgeText || "Featured News"}
-            </span>
+            {/* Left half: Image slider carousel */}
+            <div className="w-full md:w-1/2 relative bg-slate-900 group min-h-[320px] md:min-h-auto flex items-stretch">
+              <img 
+                src={featuredImages[activeSlide % featuredImages.length]} 
+                alt={featuredArticle?.title || "Featured News"} 
+                onError={(e) => { (e.target as HTMLImageElement).src = "/prog_computer.png"; }}
+                className="absolute inset-0 w-full h-full object-cover transition-all duration-500"
+              />
+              <div className="absolute inset-0 bg-black/10" />
+              
+              {/* Featured Badge */}
+              <span className="absolute top-4 left-4 bg-[#D4AF37] text-white text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-md shadow-sm">
+                {newsPageConfig?.featuredBadgeText || "Featured News"}
+              </span>
 
-            {/* Slider arrows */}
-            <button 
-              onClick={handlePrevSlide} 
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
-            >
-              <ChevronLeft size={16} />
-            </button>
-            <button 
-              onClick={handleNextSlide} 
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
-            >
-              <ChevronRight size={16} />
-            </button>
-          </div>
-
-          {/* Right half: Text Content */}
-          <div className="w-full md:w-1/2 p-8 flex flex-col justify-between">
-            <div className="space-y-4">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-black uppercase tracking-wider text-[#D4AF37]">
-                  {featuredArticle?.category || "Innovation"}
-                </span>
-                <span className="text-gray-300">•</span>
-                <span className="text-[10px] text-gray-400 font-semibold font-[var(--font-inter)]">
-                  {featuredArticle?.date}
-                </span>
-              </div>
-
-              <h2 className="text-xl md:text-2xl font-extrabold text-[#072A6C] leading-snug line-clamp-3">
-                {featuredArticle?.title}
-              </h2>
-
-              <p className="text-[12px] text-gray-500 font-light leading-relaxed font-[var(--font-inter)] line-clamp-4">
-                {featuredArticle?.excerpt}
-              </p>
-            </div>
-
-            {/* Actions Row */}
-            <div className="pt-6 flex flex-col gap-4">
-              <div className="flex items-center gap-3">
-                <button 
-                  onClick={() => navigate(`/news/${featuredArticle?.slug}`)}
-                  className="h-10 px-6 bg-[#072A6C] hover:bg-[#D4AF37] text-white text-[11px] font-bold rounded-xl inline-flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
-                >
-                  <span>{newsPageConfig?.readStoryButtonText || "Read Full Story"}</span>
-                  <ArrowRight size={12} />
-                </button>
-                
-                <button 
-                  onClick={(e) => handleShareTrigger("news", featuredArticle.id, e)}
-                  className="w-10 h-10 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-100 text-gray-600 flex items-center justify-center transition-colors cursor-pointer"
-                >
-                  <Share2 size={14} />
-                </button>
-              </div>
-
-              {/* Slider Indicator Dots */}
-              <div className="flex items-center gap-1.5 pt-2">
-                {featuredImages.map((_, idx) => (
+              {/* Slider arrows */}
+              {featuredImages.length > 1 && (
+                <>
                   <button 
-                    key={idx}
-                    onClick={() => setActiveSlide(idx)}
-                    className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                      (activeSlide % featuredImages.length) === idx ? "bg-[#D4AF37] w-6" : "bg-gray-300"
-                    }`}
-                  />
-                ))}
-              </div>
+                    onClick={handlePrevSlide} 
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <button 
+                    onClick={handleNextSlide} 
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </>
+              )}
             </div>
 
-          </div>
-
-        </div>
-
-        {/* Right: University Highlights Card (4 Cols) */}
-        <div className="lg:col-span-4 bg-white rounded-[24px] border border-gray-100 shadow-sm p-6 flex flex-col">
-          
-          {/* Section Header */}
-          <div className="flex justify-between items-center pb-4 border-b border-gray-100 mb-4">
-            <div className="flex items-center gap-1.5 text-[#072A6C]">
-              <Flame size={16} className="text-[#D4AF37] fill-current animate-pulse" />
-              <h3 className="text-xs font-black uppercase tracking-wider">
-                {newsPageConfig?.highlightsTitle || "University Highlights"}
-              </h3>
-            </div>
-            <Link 
-              to={newsPageConfig?.highlightsViewAllUrl || "/news/latest"} 
-              className="text-[10px] font-bold text-[#072A6C] hover:text-[#D4AF37] transition-colors"
-            >
-              {newsPageConfig?.highlightsViewAllText || "View All"}
-            </Link>
-          </div>
-
-          {/* List items */}
-          <div className="flex-1 flex flex-col justify-between gap-4">
-            {trendingArticles.map((item, idx) => {
-              const displayNum = `0${idx + 1}`;
-              const isActive = activeHighlightId === item.id;
-              return (
-                <button 
-                  key={item.id}
-                  onClick={() => {
-                    setActiveHighlightId(item.id);
-                    navigate(`/news/${item.slug}`);
-                  }}
-                  className={`w-full text-left flex items-start gap-4 group cursor-pointer transition-all duration-300 p-2 rounded-xl border ${
-                    isActive 
-                      ? "bg-[#EEF5FF] shadow-[0_0_15px_rgba(59,130,246,0.2)] border-l-4 border-l-[#E31E24] border-t-transparent border-b-transparent border-r-transparent" 
-                      : "hover:bg-gray-50 border-transparent hover:shadow-xs"
-                  }`}
-                >
-                  {/* Big rank number */}
-                  <span className={`tracking-wider pt-0.5 transition-all duration-300 ${
-                    isActive 
-                      ? "text-base font-black text-[#E31E24]" 
-                      : "text-sm font-bold text-[#D4AF37]"
-                  }`}>
-                    {displayNum}
+            {/* Right half: Text Content */}
+            <div className="w-full md:w-1/2 p-8 flex flex-col justify-between">
+              <div className="space-y-4">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-[#D4AF37]">
+                    {featuredArticle?.category || "Innovation"}
                   </span>
+                  <span className="text-gray-300">•</span>
+                  <span className="text-[10px] text-gray-400 font-semibold font-[var(--font-inter)]">
+                    {featuredArticle?.date}
+                  </span>
+                </div>
 
-                  {/* Title & Metadata */}
-                  <div className="flex-1 space-y-0.5 min-w-0">
-                    <h4 className={`text-xs leading-snug line-clamp-2 transition-all duration-300 ${
-                      isActive 
-                        ? "text-[#0B2D6B] font-semibold" 
-                        : "text-gray-800 font-bold group-hover:text-[#072A6C]"
-                    }`}>
-                      {item.title}
-                    </h4>
-                    <span className="text-[9px] text-gray-400 font-medium font-[var(--font-inter)]">
-                      {item.date}
-                    </span>
-                  </div>
+                <h2 className="text-xl md:text-2xl font-extrabold text-[#072A6C] leading-snug line-clamp-3">
+                  {featuredArticle?.title}
+                </h2>
 
-                  {/* Tiny Thumbnail */}
-                  <div className={`w-11 h-11 rounded-lg overflow-hidden shrink-0 bg-gray-50 border border-gray-100 transition-all duration-300 ${
-                    isActive ? "scale-105" : "group-hover:scale-105"
-                  }`}>
-                    <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                <p className="text-[12px] text-gray-500 font-light leading-relaxed font-[var(--font-inter)] line-clamp-4">
+                  {featuredArticle?.excerpt}
+                </p>
+              </div>
+
+              {/* Actions Row */}
+              <div className="pt-6 flex flex-col gap-4">
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={() => featuredArticle && navigate(`/news/${featuredArticle.slug}`)}
+                    className="h-10 px-6 bg-[#072A6C] hover:bg-[#D4AF37] text-white text-[11px] font-bold rounded-xl inline-flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                  >
+                    <span>{newsPageConfig?.readStoryButtonText || "Read Full Story"}</span>
+                    <ArrowRight size={12} />
+                  </button>
+                  
+                  <button 
+                    onClick={(e) => featuredArticle && handleShareTrigger("news", featuredArticle.id, e)}
+                    disabled={!featuredArticle}
+                    className="w-10 h-10 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-100 text-gray-600 flex items-center justify-center transition-colors cursor-pointer disabled:opacity-40"
+                  >
+                    <Share2 size={14} />
+                  </button>
+                </div>
+
+                {/* Slider Indicator Dots */}
+                {featuredImages.length > 1 && (
+                  <div className="flex items-center gap-1.5 pt-2">
+                    {featuredImages.map((_, idx) => (
+                      <button 
+                        key={idx}
+                        onClick={() => setActiveSlide(idx)}
+                        className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                          (activeSlide % featuredImages.length) === idx ? "bg-[#D4AF37] w-6" : "bg-gray-300"
+                        }`}
+                      />
+                    ))}
                   </div>
-                </button>
-              );
-            })}
+                )}
+              </div>
+
+            </div>
+
           </div>
 
-        </div>
+          {/* Right: University Highlights Card (4 Cols) */}
+          <div className="lg:col-span-4 bg-white rounded-[24px] border border-gray-100 shadow-sm p-6 flex flex-col">
+            
+            {/* Section Header */}
+            <div className="flex justify-between items-center pb-4 border-b border-gray-100 mb-4">
+              <div className="flex items-center gap-1.5 text-[#072A6C]">
+                <Flame size={16} className="text-[#D4AF37] fill-current animate-pulse" />
+                <h3 className="text-xs font-black uppercase tracking-wider">
+                  {newsPageConfig?.highlightsTitle || "University Highlights"}
+                </h3>
+              </div>
+              <Link 
+                to={newsPageConfig?.highlightsViewAllUrl || "/news/latest"} 
+                className="text-[10px] font-bold text-[#072A6C] hover:text-[#D4AF37] transition-colors"
+              >
+                {newsPageConfig?.highlightsViewAllText || "View All"}
+              </Link>
+            </div>
 
-      </section>
+            {/* List items */}
+            {trendingArticles.length === 0 ? (
+              <div className="flex-1 flex items-center justify-center p-6 text-center text-gray-400 text-xs">
+                No highlights available at this moment.
+              </div>
+            ) : (
+              <div className="flex-1 flex flex-col justify-between gap-4">
+                {trendingArticles.map((item, idx) => {
+                  const displayNum = `0${idx + 1}`;
+                  const isActive = activeHighlightId === item.id;
+                  return (
+                    <button 
+                      key={item.id}
+                      onClick={() => {
+                        setActiveHighlightId(item.id);
+                        navigate(`/news/${item.slug}`);
+                      }}
+                      className={`w-full text-left flex items-start gap-4 group cursor-pointer transition-all duration-300 p-2 rounded-xl border ${
+                        isActive 
+                          ? "bg-[#EEF5FF] shadow-[0_0_15px_rgba(59,130,246,0.2)] border-l-4 border-l-[#E31E24] border-t-transparent border-b-transparent border-r-transparent" 
+                          : "hover:bg-gray-50 border-transparent hover:shadow-xs"
+                      }`}
+                    >
+                      {/* Big rank number */}
+                      <span className={`tracking-wider pt-0.5 transition-all duration-300 ${
+                        isActive 
+                          ? "text-base font-black text-[#E31E24]" 
+                          : "text-sm font-bold text-[#D4AF37]"
+                      }`}>
+                        {displayNum}
+                      </span>
+
+                      {/* Title & Metadata */}
+                      <div className="flex-1 space-y-0.5 min-w-0">
+                        <h4 className={`text-xs leading-snug line-clamp-2 transition-all duration-300 ${
+                          isActive 
+                            ? "text-[#0B2D6B] font-semibold" 
+                            : "text-gray-800 font-bold group-hover:text-[#072A6C]"
+                        }`}>
+                          {item.title}
+                        </h4>
+                        <span className="text-[9px] text-gray-400 font-medium font-[var(--font-inter)]">
+                          {item.date}
+                        </span>
+                      </div>
+
+                      {/* Tiny Thumbnail */}
+                      <div className={`w-11 h-11 rounded-lg overflow-hidden shrink-0 bg-gray-50 border border-gray-100 transition-all duration-300 ${
+                        isActive ? "scale-105" : "group-hover:scale-105"
+                      }`}>
+                        <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+          </div>
+
+        </section>
+      )}
 
       {/* 🌟 Upcoming Events (Full Width Bar) */}
       <section className="max-w-[1440px] mx-auto px-6 mt-10">
@@ -435,48 +465,54 @@ export default function News() {
           </div>
 
           {/* Grid layout containing events */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 divide-y md:divide-y-0 md:divide-x divide-gray-100">
-            {upcomingEventsList.map((item, idx) => {
-              const dateParts = item.date.split(" ");
-              const day = dateParts[0] || "20";
-              const month = (dateParts[1] || "MAY").toUpperCase();
-              
-              // alternate background colors for calendar badges
-              const badgeBg = idx % 2 === 0 ? "bg-[#D4AF37]" : "bg-[#072A6C]";
+          {upcomingEventsList.length === 0 ? (
+            <div className="p-8 text-center text-gray-400 text-xs">
+              No upcoming campus events scheduled at this moment. Check back soon!
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 divide-y md:divide-y-0 md:divide-x divide-gray-100">
+              {upcomingEventsList.map((item, idx) => {
+                const dateParts = (item.date || "").trim().split(" ");
+                const day = dateParts[0] || "12";
+                const month = (dateParts[1] || "MAY").toUpperCase();
+                
+                // alternate background colors for calendar badges
+                const badgeBg = idx % 2 === 0 ? "bg-[#D4AF37]" : "bg-[#072A6C]";
 
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setShowEventsDrawer(true)}
-                  className="w-full text-left flex items-start gap-4 pt-4 md:pt-0 md:px-4 first:pl-0 last:pr-0 cursor-pointer outline-none group"
-                >
-                  {/* Calendar Box Badge */}
-                  <div className={`w-12 h-12 rounded-xl ${badgeBg} text-white flex flex-col items-center justify-center shrink-0 shadow-sm`}>
-                    <span className="text-base font-black leading-none">{day}</span>
-                    <span className="text-[8px] font-extrabold uppercase tracking-wider leading-none mt-1">{month}</span>
-                  </div>
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setShowEventsDrawer(true)}
+                    className="w-full text-left flex items-start gap-4 pt-4 md:pt-0 md:px-4 first:pl-0 last:pr-0 cursor-pointer outline-none group"
+                  >
+                    {/* Calendar Box Badge */}
+                    <div className={`w-12 h-12 rounded-xl ${badgeBg} text-white flex flex-col items-center justify-center shrink-0 shadow-sm`}>
+                      <span className="text-base font-black leading-none">{day}</span>
+                      <span className="text-[8px] font-extrabold uppercase tracking-wider leading-none mt-1">{month}</span>
+                    </div>
 
-                  {/* Metadata & Title */}
-                  <div className="space-y-1.5 flex-1 min-w-0">
-                    <h4 className="text-[11.5px] font-bold text-gray-800 leading-snug line-clamp-2 group-hover:text-[#072A6C] transition-colors">
-                      {item.title}
-                    </h4>
-                    
-                    <div className="flex flex-col gap-1 text-[9px] text-gray-400 font-semibold font-[var(--font-inter)]">
-                      <div className="flex items-center gap-1.5">
-                        <Clock size={10} className="text-[#D4AF37]" />
-                        <span>{item.time}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <MapPin size={10} className="text-[#D4AF37]" />
-                        <span className="truncate">{item.location}</span>
+                    {/* Metadata & Title */}
+                    <div className="space-y-1.5 flex-1 min-w-0">
+                      <h4 className="text-[11.5px] font-bold text-gray-800 leading-snug line-clamp-2 group-hover:text-[#072A6C] transition-colors">
+                        {item.title}
+                      </h4>
+                      
+                      <div className="flex flex-col gap-1 text-[9px] text-gray-400 font-semibold font-[var(--font-inter)]">
+                        <div className="flex items-center gap-1.5">
+                          <Clock size={10} className="text-[#D4AF37]" />
+                          <span>{item.time}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <MapPin size={10} className="text-[#D4AF37]" />
+                          <span className="truncate">{item.location}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
         </div>
       </section>
@@ -499,51 +535,57 @@ export default function News() {
         </div>
 
         {/* 4 Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {latestNewsArticles.map((item) => (
-            <div 
-              key={item.id}
-              onClick={() => navigate(`/news/${item.slug}`)}
-              className="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-md hover:border-gray-200 transition-all duration-300 flex flex-col justify-between text-left cursor-pointer outline-none group"
-            >
-              <div>
-                {/* Image */}
-                <div className="h-44 overflow-hidden bg-gray-50 relative w-full border-b border-gray-100">
-                  <img 
-                    src={item.image} 
-                    alt={item.title} 
-                    onError={(e) => { (e.target as HTMLImageElement).src = "/prog_computer.png"; }}
-                    className="w-full h-full object-cover" 
-                  />
-                </div>
-
-                {/* Content */}
-                <div className="p-5 space-y-2">
-                  <div className="flex items-center gap-1 text-[9px] text-gray-400 font-bold uppercase tracking-wider">
-                    <span className="text-[#D4AF37]">{item.category}</span>
-                    <span>•</span>
-                    <span>{item.date}</span>
+        {latestNewsArticles.length === 0 ? (
+          <div className="p-8 text-center text-gray-400 text-xs bg-white rounded-2xl border border-gray-100">
+            No additional news articles available at the moment.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {latestNewsArticles.map((item) => (
+              <div 
+                key={item.id}
+                onClick={() => navigate(`/news/${item.slug}`)}
+                className="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-md hover:border-gray-200 transition-all duration-300 flex flex-col justify-between text-left cursor-pointer outline-none group"
+              >
+                <div>
+                  {/* Image */}
+                  <div className="h-44 overflow-hidden bg-gray-50 relative w-full border-b border-gray-100">
+                    <img 
+                      src={item.image} 
+                      alt={item.title} 
+                      onError={(e) => { (e.target as HTMLImageElement).src = "/prog_computer.png"; }}
+                      className="w-full h-full object-cover" 
+                    />
                   </div>
-                  
-                  <h4 className="text-xs font-bold text-[#072A6C] leading-snug line-clamp-2 group-hover:text-[#D4AF37] transition-colors">
-                    {item.title}
-                  </h4>
-                  
-                  <p className="text-[10.5px] text-gray-500 leading-relaxed font-light font-[var(--font-inter)] line-clamp-3">
-                    {item.excerpt}
-                  </p>
+
+                  {/* Content */}
+                  <div className="p-5 space-y-2">
+                    <div className="flex items-center gap-1 text-[9px] text-gray-400 font-bold uppercase tracking-wider">
+                      <span className="text-[#D4AF37]">{item.category}</span>
+                      <span>•</span>
+                      <span>{item.date}</span>
+                    </div>
+                    
+                    <h4 className="text-xs font-bold text-[#072A6C] leading-snug line-clamp-2 group-hover:text-[#D4AF37] transition-colors">
+                      {item.title}
+                    </h4>
+                    
+                    <p className="text-[10.5px] text-gray-500 leading-relaxed font-light font-[var(--font-inter)] line-clamp-3">
+                      {item.excerpt}
+                    </p>
+                  </div>
                 </div>
-              </div>
 
-              {/* Read More Footer */}
-              <div className="px-5 pb-5 pt-3 border-t border-gray-50 flex items-center justify-between text-[10.5px] font-bold text-[#072A6C] group-hover:text-[#D4AF37] transition-colors">
-                <span>Read More</span>
-                <ArrowRight size={12} className="text-[#D4AF37] group-hover:translate-x-0.5 transition-transform" />
-              </div>
+                {/* Read More Footer */}
+                <div className="px-5 pb-5 pt-3 border-t border-gray-50 flex items-center justify-between text-[10.5px] font-bold text-[#072A6C] group-hover:text-[#D4AF37] transition-colors">
+                  <span>Read More</span>
+                  <ArrowRight size={12} className="text-[#D4AF37] group-hover:translate-x-0.5 transition-transform" />
+                </div>
 
-            </div>
-          ))}
-        </div>
+              </div>
+            ))}
+          </div>
+        )}
 
       </section>
 

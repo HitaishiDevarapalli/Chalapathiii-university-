@@ -52,64 +52,6 @@ const ThreadsIcon = () => (
   </svg>
 );
 
-// Image sets mapping for each News article slug
-const NEWS_IMAGES_MAP: Record<string, string[]> = {
-  "ai-research-lab": [
-    "/prog_computer.png",
-    "/prog_engineering.png",
-    "/prog_management.png",
-    "/prog_pharmacy.png"
-  ],
-  "smart-hackathon": [
-    "/prog_engineering.png",
-    "/prog_computer.png",
-    "/prog_diploma.png",
-    "/prog_mtech.png"
-  ],
-  "yoga-day": [
-    "/prog_diploma.png",
-    "/prog_pharmacy.png",
-    "/prog_computer.png",
-    "/prog_engineering.png"
-  ],
-  "renewable-energy": [
-    "/prog_mtech.png",
-    "/prog_engineering.png",
-    "/prog_computer.png",
-    "/prog_pharmacy.png"
-  ],
-  "record-placements": [
-    "/prog_management.png",
-    "/prog_computer.png",
-    "/prog_engineering.png",
-    "/prog_pharmacy.png"
-  ],
-  "annual-convocation": [
-    "/prog_pharmacy.png",
-    "/prog_diploma.png",
-    "/prog_computer.png",
-    "/prog_engineering.png"
-  ],
-  "innovation-summit": [
-    "/prog_engineering.png",
-    "/prog_management.png",
-    "/prog_computer.png",
-    "/prog_pharmacy.png"
-  ],
-  "annual-sports-meet": [
-    "/prog_pharmacy.png",
-    "/prog_diploma.png",
-    "/prog_computer.png",
-    "/prog_engineering.png"
-  ],
-  "admissions-open": [
-    "/prog_computer.png",
-    "/prog_engineering.png",
-    "/prog_management.png",
-    "/prog_pharmacy.png"
-  ]
-};
-
 function ImageSlider({ images }: { images: string[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
@@ -191,9 +133,8 @@ export default function NewsDetails() {
   const [showShare, setShowShare] = useState(false);
   const [showToast, setShowToast] = useState(false);
 
-  // Find the current article
-  const currentIdx = news.findIndex((item) => item.slug === slug);
-  const article = currentIdx !== -1 ? news[currentIdx] : null;
+  // Find the current article by slug or numeric ID
+  const article = news.find((item) => item.slug === slug || String(item.id) === slug) || null;
 
   // Dynamically configure meta tags for rich previews
   useEffect(() => {
@@ -282,10 +223,10 @@ export default function NewsDetails() {
 
   const shareLinks = getShareLinks();
 
-  // Load slider images (prioritizing custom configured images, then preset map, then cover image)
+  // Load slider images (prioritizing custom configured images, then cover image, fallback placeholder)
   const sliderImages = (article.images && article.images.length > 0)
     ? article.images
-    : (NEWS_IMAGES_MAP[article.slug] || [article.image || "/prog_computer.png"]);
+    : (article.image ? [article.image] : ["/prog_computer.png"]);
 
   return (
     <div className="min-h-screen bg-[#F7F9FC] py-10 font-[var(--font-poppins)] relative text-left">

@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import {
-  MapPin, Phone, Mail, Globe, Users, Briefcase, Play
+  MapPin, Phone, Mail
 } from "lucide-react";
 import { useData } from "../../context/DataContext";
 
@@ -67,24 +67,6 @@ export default function Footer() {
     { label: "Sitemap", to: "/sitemap" }
   ]).filter(item => item.to !== "/admin" && !item.label?.toLowerCase().includes("admin") && !isPageHidden(item.label, item.to));
 
-  const rawBrandSocials = footerContent?.brandSocials || [
-    { icon: "Globe", url: "https://chalapathiuniversity.edu.in", label: "Website" },
-    { icon: "Users", url: "/about", label: "Community" },
-    { icon: "Briefcase", url: "/placements", label: "Careers" },
-    { icon: "Play", url: "/campus-life", label: "Campus Tour" }
-  ];
-
-  const brandSocials = rawBrandSocials.filter(b => !isPageHidden(b.label, b.url));
-
-  const getBrandIcon = (iconName: string) => {
-    switch (iconName?.toLowerCase()) {
-      case "globe": return <Globe size={13} />;
-      case "users": return <Users size={13} />;
-      case "briefcase": return <Briefcase size={13} />;
-      case "play": return <Play size={13} />;
-      default: return <Globe size={13} />;
-    }
-  };
 
   const socialLinks = footerContent?.socialLinks || siteSettings?.socialLinks || {
     instagram: "https://instagram.com",
@@ -118,31 +100,7 @@ export default function Footer() {
           <p className="leading-relaxed text-[#D1D5DB] text-[11px] font-light">
             {footerContent?.brandDescription || "Empowering minds through quality education, advanced learning and real-world experience. Your future begins here."}
           </p>
-          <div className="flex items-center gap-2 pt-2">
-            {brandSocials.map((bs, i) => (
-              bs.url.startsWith("http") ? (
-                <a 
-                  key={i} 
-                  href={bs.url} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  title={bs.label}
-                  className="w-8 h-8 rounded-full bg-white/5 hover:bg-[#D4AF37] flex items-center justify-center text-[#D1D5DB] hover:text-white transition-all"
-                >
-                  {getBrandIcon(bs.icon)}
-                </a>
-              ) : (
-                <Link
-                  key={i}
-                  to={bs.url}
-                  title={bs.label}
-                  className="w-8 h-8 rounded-full bg-white/5 hover:bg-[#D4AF37] flex items-center justify-center text-[#D1D5DB] hover:text-white transition-all"
-                >
-                  {getBrandIcon(bs.icon)}
-                </Link>
-              )
-            ))}
-          </div>
+
         </div>
 
         {/* Col 2: Quick Links */}

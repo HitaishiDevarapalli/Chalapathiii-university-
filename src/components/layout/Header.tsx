@@ -696,28 +696,6 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
             >
               Apply Now
             </Link>
-            <button
-              onClick={() => setIsGlobalSearchOpen(true)}
-              style={{
-                backgroundColor: searchConfig?.headerSearchBtnBg || "#FFFFFF",
-                borderColor: searchConfig?.headerSearchBtnBorder || "#E2E8F0",
-                color: searchConfig?.headerSearchBtnIconColor || "#072A6C"
-              }}
-              className="w-10 h-10 rounded-full border flex items-center justify-center transition-all cursor-pointer relative shrink-0 hover:shadow-xs"
-              title="Search University (Ctrl+K)"
-            >
-              <Search size={17} style={{ color: searchConfig?.headerSearchBtnIconColor || "#072A6C" }} />
-            </button>
-            <button
-              onClick={() => setShowAnnouncementsDrawer(!showAnnouncementsDrawer)}
-              className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-[#072A6C] hover:text-[#D4AF37] hover:border-[#D4AF37] transition-colors cursor-pointer relative shrink-0"
-              title="View Announcements"
-            >
-              <Megaphone size={17} />
-              {announcements.length > 0 && (
-                <span className="absolute top-1.5 right-1.5 bg-[#D4AF37] w-2.5 h-2.5 rounded-full border-2 border-white" />
-              )}
-            </button>
           </div>
 
           {/* Mobile menu trigger */}

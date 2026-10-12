@@ -115,6 +115,15 @@ export function NewsCMS({
     notifySave("New article created!");
   };
 
+  // Clear all articles handler
+  const handleClearAllArticles = () => {
+    if (window.confirm("Are you sure you want to delete ALL news articles? This will clear all news from the website and admin panel.")) {
+      setNewsList([]);
+      updateNews([]);
+      notifySave("All news articles cleared live!");
+    }
+  };
+
   return (
     <div className="space-y-6 animate-fade-in text-left">
       <SectionHeader
@@ -250,15 +259,25 @@ export function NewsCMS({
             <div className="space-y-1">
               <label className="text-[10px] font-bold text-gray-600 uppercase">Select Primary Featured Article</label>
               <select
-                value={newsPageForm.featuredArticleId || newsList[0]?.id}
-                onChange={(e) => setNewsPageForm({ ...newsPageForm, featuredArticleId: Number(e.target.value) })}
+                value={newsPageForm.featuredArticleId || newsList[0]?.id || ""}
+                onChange={(e) => {
+                  const newId = Number(e.target.value);
+                  const updatedForm = { ...newsPageForm, featuredArticleId: newId };
+                  setNewsPageForm(updatedForm);
+                  updateNewsPageConfig(updatedForm);
+                  notifySave("Primary featured article updated live!");
+                }}
                 className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
               >
-                {newsList.map((n) => (
-                  <option key={n.id} value={n.id}>
-                    #{n.id} - {n.title} ({n.category})
-                  </option>
-                ))}
+                {newsList.length === 0 ? (
+                  <option value="">No articles available - Add an article in Subtab 2 first</option>
+                ) : (
+                  newsList.map((n) => (
+                    <option key={n.id} value={n.id}>
+                      #{n.id} - {n.title} ({n.category})
+                    </option>
+                  ))
+                )}
               </select>
             </div>
 
@@ -406,7 +425,7 @@ export function NewsCMS({
                 Create and edit news stories, multi-photo sliders, categories, read times, external source links, and featured flags.
               </p>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
               <button
                 type="button"
                 onClick={handleAddNewArticle}
@@ -414,6 +433,24 @@ export function NewsCMS({
               >
                 <Plus size={13} /> Add News Article
               </button>
+              <button
+                type="button"
+                onClick={handleResetAllNews}
+                className="h-8 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer transition-all border border-gray-200"
+                title="Restore sample Chalapathi University articles"
+              >
+                <RotateCcw size={12} /> Reset to Sample
+              </button>
+              {newsList.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleClearAllArticles}
+                  className="h-8 px-3 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer transition-all"
+                  title="Remove all news articles completely"
+                >
+                  <Trash2 size={12} /> Clear All News
+                </button>
+              )}
               <button
                 type="button"
                 onClick={handleSaveAllNews}
@@ -453,7 +490,40 @@ export function NewsCMS({
 
           {/* Articles List */}
           <div className="space-y-6">
-            {filteredArticles.map((article) => {
+            {newsList.length === 0 ? (
+              <div className="p-12 text-center bg-white border border-dashed border-gray-200 rounded-2xl space-y-4">
+                <div className="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl mx-auto flex items-center justify-center">
+                  <Newspaper size={28} />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold text-gray-800">No News Articles Found</h4>
+                  <p className="text-xs text-gray-500 max-w-md mx-auto">
+                    All news articles have been cleared. You can start fresh by adding a new article or restore the sample Chalapathi University articles.
+                  </p>
+                </div>
+                <div className="flex items-center justify-center gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleAddNewArticle}
+                    className="h-8 px-4 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+                  >
+                    <Plus size={13} /> + Add First News Article
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleResetAllNews}
+                    className="h-8 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer border border-gray-200"
+                  >
+                    <RotateCcw size={13} /> Restore Sample Articles
+                  </button>
+                </div>
+              </div>
+            ) : filteredArticles.length === 0 ? (
+              <div className="p-8 text-center bg-white border border-gray-200 rounded-2xl text-xs text-gray-400">
+                No articles matching your search or category filter.
+              </div>
+            ) : (
+              filteredArticles.map((article) => {
               const idx = newsList.findIndex(n => n.id === article.id);
 
               return (
@@ -793,7 +863,7 @@ export function NewsCMS({
 
                 </div>
               );
-            })}
+            }))}
           </div>
         </div>
       )}
@@ -845,7 +915,14 @@ export function NewsCMS({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {announcementsList.length === 0 ? (
+            <div className="p-8 text-center border-2 border-dashed border-gray-200 rounded-2xl bg-white">
+              <Bell size={28} className="mx-auto text-gray-300 mb-2" />
+              <p className="text-xs font-bold text-gray-600">No Announcements Added</p>
+              <p className="text-[11px] text-gray-400 mt-0.5">Click "+ Add Announcement" above to publish your first university notice.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {announcementsList.map((ann, idx) => (
               <div key={idx} className="p-4 rounded-xl border border-gray-200 bg-slate-50/50 space-y-3">
                 <div className="flex justify-between items-center">
@@ -912,6 +989,7 @@ export function NewsCMS({
               </div>
             ))}
           </div>
+          )}
         </div>
       )}
 
