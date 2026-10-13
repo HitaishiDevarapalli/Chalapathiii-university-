@@ -140,9 +140,9 @@ export function EventsCMS({
       time: "10:00 AM",
       location: "Main Auditorium Hall",
       category: "Technology",
-      image: "/prog_engineering.png",
-      images: ["/prog_engineering.png", "/prog_computer.png"],
-      registrationUrl: "/admissions",
+      image: "",
+      images: [],
+      registrationUrl: "",
       registrationOpen: true,
       bodyText: "Comprehensive overview, keynotes, technical tracks, and schedule of the upcoming campus event."
     };
@@ -184,10 +184,10 @@ export function EventsCMS({
       {/* Subtabs Selector */}
       <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3">
         {[
-          { id: "eventsList", label: `1. Campus Events Directory & Editor (${eventsList.length})` },
-          { id: "attendeesCRM", label: `2. Event Registrations & Attendees CRM (${registrationsList.length})` },
-          { id: "pageBanner", label: "3. Events Page Banner & Overview" },
-          { id: "homepage", label: "4. Homepage Events Feed & Drawer" }
+          { id: "eventsList", label: `📅 1. Campus Events Directory & Editor (${eventsList.length})` },
+          { id: "homepage", label: "🏠 2. Homepage Events Feed & Interactive Drawer" },
+          { id: "attendeesCRM", label: `👥 3. Event Registrations & Attendees CRM (${registrationsList.length})` },
+          { id: "pageBanner", label: "🌟 4. Events Page Banner & Overview" }
         ].map((st) => (
           <button
             key={st.id}
@@ -322,63 +322,70 @@ export function EventsCMS({
               const isOpen = event.registrationOpen !== false;
 
               return (
-                <div key={event.id} className="p-5 rounded-2xl border border-gray-200 bg-white shadow-xs space-y-4">
+                <div key={event.id} className="p-6 rounded-2xl border-2 border-slate-200/90 bg-white shadow-sm space-y-6">
                   {/* Card Header Bar */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 pb-3">
-                    <div className="flex items-center gap-2.5">
-                      <span className="w-6 h-6 rounded-full bg-[#072A6C] text-white text-xs font-black flex items-center justify-center">
-                        {idx + 1}
+                  <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-gray-200">
+                    <div className="flex items-center gap-3">
+                      <span className="w-8 h-8 rounded-xl bg-[#072A6C] text-white text-xs font-black flex items-center justify-center shadow-xs">
+                        #{idx + 1 < 10 ? `0${idx + 1}` : idx + 1}
                       </span>
-                      <span className="text-xs font-black text-[#072A6C]">{event.title || "Untitled Event"}</span>
-                      <span className="text-[10px] font-extrabold uppercase bg-blue-50 text-[#072A6C] px-2.5 py-0.5 rounded-md border border-blue-100">
-                        {event.category || "General"}
-                      </span>
-                      {isOpen ? (
-                        <span className="text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md flex items-center gap-1">
-                          <CheckCircle2 size={11} /> Registration Open
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-bold uppercase bg-gray-200 text-gray-700 px-2 py-0.5 rounded-md flex items-center gap-1">
-                          <AlertCircle size={11} /> Registration Closed
-                        </span>
-                      )}
+                      <div>
+                        <h4 className="text-sm font-black text-[#072A6C] line-clamp-1">{event.title || "Untitled Event"}</h4>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[10px] font-bold uppercase bg-blue-50 text-blue-900 px-2 py-0.5 rounded border border-blue-200">
+                            {event.category || "General"}
+                          </span>
+                          {isOpen ? (
+                            <span className="text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded flex items-center gap-1 border border-emerald-300">
+                              <CheckCircle2 size={11} /> Registration Open
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-bold uppercase bg-rose-100 text-rose-800 px-2 py-0.5 rounded flex items-center gap-1 border border-rose-300">
+                              <AlertCircle size={11} /> Registration Closed
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        disabled={idx === 0}
-                        onClick={() => {
-                          if (idx === 0) return;
-                          const updated = [...eventsList];
-                          const temp = updated[idx];
-                          updated[idx] = updated[idx - 1];
-                          updated[idx - 1] = temp;
-                          setEventsList(updated);
-                          updateEvents(updated);
-                        }}
-                        className="p-1.5 bg-slate-50 hover:bg-gray-100 border border-gray-200 rounded-md text-gray-600 disabled:opacity-30 cursor-pointer"
-                        title="Move Up"
-                      >
-                        <ArrowUp size={13} />
-                      </button>
-                      <button
-                        type="button"
-                        disabled={idx === eventsList.length - 1}
-                        onClick={() => {
-                          if (idx === eventsList.length - 1) return;
-                          const updated = [...eventsList];
-                          const temp = updated[idx];
-                          updated[idx] = updated[idx + 1];
-                          updated[idx + 1] = temp;
-                          setEventsList(updated);
-                          updateEvents(updated);
-                        }}
-                        className="p-1.5 bg-slate-50 hover:bg-gray-100 border border-gray-200 rounded-md text-gray-600 disabled:opacity-30 cursor-pointer"
-                        title="Move Down"
-                      >
-                        <ArrowDown size={13} />
-                      </button>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-gray-200">
+                        <button
+                          type="button"
+                          disabled={idx === 0}
+                          onClick={() => {
+                            if (idx === 0) return;
+                            const updated = [...eventsList];
+                            const temp = updated[idx];
+                            updated[idx] = updated[idx - 1];
+                            updated[idx - 1] = temp;
+                            setEventsList(updated);
+                            updateEvents(updated);
+                          }}
+                          className="p-1.5 hover:bg-white rounded-md text-gray-700 disabled:opacity-25 cursor-pointer transition-colors"
+                          title="Move Up in order"
+                        >
+                          <ArrowUp size={13} />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={idx === eventsList.length - 1}
+                          onClick={() => {
+                            if (idx === eventsList.length - 1) return;
+                            const updated = [...eventsList];
+                            const temp = updated[idx];
+                            updated[idx] = updated[idx + 1];
+                            updated[idx + 1] = temp;
+                            setEventsList(updated);
+                            updateEvents(updated);
+                          }}
+                          className="p-1.5 hover:bg-white rounded-md text-gray-700 disabled:opacity-25 cursor-pointer transition-colors"
+                          title="Move Down in order"
+                        >
+                          <ArrowDown size={13} />
+                        </button>
+                      </div>
+
                       <button
                         type="button"
                         onClick={() => {
@@ -389,96 +396,107 @@ export function EventsCMS({
                             notifySave("Event deleted.");
                           }
                         }}
-                        className="h-7 px-2.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-bold rounded-md flex items-center gap-1 cursor-pointer ml-2"
+                        className="h-8 px-3 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-all"
                       >
-                        <Trash2 size={12} /> Delete
+                        <Trash2 size={13} /> Delete
                       </button>
                     </div>
                   </div>
 
-                  {/* Title, Category */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div className="space-y-1 md:col-span-2">
-                      <label className="text-[10px] font-bold text-gray-600 uppercase">Event Title</label>
-                      <input
-                        type="text"
-                        value={event.title}
-                        onChange={(e) => {
-                          const updated = [...eventsList];
-                          updated[idx] = { ...updated[idx], title: e.target.value };
-                          setEventsList(updated);
-                        }}
-                        className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold text-slate-800"
-                      />
+                  {/* ── SECTION 1: EVENT TITLE, CATEGORY & SCHEDULE ── */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-900 text-[10px] font-black flex items-center justify-center">1</span>
+                      <h5 className="text-xs font-black text-gray-800 uppercase tracking-wide">
+                        Event Title & Schedule Essentials
+                      </h5>
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-gray-600 uppercase">Category</label>
-                      <input
-                        type="text"
-                        value={event.category}
-                        onChange={(e) => {
-                          const updated = [...eventsList];
-                          updated[idx] = { ...updated[idx], category: e.target.value };
-                          setEventsList(updated);
-                        }}
-                        placeholder="e.g. Technology, Sports, Pharmacy"
-                        className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg font-semibold text-slate-700"
-                      />
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div className="space-y-1 md:col-span-2">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Event Title *</label>
+                        <input
+                          type="text"
+                          value={event.title}
+                          onChange={(e) => {
+                            const updated = [...eventsList];
+                            updated[idx] = { ...updated[idx], title: e.target.value };
+                            setEventsList(updated);
+                          }}
+                          placeholder="e.g. National Hackathon & Summit 2026"
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold text-slate-900 focus:bg-white"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Category *</label>
+                        <input
+                          type="text"
+                          value={event.category}
+                          onChange={(e) => {
+                            const updated = [...eventsList];
+                            updated[idx] = { ...updated[idx], category: e.target.value };
+                            setEventsList(updated);
+                          }}
+                          placeholder="e.g. Technology, Sports, Pharmacy"
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-semibold text-slate-800 focus:bg-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Event Date *</label>
+                        <input
+                          type="text"
+                          value={event.date}
+                          onChange={(e) => {
+                            const updated = [...eventsList];
+                            updated[idx] = { ...updated[idx], date: e.target.value };
+                            setEventsList(updated);
+                          }}
+                          placeholder="e.g. 17 Jul 2026"
+                          className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg text-slate-800 focus:bg-white"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Event Time</label>
+                        <input
+                          type="text"
+                          value={event.time || ""}
+                          onChange={(e) => {
+                            const updated = [...eventsList];
+                            updated[idx] = { ...updated[idx], time: e.target.value };
+                            setEventsList(updated);
+                          }}
+                          placeholder="e.g. 09:30 AM"
+                          className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg text-slate-800 focus:bg-white"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Location / Venue</label>
+                        <input
+                          type="text"
+                          value={event.location || ""}
+                          onChange={(e) => {
+                            const updated = [...eventsList];
+                            updated[idx] = { ...updated[idx], location: e.target.value };
+                            setEventsList(updated);
+                          }}
+                          placeholder="e.g. Main Auditorium Hall"
+                          className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg text-slate-800 focus:bg-white"
+                        />
+                      </div>
                     </div>
                   </div>
 
-                  {/* Date, Time, Location */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-gray-600 uppercase">Event Date</label>
-                      <input
-                        type="text"
-                        value={event.date}
-                        onChange={(e) => {
-                          const updated = [...eventsList];
-                          updated[idx] = { ...updated[idx], date: e.target.value };
-                          setEventsList(updated);
-                        }}
-                        placeholder="e.g. 17 Jul 2026"
-                        className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg text-slate-700"
-                      />
+                  <div className="border-t border-gray-200 pt-5 space-y-3">
+                    {/* ── SECTION 2: REGISTRATION SETTINGS & URL ── */}
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-900 text-[10px] font-black flex items-center justify-center">2</span>
+                      <h5 className="text-xs font-black text-gray-800 uppercase tracking-wide">
+                        Registration & RSVP Controls
+                      </h5>
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-gray-600 uppercase">Event Time</label>
-                      <input
-                        type="text"
-                        value={event.time || ""}
-                        onChange={(e) => {
-                          const updated = [...eventsList];
-                          updated[idx] = { ...updated[idx], time: e.target.value };
-                          setEventsList(updated);
-                        }}
-                        placeholder="e.g. 09:30 AM"
-                        className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg text-slate-700"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-gray-600 uppercase">Location / Venue</label>
-                      <input
-                        type="text"
-                        value={event.location || ""}
-                        onChange={(e) => {
-                          const updated = [...eventsList];
-                          updated[idx] = { ...updated[idx], location: e.target.value };
-                          setEventsList(updated);
-                        }}
-                        placeholder="e.g. Aeronautics Hangar & Airfield"
-                        className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg text-slate-700"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Slug, Registration URL & Registration Controls */}
-                  <div className="p-4 bg-slate-50 rounded-xl border border-gray-200 space-y-3">
-                    <h5 className="text-[11px] font-black text-[#072A6C] uppercase tracking-wider flex items-center gap-1.5">
-                      <Tag size={13} className="text-amber-500" />
-                      Registration Settings & URL
-                    </h5>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div className="space-y-1">
@@ -492,7 +510,7 @@ export function EventsCMS({
                             setEventsList(updated);
                           }}
                           placeholder="e.g. campus-summit-2026"
-                          className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-mono text-slate-700"
+                          className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg font-mono text-slate-700 focus:bg-white"
                         />
                       </div>
                       <div className="space-y-1">
@@ -505,12 +523,12 @@ export function EventsCMS({
                             updated[idx] = { ...updated[idx], registrationUrl: e.target.value };
                             setEventsList(updated);
                           }}
-                          placeholder="Leave blank for built-in modal popup"
-                          className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-mono text-slate-700"
+                          placeholder="Leave blank for built-in popup modal"
+                          className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg font-mono text-slate-700 focus:bg-white"
                         />
                       </div>
                       <div className="flex items-center pt-5">
-                        <label className="flex items-center gap-2.5 cursor-pointer select-none bg-white px-3 py-1.5 rounded-lg border border-gray-200 w-full">
+                        <label className="flex items-center gap-2.5 cursor-pointer select-none bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-lg border border-gray-200 w-full transition-colors">
                           <input
                             type="checkbox"
                             checked={event.registrationOpen !== false}
@@ -529,110 +547,153 @@ export function EventsCMS({
                     </div>
                   </div>
 
-                  {/* Full Description / Agenda */}
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-gray-600 uppercase">Event Description & Agenda</label>
-                    <textarea
-                      rows={3}
-                      value={event.bodyText}
-                      onChange={(e) => {
+                  <div className="border-t border-gray-200 pt-5 space-y-3">
+                    {/* ── SECTION 3: EVENT DESCRIPTION & AGENDA ── */}
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-900 text-[10px] font-black flex items-center justify-center">3</span>
+                      <h5 className="text-xs font-black text-gray-800 uppercase tracking-wide">
+                        Event Description & Agenda Schedule
+                      </h5>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-600 uppercase">Full Event Overview, Schedule & Speakers</label>
+                      <textarea
+                        rows={3}
+                        value={event.bodyText || ""}
+                        onChange={(e) => {
+                          const updated = [...eventsList];
+                          updated[idx] = { ...updated[idx], bodyText: e.target.value };
+                          setEventsList(updated);
+                        }}
+                        placeholder="Comprehensive details, keynote speakers, tracks, timetable..."
+                        className="w-full p-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg leading-relaxed text-slate-800 focus:bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="border-t border-gray-200 pt-5 space-y-3">
+                    {/* ── SECTION 4: PRIMARY EVENT POSTER & BANNER ── */}
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-900 text-[10px] font-black flex items-center justify-center">4</span>
+                      <div>
+                        <h5 className="text-xs font-black text-gray-800 uppercase tracking-wide">
+                          Primary Event Poster & Banner Photo
+                        </h5>
+                        <p className="text-[10px] text-gray-400">Main poster shown on event cards, schedule listings, and popup previews.</p>
+                      </div>
+                    </div>
+
+                    <ImageField
+                      label="Event Primary Poster & Banner Image"
+                      value={event.image || ""}
+                      defaultValue=""
+                      onChange={(val) => {
                         const updated = [...eventsList];
-                        updated[idx] = { ...updated[idx], bodyText: e.target.value };
+                        updated[idx] = { ...updated[idx], image: val };
                         setEventsList(updated);
                       }}
-                      placeholder="Detailed event description, keynote speakers, and schedule..."
-                      className="w-full p-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg leading-relaxed text-slate-800"
+                      onReset={() => {
+                        const updated = [...eventsList];
+                        updated[idx] = { ...updated[idx], image: "" };
+                        setEventsList(updated);
+                      }}
+                      aspectRatio="video"
                     />
                   </div>
 
-                  {/* Event Poster / Banner */}
-                  <ImageField
-                    label="Event Primary Poster & Banner Image"
-                    value={event.image || "/prog_engineering.png"}
-                    defaultValue="/prog_engineering.png"
-                    onChange={(val) => {
-                      const updated = [...eventsList];
-                      updated[idx] = { ...updated[idx], image: val };
-                      setEventsList(updated);
-                    }}
-                    onReset={() => {
-                      const updated = [...eventsList];
-                      updated[idx] = { ...updated[idx], image: "/prog_engineering.png" };
-                      setEventsList(updated);
-                    }}
-                    aspectRatio="video"
-                  />
-
-                  {/* Multi-Image Carousel Slider / Gallery */}
-                  <div className="p-4 rounded-xl border border-orange-200/70 bg-orange-50/30 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h5 className="text-xs font-black text-orange-950 uppercase tracking-wide">
-                          Event Multi-Image Gallery Slider ({event.images?.length || (event.image ? 1 : 0)} Slides)
-                        </h5>
-                        <p className="text-[11px] text-orange-900/80">
-                          Multi-slide carousel shown inside the event detail page with left/right arrows & dot indicators.
-                        </p>
+                  <div className="border-t border-gray-200 pt-5 space-y-3">
+                    {/* ── SECTION 5: MULTI-SLIDE PHOTO GALLERY ── */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-900 text-[10px] font-black flex items-center justify-center">5</span>
+                        <div>
+                          <h5 className="text-xs font-black text-gray-800 uppercase tracking-wide">
+                            Event Multi-Image Gallery Slider ({event.images?.length || 0} Slides)
+                          </h5>
+                          <p className="text-[10px] text-gray-400">Optional carousel shown on the event details page with left/right arrows.</p>
+                        </div>
                       </div>
                       <button
                         type="button"
                         onClick={() => {
-                          const currentImgs = event.images && event.images.length > 0 ? [...event.images] : [event.image || "/prog_engineering.png"];
+                          const currentImgs = event.images || [];
                           const updated = [...eventsList];
-                          updated[idx] = { ...updated[idx], images: [...currentImgs, "/prog_engineering.png"] };
+                          updated[idx] = { ...updated[idx], images: [...currentImgs, ""] };
                           setEventsList(updated);
                         }}
-                        className="h-7 px-2.5 bg-orange-600 hover:bg-orange-700 text-white text-[11px] font-bold rounded-md flex items-center gap-1 cursor-pointer shadow-2xs"
+                        className="h-7 px-3 bg-orange-600 hover:bg-orange-700 text-white text-[11px] font-bold rounded-lg flex items-center gap-1 cursor-pointer shadow-2xs self-start sm:self-auto"
                       >
                         <Plus size={12} /> Add Event Slide
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {(event.images && event.images.length > 0 ? event.images : [event.image || "/prog_engineering.png"]).map((imgUrl, sIdx) => (
-                        <div key={sIdx} className="p-3 bg-white rounded-xl border border-gray-200 shadow-2xs space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-black text-gray-400">Slide #{sIdx + 1}</span>
-                            {(event.images?.length || 1) > 1 && (
+                    {!event.images || event.images.length === 0 ? (
+                      <div className="p-4 rounded-xl border border-dashed border-gray-200 bg-slate-50/60 text-center">
+                        <p className="text-xs text-gray-400">
+                          No additional gallery slides attached. Click <strong className="text-orange-600">+ Add Event Slide</strong> to attach more photos.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {event.images.map((imgUrl, sIdx) => (
+                          <div key={sIdx} className="p-3 bg-white rounded-xl border border-gray-200 shadow-2xs space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-black text-gray-500 uppercase">Slide #{sIdx + 1}</span>
                               <button
                                 type="button"
                                 onClick={() => {
-                                  const currentImgs = event.images && event.images.length > 0 ? [...event.images] : [event.image || "/prog_engineering.png"];
-                                  const filtered = currentImgs.filter((_, i) => i !== sIdx);
+                                  const filtered = (event.images || []).filter((_, i) => i !== sIdx);
                                   const updated = [...eventsList];
                                   updated[idx] = { ...updated[idx], images: filtered };
                                   setEventsList(updated);
                                 }}
                                 className="text-[10px] text-red-500 hover:text-red-700 font-bold flex items-center gap-0.5 cursor-pointer"
                               >
-                                <Trash2 size={11} /> Remove
+                                <Trash2 size={11} /> Remove Slide
                               </button>
-                            )}
+                            </div>
+                            <ImageField
+                              label={`Event Slide #${sIdx + 1}`}
+                              value={imgUrl || ""}
+                              defaultValue=""
+                              onChange={(val) => {
+                                const currentImgs = [...(event.images || [])];
+                                currentImgs[sIdx] = val;
+                                const updated = [...eventsList];
+                                updated[idx] = { ...updated[idx], images: currentImgs };
+                                setEventsList(updated);
+                              }}
+                              onReset={() => {
+                                const currentImgs = [...(event.images || [])];
+                                currentImgs[sIdx] = "";
+                                const updated = [...eventsList];
+                                updated[idx] = { ...updated[idx], images: currentImgs };
+                                setEventsList(updated);
+                              }}
+                              aspectRatio="video"
+                              recommendedSize="1200 × 700 px"
+                            />
                           </div>
-                          <ImageField
-                            label="Event Slide Photo"
-                            value={imgUrl}
-                            defaultValue="/prog_engineering.png"
-                            onChange={(val) => {
-                              const currentImgs = event.images && event.images.length > 0 ? [...event.images] : [event.image || "/prog_engineering.png"];
-                              currentImgs[sIdx] = val;
-                              const updated = [...eventsList];
-                              updated[idx] = { ...updated[idx], images: currentImgs };
-                              setEventsList(updated);
-                            }}
-                            onReset={() => {
-                              const currentImgs = event.images && event.images.length > 0 ? [...event.images] : [event.image || "/prog_engineering.png"];
-                              currentImgs[sIdx] = "/prog_engineering.png";
-                              const updated = [...eventsList];
-                              updated[idx] = { ...updated[idx], images: currentImgs };
-                              setEventsList(updated);
-                            }}
-                            aspectRatio="video"
-                            recommendedSize="1200 × 700 px"
-                          />
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="border-t border-gray-200 pt-5 flex items-center justify-between">
+                    {/* ── SECTION 6: LIVE PAGE PREVIEW ── */}
+                    <span className="text-xs text-gray-500 font-medium">
+                      Event ID: <code className="font-mono text-gray-700 font-bold">#{event.id}</code>
+                    </span>
+                    <a
+                      href={`/events/${event.slug || `event-${event.id}`}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-3.5 py-1.5 bg-slate-50 border border-gray-300 hover:border-[#072A6C] text-[#072A6C] rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-colors"
+                    >
+                      <span>Preview Live Event Page</span>
+                      <ExternalLink size={12} />
+                    </a>
                   </div>
 
                 </div>

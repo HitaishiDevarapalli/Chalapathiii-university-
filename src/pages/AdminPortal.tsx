@@ -3383,7 +3383,7 @@ export default function AdminPortal() {
                               category: "Campus Life",
                               excerpt: "Short news snippet description.",
                               bodyText: "Full article text.",
-                              image: "/prog_computer.png",
+                              image: "",
                               slug: "news-" + Date.now()
                             };
                             if (newsList.length > 0) {
@@ -3467,7 +3467,7 @@ export default function AdminPortal() {
                               time: "10:00 AM",
                               location: "Main Auditorium",
                               category: "Technology",
-                              image: "/prog_engineering.png",
+                              image: "",
                               bodyText: "Full event schedule and details."
                             };
                             setEventsList([newEvent, ...eventsList]);

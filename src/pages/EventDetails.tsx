@@ -280,7 +280,7 @@ export default function EventDetails() {
   // Load slider images (prioritizing custom configured images, then cover image, fallback placeholder)
   const sliderImages = (eventItem.images && eventItem.images.length > 0)
     ? eventItem.images
-    : (eventItem.image ? [eventItem.image] : ["/prog_engineering.png"]);
+    : (eventItem.image ? [eventItem.image] : []);
 
   return (
     <div className="min-h-screen bg-[#F7F9FC] py-10 font-[var(--font-poppins)] relative text-left">

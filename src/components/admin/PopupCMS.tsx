@@ -60,7 +60,7 @@ export const DEFAULT_POPUP_DATA: PopupCMSData = {
       subtitle: "Join India's Brightest Minds at Chalapathi Campus",
       description: "Explore 40+ national events, hackathons, guest lectures, and cultural fests. Registrations closing soon for inter-university competitions.",
       badge: "CAMPUS EVENT",
-      image: "/prog_computer.png",
+      image: "",
       buttonText: "View Events & Register Now",
       redirectUrl: "/news/events"
     },
@@ -117,7 +117,7 @@ export const PopupCMS: React.FC<PopupCMSProps> = ({ notifySave }) => {
     subtitle: "",
     description: "",
     badge: "ANNOUNCEMENT",
-    image: "/prog_computer.png",
+    image: "",
     buttonText: "Explore More",
     redirectUrl: "/news/events"
   });
@@ -141,7 +141,7 @@ export const PopupCMS: React.FC<PopupCMSProps> = ({ notifySave }) => {
       subtitle: "",
       description: "",
       badge: "ANNOUNCEMENT",
-      image: "/prog_computer.png",
+      image: "",
       buttonText: "Explore More",
       redirectUrl: "/news/events"
     });
@@ -178,7 +178,7 @@ export const PopupCMS: React.FC<PopupCMSProps> = ({ notifySave }) => {
         subtitle: popupForm.subtitle?.trim() || "",
         description: popupForm.description?.trim() || "",
         badge: popupForm.badge?.trim() || "FEATURED",
-        image: popupForm.image || "/prog_computer.png",
+        image: popupForm.image || "",
         buttonText: popupForm.buttonText?.trim() || "Learn More",
         redirectUrl: popupForm.redirectUrl?.trim() || "/news/events",
         createdAt: new Date().toISOString()
@@ -433,7 +433,7 @@ export const PopupCMS: React.FC<PopupCMSProps> = ({ notifySave }) => {
                         alt={popup.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         onError={(e) => {
-                          (e.target as HTMLImageElement).src = "/prog_computer.png";
+                          (e.target as HTMLImageElement).src = "/logo.png?v=3";
                         }}
                       />
                       {popup.badge && (
@@ -624,10 +624,10 @@ export const PopupCMS: React.FC<PopupCMSProps> = ({ notifySave }) => {
                 <div className="space-y-2">
                   <ImageField
                     label="Popup Poster / Banner Image"
-                    value={popupForm.image || "/prog_computer.png"}
-                    defaultValue="/prog_computer.png"
+                    value={popupForm.image || ""}
+                    defaultValue=""
                     onChange={(val) => setPopupForm({ ...popupForm, image: val })}
-                    onReset={() => setPopupForm({ ...popupForm, image: "/prog_computer.png" })}
+                    onReset={() => setPopupForm({ ...popupForm, image: "" })}
                     aspectRatio="video"
                     recommendedSize="1200 × 700 px"
                   />

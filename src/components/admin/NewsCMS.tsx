@@ -36,7 +36,7 @@ export function NewsCMS({
     updateSiteSettings
   } = useData();
 
-  const [newsSubTab, setNewsSubTab] = useState<"pageSettings" | "articlesList" | "announcements" | "homepage">("pageSettings");
+  const [newsSubTab, setNewsSubTab] = useState<"articlesList" | "homepage" | "pageSettings" | "announcements">("articlesList");
   
   // Local state forms
   const [newsList, setNewsList] = useState<NewsArticle[]>(news);
@@ -104,15 +104,15 @@ export function NewsCMS({
       readTime: "3 min read",
       excerpt: "Highlights and academic milestones achieved by faculty and students at Chalapathi University.",
       bodyText: "Full article detailing key milestones, research initiatives, collaborative projects, and future vision.",
-      image: "/prog_computer.png",
-      images: ["/prog_computer.png", "/prog_engineering.png"],
+      image: "",
+      images: [],
       featured: false,
       sourceUrl: ""
     };
     const updated = [newArticle, ...newsList];
     setNewsList(updated);
     updateNews(updated);
-    notifySave("New article created!");
+    notifySave("New article created! Upload your photos and edit details below.");
   };
 
   // Clear all articles handler
@@ -156,10 +156,10 @@ export function NewsCMS({
       {/* Subtabs Selector */}
       <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3">
         {[
-          { id: "pageSettings", label: "1. News Intro, Hero Spotlight & Highlights" },
-          { id: "articlesList", label: `2. News Articles Directory & CRUD (${newsList.length})` },
-          { id: "announcements", label: `3. Announcements Drawer (${announcementsList.length})` },
-          { id: "homepage", label: "4. Homepage News Slider & Feed" }
+          { id: "articlesList", label: `📰 1. News Articles Directory & Editor (${newsList.length})` },
+          { id: "homepage", label: "🏠 2. Homepage News & Events Live Feed" },
+          { id: "pageSettings", label: "🌟 3. News Portal Header & Hero Spotlight" },
+          { id: "announcements", label: `📢 4. Announcements & Notices Drawer (${announcementsList.length})` }
         ].map((st) => (
           <button
             key={st.id}
@@ -246,7 +246,7 @@ export function NewsCMS({
                   const currentImgs = newsPageForm.featuredCarouselImages || [];
                   setNewsPageForm({
                     ...newsPageForm,
-                    featuredCarouselImages: [...currentImgs, "/prog_computer.png"]
+                    featuredCarouselImages: [...currentImgs, ""]
                   });
                 }}
                 className="h-8 px-3 bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold rounded-lg flex items-center gap-1 shadow-xs cursor-pointer"
@@ -270,7 +270,7 @@ export function NewsCMS({
                 className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
               >
                 {newsList.length === 0 ? (
-                  <option value="">No articles available - Add an article in Subtab 2 first</option>
+                  <option value="">No articles available - Add an article in Tab 1 first</option>
                 ) : (
                   newsList.map((n) => (
                     <option key={n.id} value={n.id}>
@@ -283,62 +283,73 @@ export function NewsCMS({
 
             {/* Multi-Slide Carousel Images */}
             <div className="pt-3 space-y-3">
-              <h5 className="text-[11px] font-bold text-gray-600 uppercase">
-                Featured Hero Carousel Slides ({(newsPageForm.featuredCarouselImages || []).length} Slides)
-              </h5>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                {(newsPageForm.featuredCarouselImages || [
-                  "/prog_computer.png",
-                  "/prog_engineering.png",
-                  "/prog_management.png",
-                  "/prog_pharmacy.png"
-                ]).map((imgUrl, sIdx) => {
-                  const isSlideHidden = ((newsPageForm as any).hiddenCarouselSlides || []).includes(sIdx);
-                  return (
-                    <div 
-                      key={sIdx} 
-                      className={`p-3 rounded-xl border space-y-2 transition-all ${
-                        isSlideHidden 
-                          ? "bg-amber-50/30 border-dashed border-amber-300 opacity-70" 
-                          : "bg-slate-50 border-gray-200"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] font-black text-gray-500">Slide #{sIdx + 1}</span>
-                          {isSlideHidden && (
-                            <span className="px-1.5 py-0.2 text-[8px] font-black bg-amber-100 text-amber-800 rounded uppercase">
-                              Hidden
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const currentHidden: number[] = (newsPageForm as any).hiddenCarouselSlides || [];
-                              const updatedHidden = currentHidden.includes(sIdx)
-                                ? currentHidden.filter((i: number) => i !== sIdx)
-                                : [...currentHidden, sIdx];
-                              const updatedForm = { ...newsPageForm, hiddenCarouselSlides: updatedHidden };
-                              setNewsPageForm(updatedForm);
-                              updateNewsPageConfig(updatedForm);
-                              notifySave(`Slide #${sIdx + 1} is now ${currentHidden.includes(sIdx) ? "Visible" : "Hidden"}!`);
-                            }}
-                            className={`text-[10px] font-bold flex items-center gap-0.5 cursor-pointer transition-colors ${
-                              isSlideHidden 
-                                ? "text-amber-700 hover:text-amber-800" 
-                                : "text-gray-500 hover:text-[#072A6C]"
-                            }`}
-                            title={isSlideHidden ? "Click to Show Slide" : "Click to Hide Slide"}
-                          >
-                            {isSlideHidden ? (
-                              <><EyeOff size={11} className="text-amber-600" /> Hidden (Show)</>
-                            ) : (
-                              <><Eye size={11} className="text-gray-500" /> Hide</>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h5 className="text-[11px] font-black text-gray-700 uppercase tracking-wide">
+                    Featured Hero Carousel Slides ({(newsPageForm.featuredCarouselImages || []).length} Slides)
+                  </h5>
+                  <p className="text-[11px] text-gray-400">
+                    Slides displayed in the rotating top hero carousel on the /news portal.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const currentImgs = newsPageForm.featuredCarouselImages || [];
+                    setNewsPageForm({
+                      ...newsPageForm,
+                      featuredCarouselImages: [...currentImgs, ""]
+                    });
+                  }}
+                  className="h-7 px-3 bg-[#072A6C] hover:bg-[#051c4a] text-white text-[11px] font-bold rounded-lg flex items-center gap-1 cursor-pointer shadow-xs"
+                >
+                  <Plus size={12} /> Add Hero Slide
+                </button>
+              </div>
+
+              {(!newsPageForm.featuredCarouselImages || newsPageForm.featuredCarouselImages.length === 0) ? (
+                <div className="p-6 text-center border-2 border-dashed border-gray-200 rounded-xl bg-slate-50/50">
+                  <p className="text-xs font-bold text-gray-500">No Hero Carousel Slides Added</p>
+                  <p className="text-[11px] text-gray-400 mt-0.5">Click "+ Add Hero Slide" above to upload banner photos for the news portal header.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                  {(newsPageForm.featuredCarouselImages || []).map((imgUrl, sIdx) => {
+                    const isSlideHidden = ((newsPageForm as any).hiddenCarouselSlides || []).includes(sIdx);
+                    return (
+                      <div 
+                        key={sIdx} 
+                        className={`p-3 rounded-xl border space-y-2 transition-all ${
+                          isSlideHidden 
+                            ? "bg-amber-50/30 border-dashed border-amber-300 opacity-70" 
+                            : "bg-slate-50 border-gray-200"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] font-black text-gray-500">Slide #{sIdx + 1}</span>
+                            {isSlideHidden && (
+                              <span className="px-1.5 py-0.2 text-[8px] font-black bg-amber-100 text-amber-800 rounded uppercase">
+                                Hidden
+                              </span>
                             )}
-                          </button>
-                          {(newsPageForm.featuredCarouselImages?.length || 1) > 1 && (
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const currentHidden: number[] = (newsPageForm as any).hiddenCarouselSlides || [];
+                                const updatedHidden = currentHidden.includes(sIdx)
+                                  ? currentHidden.filter((i: number) => i !== sIdx)
+                                  : [...currentHidden, sIdx];
+                                const updatedForm = { ...newsPageForm, hiddenCarouselSlides: updatedHidden };
+                                setNewsPageForm(updatedForm);
+                                updateNewsPageConfig(updatedForm);
+                              }}
+                              className="text-[10px] text-gray-500 hover:text-[#072A6C] font-bold flex items-center gap-0.5 cursor-pointer"
+                            >
+                              {isSlideHidden ? <><EyeOff size={11} className="text-amber-600" /> Hidden</> : <><Eye size={11} /> Hide</>}
+                            </button>
                             <button
                               type="button"
                               onClick={() => {
@@ -350,30 +361,30 @@ export function NewsCMS({
                             >
                               <Trash2 size={11} /> Remove
                             </button>
-                          )}
+                          </div>
                         </div>
+                        <ImageField
+                          label="Hero Slide Photo"
+                          value={imgUrl || ""}
+                          defaultValue=""
+                          onChange={(val) => {
+                            const currentImgs = [...(newsPageForm.featuredCarouselImages || [])];
+                            currentImgs[sIdx] = val;
+                            setNewsPageForm({ ...newsPageForm, featuredCarouselImages: currentImgs });
+                          }}
+                          onReset={() => {
+                            const currentImgs = [...(newsPageForm.featuredCarouselImages || [])];
+                            currentImgs[sIdx] = "";
+                            setNewsPageForm({ ...newsPageForm, featuredCarouselImages: currentImgs });
+                          }}
+                          aspectRatio="video"
+                          recommendedSize="1200 × 700 px"
+                        />
                       </div>
-                    <ImageField
-                      label="Hero Slide Photo"
-                      value={imgUrl}
-                      defaultValue="/prog_computer.png"
-                      onChange={(val) => {
-                        const currentImgs = [...(newsPageForm.featuredCarouselImages || ["/prog_computer.png"])];
-                        currentImgs[sIdx] = val;
-                        setNewsPageForm({ ...newsPageForm, featuredCarouselImages: currentImgs });
-                      }}
-                      onReset={() => {
-                        const currentImgs = [...(newsPageForm.featuredCarouselImages || ["/prog_computer.png"])];
-                        currentImgs[sIdx] = "/prog_computer.png";
-                        setNewsPageForm({ ...newsPageForm, featuredCarouselImages: currentImgs });
-                      }}
-                      aspectRatio="video"
-                      recommendedSize="1200 × 700 px"
-                    />
-                  </div>
-                );
-              })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
 
@@ -527,64 +538,71 @@ export function NewsCMS({
               const idx = newsList.findIndex(n => n.id === article.id);
 
               return (
-                <div key={article.id} className="p-5 rounded-2xl border border-gray-200 bg-white shadow-xs space-y-4">
-                  {/* Card Header Bar */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 pb-3">
-                    <div className="flex items-center gap-2.5">
-                      <span className="w-6 h-6 rounded-full bg-[#072A6C] text-white text-xs font-black flex items-center justify-center">
-                        {idx + 1}
+                <div key={article.id} className="p-6 rounded-2xl border-2 border-slate-200/90 bg-white shadow-sm space-y-6">
+                  {/* Top Header Bar */}
+                  <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-gray-200">
+                    <div className="flex items-center gap-3">
+                      <span className="w-8 h-8 rounded-xl bg-[#072A6C] text-white text-xs font-black flex items-center justify-center shadow-xs">
+                        #{idx + 1 < 10 ? `0${idx + 1}` : idx + 1}
                       </span>
-                      <span className="text-xs font-black text-[#072A6C]">{article.title || "Untitled Article"}</span>
-                      <span className="text-[10px] font-extrabold uppercase bg-amber-50 text-amber-900 px-2.5 py-0.5 rounded-md border border-amber-200">
-                        {article.category || "General"}
-                      </span>
-                      {article.hidden && (
-                        <span className="text-[10px] font-black uppercase bg-red-100 text-red-800 px-2.5 py-0.5 rounded-md border border-red-200">
-                          Hidden
-                        </span>
-                      )}
-                      {article.featured && (
-                        <span className="text-[10px] font-bold uppercase bg-orange-100 text-orange-800 px-2 py-0.5 rounded-md flex items-center gap-1">
-                          <Flame size={11} /> Featured
-                        </span>
-                      )}
+                      <div>
+                        <h4 className="text-sm font-black text-[#072A6C] line-clamp-1">{article.title || "Untitled Article"}</h4>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[10px] font-bold uppercase bg-blue-50 text-blue-900 px-2 py-0.5 rounded border border-blue-200">
+                            {article.category || "General"}
+                          </span>
+                          {article.featured && (
+                            <span className="text-[10px] font-bold uppercase bg-amber-100 text-amber-900 px-2 py-0.5 rounded flex items-center gap-1 border border-amber-300">
+                              <Flame size={11} className="text-amber-600" /> Homepage Featured
+                            </span>
+                          )}
+                          {article.hidden && (
+                            <span className="text-[10px] font-bold uppercase bg-red-100 text-red-800 px-2 py-0.5 rounded border border-red-200">
+                              Hidden from Portal
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        disabled={idx === 0}
-                        onClick={() => {
-                          if (idx === 0) return;
-                          const updated = [...newsList];
-                          const temp = updated[idx];
-                          updated[idx] = updated[idx - 1];
-                          updated[idx - 1] = temp;
-                          setNewsList(updated);
-                          updateNews(updated);
-                        }}
-                        className="p-1.5 bg-slate-50 hover:bg-gray-100 border border-gray-200 rounded-md text-gray-600 disabled:opacity-30 cursor-pointer"
-                        title="Move Up"
-                      >
-                        <ArrowUp size={13} />
-                      </button>
-                      <button
-                        type="button"
-                        disabled={idx === newsList.length - 1}
-                        onClick={() => {
-                          if (idx === newsList.length - 1) return;
-                          const updated = [...newsList];
-                          const temp = updated[idx];
-                          updated[idx] = updated[idx + 1];
-                          updated[idx + 1] = temp;
-                          setNewsList(updated);
-                          updateNews(updated);
-                        }}
-                        className="p-1.5 bg-slate-50 hover:bg-gray-100 border border-gray-200 rounded-md text-gray-600 disabled:opacity-30 cursor-pointer"
-                        title="Move Down"
-                      >
-                        <ArrowDown size={13} />
-                      </button>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-gray-200">
+                        <button
+                          type="button"
+                          disabled={idx === 0}
+                          onClick={() => {
+                            if (idx === 0) return;
+                            const updated = [...newsList];
+                            const temp = updated[idx];
+                            updated[idx] = updated[idx - 1];
+                            updated[idx - 1] = temp;
+                            setNewsList(updated);
+                            updateNews(updated);
+                          }}
+                          className="p-1.5 hover:bg-white rounded-md text-gray-700 disabled:opacity-25 cursor-pointer transition-colors"
+                          title="Move Up in order"
+                        >
+                          <ArrowUp size={13} />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={idx === newsList.length - 1}
+                          onClick={() => {
+                            if (idx === newsList.length - 1) return;
+                            const updated = [...newsList];
+                            const temp = updated[idx];
+                            updated[idx] = updated[idx + 1];
+                            updated[idx + 1] = temp;
+                            setNewsList(updated);
+                            updateNews(updated);
+                          }}
+                          className="p-1.5 hover:bg-white rounded-md text-gray-700 disabled:opacity-25 cursor-pointer transition-colors"
+                          title="Move Down in order"
+                        >
+                          <ArrowDown size={13} />
+                        </button>
+                      </div>
+
                       <button
                         type="button"
                         onClick={() => {
@@ -595,15 +613,16 @@ export function NewsCMS({
                           updateNews(updated);
                           notifySave(`Article "${article.title || 'Untitled'}" is now ${isHidden ? 'Hidden' : 'Visible'}!`);
                         }}
-                        className={`h-7 px-2.5 border text-xs font-bold rounded-md flex items-center gap-1 cursor-pointer transition-colors ${
+                        className={`h-8 px-3 border text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer transition-all ${
                           article.hidden 
-                            ? "bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-300" 
+                            ? "bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300" 
                             : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-gray-200"
                         }`}
                         title={article.hidden ? "Show this article on website" : "Hide this article from website"}
                       >
-                        {article.hidden ? <><Eye size={12} /> Show</> : <><EyeOff size={12} /> Hide</>}
+                        {article.hidden ? <><Eye size={13} /> Unhide</> : <><EyeOff size={13} /> Hide</>}
                       </button>
+
                       <button
                         type="button"
                         onClick={() => {
@@ -614,251 +633,305 @@ export function NewsCMS({
                             notifySave("Article deleted.");
                           }
                         }}
-                        className="h-7 px-2.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-bold rounded-md flex items-center gap-1 cursor-pointer ml-2"
+                        className="h-8 px-3 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-all"
                       >
-                        <Trash2 size={12} /> Delete
+                        <Trash2 size={13} /> Delete
                       </button>
                     </div>
                   </div>
 
-                  {/* Title, Category & Read Time */}
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                    <div className="space-y-1 md:col-span-2">
-                      <label className="text-[10px] font-bold text-gray-600 uppercase">Article Headline Title</label>
+                  {/* ── SECTION 1: HEADLINE, METADATA & LINKS ── */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-900 text-[10px] font-black flex items-center justify-center">1</span>
+                      <h5 className="text-xs font-black text-gray-800 uppercase tracking-wide">
+                        Article Headline & Metadata
+                      </h5>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                      <div className="space-y-1 md:col-span-2">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Article Headline Title *</label>
+                        <input
+                          type="text"
+                          value={article.title}
+                          onChange={(e) => {
+                            const updated = [...newsList];
+                            updated[idx] = { ...updated[idx], title: e.target.value };
+                            setNewsList(updated);
+                          }}
+                          placeholder="e.g. University Signs Historic Research Accord..."
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold text-slate-900 focus:bg-white"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Category *</label>
+                        <input
+                          type="text"
+                          value={article.category}
+                          onChange={(e) => {
+                            const updated = [...newsList];
+                            updated[idx] = { ...updated[idx], category: e.target.value };
+                            setNewsList(updated);
+                          }}
+                          placeholder="e.g. Research, Tech, Placement"
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg font-semibold text-slate-800 focus:bg-white"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Read Time</label>
+                        <input
+                          type="text"
+                          value={article.readTime || "4 min read"}
+                          onChange={(e) => {
+                            const updated = [...newsList];
+                            updated[idx] = { ...updated[idx], readTime: e.target.value };
+                            setNewsList(updated);
+                          }}
+                          placeholder="e.g. 3 min read"
+                          className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg text-slate-800 focus:bg-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">URL Slug</label>
+                        <input
+                          type="text"
+                          value={article.slug || `article-${article.id}`}
+                          onChange={(e) => {
+                            const updated = [...newsList];
+                            updated[idx] = { ...updated[idx], slug: e.target.value };
+                            setNewsList(updated);
+                          }}
+                          placeholder="e.g. ai-research-breakthrough"
+                          className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg font-mono text-slate-700 focus:bg-white"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">Publish Date</label>
+                        <input
+                          type="text"
+                          value={article.date}
+                          onChange={(e) => {
+                            const updated = [...newsList];
+                            updated[idx] = { ...updated[idx], date: e.target.value };
+                            setNewsList(updated);
+                          }}
+                          placeholder="e.g. 19 Sep 2026"
+                          className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg text-slate-800 focus:bg-white"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-600 uppercase">External Source Link (Optional)</label>
+                        <input
+                          type="text"
+                          value={article.sourceUrl || ""}
+                          onChange={(e) => {
+                            const updated = [...newsList];
+                            updated[idx] = { ...updated[idx], sourceUrl: e.target.value };
+                            setNewsList(updated);
+                          }}
+                          placeholder="e.g. https://timesofindia..."
+                          className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg font-mono text-slate-700 focus:bg-white"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-gray-200 pt-5 space-y-3">
+                    {/* ── SECTION 2: EXCERPT & FULL BODY STORY ── */}
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-900 text-[10px] font-black flex items-center justify-center">2</span>
+                      <h5 className="text-xs font-black text-gray-800 uppercase tracking-wide">
+                        Article Summary & Full Story Text
+                      </h5>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-600 uppercase">Short Excerpt (Displayed on Cards & Homepage)</label>
                       <input
                         type="text"
-                        value={article.title}
+                        value={article.excerpt || ""}
                         onChange={(e) => {
                           const updated = [...newsList];
-                          updated[idx] = { ...updated[idx], title: e.target.value };
+                          updated[idx] = { ...updated[idx], excerpt: e.target.value };
                           setNewsList(updated);
                         }}
-                        className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg font-bold text-slate-800"
+                        placeholder="Brief 1-2 sentence synopsis shown in news previews..."
+                        className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg text-slate-800 focus:bg-white"
                       />
                     </div>
+
                     <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-gray-600 uppercase">Category</label>
-                      <input
-                        type="text"
-                        value={article.category}
+                      <label className="text-[10px] font-bold text-gray-600 uppercase">Full News Body Story</label>
+                      <textarea
+                        rows={3}
+                        value={article.bodyText || ""}
                         onChange={(e) => {
                           const updated = [...newsList];
-                          updated[idx] = { ...updated[idx], category: e.target.value };
+                          updated[idx] = { ...updated[idx], bodyText: e.target.value };
                           setNewsList(updated);
                         }}
-                        placeholder="e.g. Technology, AI, Placement"
-                        className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg font-semibold text-slate-700"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-gray-600 uppercase">Read Time</label>
-                      <input
-                        type="text"
-                        value={article.readTime || "4 min read"}
-                        onChange={(e) => {
-                          const updated = [...newsList];
-                          updated[idx] = { ...updated[idx], readTime: e.target.value };
-                          setNewsList(updated);
-                        }}
-                        placeholder="e.g. 3 min read"
-                        className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg text-slate-700"
+                        placeholder="Complete article coverage, quotes, achievements, and paragraphs..."
+                        className="w-full p-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg leading-relaxed text-slate-800 focus:bg-white"
                       />
                     </div>
                   </div>
 
-                  {/* Slug, Date, External Source URL */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-gray-600 uppercase">URL Slug</label>
-                      <input
-                        type="text"
-                        value={article.slug || `article-${article.id}`}
-                        onChange={(e) => {
-                          const updated = [...newsList];
-                          updated[idx] = { ...updated[idx], slug: e.target.value };
-                          setNewsList(updated);
-                        }}
-                        placeholder="e.g. ai-research-lab"
-                        className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg font-mono text-slate-700"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-gray-600 uppercase">Publish Date</label>
-                      <input
-                        type="text"
-                        value={article.date}
-                        onChange={(e) => {
-                          const updated = [...newsList];
-                          updated[idx] = { ...updated[idx], date: e.target.value };
-                          setNewsList(updated);
-                        }}
-                        placeholder="e.g. 19 Sep 2026"
-                        className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg text-slate-700"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-gray-600 uppercase">External Source Link (Optional)</label>
-                      <input
-                        type="text"
-                        value={article.sourceUrl || ""}
-                        onChange={(e) => {
-                          const updated = [...newsList];
-                          updated[idx] = { ...updated[idx], sourceUrl: e.target.value };
-                          setNewsList(updated);
-                        }}
-                        placeholder="e.g. https://timesofindia.indiatimes.com/..."
-                        className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg font-mono text-slate-700"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Excerpt */}
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-gray-600 uppercase">Short Summary Excerpt (Shown on cards)</label>
-                    <input
-                      type="text"
-                      value={article.excerpt}
-                      onChange={(e) => {
-                        const updated = [...newsList];
-                        updated[idx] = { ...updated[idx], excerpt: e.target.value };
-                        setNewsList(updated);
-                      }}
-                      placeholder="Brief 1-2 line summary..."
-                      className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg text-slate-800"
-                    />
-                  </div>
-
-                  {/* Body Story */}
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-gray-600 uppercase">Full News Body Story</label>
-                    <textarea
-                      rows={3}
-                      value={article.bodyText}
-                      onChange={(e) => {
-                        const updated = [...newsList];
-                        updated[idx] = { ...updated[idx], bodyText: e.target.value };
-                        setNewsList(updated);
-                      }}
-                      placeholder="Detailed news article body text..."
-                      className="w-full p-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg leading-relaxed text-slate-800"
-                    />
-                  </div>
-
-                  {/* Primary Cover Image */}
-                  <ImageField
-                    label="Primary Cover Photo"
-                    value={article.image || "/prog_computer.png"}
-                    defaultValue="/prog_computer.png"
-                    onChange={(val) => {
-                      const updated = [...newsList];
-                      updated[idx] = { ...updated[idx], image: val };
-                      setNewsList(updated);
-                    }}
-                    onReset={() => {
-                      const updated = [...newsList];
-                      updated[idx] = { ...updated[idx], image: "/prog_computer.png" };
-                      setNewsList(updated);
-                    }}
-                    aspectRatio="video"
-                  />
-
-                  {/* Multi-Slide Gallery Images Slider (for News Details page) */}
-                  <div className="p-4 rounded-xl border border-blue-200/70 bg-blue-50/30 space-y-3">
-                    <div className="flex items-center justify-between">
+                  <div className="border-t border-gray-200 pt-5 space-y-3">
+                    {/* ── SECTION 3: PRIMARY COVER PHOTO ── */}
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-900 text-[10px] font-black flex items-center justify-center">3</span>
                       <div>
-                        <h5 className="text-xs font-black text-blue-950 uppercase tracking-wide">
-                          Article Multi-Image Gallery Slider ({article.images?.length || (article.image ? 1 : 0)} Slides)
+                        <h5 className="text-xs font-black text-gray-800 uppercase tracking-wide">
+                          Primary Cover Photo
                         </h5>
-                        <p className="text-[11px] text-blue-900/80">
-                          Multi-slide carousel shown inside the news detail page with left/right arrows & dot indicators.
-                        </p>
+                        <p className="text-[10px] text-gray-400">Main photo shown on news cards, top banners, and article header.</p>
+                      </div>
+                    </div>
+
+                    <ImageField
+                      label="Primary Cover Photo"
+                      value={article.image || ""}
+                      defaultValue=""
+                      onChange={(val) => {
+                        const updated = [...newsList];
+                        updated[idx] = { ...updated[idx], image: val };
+                        setNewsList(updated);
+                      }}
+                      onReset={() => {
+                        const updated = [...newsList];
+                        updated[idx] = { ...updated[idx], image: "" };
+                        setNewsList(updated);
+                      }}
+                      aspectRatio="video"
+                    />
+                  </div>
+
+                  <div className="border-t border-gray-200 pt-5 space-y-3">
+                    {/* ── SECTION 4: MULTI-SLIDE PHOTO GALLERY ── */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-900 text-[10px] font-black flex items-center justify-center">4</span>
+                        <div>
+                          <h5 className="text-xs font-black text-gray-800 uppercase tracking-wide">
+                            Additional Photo Gallery Slider ({article.images?.length || 0} Slides)
+                          </h5>
+                          <p className="text-[10px] text-gray-400">Optional carousel shown on the article details page. If none added, only the cover photo is used.</p>
+                        </div>
                       </div>
                       <button
                         type="button"
                         onClick={() => {
-                          const currentImgs = article.images && article.images.length > 0 ? [...article.images] : [article.image || "/prog_computer.png"];
+                          const currentImgs = article.images || [];
                           const updated = [...newsList];
-                          updated[idx] = { ...updated[idx], images: [...currentImgs, "/prog_computer.png"] };
+                          updated[idx] = { ...updated[idx], images: [...currentImgs, ""] };
                           setNewsList(updated);
                         }}
-                        className="h-7 px-2.5 bg-[#072A6C] hover:bg-[#051c4a] text-white text-[11px] font-bold rounded-md flex items-center gap-1 cursor-pointer shadow-2xs"
+                        className="h-7 px-3 bg-[#072A6C] hover:bg-[#051c4a] text-white text-[11px] font-bold rounded-lg flex items-center gap-1 cursor-pointer shadow-2xs self-start sm:self-auto"
                       >
-                        <Plus size={12} /> Add Article Slide
+                        <Plus size={12} /> Add Gallery Slide
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {(article.images && article.images.length > 0 ? article.images : [article.image || "/prog_computer.png"]).map((imgUrl, sIdx) => (
-                        <div key={sIdx} className="p-3 bg-white rounded-xl border border-gray-200 shadow-2xs space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-black text-gray-400">Slide #{sIdx + 1}</span>
-                            {(article.images?.length || 1) > 1 && (
+                    {!article.images || article.images.length === 0 ? (
+                      <div className="p-4 rounded-xl border border-dashed border-gray-200 bg-slate-50/60 text-center">
+                        <p className="text-xs text-gray-400">
+                          No additional gallery slides attached. Click <strong className="text-[#072A6C]">+ Add Gallery Slide</strong> to attach more photos.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {article.images.map((imgUrl, sIdx) => (
+                          <div key={sIdx} className="p-3 bg-white rounded-xl border border-gray-200 shadow-2xs space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-black text-gray-500 uppercase">Slide #{sIdx + 1}</span>
                               <button
                                 type="button"
                                 onClick={() => {
-                                  const currentImgs = article.images && article.images.length > 0 ? [...article.images] : [article.image || "/prog_computer.png"];
-                                  const filtered = currentImgs.filter((_, i) => i !== sIdx);
+                                  const filtered = (article.images || []).filter((_, i) => i !== sIdx);
                                   const updated = [...newsList];
                                   updated[idx] = { ...updated[idx], images: filtered };
                                   setNewsList(updated);
                                 }}
                                 className="text-[10px] text-red-500 hover:text-red-700 font-bold flex items-center gap-0.5 cursor-pointer"
                               >
-                                <Trash2 size={11} /> Remove
+                                <Trash2 size={11} /> Remove Slide
                               </button>
-                            )}
+                            </div>
+                            <ImageField
+                              label={`Gallery Slide #${sIdx + 1}`}
+                              value={imgUrl || ""}
+                              defaultValue=""
+                              onChange={(val) => {
+                                const currentImgs = [...(article.images || [])];
+                                currentImgs[sIdx] = val;
+                                const updated = [...newsList];
+                                updated[idx] = { ...updated[idx], images: currentImgs };
+                                setNewsList(updated);
+                              }}
+                              onReset={() => {
+                                const currentImgs = [...(article.images || [])];
+                                currentImgs[sIdx] = "";
+                                const updated = [...newsList];
+                                updated[idx] = { ...updated[idx], images: currentImgs };
+                                setNewsList(updated);
+                              }}
+                              aspectRatio="video"
+                              recommendedSize="1200 × 700 px"
+                            />
                           </div>
-                          <ImageField
-                            label="Article Slide Photo"
-                            value={imgUrl}
-                            defaultValue="/prog_computer.png"
-                            onChange={(val) => {
-                              const currentImgs = article.images && article.images.length > 0 ? [...article.images] : [article.image || "/prog_computer.png"];
-                              currentImgs[sIdx] = val;
-                              const updated = [...newsList];
-                              updated[idx] = { ...updated[idx], images: currentImgs };
-                              setNewsList(updated);
-                            }}
-                            onReset={() => {
-                              const currentImgs = article.images && article.images.length > 0 ? [...article.images] : [article.image || "/prog_computer.png"];
-                              currentImgs[sIdx] = "/prog_computer.png";
-                              const updated = [...newsList];
-                              updated[idx] = { ...updated[idx], images: currentImgs };
-                              setNewsList(updated);
-                            }}
-                            aspectRatio="video"
-                            recommendedSize="1200 × 700 px"
-                          />
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
-                  {/* Featured Toggle */}
-                  <div className="pt-2 border-t border-gray-100 flex items-center justify-between">
-                    <label className="flex items-center gap-2 cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={!!article.featured}
-                        onChange={(e) => {
-                          const updated = [...newsList];
-                          updated[idx] = { ...updated[idx], featured: e.target.checked };
-                          setNewsList(updated);
-                        }}
-                        className="w-4 h-4 rounded text-[#072A6C] focus:ring-[#072A6C]"
-                      />
-                      <span className="text-xs font-bold text-gray-700">Display in Featured Hero / Top Spotlight</span>
-                    </label>
+                  <div className="border-t border-gray-200 pt-5 space-y-3">
+                    {/* ── SECTION 5: HOMEPAGE PLACEMENT & CONTROLS ── */}
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-amber-100 text-amber-900 text-[10px] font-black flex items-center justify-center">5</span>
+                      <div>
+                        <h5 className="text-xs font-black text-gray-800 uppercase tracking-wide">
+                          Homepage Carousel Placement & Live Link
+                        </h5>
+                      </div>
+                    </div>
 
-                    <a
-                      href={`/news/${article.slug}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-xs text-[#072A6C] hover:underline font-bold flex items-center gap-1"
-                    >
-                      <span>Preview Live Page</span>
-                      <ExternalLink size={12} />
-                    </a>
+                    <div className="p-4 rounded-xl bg-amber-50/50 border border-amber-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <label className="flex items-center gap-3 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={!!article.featured}
+                          onChange={(e) => {
+                            const updated = [...newsList];
+                            updated[idx] = { ...updated[idx], featured: e.target.checked };
+                            setNewsList(updated);
+                          }}
+                          className="w-4 h-4 rounded text-amber-600 focus:ring-amber-500 cursor-pointer"
+                        />
+                        <div>
+                          <span className="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                            <Flame size={13} className="text-amber-600" />
+                            Feature in Homepage News Carousel
+                          </span>
+                          <p className="text-[10px] text-gray-500">
+                            Check this to make this story rotate prominently in the News & Events carousel on the front page.
+                          </p>
+                        </div>
+                      </label>
+
+                      <a
+                        href={`/news/${article.slug || `article-${article.id}`}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-3 py-1.5 bg-white border border-gray-300 hover:border-[#072A6C] text-[#072A6C] rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-2xs self-start sm:self-auto transition-colors"
+                      >
+                        <span>Preview Live Page</span>
+                        <ExternalLink size={12} />
+                      </a>
+                    </div>
                   </div>
 
                 </div>

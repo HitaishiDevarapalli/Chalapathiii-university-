@@ -151,8 +151,8 @@ export default function News() {
 
   // Dynamic featured images prioritizing the article's own configured image
   const featuredImages = featuredArticle?.image
-    ? [featuredArticle.image, ...baseCarouselImages.filter(img => img !== featuredArticle.image)]
-    : (baseCarouselImages.length > 0 ? baseCarouselImages : ["/prog_computer.png"]);
+    ? [featuredArticle.image, ...baseCarouselImages.filter(img => img && img !== featuredArticle.image)]
+    : (baseCarouselImages.length > 0 ? baseCarouselImages : []);
 
   // Handle active slide controls
   const handlePrevSlide = (e: React.MouseEvent) => {
@@ -265,14 +265,24 @@ export default function News() {
             
             {/* Left half: Image slider carousel */}
             <div className="w-full md:w-1/2 relative bg-slate-900 group min-h-[320px] md:min-h-auto flex items-stretch">
-              <img 
-                src={featuredImages[activeSlide % featuredImages.length]} 
-                alt={featuredArticle?.title || "Featured News"} 
-                onError={(e) => { (e.target as HTMLImageElement).src = "/prog_computer.png"; }}
-                className="absolute inset-0 w-full h-full object-cover transition-all duration-500"
-                loading="eager"
-                decoding="async"
-              />
+              {featuredImages.length > 0 && featuredImages[activeSlide % featuredImages.length] ? (
+                <img 
+                  src={featuredImages[activeSlide % featuredImages.length]} 
+                  alt={featuredArticle?.title || "Featured News"} 
+                  onError={(e) => { (e.target as HTMLImageElement).src = "/logo.png?v=3"; }}
+                  className="absolute inset-0 w-full h-full object-cover transition-all duration-500"
+                  loading="eager"
+                  decoding="async"
+                />
+              ) : (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-[#072A6C] to-[#0A388F] text-white p-6 text-center">
+                  <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mb-2">
+                    <img src="/logo.png?v=3" alt="Chalapathi" className="h-8 w-auto object-contain brightness-0 invert opacity-80" />
+                  </div>
+                  <span className="text-[10px] font-bold text-amber-300 uppercase tracking-widest">Chalapathi University</span>
+                  <span className="text-xs font-black text-white mt-1">Official News Portal</span>
+                </div>
+              )}
               <div className="absolute inset-0 bg-black/10" />
               
               {/* Featured Badge */}
@@ -551,15 +561,22 @@ export default function News() {
               >
                 <div>
                   {/* Image */}
-                  <div className="h-44 overflow-hidden bg-gray-50 relative w-full border-b border-gray-100">
-                    <img 
-                      src={item.image} 
-                      alt={item.title} 
-                      onError={(e) => { (e.target as HTMLImageElement).src = "/prog_computer.png"; }}
-                      className="w-full h-full object-cover" 
-                      loading="lazy"
-                      decoding="async"
-                    />
+                  <div className="h-44 overflow-hidden bg-slate-100 relative w-full border-b border-gray-100 flex items-center justify-center">
+                    {item.image ? (
+                      <img 
+                        src={item.image} 
+                        alt={item.title} 
+                        onError={(e) => { (e.target as HTMLImageElement).src = "/logo.png?v=3"; }}
+                        className="w-full h-full object-cover" 
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 text-slate-400 p-4">
+                        <img src="/logo.png?v=3" alt="Chalapathi" className="h-8 w-auto object-contain opacity-40 mb-1" />
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">News Story</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Content */}

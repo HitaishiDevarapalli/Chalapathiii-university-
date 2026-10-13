@@ -227,7 +227,7 @@ export default function NewsDetails() {
   // Load slider images (prioritizing custom configured images, then cover image, fallback placeholder)
   const sliderImages = (article.images && article.images.length > 0)
     ? article.images
-    : (article.image ? [article.image] : ["/prog_computer.png"]);
+    : (article.image ? [article.image] : []);
 
   return (
     <div className="min-h-screen bg-[#F7F9FC] py-10 font-[var(--font-poppins)] relative text-left">

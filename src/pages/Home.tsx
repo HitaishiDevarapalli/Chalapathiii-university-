@@ -817,13 +817,24 @@ export default function Home() {
                   {/* Left half: Image slider carousel */}
                   <div className="w-full md:w-1/2 relative bg-slate-900 group min-h-[300px] md:min-h-auto flex items-stretch">
                     {featuredSlides[activeNewsSlide] && (
-                      <img 
-                        src={featuredSlides[activeNewsSlide].image || "/prog_computer.png"} 
-                        alt={featuredSlides[activeNewsSlide].title || "Featured News"} 
-                        className="absolute inset-0 w-full h-full object-cover transition-all duration-500"
-                        loading="lazy"
-                        decoding="async"
-                      />
+                      featuredSlides[activeNewsSlide].image ? (
+                        <img 
+                          src={featuredSlides[activeNewsSlide].image} 
+                          alt={featuredSlides[activeNewsSlide].title || "Featured News"} 
+                          onError={(e) => { (e.target as HTMLImageElement).src = "/logo.png?v=3"; }}
+                          className="absolute inset-0 w-full h-full object-cover transition-all duration-500"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-[#072A6C] to-[#0A388F] text-white p-6 text-center">
+                          <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mb-2">
+                            <img src="/logo.png?v=3" alt="Chalapathi" className="h-8 w-auto object-contain brightness-0 invert opacity-80" />
+                          </div>
+                          <span className="text-[10px] font-bold text-amber-300 uppercase tracking-widest">Chalapathi University</span>
+                          <span className="text-xs font-black text-white mt-1">Featured News Story</span>
+                        </div>
+                      )
                     )}
                     <div className="absolute inset-0 bg-black/10 pointer-events-none" />
                     

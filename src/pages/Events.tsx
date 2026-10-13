@@ -176,16 +176,23 @@ export default function Events() {
                     className="w-full md:w-[calc((100%-32px)/2)] lg:w-[calc((100%-64px)/3)] shrink-0 bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-lg hover:border-orange-200 transition-all duration-300 flex flex-col group text-left cursor-pointer outline-none pointer-events-auto select-none"
                   >
                     {/* Image */}
-                    <div className="h-56 overflow-hidden bg-slate-900 relative w-full">
-                      <img
-                        src={item.image}
-                        alt={item.title}
-                        onError={(e) => { (e.target as HTMLImageElement).src = "/prog_engineering.png"; }}
-                        className="w-full h-full object-cover object-center"
-                        draggable="false"
-                        loading="lazy"
-                        decoding="async"
-                      />
+                    <div className="h-56 overflow-hidden bg-slate-900 relative w-full flex items-center justify-center">
+                      {item.image ? (
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          onError={(e) => { (e.target as HTMLImageElement).src = "/logo.png?v=3"; }}
+                          className="w-full h-full object-cover object-center"
+                          draggable="false"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-[#072A6C] to-[#0c1f44] text-white p-4">
+                          <img src="/logo.png?v=3" alt="Chalapathi" className="h-10 w-auto object-contain opacity-50 mb-2 brightness-0 invert" />
+                          <span className="text-[11px] font-extrabold text-amber-300 uppercase tracking-widest">{item.category}</span>
+                        </div>
+                      )}
                       {closed && (
                         <div className="absolute top-4 right-4 bg-gray-600/90 text-white text-[10px] font-black px-3 py-1 rounded-full backdrop-blur-sm uppercase tracking-wider shadow-sm">
                           REGISTRATION CLOSED
