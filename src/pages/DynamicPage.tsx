@@ -101,222 +101,38 @@ const getPageContent = (path: string, programs: any[], newsPageConfig?: any) => 
 
   // News Article Pages
   if (cleanPath.startsWith("/news/")) {
-    const article = [
-      {
-        slug: "ai-research-lab",
-        title: "AI Research Lab Inaugurated on Campus",
-        category: "Innovation",
-        desc: "In partnership with global tech giants, the new laboratory features advanced machine learning compute nodes for research projects.",
-        bodyText: "Today marks a historic milestone for Chalapathi University as we formally inaugurate our state-of-the-art Artificial Intelligence and Machine Learning Research Laboratory. Developed in close collaboration with global technology leaders, this research center is equipped with high-throughput multi-GPU processing systems and next-generation compute environments designed specifically for heavy workload deep learning and neural network model training. Under the direction of our senior AI research staff, undergraduate and doctoral scholars will collaborate on active research papers, smart industrial solutions, and healthcare diagnostics automation projects. Student cohorts will have access to real-time research fellowships, academic grants, and direct mentoring pipelines to build future computing technologies."
-      },
-      {
-        slug: "smart-hackathon",
-        title: "Engineering Students Win Smart Hackathon 2025",
-        category: "Achievement",
-        desc: "Our team developed a decentralized IoT mesh network algorithm to win first prize at the national technology showcase competition.",
-        bodyText: "We are extremely proud to announce that the student research team from our Electronics and Computer Science Engineering departments has won the prestigious National Smart Systems Hackathon 2025. Over a grueling 36-hour continuous sprint in New Delhi, the team designed and prototyped a self-healing, decentralized IoT mesh network framework tailored for real-time disaster management communication. The algorithm maintains high packet-delivery rates even during severe node disruptions. The project won first prize, carrying a gold trophy and a cash reward of ₹1,00,000, standing out among 250 participating institutions nationwide."
-      },
-      {
-        slug: "yoga-day",
-        title: "International Yoga Day Celebrated with Great Enthusiasm",
-        category: "Campus Life",
-        desc: "Students and faculty participated in a special yoga session promoting health and wellness.",
-        bodyText: "Students and faculty participated in a special yoga session promoting health, wellness, and mental clarity on International Yoga Day. The event was held in the main campus courtyard with over 500 participants practicing various asanas guided by certified yoga instructors."
-      },
-      {
-        slug: "renewable-energy",
-        title: "New Study on Renewable Energy Published in Scopus Journal",
-        category: "Research",
-        desc: "The research highlights the efficiency of hybrid models in optimizing sustainable energy.",
-        bodyText: "A breakthrough research paper on renewable energy harvesting techniques has been published in a top-tier Scopus-indexed journal. The study highlights the implementation of hybrid solar-wind energy conservation models in microgrids."
-      },
-      {
-        slug: "record-placements",
-        title: "Record Placements in 2025 Batch",
-        category: "Placements",
-        desc: "Top recruiters from across the globe visited campus. Students secured roles in leading MNCs.",
-        bodyText: "Chalapathi University registers outstanding placement results for the 2025 batch. Leading multinationals including tech and core giants participated, offering premium software engineering and core research positions to over 90% of eligible graduates."
-      },
-      {
-        slug: "annual-convocation",
-        title: "Annual Convocation 2025 Held with Grandeur",
-        category: "Campus Life",
-        desc: "Graduating students received degrees and medals at the colorful convocation ceremony.",
-        bodyText: "The 2025 annual convocation ceremony was celebrated with grand success. Distinguished chief guests from corporate and academic bodies addressed the graduating cohort and distributed gold medals to academic toppers."
-      },
-      {
-        slug: "admissions-open",
-        title: "Admissions Open for Academic Year 2025-26",
-        category: "Admissions",
-        desc: "Applications are invited for UG, PG, and Ph.D. courses. Apply online today.",
-        bodyText: "Admissions are officially open for the academic term 2025-2026. Prospective candidates can check qualifications, course fees, placement details, and apply online through our official portal."
-      },
-      {
-        slug: "innovation-summit",
-        title: "Annual Innovation & Entrepreneurship Summit",
-        category: "Events",
-        desc: "Empowering student founders, early-stage startups, and venture capitalists to collaborate on product solutions.",
-        bodyText: "The Annual Innovation & Entrepreneurship Summit at City Chalapathi stands as our premier event dedicated to building startup ecosystems. Student groups will pitch prototypes directly to angel investors, regional venture capital firms, and incubator heads."
-      },
-      {
-        slug: "mou-signed",
-        title: "MoU Signed with Top Global Corporations for Placements",
-        category: "Corporate Link",
-        desc: "Enabling direct internship allocations, corporate-readiness workshops, and accelerated final semester student placements.",
-        bodyText: "Chalapathi University has officially entered into a strategic Memorandum of Understanding (MoU) with leading multinational software and core engineering firms. This collaboration significantly strengthens our training and placement initiatives. Beginning this academic term, corporate mentors will conduct regular guest workshops on enterprise architectures and cloud DevOps technologies. The agreement also establishes a dedicated early-internship pipeline, allowing final-year engineering and management students to undertake structured industrial projects directly at corporate campuses, paving a fast-track pathway for high-compensation final placements."
-      },
-      {
-        slug: "pharmacy-formulations",
-        title: "New Pharmacy Research Formulations Published",
-        category: "Research",
-        desc: "Our department has published groundbreaking formulations on nano-carrier systems in high-impact medical journals.",
-        bodyText: "The Department of Pharmaceutics at City Chalapathi has published a research breakthrough regarding target-oriented drug delivery systems. The research details a novel nano-carrier formulation that significantly increases the solubility and bioavailability of therapeutic drugs, offering potential applications for targeted anti-inflammatory treatments. Published in a highly respected international pharmaceutical journal, the research is the culmination of three years of rigorous laboratory analysis led by our postgraduate research scholars and senior faculty. This publication underscores our commitment to advancing pharmaceutical sciences on a global stage."
-      },
-      {
-        slug: "global-education-fair",
-        title: "Global Education Fair and Career Expo Hosts 30+ Universities",
-        category: "International",
-        desc: "Students interacted directly with global admission directors from US, UK, and European universities for postgraduate guidance.",
-        bodyText: "We successfully hosted the annual Global Education fair and Career Expo on our central campus yesterday. The event hosted admissions directors and official representatives from over 30 leading universities across the United States, United Kingdom, Australia, and European Union countries. Hundreds of undergraduate students from final and pre-final semesters attended the fair to discuss entry requirements, IELTS/GRE waivers, postgraduate research opportunities, and scholarship applications directly with the university officials, opening new international education horizons for our graduates."
-      },
-      {
-        slug: "annual-sports-meet",
-        title: "Annual Sports Meet Kickstarts with Inter-Department Matches",
-        category: "Campus Life",
-        desc: "The campus cricket and basketball tournaments kicked off with participation from over 500 student athletes.",
-        bodyText: "The annual campus sports tournament commenced yesterday with a spectacular torch run and flag hoisting ceremony at the main sports complex. Over 500 student athletes representing all engineering, pharmacy, and science departments are participating in active inter-department tournaments spanning cricket, football, basketball, track & field events, and indoor sports. The opening matches saw high-energy contests, fostering team spirit and sportsmanship across the campus community."
-      },
-      {
-        slug: "sustainable-construction",
-        title: "Workshop on Sustainable Construction Materials Conducted",
-        category: "Workshop",
-        desc: "Civil engineering experts held a hands-on session demonstrating self-healing concrete applications.",
-        bodyText: "A comprehensive technical workshop on modern green construction materials was held by our Civil Engineering Department. Industry practitioners and structural engineers attended to demonstrate application techniques for self-healing concrete and fly-ash geopolymer composites. Students participated in concrete casting laboratories and stress testing, gaining valuable insight into eco-friendly engineering practices."
-      },
-      {
-        slug: "alumni-meet",
-        title: "Alumni Meet 2025 Welcomes Back Distinguished Graduates",
-        category: "Alumni Connect",
-        desc: "Over 200 alumni reconnected on campus, sharing industry insights and instituting new scholarship grants.",
-        bodyText: "The campus yesterday welcomed back more than 200 distinguished alumni representing graduates from the past two decades. The meet provided a platform for alumni to interact with current student cohorts, share industrial insights, and discuss mentorship opportunities. The alumni association announced the setup of a new student innovation fund to support budding startup projects on campus."
-      }
-    ].find(x => cleanPath.endsWith(x.slug));
-
-    if (article) {
-      return {
-        title: article.title,
-        category: article.category,
-        desc: article.desc,
-        body: (
-          <div className="space-y-6 text-gray-600 text-sm leading-relaxed">
-            <p>{article.bodyText}</p>
-            <div className="bg-[#072A6C]/5 border-l-4 border-[#072A6C] p-4 rounded-r-[8px] text-[12px] text-gray-700 italic">
-              "We congratulate all participants, sponsors, and faculty members involved in this milestone announcement. Stay tuned for further updates."
-            </div>
-            <Link to="/news" className="inline-flex items-center gap-1.5 text-xs font-bold text-[#D4AF37] hover:text-[#072A6C] transition-colors mt-6">
-              ← Back to News Center
-            </Link>
-          </div>
-        )
-      };
-    }
+    return {
+      title: "News Center",
+      category: "News & Press",
+      desc: "University updates, press announcements, and media releases.",
+      body: (
+        <div className="space-y-6 text-gray-600 text-sm leading-relaxed">
+          <p>Explore all campus news articles in our official news center.</p>
+          <Link to="/news" className="inline-flex items-center gap-1.5 text-xs font-bold text-[#D4AF37] hover:text-[#072A6C] transition-colors mt-6">
+            ← Go to News Center
+          </Link>
+        </div>
+      )
+    };
   }
 
   // Event Detail Pages
   if (cleanPath.startsWith("/news/events/")) {
-    const eventItem = [
-      {
-        slug: "air-taxi-demonstration",
-        title: "Air Taxi Demonstration & Aviation Forum",
-        category: "Aerospace",
-        date: "17 Jul 2026",
-        time: "09:30 AM Onwards",
-        venue: "Aeronautics Hangar & Airfield Complex",
-        desc: "An exclusive exhibition showcasing autonomous vertical take-off and landing (eVTOL) systems and the future of urban air mobility.",
-        bodyText: "In collaboration with global aerospace research institutions and pioneering aviation companies, Chalapathi University is proud to host the Air Taxi Demonstration and Aviation Forum. This event features real-world test flights and static exhibitions of cutting-edge electric Vertical Take-Off and Landing (eVTOL) air taxi models. Attendees will engage with senior flight control engineers, software architects, and regulators discussing flight path safety, battery technology, and battery charging infrastructure. The afternoon panel sessions will cover career pathways in modern avionics, autonomous navigation algorithms, and smart city infrastructure integration."
-      },
-      {
-        slug: "innovation-summit",
-        title: "Annual Innovation & Entrepreneurship Summit",
-        category: "Summit",
-        date: "05 Aug 2026",
-        time: "10:00 AM Onwards",
-        venue: "Campus Incubation & Startup Block",
-        desc: "Empowering student founders, early-stage startups, and venture capitalists to collaborate on next-generation software and product solutions.",
-        bodyText: "The Annual Innovation & Entrepreneurship Summit at City Chalapathi stands as our premier event dedicated to building startup ecosystems. Student groups will pitch prototypes directly to angel investors, regional venture capital firms, and incubator heads. Keynote addresses from successful startup founders will share lessons on scaling, raising capital, and validating target markets. The summit hosts hands-on product design thinking sessions, intellectual property workshops for patent registrations, and networking tables connecting developers with business mentors."
-      },
-      {
-        slug: "research-expo",
-        title: "National Research Expo & Patent Showcase",
-        category: "Research",
-        date: "12 Sep 2026",
-        time: "11:00 AM Onwards",
-        venue: "Bio-Sciences Laboratory & Exhibition Hall",
-        desc: "Showcasing student and faculty scientific publications, patent filings, and industry-sponsored research breakthroughs.",
-        bodyText: "The National Research Expo is a celebrate-science event displaying active publications, doctoral research posters, and student innovations. Exhibitions cover structural engineering geopolymer research, target-oriented nano-carrier drug formulations, DST-funded smart irrigation devices, and artificial intelligence diagnostic apps. Senior scientists from national research institutes will evaluate student models and deliver talks on funding applications and research methodology."
-      },
-      {
-        slug: "industry-connect",
-        title: "Industry Connect: Corporate Leadership Panel",
-        category: "Corporate",
-        date: "03 Oct 2026",
-        time: "10:00 AM Onwards",
-        venue: "MBA Seminar Block Center",
-        desc: "A networking panel hosting HR directors and tech executives to discuss recruitment trends and corporate-readiness skills.",
-        bodyText: "Connecting student skills with market needs, the Industry Connect hosts executive panels from software, finance, and core manufacturing companies. Panel discussions will cover high-growth career tracks in artificial intelligence, full-stack architectures, and supply chain logistics. Representatives will detail summer internship opportunities and direct corporate placement guidelines."
-      },
-      {
-        slug: "alumni-reunion",
-        title: "Global Alumni Reunion & Endowment Gala",
-        category: "Alumni Connect",
-        date: "14 Nov 2026",
-        time: "06:00 PM Onwards",
-        venue: "University Grand Lawn Area",
-        desc: "A formal dinner hosting alumni from top organizations globally, establishing student incubation and scholarship programs.",
-        bodyText: "The Global Alumni Reunion welcomes back our distinguished graduates to campus for a formal evening of networking and celebration. Alumni will interact with faculty members and student groups to share career paths and industry trends. The evening will host the announcement of the Alumni Endowment Fund to support underprivileged student scholarships."
-      }
-    ].find(x => cleanPath.endsWith(x.slug));
-
-    if (eventItem) {
-      return {
-        title: eventItem.title,
-        category: eventItem.category,
-        desc: eventItem.desc,
-        body: (
-          <div className="space-y-6 text-gray-600 text-sm leading-relaxed">
-            <div className="bg-[#072A6C]/5 border-l-4 border-[#072A6C] p-5 rounded-r-[16px] grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-bold text-[#072A6C] mb-6">
-              <div>
-                <span className="block text-gray-400 font-semibold uppercase text-[9px] mb-0.5">Date & Time</span>
-                <span>{eventItem.date} — {eventItem.time}</span>
-              </div>
-              <div>
-                <span className="block text-gray-400 font-semibold uppercase text-[9px] mb-0.5">Venue</span>
-                <span>{eventItem.venue}</span>
-              </div>
-              <div>
-                <span className="block text-gray-400 font-semibold uppercase text-[9px] mb-0.5">Category</span>
-                <span className="text-[#F97316]">{eventItem.category}</span>
-              </div>
-            </div>
-
-            <p>{eventItem.bodyText}</p>
-
-            <div className="pt-6 border-t border-gray-100 flex gap-4">
-              <button 
-                onClick={() => alert(`Registration details for "${eventItem.title}" sent to counselor office.`)}
-                className="h-11 px-8 bg-gradient-to-r from-[#D71920] to-[#b71217] text-white text-xs font-bold rounded-xl inline-flex items-center gap-1.5 hover:shadow-md transition-all cursor-pointer"
-              >
-                Register For Event <ArrowRight size={14} />
-              </button>
-              <Link to="/news/events" className="h-11 px-6 border border-gray-200 hover:border-gray-300 text-gray-600 text-xs font-bold rounded-xl inline-flex items-center transition-all">
-                Back to Events
-              </Link>
-            </div>
-          </div>
-        )
-      };
-    }
+    return {
+      title: "University Events",
+      category: "Events",
+      desc: "Campus summits, workshops, conferences, and student activities.",
+      body: (
+        <div className="space-y-6 text-gray-600 text-sm leading-relaxed">
+          <p>Explore all upcoming and past university events in our official events portal.</p>
+          <Link to="/news/events" className="inline-flex items-center gap-1.5 text-xs font-bold text-[#D4AF37] hover:text-[#072A6C] transition-colors mt-6">
+            ← Go to Events
+          </Link>
+        </div>
+      )
+    };
   }
+
 
   // About Pages
   if (cleanPath.startsWith("/about")) {

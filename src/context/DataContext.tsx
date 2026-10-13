@@ -2257,169 +2257,16 @@ export const INITIAL_HERO_SLIDES: HeroSlide[] = [
   { id: 1, image: "/Chalapathimain.png", title: "", subtitle: "" }
 ];
 
-export const INITIAL_NEWS: NewsArticle[] = [
-  {
-    id: 1,
-    title: "Engineering Students Win Smart Hackathon 2025",
-    date: "17 May 2025",
-    time: "09:00 AM",
-    location: "Tech Exhibition Hub, New Delhi",
-    category: "ACHIEVEMENT",
-    excerpt: "Our team developed a decentralized IoT mesh network algorithm to win first prize.",
-    bodyText: "Our student research team from our Electronics and Computer Science Engineering departments has won the prestigious National Smart Systems Hackathon 2025. Over a grueling 36-hour continuous sprint in New Delhi, the team designed and prototyped a self-healing, decentralized IoT mesh network framework tailored for real-time disaster management communication.",
-    image: "/prog_engineering.png",
-    images: ["/prog_engineering.png", "/prog_computer.png"],
-    slug: "smart-hackathon",
-    sourceUrl: "https://timesofindia.indiatimes.com/education/engineering-students-win-national-smart-hackathon-2025/articleshow/1089271.cms",
-    featured: true
-  },
-  {
-    id: 2,
-    title: "Annual Convocation 2025 Held with Grandeur",
-    date: "12 May 2025",
-    time: "10:00 AM",
-    location: "Main Auditorium Hall",
-    category: "Campus Life",
-    excerpt: "Graduating students received degrees and medals at the colorful convocation ceremony.",
-    bodyText: "The 2025 annual convocation ceremony was celebrated with grand success. Distinguished chief guests from corporate and academic bodies addressed the graduating cohort and distributed gold medals to academic toppers.",
-    image: "/prog_pharmacy.png",
-    images: ["/prog_pharmacy.png", "/prog_management.png"],
-    slug: "annual-convocation",
-    sourceUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-  },
-  {
-    id: 3,
-    title: "Record Placements in 2025 Batch",
-    date: "14 May 2025",
-    time: "10:00 AM",
-    location: "Placements Office",
-    category: "Placements",
-    excerpt: "Top recruiters from across the globe visited campus. Students secured roles in leading MNCs.",
-    bodyText: "Chalapathi University registers outstanding placement results for the 2025 batch. Leading multinationals including tech and core giants participated, offering premium software engineering and core research positions to over 90% of eligible graduates.",
-    image: "/prog_management.png",
-    images: ["/prog_management.png", "/prog_engineering.png"],
-    slug: "record-placements",
-    sourceUrl: "https://www.abnandhrajyothy.com/chalapathi-university-record-placements-2025/article/1109"
-  },
-  {
-    id: 4,
-    title: "New Study on Renewable Energy Published in Scopus Journal",
-    date: "15 May 2025",
-    time: "11:00 AM",
-    location: "Academic Block 1 Seminar Room",
-    category: "Research",
-    excerpt: "The research highlights the efficiency of hybrid models in optimizing sustainable energy.",
-    bodyText: "A breakthrough research paper on renewable energy harvesting techniques has been published in a top-tier Scopus-indexed journal. The study highlights the implementation of hybrid solar-wind energy conservation models in microgrids.",
-    image: "/prog_mtech.png",
-    images: ["/prog_mtech.png", "/prog_computer.png"],
-    slug: "renewable-energy",
-    sourceUrl: "https://www.sakshi.com/renewable-energy-research-study-published-scopus/article/20250515"
-  },
-  {
-    id: 5,
-    title: "International Yoga Day Celebrated with Enthusiasm",
-    date: "16 May 2025",
-    time: "07:00 AM",
-    location: "Central Playground Complex",
-    category: "Campus Life",
-    excerpt: "Students and faculty participated in a special yoga session promoting health and wellness.",
-    bodyText: "Students and faculty participated in a special yoga session promoting health, wellness, and mental clarity on International Yoga Day. The event was held in the main campus courtyard with over 500 participants practicing various asanas guided by certified yoga instructors.",
-    image: "/prog_diploma.png",
-    images: ["/prog_diploma.png", "/prog_pharmacy.png"],
-    slug: "yoga-day",
-    sourceUrl: "https://www.eenadu.net/yoga-day-celebrations-chalapathi-campus/article/120250516"
-  },
-  {
-    id: 6,
-    title: "AI Research Lab Inaugurated on Campus",
-    date: "18 May 2025",
-    time: "10:30 AM",
-    location: "Main Science Block, Room 302",
-    category: "Innovation",
-    excerpt: "In partnership with global tech giants, the new laboratory features advanced machine learning compute nodes for research projects.",
-    bodyText: "Today marks a historic milestone for Chalapathi University as we formally inaugurate our state-of-the-art Artificial Intelligence and Machine Learning Research Laboratory. Developed in close collaboration with global technology leaders, this research center is equipped with high-throughput multi-GPU processing systems and next-generation compute environments designed specifically for heavy workload deep learning and neural network model training. Under the direction of our senior AI research staff, undergraduate and doctoral scholars will collaborate on active research papers, smart industrial solutions, and healthcare diagnostics automation projects.",
-    image: "/prog_computer.png",
-    images: ["/prog_computer.png", "/prog_engineering.png"],
-    slug: "ai-research-lab",
-    sourceUrl: "https://www.thehindu.com/sci-tech/technology/internet/artificial-intelligence-research-lab-inaugurated/article671829.ece",
-    featured: true
-  }
-];
+export const INITIAL_NEWS: NewsArticle[] = [];
 
-export const INITIAL_EVENTS: EventItem[] = [
-  { 
-    id: 1, 
-    slug: "national-sports-meet-2026", 
-    title: "National Sports Meet & Athletic Championship", 
-    date: "12 Nov 2026", 
-    time: "07:00 AM", 
-    location: "University Sports Arena & Athletic Track", 
-    category: "Sports", 
-    image: "/prog_diploma.png",
-    images: ["/prog_diploma.png", "/prog_pharmacy.png", "/prog_computer.png", "/prog_engineering.png"],
-    bodyText: "Over 50 universities face off in the annual athletic championship, featuring track events, field sports, inter-college football, cricket leagues, and indoor badminton tournaments with cash prizes." 
-  },
-  { 
-    id: 2, 
-    slug: "placements-bootcamp-2026", 
-    title: "Annual Placements Boot Camp and Corporate Summit", 
-    date: "08 Oct 2026", 
-    time: "08:30 AM", 
-    location: "Placement Training Center", 
-    category: "Placements", 
-    image: "/prog_management.png",
-    images: ["/prog_management.png", "/prog_computer.png", "/prog_engineering.png", "/prog_pharmacy.png"],
-    bodyText: "A comprehensive recruitment readiness workshop featuring mock HR interviews, quantitative aptitude sessions, group discussion prep, and interactive roundtables with hiring heads of Fortune 500 tech partners." 
-  },
-  { 
-    id: 3, 
-    slug: "green-chemistry-conference-2026", 
-    title: "International Conference on Green Chemistry & Sustainable Biotech", 
-    date: "15 Sep 2026", 
-    time: "10:00 AM", 
-    location: "Saraswathi Auditorium, Block B", 
-    category: "Pharmacy", 
-    image: "/prog_pharmacy.png",
-    images: ["/prog_pharmacy.png", "/prog_diploma.png", "/prog_computer.png", "/prog_engineering.png"],
-    bodyText: "A three-day symposium featuring keynote addresses from global scientists, researchers, and pharmaceutical experts discussing eco-friendly chemical synthesis, biological assay creations, and sustainable manufacturing processes." 
-  },
-  { 
-    id: 4, 
-    slug: "smart-india-hackathon-2026", 
-    title: "Smart India Hackathon 2026 Campus Edition", 
-    date: "24 Aug 2026", 
-    time: "09:00 AM", 
-    location: "Main Seminar Hall & Central Library Labs", 
-    category: "Technology", 
-    image: "/prog_computer.png",
-    images: ["/prog_computer.png", "/prog_engineering.png", "/prog_management.png", "/prog_pharmacy.png"],
-    bodyText: "Join the national-level coding hackathon where students build solutions for real-world government and corporate challenges. The campus round decides the top teams representing the university in the grand finale." 
-  },
-  { 
-    id: 5, 
-    slug: "air-taxi-demonstration-aviation-forum", 
-    title: "Air Taxi Demonstration & Aviation Forum", 
-    date: "17 Jul 2026", 
-    time: "09:30 AM", 
-    location: "Aeronautics Hangar & Airfield Complex", 
-    category: "Aerospace", 
-    image: "/prog_engineering.png",
-    images: ["/prog_engineering.png", "/prog_computer.png", "/prog_diploma.png", "/prog_mtech.png"],
-    bodyText: "In collaboration with global aerospace research institutions and pioneering aviation companies, Chalapathi University is proud to host the Air Taxi Demonstration and Aviation Forum. This event features real-world test flights and static exhibitions of cutting-edge electric Vertical Take-Off and Landing (eVTOL) air taxi models." 
-  }
-];
+export const INITIAL_EVENTS: EventItem[] = [];
 
 export const DEFAULT_NEWS_PAGE_CONFIG: NewsPageConfig = {
   headerTitle: "News @ City Chalapathi",
   headerSubtitle: "Stay updated with the latest happenings, milestones, and achievements from across the university.",
   featuredBadgeText: "Featured News",
-  featuredArticleId: 1,
-  featuredCarouselImages: [
-    "/prog_computer.png",
-    "/prog_engineering.png",
-    "/prog_management.png",
-    "/prog_pharmacy.png"
-  ],
+  featuredArticleId: 0,
+  featuredCarouselImages: [],
   readStoryButtonText: "Read Full Story",
   highlightsTitle: "University Highlights",
   highlightsViewAllText: "View All",
@@ -3163,28 +3010,7 @@ export const INITIAL_ENQUIRIES: EnquiryLead[] = [
   { id: "ENQ-3", name: "Kiran Dev", mobile: "7654321098", email: "kiran@gmail.com", city: "Hyderabad", state: "Telangana", qualification: "Class 12 / Intermediate", yearOfPassing: "2025", program: "B.Tech - CSE (Artificial Intelligence)", date: "18 May 2025", status: "New" }
 ];
 
-export const INITIAL_EVENT_REGISTRATIONS: EventRegistration[] = [
-  {
-    id: "EVR-101",
-    fullName: "V. Harsha Vardhan",
-    email: "harsha.v@gmail.com",
-    phone: "9876543210",
-    eventId: 2,
-    eventTitle: "Annual Placements Boot Camp and Corporate Summit",
-    registeredAt: "18 Sep 2026",
-    status: "Confirmed"
-  },
-  {
-    id: "EVR-102",
-    fullName: "K. Sneha",
-    email: "sneha.k@gmail.com",
-    phone: "9848123456",
-    eventId: 4,
-    eventTitle: "Smart India Hackathon 2026 Campus Edition",
-    registeredAt: "19 Sep 2026",
-    status: "Confirmed"
-  }
-];
+export const INITIAL_EVENT_REGISTRATIONS: EventRegistration[] = [];
 
 export const INITIAL_ONLINE_APPLICATIONS: OnlineApplication[] = [
   {
@@ -3324,9 +3150,41 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // News
   const [news, setNews] = useState<NewsArticle[]>(() => {
-    const local = localStorage.getItem("chalapathi_news_v3");
-    if (local) return JSON.parse(local);
-    localStorage.setItem("chalapathi_news_v3", JSON.stringify(INITIAL_NEWS));
+    const FAKE_NEWS_TITLES = new Set([
+      "Engineering Students Win Smart Hackathon 2025",
+      "Annual Convocation 2025 Held with Grandeur",
+      "Record Placements in 2025 Batch",
+      "New Study on Renewable Energy Published in Scopus Journal",
+      "International Yoga Day Celebrated with Enthusiasm",
+      "International Yoga Day Celebrated with Great Enthusiasm",
+      "AI Research Lab Inaugurated on Campus",
+      "Admissions Open for Academic Year 2025-26",
+      "Annual Innovation & Entrepreneurship Summit",
+      "MoU Signed with Top Global Corporations for Placements",
+      "New Pharmacy Research Formulations Published",
+      "Global Education Fair and Career Expo Hosts 30+ Universities",
+      "Annual Sports Meet Kickstarts with Inter-Department Matches",
+      "Workshop on Sustainable Construction Materials Conducted",
+      "Alumni Meet 2025 Welcomes Back Distinguished Graduates"
+    ]);
+
+    localStorage.removeItem("chalapathi_news");
+    localStorage.removeItem("chalapathi_news_v2");
+    localStorage.removeItem("chalapathi_news_v3");
+    try {
+      const local = localStorage.getItem("chalapathi_news_v4");
+      if (local) {
+        const parsed = JSON.parse(local);
+        if (Array.isArray(parsed)) {
+          const cleaned = parsed.filter((item: any) => !FAKE_NEWS_TITLES.has(item.title));
+          if (cleaned.length !== parsed.length) {
+            localStorage.setItem("chalapathi_news_v4", JSON.stringify(cleaned));
+          }
+          return cleaned;
+        }
+      }
+    } catch (e) {}
+    localStorage.setItem("chalapathi_news_v4", JSON.stringify(INITIAL_NEWS));
     return INITIAL_NEWS;
   });
 
@@ -3338,9 +3196,36 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Events
   const [events, setEvents] = useState<EventItem[]>(() => {
-    const local = localStorage.getItem("chalapathi_events_v3");
-    if (local) return JSON.parse(local);
-    localStorage.setItem("chalapathi_events_v3", JSON.stringify(INITIAL_EVENTS));
+    const FAKE_EVENT_TITLES = new Set([
+      "National Sports Meet & Athletic Championship",
+      "Annual Placements Boot Camp and Corporate Summit",
+      "International Conference on Green Chemistry & Sustainable Biotech",
+      "Smart India Hackathon 2026 Campus Edition",
+      "Air Taxi Demonstration & Aviation Forum",
+      "Air Taxi Demonstration",
+      "Annual Innovation & Entrepreneurship Summit",
+      "National Research Expo & Patent Showcase",
+      "Industry Connect: Corporate Leadership Panel",
+      "Global Alumni Reunion & Endowment Gala"
+    ]);
+
+    localStorage.removeItem("chalapathi_events");
+    localStorage.removeItem("chalapathi_events_v2");
+    localStorage.removeItem("chalapathi_events_v3");
+    try {
+      const local = localStorage.getItem("chalapathi_events_v4");
+      if (local) {
+        const parsed = JSON.parse(local);
+        if (Array.isArray(parsed)) {
+          const cleaned = parsed.filter((item: any) => !FAKE_EVENT_TITLES.has(item.title));
+          if (cleaned.length !== parsed.length) {
+            localStorage.setItem("chalapathi_events_v4", JSON.stringify(cleaned));
+          }
+          return cleaned;
+        }
+      }
+    } catch (e) {}
+    localStorage.setItem("chalapathi_events_v4", JSON.stringify(INITIAL_EVENTS));
     return INITIAL_EVENTS;
   });
 
@@ -3590,13 +3475,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const localPrograms = localStorage.getItem("chalapathi_programs_v4") || localStorage.getItem("chalapathi_programs");
         if (localPrograms) setPrograms(JSON.parse(localPrograms));
 
-        const localNews = localStorage.getItem("chalapathi_news_v3") || localStorage.getItem("chalapathi_news");
+        const localNews = localStorage.getItem("chalapathi_news_v4");
         if (localNews) setNews(JSON.parse(localNews));
 
         const localNewsConfig = localStorage.getItem("chalapathi_news_page_config");
         if (localNewsConfig) setNewsPageConfig(JSON.parse(localNewsConfig));
 
-        const localEvents = localStorage.getItem("chalapathi_events_v3") || localStorage.getItem("chalapathi_events");
+        const localEvents = localStorage.getItem("chalapathi_events_v4");
         if (localEvents) setEvents(JSON.parse(localEvents));
 
         const localAbout = localStorage.getItem("chalapathi_about_v2");
@@ -3787,7 +3672,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateNews = async (list: NewsArticle[]) => {
     setNews(list);
-    safeSetItem("chalapathi_news_v3", JSON.stringify(list));
+    safeSetItem("chalapathi_news_v4", JSON.stringify(list));
     recordSave();
     syncConfigToBackend("news", list);
     // Synchronize to PostgreSQL Backend
@@ -3811,7 +3696,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateEvents = async (list: EventItem[]) => {
     setEvents(list);
-    safeSetItem("chalapathi_events_v3", JSON.stringify(list));
+    safeSetItem("chalapathi_events_v4", JSON.stringify(list));
     recordSave();
     syncConfigToBackend("events", list);
     try {
@@ -4197,8 +4082,21 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
               safeSetItem("chalapathi_announcements", JSON.stringify(cleaned));
             }
             if (s.events && Array.isArray(s.events)) {
-              setEvents(s.events);
-              safeSetItem("chalapathi_events_v3", JSON.stringify(s.events));
+              const FAKE_EVENT_TITLES = new Set([
+                "National Sports Meet & Athletic Championship",
+                "Annual Placements Boot Camp and Corporate Summit",
+                "International Conference on Green Chemistry & Sustainable Biotech",
+                "Smart India Hackathon 2026 Campus Edition",
+                "Air Taxi Demonstration & Aviation Forum",
+                "Air Taxi Demonstration",
+                "Annual Innovation & Entrepreneurship Summit",
+                "National Research Expo & Patent Showcase",
+                "Industry Connect: Corporate Leadership Panel",
+                "Global Alumni Reunion & Endowment Gala"
+              ]);
+              const cleanedEvents = s.events.filter((e: any) => !FAKE_EVENT_TITLES.has(e.title));
+              setEvents(cleanedEvents);
+              safeSetItem("chalapathi_events_v4", JSON.stringify(cleanedEvents));
             }
             if (s.programs && Array.isArray(s.programs)) {
               setPrograms(s.programs);
@@ -4247,9 +4145,34 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const res = await fetch('/api/news');
         if (res.ok) {
           const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            setNews(data);
-            safeSetItem("chalapathi_news_v3", JSON.stringify(data));
+          if (Array.isArray(data)) {
+            const FAKE_NEWS_TITLES = new Set([
+              "Engineering Students Win Smart Hackathon 2025",
+              "Annual Convocation 2025 Held with Grandeur",
+              "Record Placements in 2025 Batch",
+              "New Study on Renewable Energy Published in Scopus Journal",
+              "International Yoga Day Celebrated with Enthusiasm",
+              "International Yoga Day Celebrated with Great Enthusiasm",
+              "AI Research Lab Inaugurated on Campus",
+              "Admissions Open for Academic Year 2025-26",
+              "Annual Innovation & Entrepreneurship Summit",
+              "MoU Signed with Top Global Corporations for Placements",
+              "New Pharmacy Research Formulations Published",
+              "Global Education Fair and Career Expo Hosts 30+ Universities",
+              "Annual Sports Meet Kickstarts with Inter-Department Matches",
+              "Workshop on Sustainable Construction Materials Conducted",
+              "Alumni Meet 2025 Welcomes Back Distinguished Graduates"
+            ]);
+            const cleaned = data.filter((item: any) => !FAKE_NEWS_TITLES.has(item.title));
+            setNews(cleaned);
+            safeSetItem("chalapathi_news_v4", JSON.stringify(cleaned));
+            if (cleaned.length !== data.length) {
+              await fetch('/api/news/sync', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ articles: cleaned })
+              });
+            }
           }
         }
       } catch (err) {}
@@ -4260,9 +4183,29 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const res = await fetch('/api/events');
         if (res.ok) {
           const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            setEvents(data);
-            safeSetItem("chalapathi_events_v3", JSON.stringify(data));
+          if (Array.isArray(data)) {
+            const FAKE_EVENT_TITLES = new Set([
+              "National Sports Meet & Athletic Championship",
+              "Annual Placements Boot Camp and Corporate Summit",
+              "International Conference on Green Chemistry & Sustainable Biotech",
+              "Smart India Hackathon 2026 Campus Edition",
+              "Air Taxi Demonstration & Aviation Forum",
+              "Air Taxi Demonstration",
+              "Annual Innovation & Entrepreneurship Summit",
+              "National Research Expo & Patent Showcase",
+              "Industry Connect: Corporate Leadership Panel",
+              "Global Alumni Reunion & Endowment Gala"
+            ]);
+            const cleaned = data.filter((item: any) => !FAKE_EVENT_TITLES.has(item.title));
+            setEvents(cleaned);
+            safeSetItem("chalapathi_events_v4", JSON.stringify(cleaned));
+            if (cleaned.length !== data.length) {
+              await fetch('/api/events/sync', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ events: cleaned })
+              });
+            }
           }
         }
       } catch (err) {}

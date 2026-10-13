@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { newsItems, upcomingEvents, accreditationBadges } from "@/data";
+import { accreditationBadges } from "@/data";
 import { useData } from "@/context/DataContext";
 
 export default function NewsEventsSection() {
@@ -10,26 +10,27 @@ export default function NewsEventsSection() {
     ? news.slice(0, 3).map((n) => {
         const parts = (n.date || "").trim().split(" ");
         return {
-          day: parts[0] || "17",
-          month: (parts[1] || "MAY").toUpperCase().substring(0, 3),
+          day: parts[0] || "1",
+          month: (parts[1] || "").toUpperCase().substring(0, 3),
           title: n.title,
           slug: n.slug
         };
       })
-    : newsItems.map((n) => ({ day: n.day, month: n.month, title: n.title, slug: n.href?.replace("/news/", "") || "" }));
+    : [];
 
   const displayEvents = (events && events.length > 0)
     ? events.slice(0, 3).map((e) => {
         const parts = (e.date || "").trim().split(" ");
         return {
-          day: parts[0] || "12",
-          month: (parts[1] || "NOV").toUpperCase().substring(0, 3),
+          day: parts[0] || "1",
+          month: (parts[1] || "").toUpperCase().substring(0, 3),
           title: e.title,
           time: e.time,
           slug: e.slug
         };
       })
-    : upcomingEvents.map((e) => ({ day: e.day, month: e.month, title: e.title, time: e.time, slug: "" }));
+    : [];
+
   return (
     <section className="bg-[#F7F7F7] border-y border-[#E5E7EB]">
       <div className="max-w-[1340px] mx-auto px-5 py-16 grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -44,26 +45,32 @@ export default function NewsEventsSection() {
             </Link>
           </div>
           <div className="space-y-4">
-            {displayNews.map((n, i) => (
-              <div
-                key={i}
-                className="flex gap-4 items-start bg-white rounded-lg p-3 border border-[#E5E7EB] shadow-sm hover:shadow transition-shadow"
-              >
-                <div className="w-12 shrink-0 rounded bg-[#D4AF37] text-white text-center py-1.5 shadow-sm">
-                  <span className="block text-[14px] font-extrabold leading-none">{n.day}</span>
-                  <span className="block text-[8px] font-bold tracking-wider mt-0.5">{n.month}</span>
-                </div>
-                <div>
-                  <h4 className="text-[13px] font-bold text-[#222] leading-snug">{n.title}</h4>
-                  <Link
-                    to={n.slug ? `/news/${n.slug}` : "/news"}
-                    className="text-[10px] font-bold text-[#D4AF37] hover:underline mt-1 inline-block"
-                  >
-                    Read More →
-                  </Link>
-                </div>
+            {displayNews.length === 0 ? (
+              <div className="bg-white rounded-lg p-6 border border-[#E5E7EB] text-center text-xs text-gray-400">
+                No news articles published yet.
               </div>
-            ))}
+            ) : (
+              displayNews.map((n, i) => (
+                <div
+                  key={i}
+                  className="flex gap-4 items-start bg-white rounded-lg p-3 border border-[#E5E7EB] shadow-sm hover:shadow transition-shadow"
+                >
+                  <div className="w-12 shrink-0 rounded bg-[#D4AF37] text-white text-center py-1.5 shadow-sm">
+                    <span className="block text-[14px] font-extrabold leading-none">{n.day}</span>
+                    <span className="block text-[8px] font-bold tracking-wider mt-0.5">{n.month}</span>
+                  </div>
+                  <div>
+                    <h4 className="text-[13px] font-bold text-[#222] leading-snug">{n.title}</h4>
+                    <Link
+                      to={n.slug ? `/news/${n.slug}` : "/news"}
+                      className="text-[10px] font-bold text-[#D4AF37] hover:underline mt-1 inline-block"
+                    >
+                      Read More →
+                    </Link>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -98,28 +105,34 @@ export default function NewsEventsSection() {
             <h3 className="text-[16px] font-[var(--font-poppins)] font-extrabold text-[#081A36]">
               Upcoming Events
             </h3>
-            <Link to="#" className="text-[11px] font-bold text-[#D4AF37] hover:underline">
-              View Calendar →
+            <Link to="/news/events" className="text-[11px] font-bold text-[#D4AF37] hover:underline">
+              View All Events →
             </Link>
           </div>
           <div className="space-y-4">
-            {displayEvents.map((e, i) => (
-              <div
-                key={i}
-                className="flex gap-3 items-start bg-white rounded-lg p-3 border border-[#E5E7EB] shadow-sm hover:shadow transition-shadow"
-              >
-                <div className="w-11 shrink-0 rounded bg-[#081A36] text-white text-center py-1.5">
-                  <span className="block text-[13px] font-extrabold leading-none">{e.day}</span>
-                  <span className="block text-[7px] font-bold tracking-wider mt-0.5">{e.month}</span>
-                </div>
-                <div>
-                  <h4 className="text-[12px] font-bold text-[#222] leading-snug">{e.title}</h4>
-                  <span className="text-[10px] text-[#888] font-medium mt-0.5 inline-block">
-                    {e.time} Onwards
-                  </span>
-                </div>
+            {displayEvents.length === 0 ? (
+              <div className="bg-white rounded-lg p-6 border border-[#E5E7EB] text-center text-xs text-gray-400">
+                No upcoming events scheduled.
               </div>
-            ))}
+            ) : (
+              displayEvents.map((e, i) => (
+                <div
+                  key={i}
+                  className="flex gap-3 items-start bg-white rounded-lg p-3 border border-[#E5E7EB] shadow-sm hover:shadow transition-shadow"
+                >
+                  <div className="w-11 shrink-0 rounded bg-[#081A36] text-white text-center py-1.5">
+                    <span className="block text-[13px] font-extrabold leading-none">{e.day}</span>
+                    <span className="block text-[7px] font-bold tracking-wider mt-0.5">{e.month}</span>
+                  </div>
+                  <div>
+                    <h4 className="text-[12px] font-bold text-[#222] leading-snug">{e.title}</h4>
+                    <span className="text-[10px] text-[#888] font-medium mt-0.5 inline-block">
+                      {e.time} Onwards
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

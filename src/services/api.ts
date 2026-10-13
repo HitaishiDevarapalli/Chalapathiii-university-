@@ -33,7 +33,7 @@ export async function getSchoolBySlug(slug: string) {
 export async function getNews(limit?: number) {
   if (typeof window !== "undefined") {
     try {
-      const local = localStorage.getItem("chalapathi_news_v3");
+      const local = localStorage.getItem("chalapathi_news_v4");
       if (local) {
         const parsed = JSON.parse(local);
         if (Array.isArray(parsed)) return limit ? parsed.slice(0, limit) : parsed;
@@ -49,7 +49,7 @@ export async function getNews(limit?: number) {
 export async function getEvents(limit?: number) {
   if (typeof window !== "undefined") {
     try {
-      const local = localStorage.getItem("chalapathi_events_v3");
+      const local = localStorage.getItem("chalapathi_events_v4");
       if (local) {
         const parsed = JSON.parse(local);
         if (Array.isArray(parsed)) return limit ? parsed.slice(0, limit) : parsed;

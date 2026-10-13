@@ -3341,16 +3341,15 @@ export default function AdminPortal() {
 
                           <ImageField
                             label="Featured Cover Photo"
-                            value={newsList[0]?.image || INITIAL_NEWS[0]?.image || ""}
-                            defaultValue={INITIAL_NEWS[0]?.image || ""}
+                            value={newsList[0]?.image || ""}
+                            defaultValue={""}
                             onReset={() => {
-                              const fallback = INITIAL_NEWS[0]?.image || "";
                               const updated = [...newsList];
                               if (updated[0]) {
-                                updated[0] = { ...updated[0], image: fallback };
+                                updated[0] = { ...updated[0], image: "" };
                                 setNewsList(updated);
                               }
-                              notifySave("Featured cover photo reset to default!");
+                              notifySave("Featured cover photo cleared!");
                             }}
                             onChange={(val) => {
                               const updated = [...newsList];
