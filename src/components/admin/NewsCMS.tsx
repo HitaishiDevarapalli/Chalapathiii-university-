@@ -156,10 +156,10 @@ export function NewsCMS({
       {/* Subtabs Selector */}
       <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3">
         {[
-          { id: "articlesList", label: `📰 1. News Articles Directory & Editor (${newsList.length})` },
-          { id: "homepage", label: "🏠 2. Homepage News & Events Live Feed" },
-          { id: "pageSettings", label: "🌟 3. News Portal Header & Hero Spotlight" },
-          { id: "announcements", label: `📢 4. Announcements & Notices Drawer (${announcementsList.length})` }
+          { id: "articlesList", label: `1. News Articles Directory & Editor (${newsList.length})` },
+          { id: "homepage", label: "2. Homepage News & Events Live Feed" },
+          { id: "pageSettings", label: "3. News Portal Header & Hero Spotlight" },
+          { id: "announcements", label: `4. Announcements & Notices Drawer (${announcementsList.length})` }
         ].map((st) => (
           <button
             key={st.id}

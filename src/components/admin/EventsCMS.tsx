@@ -184,10 +184,10 @@ export function EventsCMS({
       {/* Subtabs Selector */}
       <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3">
         {[
-          { id: "eventsList", label: `📅 1. Campus Events Directory & Editor (${eventsList.length})` },
-          { id: "homepage", label: "🏠 2. Homepage Events Feed & Interactive Drawer" },
-          { id: "attendeesCRM", label: `👥 3. Event Registrations & Attendees CRM (${registrationsList.length})` },
-          { id: "pageBanner", label: "🌟 4. Events Page Banner & Overview" }
+          { id: "eventsList", label: `1. Campus Events Directory & Editor (${eventsList.length})` },
+          { id: "homepage", label: "2. Homepage Events Feed & Interactive Drawer" },
+          { id: "attendeesCRM", label: `3. Event Registrations & Attendees CRM (${registrationsList.length})` },
+          { id: "pageBanner", label: "4. Events Page Banner & Overview" }
         ].map((st) => (
           <button
             key={st.id}
