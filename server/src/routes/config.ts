@@ -1,7 +1,15 @@
 import { Router, Request, Response } from "express";
 import prisma from "../prisma";
 
+import { requireAuth } from "../middleware/auth";
+import { SESSION_PREFIX } from "../sessionStore";
 const router = Router();
+const reserved = (key: string) => key.startsWith(SESSION_PREFIX) || ["news", "events"].includes(key);
+router.use((req, res, next) => {
+  if (req.params.key && reserved(req.params.key)) return res.sendStatus(404);
+  if (req.method !== "GET" || req.path.includes("backup")) return requireAuth(req, res, next);
+  next();
+});
 
 function safeJsonParse<T = any>(val: string | null | undefined, fallback: T): T {
   if (!val) return fallback;
@@ -36,6 +44,7 @@ router.get("/", async (req: Request, res: Response) => {
     const result: Record<string, any> = {};
 
     for (const item of configs) {
+      if (reserved(item.key)) continue;
       result[item.key] = safeJsonParse(item.valueJson, item.valueJson);
     }
 
@@ -53,6 +62,7 @@ router.post("/backup", async (req: Request, res: Response) => {
     const backup: Record<string, any> = {};
 
     for (const item of configs) {
+      if (reserved(item.key)) continue;
       backup[item.key] = safeJsonParse(item.valueJson, item.valueJson);
     }
 
@@ -70,6 +80,7 @@ router.get("/backup", async (req: Request, res: Response) => {
     const backup: Record<string, any> = {};
 
     for (const item of configs) {
+      if (reserved(item.key)) continue;
       backup[item.key] = safeJsonParse(item.valueJson, item.valueJson);
     }
 
@@ -105,13 +116,14 @@ router.post("/restore", async (req: Request, res: Response) => {
           : body;
 
       for (const [key, val] of Object.entries(sourceObj)) {
-        if (key === "timestamp") continue;
+        if (key === "timestamp" || reserved(key)) continue;
         entries.push([key, val]);
       }
     }
 
     let restoredCount = 0;
     for (const [key, rawValue] of entries) {
+      if (reserved(key)) continue;
       const stringified = safeJsonStringify(rawValue, "{}");
 
       await prisma.siteConfig.upsert({
@@ -141,6 +153,7 @@ router.post("/restore", async (req: Request, res: Response) => {
 router.get("/:key", async (req: Request, res: Response) => {
   try {
     const { key } = req.params;
+    if (reserved(key)) return res.sendStatus(404);
 
     const config = await prisma.siteConfig.findUnique({
       where: { key },
@@ -173,6 +186,7 @@ router.get("/:key", async (req: Request, res: Response) => {
 router.put("/:key", async (req: Request, res: Response) => {
   try {
     const { key } = req.params;
+    if (reserved(key)) return res.sendStatus(404);
     const body = req.body;
 
     const stringified = safeJsonStringify(body, "{}");
@@ -206,6 +220,7 @@ router.put("/:key", async (req: Request, res: Response) => {
 // DELETE /:key - delete config by key
 router.delete("/:key", async (req: Request, res: Response) => {
   const { key } = req.params;
+    if (reserved(key)) return res.sendStatus(404);
   try {
     await prisma.siteConfig.delete({
       where: { key },

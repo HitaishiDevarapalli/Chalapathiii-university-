@@ -39,6 +39,7 @@ model NewsArticle {
   featured  Boolean  @default(false)
   readTime  String?  @map("read_time")
   hidden    Boolean  @default(false)
+  sortOrder        Int      @default(0) @map("sort_order")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -75,6 +76,8 @@ model Event {
   bodyText         String   @default("") @map("body_text")
   registrationUrl  String?  @map("registration_url")
   registrationOpen Boolean  @default(true) @map("registration_open")
+  hidden           Boolean  @default(false)
+  sortOrder        Int      @default(0) @map("sort_order")
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
 

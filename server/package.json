@@ -10,7 +10,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "ts-node prisma/seed.ts",
     "seed": "npm run prisma:seed",
-    "setup": "npm install && npx prisma generate && npx prisma migrate dev --name init && npm run prisma:seed"
+    "setup": "npm install && npx prisma generate && npx prisma migrate dev --name init && npm run prisma:seed",
+    "test": "npm run build && node tests/persistence.cjs"
   },
   "dependencies": {
     "@prisma/client": "^5.10.0",
@@ -18,10 +19,12 @@
     "cors": "^2.8.5",
     "express": "^4.21.0",
     "express-session": "^1.18.0",
-    "multer": "^1.4.5-lts.1",
+    "multer": "^2.4.0",
     "uuid": "^10.0.0"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.9",
+    "@electric-sql/pglite-socket": "^0.2.12",
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",

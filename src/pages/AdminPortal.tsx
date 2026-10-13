@@ -158,9 +158,12 @@ export default function AdminPortal() {
   } = useData();
 
   // Authentication states
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return sessionStorage.getItem("chalapathi_admin_auth") === "true";
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  React.useEffect(() => {
+    fetch("/api/auth/me", { credentials: "same-origin", cache: "no-store" })
+      .then(res => { setIsAuthenticated(res.ok); if (res.ok) window.dispatchEvent(new Event("admin-auth-changed")); })
+      .catch(() => setIsAuthenticated(false));
+  }, []);
   const [username, setUsername] = useState("");
   const [passcode, setPasscode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -257,22 +260,28 @@ export default function AdminPortal() {
   };
 
   // Login handler
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (passcode === "admin123" || passcode === "admin" || (username.trim().toLowerCase() === "admin" && passcode)) {
+    setAuthError("");
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: username.trim(), password: passcode })
+      });
+      if (!response.ok) throw new Error(response.status === 401 ? "Invalid username or password" : "Sign in unavailable. Please retry.");
       setIsAuthenticated(true);
-      sessionStorage.setItem("chalapathi_admin_auth", "true");
-      setAuthError("");
-    } else if (!passcode) {
-      setAuthError("Please enter password to sign in.");
-    } else {
-      setAuthError("Invalid credentials! Default passcode: admin123");
-    }
+      setPasscode("");
+      window.dispatchEvent(new Event("admin-auth-changed"));
+    } catch (error: any) { setAuthError(error.message); }
   };
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    sessionStorage.removeItem("chalapathi_admin_auth");
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" });
+      if (!response.ok) throw new Error("Sign out failed. Please retry.");
+      setIsAuthenticated(false);
+      window.dispatchEvent(new Event("admin-auth-changed"));
+    } catch (error: any) { alert(error.message); }
   };
 
   // ----------------------------------------------------
@@ -877,13 +886,15 @@ export default function AdminPortal() {
     buttonUrl: newsEventsSection?.buttonUrl || "/news"
   }));
 
-  const saveNewsEventsSection = () => {
+  const saveNewsEventsSection = async () => {
+    try {
     const updatedSections = sectionsList.map((s) => (s.id === "newsEvents" ? { ...s, ...newsEventsData } : s));
     setSectionsList(updatedSections);
     updateHomepageSections(updatedSections);
-    updateNews(newsList);
-    updateEvents(eventsList);
+    await updateNews(newsList);
+    await updateEvents(eventsList);
     notifySave("News & Events highlights, latest articles and upcoming calendar saved live!");
+    } catch (error: any) { alert(error.message || "Unable to publish. Please retry."); }
   };
 
   // Placements Section
@@ -1394,19 +1405,25 @@ export default function AdminPortal() {
     if (newsPageConfig) setNewsPageForm(newsPageConfig);
   }, [newsPageConfig]);
 
-  const saveNewsList = () => {
-    updateNews(newsList);
+  const saveNewsList = async () => {
+    try {
+    await updateNews(newsList);
     notifySave("News articles published!");
+    } catch (error: any) { alert(error.message || "Unable to publish. Please retry."); }
   };
 
-  const saveNewsPageForm = () => {
-    updateNewsPageConfig(newsPageForm);
+  const saveNewsPageForm = async () => {
+    try {
+    await updateNewsPageConfig(newsPageForm);
     notifySave("News Page Header, Hero Slider & Sections saved!");
+    } catch (error: any) { alert(error.message || "Unable to publish. Please retry."); }
   };
 
-  const saveEventsList = () => {
-    updateEvents(eventsList);
+  const saveEventsList = async () => {
+    try {
+    await updateEvents(eventsList);
     notifySave("Events list published!");
+    } catch (error: any) { alert(error.message || "Unable to publish. Please retry."); }
   };
 
   const saveAnnouncementsList = () => {
@@ -1534,6 +1551,14 @@ export default function AdminPortal() {
   // ====================================================
   // LOGIN SCREEN
   // ====================================================
+  // Navigation expansion state
+  const [expandedNavSections, setExpandedNavSections] = useState<Record<string, boolean>>({
+    homepage: false,
+    about: true,
+    academics: true,
+    "news-events": false,
+  });
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen w-full flex flex-col lg:flex-row bg-[#F8F9FD] font-[var(--font-poppins)] overflow-x-hidden selection:bg-[#071A3A] selection:text-white">
@@ -1645,7 +1670,7 @@ export default function AdminPortal() {
                   <input
                     type={showPassword ? "text" : "password"}
                     required
-                    placeholder="Enter password (default: admin123)"
+                    placeholder="Enter password"
                     value={passcode}
                     onChange={(e) => setPasscode(e.target.value)}
                     className="w-full h-12 pl-11 pr-12 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 text-sm font-medium focus:bg-white focus:outline-none focus:border-[#071A3A] focus:ring-2 focus:ring-[#071A3A]/10 transition-all placeholder:text-gray-400"
@@ -1683,14 +1708,6 @@ export default function AdminPortal() {
       </div>
     );
   }
-
-  // Navigation expansion state
-  const [expandedNavSections, setExpandedNavSections] = useState<Record<string, boolean>>({
-    homepage: false,
-    about: true,
-    academics: true,
-    "news-events": false,
-  });
 
   const isSectionExpanded = (id: string) => {
     if (expandedNavSections[id] !== undefined) return expandedNavSections[id];
@@ -3208,11 +3225,12 @@ export default function AdminPortal() {
                       {renderCategoryVisibilityButton("newsEvents", "News & Events Highlights")}
                       <button
                         type="button"
-                        onClick={() => {
+                        onClick={async () => {
+    try {
                           setNewsList(INITIAL_NEWS);
                           setEventsList(INITIAL_EVENTS);
-                          updateNews(INITIAL_NEWS);
-                          updateEvents(INITIAL_EVENTS);
+                          await updateNews(INITIAL_NEWS);
+                          await updateEvents(INITIAL_EVENTS);
                           const defNewsEvents = DEFAULT_HOMEPAGE_SECTIONS.find((s) => s.id === "newsEvents");
                           setNewsEventsData({
                             title: defNewsEvents?.title || "News & Events",
@@ -3221,7 +3239,9 @@ export default function AdminPortal() {
                             buttonUrl: defNewsEvents?.buttonUrl || "/news"
                           });
                           notifySave("News & Events highlights reset to default!");
-                        }}
+                        
+    } catch (error: any) { alert(error.message || "Unable to publish. Please retry."); }
+  }}
                         className="h-9 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
                       >
                         <RotateCcw size={13} /> Reset News & Events

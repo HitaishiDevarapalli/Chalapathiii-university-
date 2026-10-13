@@ -1,7 +1,11 @@
 import { Router, Request, Response } from "express";
 import prisma from "../prisma";
 
+import { requireAuth } from "../middleware/auth";
+import { SESSION_PREFIX } from "../sessionStore";
 const router = Router();
+const reserved = (key: string) => key.startsWith(SESSION_PREFIX) || ["news", "events"].includes(key);
+
 
 function safeJsonParse<T = any>(val: string | null | undefined, fallback: T): T {
   if (!val) return fallback;
@@ -49,6 +53,7 @@ router.get("/", async (req: Request, res: Response) => {
 
     const parsedSettings: Record<string, any> = {};
     for (const c of configs) {
+      if (reserved(c.key)) continue;
       parsedSettings[c.key] = safeJsonParse(c.valueJson, c.valueJson);
     }
 
@@ -73,7 +78,7 @@ router.get("/", async (req: Request, res: Response) => {
 });
 
 // POST /api/cms
-router.post("/", async (req: Request, res: Response) => {
+router.post("/", requireAuth, async (req: Request, res: Response) => {
   try {
     const { action, page, slug, id } = req.body || {};
 
@@ -185,7 +190,7 @@ router.post("/", async (req: Request, res: Response) => {
       };
 
       for (const [k, v] of Object.entries(combinedConfigs)) {
-        if (!k || v === undefined) continue;
+        if (!k || reserved(k) || v === undefined) continue;
         const valStr = typeof v === "string" ? v : JSON.stringify(v);
         await prisma.siteConfig.upsert({
           where: { key: k },

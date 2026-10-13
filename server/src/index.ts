@@ -1,8 +1,9 @@
 import express from "express";
-import cors from "cors";
+import { randomBytes } from "crypto";
+import { DatabaseSessionStore } from "./sessionStore";
+import { sameOrigin } from "./middleware/auth";
+import { uploadsDirectory } from "./middleware/upload";
 import session from "express-session";
-import path from "path";
-import fs from "fs";
 
 import authRoutes from "./routes/auth";
 import newsRoutes from "./routes/news";
@@ -26,30 +27,35 @@ import cmsRoutes from "./routes/cms";
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors({ origin: true, credentials: true }));
+app.set("trust proxy", 1);
+app.use("/api", (_req, res, next) => { res.setHeader("Cache-Control", "no-store"); next(); });
+app.use("/api", sameOrigin);
+const sessionSecret = process.env.SESSION_SECRET;
+if (process.env.NODE_ENV === "production" && (!sessionSecret || sessionSecret.length < 32)) {
+  throw new Error("SESSION_SECRET must contain at least 32 characters in production");
+}
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 app.use(
   session({
-    secret: "chalapathi-super-secret-key",
+    secret: sessionSecret || randomBytes(32).toString("hex"),
+    store: new DatabaseSessionStore(),
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: false, // set to true in prod with https
+      secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+      sameSite: "lax",
       maxAge: 1000 * 60 * 60 * 24, // 1 day
     },
   })
 );
 
-// Ensure uploads directory exists
-const uploadsDir1 = path.resolve(__dirname, "../uploads");
-const uploadsDir2 = path.resolve(__dirname, "../../uploads");
-if (!fs.existsSync(uploadsDir1)) fs.mkdirSync(uploadsDir1, { recursive: true });
-if (!fs.existsSync(uploadsDir2)) fs.mkdirSync(uploadsDir2, { recursive: true });
-
-app.use("/uploads", express.static(uploadsDir1, { maxAge: "30d", immutable: true }));
-app.use("/uploads", express.static(uploadsDir2, { maxAge: "30d", immutable: true }));
+app.use("/uploads", express.static(uploadsDirectory, {
+  maxAge: "30d", immutable: true,
+  setHeaders: res => { res.setHeader("X-Content-Type-Options", "nosniff"); }
+}));
 
 // Routes
 app.use("/api/auth", authRoutes);
@@ -71,10 +77,17 @@ app.use("/api/config", configRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/cms", cmsRoutes);
 
+app.use((error: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error("Request rejected:", error.message);
+  res.status(error.code === "LIMIT_FILE_SIZE" ? 413 : 400).json({ error: "Upload or request rejected. Check the file type and size." });
+});
+
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-app.listen(PORT, () => {
+export default app;
+
+if (require.main === module) app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });

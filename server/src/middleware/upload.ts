@@ -4,17 +4,12 @@ import { v4 as uuidv4 } from "uuid";
 
 import fs from "fs";
 
-const getUploadsDir = () => {
-  const dir = path.resolve(__dirname, "../../uploads");
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-  return dir;
-};
+export const uploadsDirectory = path.resolve(process.env.UPLOADS_DIR || path.join(__dirname, "../../uploads"));
+fs.mkdirSync(uploadsDirectory, { recursive: true });
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
-    cb(null, getUploadsDir());
+    cb(null, uploadsDirectory);
   },
   filename: (_req, file, cb) => {
     const ext = path.extname(file.originalname);
@@ -24,11 +19,11 @@ const storage = multer.diskStorage({
 
 export const upload = multer({
   storage,
-  limits: { fileSize: 500 * 1024 * 1024 }, // 500MB - allow unconstrained uploads
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20 MB per file
   fileFilter: (_req, file, cb) => {
-    const allowed = /jpeg|jpg|png|gif|webp|svg|pdf|xlsx|xls|mp4/;
+    const allowed = /^(\.jpe?g|\.png|\.gif|\.webp|\.pdf|\.xlsx?|\.mp4)$/;
     const ext = allowed.test(path.extname(file.originalname).toLowerCase());
-    const mime = allowed.test(file.mimetype);
+    const mime = /^(image\/(jpeg|png|gif|webp)|application\/(pdf|vnd.ms-excel|vnd.openxmlformats-officedocument.spreadsheetml.sheet)|video\/mp4)$/.test(file.mimetype);
     if (ext && mime) return cb(null, true);
     cb(new Error("Only images, PDFs, Excel, and video files are allowed"));
   },

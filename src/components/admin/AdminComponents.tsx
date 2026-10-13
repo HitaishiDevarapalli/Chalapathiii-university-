@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import { UploadCloud, Image as ImageIcon, X, CheckCircle2, AlertCircle, RotateCcw, Save, ExternalLink, Eye, EyeOff } from "lucide-react";
-import { compressImage } from "../../lib/imageCompressor";
 
 interface ImageFieldProps {
   label: string;
@@ -131,9 +130,9 @@ export const ImageField: React.FC<ImageFieldProps> = ({
     if (!file.type.startsWith("image/")) {
       setImageMeta({
         isValid: false,
-        errorMsg: "Invalid file type. Please upload PNG, JPG, WebP, SVG, or GIF."
+        errorMsg: "Invalid file type. Please upload PNG, JPG, WebP, or GIF."
       });
-      alert("Invalid file: Please upload a valid image file (PNG, JPG, SVG, WebP, GIF).");
+      alert("Invalid file: Please upload a valid image file (PNG, JPG, WebP, GIF).");
       return;
     }
 
@@ -161,40 +160,11 @@ export const ImageField: React.FC<ImageFieldProps> = ({
           return;
         }
       }
-    } catch (uploadErr) {
-      console.warn("[ImageField] Server upload failed, falling back to local compression:", uploadErr);
-    }
-
-    // 2. Fallback to client-side compression if server upload is unavailable
-    try {
-      const isPortrait = aspectRatio === "portrait";
-      const isSquare = aspectRatio === "square";
-      const isBanner = aspectRatio === "banner";
-
-      const compressed = await compressImage(file, {
-        maxWidth: isBanner ? 1600 : isPortrait ? 600 : isSquare ? 500 : 1000,
-        maxHeight: isBanner ? 800 : isPortrait ? 750 : isSquare ? 500 : 800,
-        quality: 0.85,
-        mimeType: "image/jpeg"
-      });
-      onChange(compressed);
-      setImageMeta({
-        isValid: true,
-        size: `${Math.round(compressed.length * 0.75 / 1024)} KB`,
-        errorMsg: undefined
-      });
-    } catch (err) {
-      console.error("Image compression error, fallback to FileReader:", err);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (typeof event.target?.result === "string") {
-          onChange(event.target.result);
-        }
-      };
-      reader.readAsDataURL(file);
-    } finally {
-      setIsUploading(false);
-    }
+      throw new Error("Photo upload failed. Please sign in and retry.");
+    } catch (error: any) {
+      setImageMeta({ isValid: false, errorMsg: error.message || "Photo upload failed" });
+      alert(error.message || "Photo upload failed. Please retry.");
+    } finally { setIsUploading(false); }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -333,7 +303,7 @@ export const ImageField: React.FC<ImageFieldProps> = ({
               type="file"
               ref={fileInputRef}
               onChange={handleFileUpload}
-              accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif,image/avif"
+              accept="image/png,image/jpeg,image/webp,image/gif"
               className="hidden"
             />
             <button
@@ -457,7 +427,7 @@ export const ImageField: React.FC<ImageFieldProps> = ({
             type="file"
             ref={fileInputRef}
             onChange={handleFileUpload}
-            accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif,image/avif"
+            accept="image/png,image/jpeg,image/webp,image/gif"
             className="hidden"
           />
           <button

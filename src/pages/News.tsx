@@ -65,13 +65,6 @@ const ThreadsIcon = () => (
   </svg>
 );
 
-const FEATURED_IMAGES = [
-  "/prog_computer.png",
-  "/prog_engineering.png",
-  "/prog_management.png",
-  "/prog_pharmacy.png"
-];
-
 export default function News() {
   const navigate = useNavigate();
   const { news, events, newsPageConfig } = useData();
@@ -123,20 +116,6 @@ export default function News() {
     document.title = (newsPageConfig?.headerTitle || "News @ City Chalapathi") + " | Chalapathi University";
   }, [newsPageConfig?.headerTitle]);
 
-  // Dynamic carousel images from config or presets
-  const baseCarouselImages = (newsPageConfig?.featuredCarouselImages && newsPageConfig.featuredCarouselImages.length > 0)
-    ? newsPageConfig.featuredCarouselImages
-    : FEATURED_IMAGES;
-
-  // Auto-slide effect for the Featured News image carousel
-  useEffect(() => {
-    if (baseCarouselImages.length <= 1) return;
-    const timer = setInterval(() => {
-      setActiveSlide((prev) => (prev + 1) % baseCarouselImages.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, [baseCarouselImages.length]);
-
   // Visible news excluding hidden articles
   const visibleNews = (news || []).filter(item => !item.hidden);
 
@@ -149,21 +128,59 @@ export default function News() {
     (news && news.length > 0 ? news[0] : null) ||
     null;
 
-  // Dynamic featured images prioritizing the article's own configured image
-  const featuredImages = featuredArticle?.image
-    ? [featuredArticle.image, ...baseCarouselImages.filter(img => img && img !== featuredArticle.image)]
-    : (baseCarouselImages.length > 0 ? baseCarouselImages : []);
+  // Real images added via Admin only (no fake or placeholder presets)
+  const featuredImages = React.useMemo(() => {
+    const list: string[] = [];
+
+    // 1. Cover photo of the featured article
+    if (featuredArticle?.image && typeof featuredArticle.image === "string" && featuredArticle.image.trim()) {
+      list.push(featuredArticle.image.trim());
+    }
+
+    // 2. Any additional gallery slides attached to this article in admin
+    if (Array.isArray(featuredArticle?.images)) {
+      featuredArticle.images.forEach((img) => {
+        if (img && typeof img === "string" && img.trim() && !list.includes(img.trim())) {
+          list.push(img.trim());
+        }
+      });
+    }
+
+    // 3. Any additional hero carousel slides explicitly added in News CMS config
+    if (Array.isArray(newsPageConfig?.featuredCarouselImages)) {
+      const hiddenSlides = (newsPageConfig as any)?.hiddenCarouselSlides || [];
+      newsPageConfig.featuredCarouselImages.forEach((img, idx) => {
+        if (img && typeof img === "string" && img.trim() && !hiddenSlides.includes(idx) && !list.includes(img.trim())) {
+          list.push(img.trim());
+        }
+      });
+    }
+
+    return list;
+  }, [featuredArticle, newsPageConfig]);
+
+  // Auto-slide effect for the Featured News image carousel - only if more than 1 real image is configured
+  useEffect(() => {
+    if (featuredImages.length <= 1) {
+      setActiveSlide(0);
+      return;
+    }
+    const timer = setInterval(() => {
+      setActiveSlide((prev) => (prev + 1) % featuredImages.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [featuredImages.length]);
 
   // Handle active slide controls
   const handlePrevSlide = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (featuredImages.length === 0) return;
+    if (featuredImages.length <= 1) return;
     setActiveSlide((prev) => (prev - 1 + featuredImages.length) % featuredImages.length);
   };
 
   const handleNextSlide = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (featuredImages.length === 0) return;
+    if (featuredImages.length <= 1) return;
     setActiveSlide((prev) => (prev + 1) % featuredImages.length);
   };
 
@@ -270,7 +287,7 @@ export default function News() {
                   src={featuredImages[activeSlide % featuredImages.length]} 
                   alt={featuredArticle?.title || "Featured News"} 
                   onError={(e) => { (e.target as HTMLImageElement).src = "/logo.png?v=3"; }}
-                  className="absolute inset-0 w-full h-full object-cover transition-all duration-500"
+                  className="absolute inset-0 w-full h-full object-cover object-center transition-all duration-500"
                   loading="eager"
                   decoding="async"
                 />

@@ -9,7 +9,9 @@ async function main() {
   });
 
   if (!existingAdmin) {
-    const passwordHash = await bcrypt.hash("admin123", 10);
+    const password = process.env.ADMIN_INITIAL_PASSWORD;
+    if (!password || password.length < 12) throw new Error("Set ADMIN_INITIAL_PASSWORD (12+ characters) to create the first admin");
+    const passwordHash = await bcrypt.hash(password, 12);
     await prisma.adminUser.create({
       data: {
         username: "admin",
@@ -17,7 +19,7 @@ async function main() {
         role: "superadmin"
       }
     });
-    console.log("Created default admin user (admin / admin123)");
+    console.log("Created admin user");
   } else {
     console.log("Admin user already exists");
   }

@@ -61,21 +61,25 @@ export function NewsCMS({
   }, [announcements]);
 
   // Save Handlers
-  const handleSaveAllNews = () => {
-    updateNews(newsList);
-    updateNewsPageConfig(newsPageForm);
+  const handleSaveAllNews = async () => {
+    try {
+    await updateNews(newsList);
+    await updateNewsPageConfig(newsPageForm);
     updateAnnouncements(announcementsList);
     notifySave("News, Hero Spotlight & Announcements published live!");
+    } catch (error: any) { alert(error.message || "Unable to publish. Please retry."); }
   };
 
-  const handleResetAllNews = () => {
+  const handleResetAllNews = async () => {
+    try {
     setNewsList(INITIAL_NEWS);
-    updateNews(INITIAL_NEWS);
+    await updateNews(INITIAL_NEWS);
     setNewsPageForm(DEFAULT_NEWS_PAGE_CONFIG);
-    updateNewsPageConfig(DEFAULT_NEWS_PAGE_CONFIG);
+    await updateNewsPageConfig(DEFAULT_NEWS_PAGE_CONFIG);
     setAnnouncementsList(INITIAL_ANNOUNCEMENTS);
     updateAnnouncements(INITIAL_ANNOUNCEMENTS);
     notifySave("News reset to default data!");
+    } catch (error: any) { alert(error.message || "Unable to publish. Please retry."); }
   };
 
   // Categories list
@@ -91,7 +95,8 @@ export function NewsCMS({
   });
 
   // Add new article
-  const handleAddNewArticle = () => {
+  const handleAddNewArticle = async () => {
+    try {
     const newId = Date.now();
     const newArticle: NewsArticle = {
       id: newId,
@@ -111,21 +116,43 @@ export function NewsCMS({
     };
     const updated = [newArticle, ...newsList];
     setNewsList(updated);
-    updateNews(updated);
+    await updateNews(updated);
     notifySave("New article created! Upload your photos and edit details below.");
+  
+    } catch (error: any) { alert(error.message || "Unable to publish. Please retry."); }
   };
 
   // Clear all articles handler
-  const handleClearAllArticles = () => {
+  const handleClearAllArticles = async () => {
+    try {
     if (window.confirm("Are you sure you want to delete ALL news articles? This will clear all news from the website and admin panel.")) {
       setNewsList([]);
-      updateNews([]);
+      await updateNews([]);
       notifySave("All news articles cleared live!");
     }
+  
+    } catch (error: any) { alert(error.message || "Unable to publish. Please retry."); }
+  };
+
+  const recoverBrowserContent = async () => {
+    try {
+      const cached = JSON.parse(localStorage.getItem("chalapathi_news_v4") || "[]");
+      if (!Array.isArray(cached) || !cached.length) throw new Error("No saved articles found in this browser.");
+      const currentSlugs = new Set(newsList.map(item => item.slug));
+      const recovered = cached.filter(item => !currentSlugs.has(item.slug)).map((item, index) => ({ ...item, id: Date.now() + index }));
+      await updateNews([...newsList, ...recovered]);
+      notifySave("Recovered content is now saved on the shared server.");
+    } catch (error: any) { alert(error.message || "Recovery failed. Please retry."); }
   };
 
   return (
     <div className="space-y-6 animate-fade-in text-left">
+      {localStorage.getItem("chalapathi_news_v4") && (
+        <button type="button" onClick={recoverBrowserContent} className="px-3 py-2 text-xs font-bold rounded-lg border border-gray-200 text-slate-700">
+          Recover articles saved in this browser
+        </button>
+      )}
+
       <SectionHeader
         title="News, Media & Announcements CMS"
         subtitle="Manage the news portal hero spotlight, carousel slides, university highlights, full articles directory, and side notices"
@@ -194,10 +221,13 @@ export function NewsCMS({
               </div>
               <button
                 type="button"
-                onClick={() => {
-                  updateNewsPageConfig(newsPageForm);
+                onClick={async () => {
+    try {
+                  await updateNewsPageConfig(newsPageForm);
                   notifySave("News page banner settings saved!");
-                }}
+                
+    } catch (error: any) { alert(error.message || "Unable to publish. Please retry."); }
+  }}
                 className="h-8 px-3.5 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-xs cursor-pointer"
               >
                 <Save size={13} /> Save Banner
@@ -260,13 +290,16 @@ export function NewsCMS({
               <label className="text-[10px] font-bold text-gray-600 uppercase">Select Primary Featured Article</label>
               <select
                 value={newsPageForm.featuredArticleId || newsList[0]?.id || ""}
-                onChange={(e) => {
+                onChange={async (e) => {
+    try {
                   const newId = Number(e.target.value);
                   const updatedForm = { ...newsPageForm, featuredArticleId: newId };
                   setNewsPageForm(updatedForm);
-                  updateNewsPageConfig(updatedForm);
+                  await updateNewsPageConfig(updatedForm);
                   notifySave("Primary featured article updated live!");
-                }}
+                
+    } catch (error: any) { alert(error.message || "Unable to publish. Please retry."); }
+  }}
                 className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
               >
                 {newsList.length === 0 ? (
@@ -337,15 +370,18 @@ export function NewsCMS({
                           <div className="flex items-center gap-2">
                             <button
                               type="button"
-                              onClick={() => {
+                              onClick={async () => {
+    try {
                                 const currentHidden: number[] = (newsPageForm as any).hiddenCarouselSlides || [];
                                 const updatedHidden = currentHidden.includes(sIdx)
                                   ? currentHidden.filter((i: number) => i !== sIdx)
                                   : [...currentHidden, sIdx];
                                 const updatedForm = { ...newsPageForm, hiddenCarouselSlides: updatedHidden };
                                 setNewsPageForm(updatedForm);
-                                updateNewsPageConfig(updatedForm);
-                              }}
+                                await updateNewsPageConfig(updatedForm);
+                              
+    } catch (error: any) { alert(error.message || "Unable to publish. Please retry."); }
+  }}
                               className="text-[10px] text-gray-500 hover:text-[#072A6C] font-bold flex items-center gap-0.5 cursor-pointer"
                             >
                               {isSlideHidden ? <><EyeOff size={11} className="text-amber-600" /> Hidden</> : <><Eye size={11} /> Hide</>}
@@ -570,15 +606,18 @@ export function NewsCMS({
                         <button
                           type="button"
                           disabled={idx === 0}
-                          onClick={() => {
+                          onClick={async () => {
+    try {
                             if (idx === 0) return;
                             const updated = [...newsList];
                             const temp = updated[idx];
                             updated[idx] = updated[idx - 1];
                             updated[idx - 1] = temp;
                             setNewsList(updated);
-                            updateNews(updated);
-                          }}
+                            await updateNews(updated);
+                          
+    } catch (error: any) { alert(error.message || "Unable to publish. Please retry."); }
+  }}
                           className="p-1.5 hover:bg-white rounded-md text-gray-700 disabled:opacity-25 cursor-pointer transition-colors"
                           title="Move Up in order"
                         >
@@ -587,15 +626,18 @@ export function NewsCMS({
                         <button
                           type="button"
                           disabled={idx === newsList.length - 1}
-                          onClick={() => {
+                          onClick={async () => {
+    try {
                             if (idx === newsList.length - 1) return;
                             const updated = [...newsList];
                             const temp = updated[idx];
                             updated[idx] = updated[idx + 1];
                             updated[idx + 1] = temp;
                             setNewsList(updated);
-                            updateNews(updated);
-                          }}
+                            await updateNews(updated);
+                          
+    } catch (error: any) { alert(error.message || "Unable to publish. Please retry."); }
+  }}
                           className="p-1.5 hover:bg-white rounded-md text-gray-700 disabled:opacity-25 cursor-pointer transition-colors"
                           title="Move Down in order"
                         >
@@ -605,14 +647,17 @@ export function NewsCMS({
 
                       <button
                         type="button"
-                        onClick={() => {
+                        onClick={async () => {
+    try {
                           const isHidden = !article.hidden;
                           const updated = [...newsList];
                           updated[idx] = { ...updated[idx], hidden: isHidden };
                           setNewsList(updated);
-                          updateNews(updated);
+                          await updateNews(updated);
                           notifySave(`Article "${article.title || 'Untitled'}" is now ${isHidden ? 'Hidden' : 'Visible'}!`);
-                        }}
+                        
+    } catch (error: any) { alert(error.message || "Unable to publish. Please retry."); }
+  }}
                         className={`h-8 px-3 border text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer transition-all ${
                           article.hidden 
                             ? "bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300" 
@@ -625,14 +670,17 @@ export function NewsCMS({
 
                       <button
                         type="button"
-                        onClick={() => {
+                        onClick={async () => {
+    try {
                           if (window.confirm(`Delete article "${article.title}"?`)) {
                             const updated = newsList.filter((n) => n.id !== article.id);
                             setNewsList(updated);
-                            updateNews(updated);
+                            await updateNews(updated);
                             notifySave("Article deleted.");
                           }
-                        }}
+                        
+    } catch (error: any) { alert(error.message || "Unable to publish. Please retry."); }
+  }}
                         className="h-8 px-3 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-all"
                       >
                         <Trash2 size={13} /> Delete
@@ -1090,10 +1138,13 @@ export function NewsCMS({
             <div className="flex items-center gap-2 shrink-0">
               <button
                 type="button"
-                onClick={() => {
-                  updateNews(newsList);
+                onClick={async () => {
+    try {
+                  await updateNews(newsList);
                   notifySave("Homepage News carousel and featured headlines saved live!");
-                }}
+                
+    } catch (error: any) { alert(error.message || "Unable to publish. Please retry."); }
+  }}
                 className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
               >
                 <Save size={13} /> Save Homepage News
@@ -1204,14 +1255,17 @@ export function NewsCMS({
                     </span>
                     <button
                       type="button"
-                      onClick={() => {
+                      onClick={async () => {
+    try {
                         const updated = newsList.map((n) =>
                           n.id === art.id ? { ...n, featured: !n.featured } : n
                         );
                         setNewsList(updated);
-                        updateNews(updated);
+                        await updateNews(updated);
                         notifySave(`Toggled featured status for "${art.title}"`);
-                      }}
+                      
+    } catch (error: any) { alert(error.message || "Unable to publish. Please retry."); }
+  }}
                       className={`text-[10px] font-black px-2.5 py-1 rounded-lg border flex items-center gap-1 cursor-pointer transition-colors ${
                         art.featured
                           ? "bg-amber-500 text-white border-amber-600"

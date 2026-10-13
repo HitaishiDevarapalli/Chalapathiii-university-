@@ -12,12 +12,6 @@ import {
 } from "lucide-react";
 import SEO from "../components/SEO";
 
-const FEATURED_IMAGES = [
-  "/prog_computer.png",
-  "/prog_engineering.png",
-  "/prog_management.png",
-  "/prog_pharmacy.png"
-];
 import { useData, DEFAULT_ACADEMIC_STRUCTURE } from "../context/DataContext";
 
 /* ── animation helpers ────────────────────────── */
@@ -806,7 +800,7 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
             
             {/* LEFT COLUMN: Featured News Card (50% / lg:col-span-6) */}
-            <div className="lg:col-span-6 bg-white rounded-[24px] border border-gray-100 shadow-sm overflow-hidden flex flex-col md:flex-row items-stretch select-none">
+            <div className="lg:col-span-6 bg-white rounded-[24px] border border-gray-100 shadow-sm overflow-hidden flex flex-col md:flex-row items-stretch select-none min-h-[380px]">
               {featuredSlides.length === 0 ? (
                 <div className="w-full p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
                   <span className="text-sm font-semibold text-gray-400">No Featured News Published</span>
@@ -814,15 +808,15 @@ export default function Home() {
                 </div>
               ) : (
                 <>
-                  {/* Left half: Image slider carousel */}
-                  <div className="w-full md:w-1/2 relative bg-slate-900 group min-h-[300px] md:min-h-auto flex items-stretch">
+                  {/* Left half: Image slider carousel with enlarged photo space */}
+                  <div className="w-full md:w-[56%] relative bg-slate-900 group min-h-[320px] md:min-h-[380px] flex items-stretch">
                     {featuredSlides[activeNewsSlide] && (
                       featuredSlides[activeNewsSlide].image ? (
                         <img 
                           src={featuredSlides[activeNewsSlide].image} 
                           alt={featuredSlides[activeNewsSlide].title || "Featured News"} 
                           onError={(e) => { (e.target as HTMLImageElement).src = "/logo.png?v=3"; }}
-                          className="absolute inset-0 w-full h-full object-cover transition-all duration-500"
+                          className="absolute inset-0 w-full h-full object-cover object-center transition-all duration-500"
                           loading="lazy"
                           decoding="async"
                         />
@@ -871,7 +865,7 @@ export default function Home() {
                   </div>
 
                   {/* Right half: Text Content */}
-                  <div className="w-full md:w-1/2 p-8 flex flex-col justify-between text-left">
+                  <div className="w-full md:w-[44%] p-6 md:p-7 flex flex-col justify-between text-left">
                     {featuredSlides[activeNewsSlide] && (
                       <div className="space-y-4">
                         <div className="flex items-center gap-1.5">

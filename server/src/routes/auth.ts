@@ -41,7 +41,10 @@ router.post("/login", async (req: Request, res: Response) => {
       });
     }
 
+    if (!["admin", "superadmin"].includes(user.role)) return res.status(403).json({ error: "Admin access required" });
+    await new Promise<void>((resolve, reject) => req.session.regenerate(err => err ? reject(err) : resolve()));
     req.session.adminId = user.id;
+    await new Promise<void>((resolve, reject) => req.session.save(err => err ? reject(err) : resolve()));
 
     return res.status(200).json({
       success: true,
@@ -109,7 +112,7 @@ router.get("/me", async (req: Request, res: Response) => {
       },
     });
 
-    if (!user) {
+    if (!user || !["admin", "superadmin"].includes(user.role)) {
       return res.status(401).json({
         error: "User not found or session expired",
       });

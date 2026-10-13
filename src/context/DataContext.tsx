@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import { readContent, saveContent, readNewsConfig, saveNewsConfig } from "../services/contentApi";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { safeSetItem } from "../lib/safeStorage";
 import { PROGRAMS_DATA, ProgramDetail } from "../data/programsData";
 import { CmsPage } from "../types/cms";
@@ -111,6 +112,7 @@ export interface EventItem {
   bodyText: string;
   registrationUrl?: string;
   registrationOpen?: boolean;
+  hidden?: boolean;
 }
 
 export interface EventRegistration {
@@ -830,13 +832,13 @@ interface DataContextType {
   updateAcademicStructure: (structure: AcademicStructure) => void;
 
   news: NewsArticle[];
-  updateNews: (list: NewsArticle[]) => void;
+  updateNews: (list: NewsArticle[]) => Promise<void>;
 
   newsPageConfig: NewsPageConfig;
-  updateNewsPageConfig: (config: NewsPageConfig) => void;
+  updateNewsPageConfig: (config: NewsPageConfig) => Promise<void>;
 
   events: EventItem[];
-  updateEvents: (list: EventItem[]) => void;
+  updateEvents: (list: EventItem[]) => Promise<void>;
 
   campusVideos: CampusVideoItem[];
   updateCampusVideos: (list: CampusVideoItem[]) => void;
@@ -3149,85 +3151,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   // News
-  const [news, setNews] = useState<NewsArticle[]>(() => {
-    const FAKE_NEWS_TITLES = new Set([
-      "Engineering Students Win Smart Hackathon 2025",
-      "Annual Convocation 2025 Held with Grandeur",
-      "Record Placements in 2025 Batch",
-      "New Study on Renewable Energy Published in Scopus Journal",
-      "International Yoga Day Celebrated with Enthusiasm",
-      "International Yoga Day Celebrated with Great Enthusiasm",
-      "AI Research Lab Inaugurated on Campus",
-      "Admissions Open for Academic Year 2025-26",
-      "Annual Innovation & Entrepreneurship Summit",
-      "MoU Signed with Top Global Corporations for Placements",
-      "New Pharmacy Research Formulations Published",
-      "Global Education Fair and Career Expo Hosts 30+ Universities",
-      "Annual Sports Meet Kickstarts with Inter-Department Matches",
-      "Workshop on Sustainable Construction Materials Conducted",
-      "Alumni Meet 2025 Welcomes Back Distinguished Graduates"
-    ]);
-
-    localStorage.removeItem("chalapathi_news");
-    localStorage.removeItem("chalapathi_news_v2");
-    localStorage.removeItem("chalapathi_news_v3");
-    try {
-      const local = localStorage.getItem("chalapathi_news_v4");
-      if (local) {
-        const parsed = JSON.parse(local);
-        if (Array.isArray(parsed)) {
-          const cleaned = parsed.filter((item: any) => !FAKE_NEWS_TITLES.has(item.title));
-          if (cleaned.length !== parsed.length) {
-            localStorage.setItem("chalapathi_news_v4", JSON.stringify(cleaned));
-          }
-          return cleaned;
-        }
-      }
-    } catch (e) {}
-    localStorage.setItem("chalapathi_news_v4", JSON.stringify(INITIAL_NEWS));
-    return INITIAL_NEWS;
-  });
+  const [news, setNews] = useState<NewsArticle[]>([]);
 
   // News Page Configuration
-  const [newsPageConfig, setNewsPageConfig] = useState<NewsPageConfig>(() => {
-    const local = localStorage.getItem("chalapathi_news_page_config");
-    return local ? { ...DEFAULT_NEWS_PAGE_CONFIG, ...JSON.parse(local) } : DEFAULT_NEWS_PAGE_CONFIG;
-  });
+  const [newsPageConfig, setNewsPageConfig] = useState<NewsPageConfig>(DEFAULT_NEWS_PAGE_CONFIG);
+  const contentRevisions = useRef<Record<string, string>>({});
 
   // Events
-  const [events, setEvents] = useState<EventItem[]>(() => {
-    const FAKE_EVENT_TITLES = new Set([
-      "National Sports Meet & Athletic Championship",
-      "Annual Placements Boot Camp and Corporate Summit",
-      "International Conference on Green Chemistry & Sustainable Biotech",
-      "Smart India Hackathon 2026 Campus Edition",
-      "Air Taxi Demonstration & Aviation Forum",
-      "Air Taxi Demonstration",
-      "Annual Innovation & Entrepreneurship Summit",
-      "National Research Expo & Patent Showcase",
-      "Industry Connect: Corporate Leadership Panel",
-      "Global Alumni Reunion & Endowment Gala"
-    ]);
-
-    localStorage.removeItem("chalapathi_events");
-    localStorage.removeItem("chalapathi_events_v2");
-    localStorage.removeItem("chalapathi_events_v3");
-    try {
-      const local = localStorage.getItem("chalapathi_events_v4");
-      if (local) {
-        const parsed = JSON.parse(local);
-        if (Array.isArray(parsed)) {
-          const cleaned = parsed.filter((item: any) => !FAKE_EVENT_TITLES.has(item.title));
-          if (cleaned.length !== parsed.length) {
-            localStorage.setItem("chalapathi_events_v4", JSON.stringify(cleaned));
-          }
-          return cleaned;
-        }
-      }
-    } catch (e) {}
-    localStorage.setItem("chalapathi_events_v4", JSON.stringify(INITIAL_EVENTS));
-    return INITIAL_EVENTS;
-  });
+  const [events, setEvents] = useState<EventItem[]>([]);
 
   // About Content
   const [aboutContent, setAboutContent] = useState<AboutUsContent>(() => {
@@ -3475,15 +3406,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const localPrograms = localStorage.getItem("chalapathi_programs_v4") || localStorage.getItem("chalapathi_programs");
         if (localPrograms) setPrograms(JSON.parse(localPrograms));
 
-        const localNews = localStorage.getItem("chalapathi_news_v4");
-        if (localNews) setNews(JSON.parse(localNews));
-
-        const localNewsConfig = localStorage.getItem("chalapathi_news_page_config");
-        if (localNewsConfig) setNewsPageConfig(JSON.parse(localNewsConfig));
-
-        const localEvents = localStorage.getItem("chalapathi_events_v4");
-        if (localEvents) setEvents(JSON.parse(localEvents));
-
         const localAbout = localStorage.getItem("chalapathi_about_v2");
         if (localAbout) setAboutContent(JSON.parse(localAbout));
 
@@ -3671,41 +3593,23 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateNews = async (list: NewsArticle[]) => {
-    setNews(list);
-    safeSetItem("chalapathi_news_v4", JSON.stringify(list));
+    const result = await saveContent("news", list, contentRevisions.current.news);
+    contentRevisions.current.news = result.revision;
+    setNews(result.items);
     recordSave();
-    syncConfigToBackend("news", list);
-    // Synchronize to PostgreSQL Backend
-    try {
-      await fetch('/api/news/sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ articles: list })
-      });
-    } catch (e) {
-      console.error("Backend sync failed for news", e);
-    }
   };
 
-  const updateNewsPageConfig = (config: NewsPageConfig) => {
-    setNewsPageConfig(config);
-    safeSetItem("chalapathi_news_page_config", JSON.stringify(config));
+  const updateNewsPageConfig = async (config: NewsPageConfig) => {
+    const saved = await saveNewsConfig(config);
+    setNewsPageConfig(saved);
     recordSave();
-    syncConfigToBackend("newsPageConfig", config);
   };
 
   const updateEvents = async (list: EventItem[]) => {
-    setEvents(list);
-    safeSetItem("chalapathi_events_v4", JSON.stringify(list));
+    const result = await saveContent("events", list, contentRevisions.current.events);
+    contentRevisions.current.events = result.revision;
+    setEvents(result.items);
     recordSave();
-    syncConfigToBackend("events", list);
-    try {
-      await fetch('/api/events/sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ events: list })
-      });
-    } catch (e) {}
   };
 
   const updateAboutContent = (content: AboutUsContent) => {
@@ -4081,31 +3985,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
               setAnnouncements(cleaned);
               safeSetItem("chalapathi_announcements", JSON.stringify(cleaned));
             }
-            if (s.events && Array.isArray(s.events)) {
-              const FAKE_EVENT_TITLES = new Set([
-                "National Sports Meet & Athletic Championship",
-                "Annual Placements Boot Camp and Corporate Summit",
-                "International Conference on Green Chemistry & Sustainable Biotech",
-                "Smart India Hackathon 2026 Campus Edition",
-                "Air Taxi Demonstration & Aviation Forum",
-                "Air Taxi Demonstration",
-                "Annual Innovation & Entrepreneurship Summit",
-                "National Research Expo & Patent Showcase",
-                "Industry Connect: Corporate Leadership Panel",
-                "Global Alumni Reunion & Endowment Gala"
-              ]);
-              const cleanedEvents = s.events.filter((e: any) => !FAKE_EVENT_TITLES.has(e.title));
-              setEvents(cleanedEvents);
-              safeSetItem("chalapathi_events_v4", JSON.stringify(cleanedEvents));
-            }
             if (s.programs && Array.isArray(s.programs)) {
               setPrograms(s.programs);
               safeSetItem("chalapathi_programs_v4", JSON.stringify(s.programs));
             }
-            if (s.newsPageConfig) {
-              setNewsPageConfig((prev) => ({ ...prev, ...s.newsPageConfig }));
-              safeSetItem("chalapathi_news_page_config", JSON.stringify(s.newsPageConfig));
-            }
+
           }
         } catch (err) {
           console.warn("Initial CMS & Configs API sync:", err);
@@ -4140,81 +4024,46 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (err) {}
     };
 
-    const fetchNews = async () => {
-      try {
-        const res = await fetch('/api/news');
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data)) {
-            const FAKE_NEWS_TITLES = new Set([
-              "Engineering Students Win Smart Hackathon 2025",
-              "Annual Convocation 2025 Held with Grandeur",
-              "Record Placements in 2025 Batch",
-              "New Study on Renewable Energy Published in Scopus Journal",
-              "International Yoga Day Celebrated with Enthusiasm",
-              "International Yoga Day Celebrated with Great Enthusiasm",
-              "AI Research Lab Inaugurated on Campus",
-              "Admissions Open for Academic Year 2025-26",
-              "Annual Innovation & Entrepreneurship Summit",
-              "MoU Signed with Top Global Corporations for Placements",
-              "New Pharmacy Research Formulations Published",
-              "Global Education Fair and Career Expo Hosts 30+ Universities",
-              "Annual Sports Meet Kickstarts with Inter-Department Matches",
-              "Workshop on Sustainable Construction Materials Conducted",
-              "Alumni Meet 2025 Welcomes Back Distinguished Graduates"
-            ]);
-            const cleaned = data.filter((item: any) => !FAKE_NEWS_TITLES.has(item.title));
-            setNews(cleaned);
-            safeSetItem("chalapathi_news_v4", JSON.stringify(cleaned));
-            if (cleaned.length !== data.length) {
-              await fetch('/api/news/sync', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ articles: cleaned })
-              });
-            }
-          }
-        }
-      } catch (err) {}
-    };
-
-    const fetchEvents = async () => {
-      try {
-        const res = await fetch('/api/events');
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data)) {
-            const FAKE_EVENT_TITLES = new Set([
-              "National Sports Meet & Athletic Championship",
-              "Annual Placements Boot Camp and Corporate Summit",
-              "International Conference on Green Chemistry & Sustainable Biotech",
-              "Smart India Hackathon 2026 Campus Edition",
-              "Air Taxi Demonstration & Aviation Forum",
-              "Air Taxi Demonstration",
-              "Annual Innovation & Entrepreneurship Summit",
-              "National Research Expo & Patent Showcase",
-              "Industry Connect: Corporate Leadership Panel",
-              "Global Alumni Reunion & Endowment Gala"
-            ]);
-            const cleaned = data.filter((item: any) => !FAKE_EVENT_TITLES.has(item.title));
-            setEvents(cleaned);
-            safeSetItem("chalapathi_events_v4", JSON.stringify(cleaned));
-            if (cleaned.length !== data.length) {
-              await fetch('/api/events/sync', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ events: cleaned })
-              });
-            }
-          }
-        }
-      } catch (err) {}
-    };
-
     initCmsAndConfigs();
-    fetchNews();
-    fetchEvents();
     fetchAnnouncements();
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    let pending = false;
+    const refresh = async () => {
+      if (pending) return;
+      pending = true;
+      try {
+        const admin = window.location.pathname.startsWith("/admin");
+        const [articles, calendar, pageConfig] = await Promise.all([
+          readContent("news", admin), readContent("events", admin), readNewsConfig()
+        ]);
+        if (!active) return;
+        contentRevisions.current = { news: articles.revision, events: calendar.revision };
+        setNews(articles.items);
+        setEvents(calendar.items);
+        if (pageConfig) setNewsPageConfig({ ...DEFAULT_NEWS_PAGE_CONFIG, ...pageConfig });
+      } catch (error) { console.error("News & Events could not be loaded", error); }
+      finally { pending = false; }
+    };
+    const publicRefresh = () => { if (!window.location.pathname.startsWith("/admin")) void refresh(); };
+    void refresh();
+    const authChanged = () => {
+      contentRevisions.current = {};
+      setNews([]);
+      setEvents([]);
+      void refresh();
+    };
+    window.addEventListener("focus", publicRefresh);
+    window.addEventListener("admin-auth-changed", authChanged);
+    const timer = window.setInterval(publicRefresh, 30000);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+      window.removeEventListener("focus", publicRefresh);
+      window.removeEventListener("admin-auth-changed", authChanged);
+    };
   }, []);
 
   const updateCmsPages = (pages: CmsPage[]) => {

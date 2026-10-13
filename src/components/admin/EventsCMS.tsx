@@ -59,25 +59,31 @@ export function EventsCMS({
   }, [events]);
 
   // Save handler
-  const handleSaveEvents = () => {
-    updateEvents(eventsList);
+  const handleSaveEvents = async () => {
+    try {
+    await updateEvents(eventsList);
     notifySave("All campus events published live!");
+    } catch (error: any) { alert(error.message || "Unable to publish. Please retry."); }
   };
 
   // Reset handler
-  const handleResetEvents = () => {
+  const handleResetEvents = async () => {
+    try {
     setEventsList(INITIAL_EVENTS);
-    updateEvents(INITIAL_EVENTS);
+    await updateEvents(INITIAL_EVENTS);
     notifySave("Campus events reset to default records!");
+    } catch (error: any) { alert(error.message || "Unable to publish. Please retry."); }
   };
 
   // Clear all events handler
-  const handleClearAllEvents = () => {
+  const handleClearAllEvents = async () => {
+    try {
     if (window.confirm("Are you sure you want to delete ALL campus events? This will remove all events from both the public website and admin calendar.")) {
       setEventsList([]);
-      updateEvents([]);
+      await updateEvents([]);
       notifySave("All campus events cleared live!");
     }
+    } catch (error: any) { alert(error.message || "Unable to publish. Please retry."); }
   };
 
   // Categories list
@@ -130,7 +136,8 @@ export function EventsCMS({
   };
 
   // Add new event handler
-  const handleAddNewEvent = () => {
+  const handleAddNewEvent = async () => {
+    try {
     const newId = Date.now();
     const newEv: EventItem = {
       id: newId,
@@ -148,12 +155,31 @@ export function EventsCMS({
     };
     const updated = [newEv, ...eventsList];
     setEventsList(updated);
-    updateEvents(updated);
+    await updateEvents(updated);
     notifySave("New campus event created!");
+  
+    } catch (error: any) { alert(error.message || "Unable to publish. Please retry."); }
+  };
+
+  const recoverBrowserContent = async () => {
+    try {
+      const cached = JSON.parse(localStorage.getItem("chalapathi_events_v4") || "[]");
+      if (!Array.isArray(cached) || !cached.length) throw new Error("No saved events found in this browser.");
+      const currentSlugs = new Set(eventsList.map(item => item.slug));
+      const recovered = cached.filter(item => !currentSlugs.has(item.slug)).map((item, index) => ({ ...item, id: Date.now() + index }));
+      await updateEvents([...eventsList, ...recovered]);
+      notifySave("Recovered content is now saved on the shared server.");
+    } catch (error: any) { alert(error.message || "Recovery failed. Please retry."); }
   };
 
   return (
     <div className="space-y-6 animate-fade-in text-left">
+      {localStorage.getItem("chalapathi_events_v4") && (
+        <button type="button" onClick={recoverBrowserContent} className="px-3 py-2 text-xs font-bold rounded-lg border border-gray-200 text-slate-700">
+          Recover events saved in this browser
+        </button>
+      )}
+
       <SectionHeader
         title="Events & Registrations CMS"
         subtitle="Schedule campus summits, manage registration status (Open/Closed), configure galleries, and manage attendee leads"
@@ -353,15 +379,18 @@ export function EventsCMS({
                         <button
                           type="button"
                           disabled={idx === 0}
-                          onClick={() => {
+                          onClick={async () => {
+    try {
                             if (idx === 0) return;
                             const updated = [...eventsList];
                             const temp = updated[idx];
                             updated[idx] = updated[idx - 1];
                             updated[idx - 1] = temp;
                             setEventsList(updated);
-                            updateEvents(updated);
-                          }}
+                            await updateEvents(updated);
+                          
+    } catch (error: any) { alert(error.message || "Unable to publish. Please retry."); }
+  }}
                           className="p-1.5 hover:bg-white rounded-md text-gray-700 disabled:opacity-25 cursor-pointer transition-colors"
                           title="Move Up in order"
                         >
@@ -370,15 +399,18 @@ export function EventsCMS({
                         <button
                           type="button"
                           disabled={idx === eventsList.length - 1}
-                          onClick={() => {
+                          onClick={async () => {
+    try {
                             if (idx === eventsList.length - 1) return;
                             const updated = [...eventsList];
                             const temp = updated[idx];
                             updated[idx] = updated[idx + 1];
                             updated[idx + 1] = temp;
                             setEventsList(updated);
-                            updateEvents(updated);
-                          }}
+                            await updateEvents(updated);
+                          
+    } catch (error: any) { alert(error.message || "Unable to publish. Please retry."); }
+  }}
                           className="p-1.5 hover:bg-white rounded-md text-gray-700 disabled:opacity-25 cursor-pointer transition-colors"
                           title="Move Down in order"
                         >
@@ -388,14 +420,17 @@ export function EventsCMS({
 
                       <button
                         type="button"
-                        onClick={() => {
+                        onClick={async () => {
+    try {
                           if (window.confirm(`Delete event "${event.title}"?`)) {
                             const updated = eventsList.filter((e) => e.id !== event.id);
                             setEventsList(updated);
-                            updateEvents(updated);
+                            await updateEvents(updated);
                             notifySave("Event deleted.");
                           }
-                        }}
+                        
+    } catch (error: any) { alert(error.message || "Unable to publish. Please retry."); }
+  }}
                         className="h-8 px-3 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-all"
                       >
                         <Trash2 size={13} /> Delete
@@ -497,6 +532,14 @@ export function EventsCMS({
                         Registration & RSVP Controls
                       </h5>
                     </div>
+
+                    <label className="flex items-center gap-2 text-xs font-bold text-gray-600">
+                      <input type="checkbox" checked={event.hidden === true} onChange={e => {
+                        const updated = [...eventsList];
+                        updated[idx] = { ...updated[idx], hidden: e.target.checked };
+                        setEventsList(updated);
+                      }} /> Keep unpublished (visible only to admins)
+                    </label>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div className="space-y-1">
@@ -1107,10 +1150,13 @@ export function EventsCMS({
             <div className="flex items-center gap-2 shrink-0">
               <button
                 type="button"
-                onClick={() => {
-                  updateEvents(eventsList);
+                onClick={async () => {
+    try {
+                  await updateEvents(eventsList);
                   notifySave("Homepage Events feed and drawer published live!");
-                }}
+                
+    } catch (error: any) { alert(error.message || "Unable to publish. Please retry."); }
+  }}
                 className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
               >
                 <Save size={13} /> Save Homepage Events

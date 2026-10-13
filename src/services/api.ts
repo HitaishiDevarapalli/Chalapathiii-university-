@@ -7,7 +7,7 @@
 // static data from the `data/` modules.
 
 import { schools } from "@/data/schools";
-import { newsItems, upcomingEvents } from "@/data/news";
+import { readContent } from "./contentApi";
 import { stats } from "@/data/stats";
 import { accreditationBadges } from "@/data/badges";
 
@@ -31,32 +31,13 @@ export async function getSchoolBySlug(slug: string) {
  * Fetch latest news items dynamically from saved CMS or fallback.
  */
 export async function getNews(limit?: number) {
-  if (typeof window !== "undefined") {
-    try {
-      const local = localStorage.getItem("chalapathi_news_v4");
-      if (local) {
-        const parsed = JSON.parse(local);
-        if (Array.isArray(parsed)) return limit ? parsed.slice(0, limit) : parsed;
-      }
-    } catch (_) {}
-  }
-  return limit ? newsItems.slice(0, limit) : newsItems;
+  const { items } = await readContent("news");
+  return limit ? items.slice(0, limit) : items;
 }
 
-/**
- * Fetch upcoming events dynamically from saved CMS or fallback.
- */
 export async function getEvents(limit?: number) {
-  if (typeof window !== "undefined") {
-    try {
-      const local = localStorage.getItem("chalapathi_events_v4");
-      if (local) {
-        const parsed = JSON.parse(local);
-        if (Array.isArray(parsed)) return limit ? parsed.slice(0, limit) : parsed;
-      }
-    } catch (_) {}
-  }
-  return limit ? upcomingEvents.slice(0, limit) : upcomingEvents;
+  const { items } = await readContent("events");
+  return limit ? items.slice(0, limit) : items;
 }
 
 /**

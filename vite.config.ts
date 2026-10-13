@@ -18,6 +18,7 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 3000,
       proxy: {
+        "/uploads": { target: apiProxyTarget, changeOrigin: true },
         "/api": {
           target: apiProxyTarget,
           changeOrigin: true,
