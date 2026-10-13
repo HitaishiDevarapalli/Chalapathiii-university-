@@ -2579,12 +2579,8 @@ const isRealUploadedImage = (url?: string): boolean => {
   if (!url || typeof url !== "string") return false;
   const trimmed = url.trim();
   if (!trimmed) return false;
-  if (trimmed === "/chairman_v4.png") return true;
-  if (trimmed.startsWith("data:image/")) return true;
-  if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || (trimmed.startsWith("/") && !trimmed.includes(" "))) {
-    if (trimmed.includes("images.unsplash.com") || trimmed.includes("ui-avatars.com")) {
-      return false;
-    }
+  if (trimmed.startsWith("data:image/") || trimmed.startsWith("blob:")) return true;
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("/")) {
     return true;
   }
   return false;
@@ -2602,6 +2598,10 @@ function MemberAvatar({
   fallbackClassName?: string;
 }) {
   const [hasError, setHasError] = React.useState(false);
+
+  React.useEffect(() => {
+    setHasError(false);
+  }, [avatar]);
 
   const canShowImage = !hasError && isRealUploadedImage(avatar);
 
@@ -2823,26 +2823,30 @@ function BoardDirectory() {
       const dirData = boardData[roleKey];
       if (!dirData) return;
 
-      if (dirData.hod && dirData.hod.name && dirData.hod.name.trim()) {
-        const uniqueKey = `${roleKey}-${dirData.hod.idNo || dirData.hod.name}`.toLowerCase();
+      if (dirData.hod && (dirData.hod.name?.trim() || dirData.hod.avatar?.trim() || dirData.hod.title?.trim())) {
+        const uniqueKey = roleKey.toLowerCase();
         if (!seen.has(uniqueKey)) {
           seen.add(uniqueKey);
           members.push({
             ...dirData.hod,
-            department: dirData.hod.department || roleKey
+            name: dirData.hod.name?.trim() || "Board Member",
+            title: dirData.hod.title?.trim() || (roleKey.startsWith("Officer_") ? "Governing Council Member" : roleKey),
+            department: dirData.hod.department?.trim() || "Governing Council"
           });
         }
       }
 
       if (Array.isArray(dirData.others)) {
         dirData.others.forEach((mem, idx) => {
-          if (mem && mem.name && mem.name.trim()) {
-            const uniqueKey = `${mem.idNo || mem.name}-${mem.title || roleKey}-${idx}`.toLowerCase();
+          if (mem && (mem.name?.trim() || mem.avatar?.trim() || mem.title?.trim())) {
+            const uniqueKey = `${roleKey}-other-${idx}-${mem.idNo || mem.name || idx}`.toLowerCase();
             if (!seen.has(uniqueKey)) {
               seen.add(uniqueKey);
               members.push({
                 ...mem,
-                department: mem.department || roleKey
+                name: mem.name?.trim() || "Member",
+                title: mem.title?.trim() || roleKey,
+                department: mem.department?.trim() || "Governing Council"
               });
             }
           }

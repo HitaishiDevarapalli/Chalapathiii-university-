@@ -137,15 +137,6 @@ export const ImageField: React.FC<ImageFieldProps> = ({
       return;
     }
 
-    if (file.size > 8 * 1024 * 1024) {
-      setImageMeta({
-        isValid: false,
-        errorMsg: "File size exceeds 8MB limit."
-      });
-      alert("File size exceeds 8MB. Please upload a smaller image.");
-      return;
-    }
-
     setIsUploading(true);
     try {
       // 1. Try direct upload to backend server /api/upload endpoint first
@@ -176,14 +167,20 @@ export const ImageField: React.FC<ImageFieldProps> = ({
 
     // 2. Fallback to client-side compression if server upload is unavailable
     try {
+      const isPortrait = aspectRatio === "portrait";
+      const isSquare = aspectRatio === "square";
+      const isBanner = aspectRatio === "banner";
+
       const compressed = await compressImage(file, {
-        maxWidth: aspectRatio === "banner" ? 1800 : 1200,
-        maxHeight: aspectRatio === "banner" ? 800 : 900,
-        quality: 0.82
+        maxWidth: isBanner ? 1600 : isPortrait ? 600 : isSquare ? 500 : 1000,
+        maxHeight: isBanner ? 800 : isPortrait ? 750 : isSquare ? 500 : 800,
+        quality: 0.85,
+        mimeType: "image/jpeg"
       });
       onChange(compressed);
       setImageMeta({
         isValid: true,
+        size: `${Math.round(compressed.length * 0.75 / 1024)} KB`,
         errorMsg: undefined
       });
     } catch (err) {

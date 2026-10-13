@@ -24,8 +24,8 @@ router.post("/", upload.single("file"), (req, res) => {
   }
 });
 
-// POST /api/upload/multiple - Upload multiple files
-router.post("/multiple", upload.array("files", 10), (req, res) => {
+// POST /api/upload/multiple - Upload multiple files (no practical limit)
+router.post("/multiple", upload.array("files", 200), (req, res) => {
   try {
     const files = req.files as Express.Multer.File[];
     if (!files || files.length === 0) {

@@ -3389,12 +3389,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (parsed["Pro Chancellor"]?.hod?.edu) {
           parsed["Pro Chancellor"].hod.edu = parsed["Pro Chancellor"].hod.edu.replace(/M\.Tech/gi, "B.Tech");
         }
-        Object.keys(parsed).forEach(dept => {
-          if (parsed[dept]?.hod?.avatar && parsed[dept].hod.avatar.includes("images.unsplash.com")) {
-            parsed[dept].hod.avatar = "";
-          }
-        });
-        localStorage.setItem("chalapathi_board_data_v3", JSON.stringify(parsed));
         return parsed;
       } catch (e) {}
     }
@@ -3695,14 +3689,21 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       root.style.setProperty("--footer-text", themeColors.footerText || "#D1D5DB");
     }
   }, [themeColors]);
-  // Helper to asynchronously persist config key-value to PostgreSQL database
+  // Helper to asynchronously persist config key-value to database & serverless API
   const syncConfigToBackend = async (key: string, value: any) => {
     try {
-      await fetch(`/api/config/${encodeURIComponent(key)}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(value),
-      });
+      await Promise.allSettled([
+        fetch(`/api/config/${encodeURIComponent(key)}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(value),
+        }),
+        fetch("/api/cms", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "saveConfig", key, value }),
+        }),
+      ]);
     } catch (e) {
       console.warn(`[Sync] Backend persist failed for ${key}:`, e);
     }

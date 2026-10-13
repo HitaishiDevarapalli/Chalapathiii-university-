@@ -14,6 +14,14 @@ if (process.env.NODE_ENV === 'production') {
   prisma = global.prisma;
 }
 
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '50mb',
+    },
+  },
+};
+
 export default async function handler(req: any, res: any) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -281,6 +289,20 @@ export default async function handler(req: any, res: any) {
         } catch (err: any) {
           return res.status(200).json({ success: true, fallback: true, error: err.message });
         }
+      }
+
+      if (action === 'saveConfig') {
+        const { key, value } = body;
+        if (key) {
+          const stringified = typeof value === 'string' ? value : JSON.stringify(value);
+          await prisma.cmsSettingRecord.upsert({
+            where: { key },
+            update: { valueJson: stringified },
+            create: { key, valueJson: stringified }
+          }).catch(() => {});
+          return res.status(200).json({ success: true, key });
+        }
+        return res.status(400).json({ success: false, error: 'Key is required' });
       }
 
       return res.status(400).json({ success: false, message: `Unknown action: ${action}` });

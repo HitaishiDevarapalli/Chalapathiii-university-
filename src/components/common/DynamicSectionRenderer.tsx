@@ -674,7 +674,7 @@ export const DynamicSectionRenderer: React.FC<DynamicSectionRendererProps> = ({
                 <div key={person.id || pIdx} className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-lg border border-gray-100 flex flex-col items-center text-center transition-all group">
                   <div className="w-24 h-24 rounded-full overflow-hidden mb-4 border-2 border-blue-100 group-hover:border-[#072A6C] transition-colors bg-slate-100">
                     <img 
-                      src={person.image || person.photo || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=400&auto=format&fit=crop"} 
+                      src={person.avatar || person.image || person.photo || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=400&auto=format&fit=crop"} 
                       alt={person.name || person.title} 
                       className="w-full h-full object-cover"
                     />

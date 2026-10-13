@@ -43,9 +43,20 @@ export function safeGetItem(key: string): string | null {
   }
 }
 
+let globalSyncChannel: BroadcastChannel | null = null;
+try {
+  if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+    globalSyncChannel = new BroadcastChannel("chalapathi_sync_channel");
+  }
+} catch (_) {}
+
 export function notifyStorageChange(key?: string) {
   try {
     window.dispatchEvent(new CustomEvent("chalapathi_cms_updated", { detail: { key } }));
     window.dispatchEvent(new Event("storage"));
+    if (globalSyncChannel) {
+      globalSyncChannel.postMessage({ type: "SYNC", key, timestamp: Date.now() });
+    }
   } catch (_) {}
 }
+

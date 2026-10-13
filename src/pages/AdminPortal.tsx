@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { compressImage } from "../lib/imageCompressor";
-import { safeSetItem } from "../lib/safeStorage";
+import { safeSetItem, notifyStorageChange } from "../lib/safeStorage";
 import { 
   useData, 
   Announcement, 
@@ -1007,10 +1007,11 @@ export default function AdminPortal() {
       }
     }
 
-    // Direct PUT to persist directly to PostgreSQL
+    // Direct PUT & POST to persist directly to database & serverless API
     try {
       updateBoardData(boardForm);
-      await Promise.all([
+      safeSetItem("chalapathi_board_data_v3", JSON.stringify(boardForm));
+      await Promise.allSettled([
         fetch("/api/config/aboutContent", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -1026,7 +1027,18 @@ export default function AdminPortal() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(sectionsList),
         }),
+        fetch("/api/cms", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "saveConfig", key: "boardData", value: boardForm }),
+        }),
+        fetch("/api/cms", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "saveConfig", key: "aboutContent", value: aboutForm }),
+        }),
       ]);
+      notifyStorageChange("chalapathi_board_data_v3");
     } catch (e) {
       console.warn("Direct DB sync error:", e);
     }
@@ -1428,12 +1440,41 @@ export default function AdminPortal() {
   React.useEffect(() => setBoardForm(boardData), [boardData]);
   React.useEffect(() => setStaffForm(staffData), [staffData]);
 
+  const updateBoardLive = (updated: Record<string, DirectoryData>) => {
+    setBoardForm(updated);
+    updateBoardData(updated);
+  };
+
+  const saveBoardMembersLive = async () => {
+    updateBoardData(boardForm);
+    safeSetItem("chalapathi_board_data_v3", JSON.stringify(boardForm));
+    try {
+      await Promise.allSettled([
+        fetch("/api/config/boardData", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(boardForm),
+        }),
+        fetch("/api/cms", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "saveConfig", key: "boardData", value: boardForm }),
+        }),
+      ]);
+    } catch (e) {
+      console.warn("Direct boardData sync error:", e);
+    }
+    notifyStorageChange("chalapathi_board_data_v3");
+    notifySave(`All ${Object.keys(boardForm).length} Governing Board Members & photos published live!`);
+  };
+
   const saveDirectories = async () => {
     updateFacultyData(facultyForm);
     updateBoardData(boardForm);
     updateStaffData(staffForm);
+    safeSetItem("chalapathi_board_data_v3", JSON.stringify(boardForm));
     try {
-      await Promise.all([
+      await Promise.allSettled([
         fetch("/api/config/boardData", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -1449,7 +1490,13 @@ export default function AdminPortal() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(staffForm),
         }),
+        fetch("/api/cms", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "saveConfig", key: "boardData", value: boardForm }),
+        }),
       ]);
+      notifyStorageChange("chalapathi_board_data_v3");
     } catch (e) {}
     notifySave("Directories updated live!");
   };
@@ -7047,35 +7094,44 @@ export default function AdminPortal() {
                         </div>
                         <p className="text-xs text-gray-500">Add and edit unlimited board members, photos, titles, qualifications, and bios displayed on /about/leadership</p>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const newKey = `Officer_${Date.now()}`;
-                          const newMember: FacultyMember = {
-                            name: "New Board Member",
-                            title: "Member, Governing Council",
-                            edu: "Ph.D. / M.Tech",
-                            interests: "Institutional planning & research governance",
-                            phone: "0863 2345499",
-                            email: "member@chalapathiuniversity.edu.in",
-                            avatar: "",
-                            age: "45 Years",
-                            experience: "15 Years",
-                            idNo: `CUB-M-${Date.now().toString().slice(-4)}`,
-                            department: "Governing Council"
-                          };
-                          const updated = {
-                            ...boardForm,
-                            [newKey]: { hod: newMember, others: [] }
-                          };
-                          setBoardForm(updated);
-                          updateBoardData(updated);
-                          notifySave("New Board Member added! Configure their details below.");
-                        }}
-                        className="h-8 px-3 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer shadow-xs"
-                      >
-                        <Plus size={13} /> Add Board Member
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={saveBoardMembersLive}
+                          className="h-8 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                          title="Instantly publish all board members to live website"
+                        >
+                          <CheckCircle size={13} /> Save & Publish Live
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newKey = `Officer_${Date.now()}`;
+                            const newMember: FacultyMember = {
+                              name: "New Board Member",
+                              title: "Member, Governing Council",
+                              edu: "Ph.D. / M.Tech",
+                              interests: "Institutional planning & research governance",
+                              phone: "0863 2345499",
+                              email: "member@chalapathiuniversity.edu.in",
+                              avatar: "",
+                              age: "45 Years",
+                              experience: "15 Years",
+                              idNo: `CUB-M-${Date.now().toString().slice(-4)}`,
+                              department: "Governing Council"
+                            };
+                            const updated = {
+                              ...boardForm,
+                              [newKey]: { hod: newMember, others: [] }
+                            };
+                            updateBoardLive(updated);
+                            notifySave("New Board Member added! Configure their details below.");
+                          }}
+                          className="h-8 px-3 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer shadow-xs"
+                        >
+                          <Plus size={13} /> Add Board Member
+                        </button>
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -7101,8 +7157,7 @@ export default function AdminPortal() {
                                     if (window.confirm(`Are you sure you want to delete "${member.name || roleKey}" from Governing Board Members?`)) {
                                       const copy = { ...boardForm };
                                       delete copy[roleKey];
-                                      setBoardForm(copy);
-                                      updateBoardData(copy);
+                                      updateBoardLive(copy);
                                       notifySave("Board member deleted successfully!");
                                     }
                                   }}
@@ -7127,7 +7182,7 @@ export default function AdminPortal() {
                                       hod: { ...member, avatar: fallback }
                                     }
                                   };
-                                  setBoardForm(updated);
+                                  updateBoardLive(updated);
                                   notifySave("Member photo reset to default!");
                                 }}
                                 onChange={(newAvatar) => {
@@ -7138,7 +7193,7 @@ export default function AdminPortal() {
                                       hod: { ...member, avatar: newAvatar }
                                     }
                                   };
-                                  setBoardForm(updated);
+                                  updateBoardLive(updated);
                                 }}
                                 aspectRatio="portrait"
                                 recommendedSize="400 × 500 px (Portrait)"
@@ -7157,7 +7212,7 @@ export default function AdminPortal() {
                                         hod: { ...member, name: e.target.value }
                                       }
                                     };
-                                    setBoardForm(updated);
+                                    updateBoardLive(updated);
                                   }}
                                   className="w-full h-8 px-2 text-xs font-bold bg-white border border-gray-200 rounded"
                                 />
@@ -7176,7 +7231,7 @@ export default function AdminPortal() {
                                         hod: { ...member, title: e.target.value }
                                       }
                                     };
-                                    setBoardForm(updated);
+                                    updateBoardLive(updated);
                                   }}
                                   className="w-full h-8 px-2 text-xs bg-white border border-gray-200 rounded"
                                 />
@@ -7195,7 +7250,7 @@ export default function AdminPortal() {
                                         hod: { ...member, edu: e.target.value }
                                       }
                                     };
-                                    setBoardForm(updated);
+                                    updateBoardLive(updated);
                                   }}
                                   className="w-full h-8 px-2 text-[11px] bg-white border border-gray-200 rounded text-gray-700"
                                 />
@@ -7214,7 +7269,7 @@ export default function AdminPortal() {
                                         hod: { ...member, interests: e.target.value }
                                       }
                                     };
-                                    setBoardForm(updated);
+                                    updateBoardLive(updated);
                                   }}
                                   className="w-full p-2 text-[11px] bg-white border border-gray-200 rounded"
                                 />
@@ -7234,7 +7289,7 @@ export default function AdminPortal() {
                                           hod: { ...member, experience: e.target.value }
                                         }
                                       };
-                                      setBoardForm(updated);
+                                      updateBoardLive(updated);
                                     }}
                                     className="w-full h-7 px-2 text-[11px] bg-white border border-gray-200 rounded"
                                   />
@@ -7252,7 +7307,7 @@ export default function AdminPortal() {
                                           hod: { ...member, email: e.target.value }
                                         }
                                       };
-                                      setBoardForm(updated);
+                                      updateBoardLive(updated);
                                     }}
                                     className="w-full h-7 px-2 text-[11px] bg-white border border-gray-200 rounded"
                                   />
@@ -7273,7 +7328,7 @@ export default function AdminPortal() {
                                           hod: { ...member, phone: e.target.value }
                                         }
                                       };
-                                      setBoardForm(updated);
+                                      updateBoardLive(updated);
                                     }}
                                     className="w-full h-7 px-2 text-[11px] bg-white border border-gray-200 rounded"
                                   />
@@ -7291,7 +7346,7 @@ export default function AdminPortal() {
                                           hod: { ...member, department: e.target.value }
                                         }
                                       };
-                                      setBoardForm(updated);
+                                      updateBoardLive(updated);
                                     }}
                                     className="w-full h-7 px-2 text-[11px] bg-white border border-gray-200 rounded"
                                   />
@@ -7301,6 +7356,24 @@ export default function AdminPortal() {
                           </div>
                         );
                       })}
+                    </div>
+
+                    {/* Bottom Save & Publish Live Bar */}
+                    <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 mt-4">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="text-emerald-600 shrink-0" size={18} />
+                        <div>
+                          <p className="text-xs font-bold text-[#072A6C]">Ready to reflect changes on the live website?</p>
+                          <p className="text-[11px] text-gray-500">All {Object.keys(boardForm).length} Governing Board members & photos will immediately update on /about/leadership</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={saveBoardMembersLive}
+                        className="h-9 px-5 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-black rounded-lg flex items-center gap-2 cursor-pointer shadow-sm transition-all uppercase tracking-wider shrink-0"
+                      >
+                        <Save size={14} /> Save & Publish All Members Live
+                      </button>
                     </div>
                   </div>
                 </div>

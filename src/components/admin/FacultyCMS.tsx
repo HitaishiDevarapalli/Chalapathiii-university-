@@ -1266,6 +1266,7 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
                           const updated = { ...boardForm };
                           updated[roleKey].hod.name = e.target.value;
                           setBoardForm(updated);
+                          updateBoardData(updated);
                         }}
                         className="w-full h-7.5 px-2 text-xs bg-white border border-gray-200 rounded font-bold"
                       />
@@ -1279,6 +1280,7 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
                           const updated = { ...boardForm };
                           updated[roleKey].hod.title = e.target.value;
                           setBoardForm(updated);
+                          updateBoardData(updated);
                         }}
                         className="w-full h-7.5 px-2 text-xs bg-white border border-gray-200 rounded font-medium"
                       />
@@ -1292,12 +1294,13 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
                           const updated = { ...boardForm };
                           updated[roleKey].hod.edu = e.target.value;
                           setBoardForm(updated);
+                          updateBoardData(updated);
                         }}
                         className="w-full h-7.5 px-2 text-xs bg-white border border-gray-200 rounded text-gray-700"
                       />
                     </div>
                     <div className="space-y-0.5">
-                      <label className="text-[9.5px] font-bold text-gray-500 uppercase">Avatar / Initials</label>
+                      <label className="text-[9.5px] font-bold text-gray-500 uppercase">Avatar / Photo URL</label>
                       <input
                         type="text"
                         value={leader.avatar}
@@ -1305,6 +1308,7 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
                           const updated = { ...boardForm };
                           updated[roleKey].hod.avatar = e.target.value;
                           setBoardForm(updated);
+                          updateBoardData(updated);
                         }}
                         className="w-full h-7.5 px-2 text-xs bg-white border border-gray-200 rounded font-mono"
                       />

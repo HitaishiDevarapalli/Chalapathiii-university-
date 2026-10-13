@@ -11,6 +11,8 @@
     }
   ],
   "rewrites": [
+    { "source": "/api/config/:key*", "destination": "/api/config?key=:key*" },
+    { "source": "/api/config", "destination": "/api/config" },
     { "source": "/((?!.*\\.).*)", "destination": "/index.html" }
   ]
 }
