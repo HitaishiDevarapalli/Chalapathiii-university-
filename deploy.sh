@@ -8,7 +8,8 @@ echo " Starting Deployment Process..."
 echo "===================================="
 
 echo "[1/4] Pulling latest code from GitHub..."
-git pull
+git reset --hard HEAD
+git pull origin main
 
 echo "[2/4] Installing & Building Frontend..."
 npm install
