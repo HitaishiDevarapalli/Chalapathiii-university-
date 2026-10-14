@@ -14,6 +14,31 @@ import SEO from "../components/SEO";
 
 import { useData, DEFAULT_ACADEMIC_STRUCTURE } from "../context/DataContext";
 
+const OPTIMIZED_IMAGE_MAP: Record<string, string> = {
+  "/Chalapathimain.png": "/Chalapathimain.webp",
+  "/campus_hero.png": "/campus_hero.webp",
+  "/students_admission.png": "/students_admission.webp",
+  "/gallery_annual_fest.png": "/gallery_annual_fest.webp",
+  "/gallery_sports_meet.png": "/gallery_sports_meet.webp",
+  "/gallery_tech_events.png": "/gallery_tech_events.webp",
+  "/gallery_nss_activities.png": "/gallery_nss_activities.webp",
+  "/gallery_cultural_events.png": "/gallery_cultural_events.webp",
+  "/gallery_workshops.png": "/gallery_workshops.webp",
+  "/prog_engineering.png": "/prog_engineering.webp",
+  "/prog_management.png": "/prog_management.webp",
+  "/prog_computer.png": "/prog_computer.webp",
+  "/prog_pharmacy.png": "/prog_pharmacy.webp",
+  "/prog_diploma.png": "/prog_diploma.webp",
+  "/prog_mtech.png": "/prog_mtech.webp",
+  "/chairman_portrait.png": "/chairman_portrait.webp",
+  "/chairman_signature.png": "/chairman_signature.webp"
+};
+
+const optimizeImageUrl = (src?: string) => {
+  if (!src) return src || "";
+  return OPTIMIZED_IMAGE_MAP[src] || src;
+};
+
 /* ── animation helpers ────────────────────────── */
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -324,7 +349,7 @@ export default function Home() {
   };
 
   useEffect(() => {
-    document.title = "Chalapathi University | Best University in Andhra Pradesh";
+    document.title = "Chalapathi University | Premier University in Andhra Pradesh";
   }, []);
 
   const visibleHeroSlides = useMemo(() => {
@@ -376,13 +401,11 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-[#F7F8FC] text-[#222222] overflow-x-hidden font-[var(--font-poppins)]">
       <SEO 
-        title="Best University in Andhra Pradesh - Chalapathi University" 
-        description="Chalapathi University offers world-class higher education with premium undergraduate, postgraduate, and research programs in Engineering, Management, Pharmacy, Agriculture, Law, and Sciences. Admissions Open for 2026–2027." 
+        title="Chalapathi University | Premier University in Andhra Pradesh" 
+        description="Official Chalapathi University website in Guntur, Andhra Pradesh. Explore admissions 2026-27, courses, placements, campus life, and contact details." 
         url="https://chalapathiuniversity.edu.in/"
-        keywords="Chalapathi University, ChalapathiUniversity, Chalapathi University official website, Chalapathi University Andhra Pradesh, Best university in Andhra Pradesh, Chalapathi University admissions, Chalapathi University Guntur"
+        keywords="Chalapathi University, ChalapathiUniversity, Chalapathi university, Chalapathi clg, Chalapathi college, Chalapathi University official website, Chalapathi University Andhra Pradesh, Chalapathi University admissions, Chalapathi University Guntur, best university in Andhra Pradesh, colleges in Guntur"
       />
-      {/* SEO: Always-present H1 for search engines */}
-      <h1 className="sr-only">Chalapathi University</h1>
       {/* ═══ HERO SECTION (Responsive height for mobile & desktop) ═══ */}
       <section 
         className="relative w-full overflow-hidden bg-white select-none h-[220px] min-[375px]:h-[240px] min-[420px]:h-[270px] min-[520px]:h-[340px] sm:h-[440px] md:h-[580px] lg:h-[720px]" 
@@ -439,7 +462,7 @@ export default function Home() {
                 isActive ? "opacity-100 z-10" : "opacity-0 z-0"
               }`}
               style={{
-                backgroundImage: `url('${slide.image}')`,
+                backgroundImage: `url('${optimizeImageUrl(slide.image)}')`,
                 backgroundPosition: "center top"
               }}
             >
@@ -447,9 +470,9 @@ export default function Home() {
               {(slide.title || slide.subtitle) && (
                 <div className="absolute inset-0 bg-black/35 flex flex-col items-center justify-center text-center p-5 z-20">
                   {slide.title && (
-                    <h1 className="text-white text-3xl md:text-5xl lg:text-6xl font-black uppercase tracking-wider mb-2 animate-[slideEntrance_0.8s_ease-out]">
+                    <h2 className="text-white text-3xl md:text-5xl lg:text-6xl font-black uppercase tracking-wider mb-2 animate-[slideEntrance_0.8s_ease-out]">
                       {slide.title}
-                    </h1>
+                    </h2>
                   )}
                   {slide.subtitle && (
                     <p className="text-gray-100 text-sm md:text-lg lg:text-xl font-bold uppercase tracking-widest animate-[slideEntrance_1s_ease-out]">
@@ -477,6 +500,45 @@ export default function Home() {
             ))}
           </div>
         )}
+      </section>
+
+      <section className="bg-white border-b border-gray-100">
+        <div className="max-w-[1120px] mx-auto px-5 py-10 text-center">
+          <p className="text-[12px] font-[800] uppercase tracking-[0.18em] text-[#D4AF37] mb-3">
+            Official University Website
+          </p>
+          <h1 className="text-[30px] md:text-[42px] font-[900] text-[#072A6C] leading-tight">
+            Chalapathi University in Andhra Pradesh
+          </h1>
+          <p className="mt-4 text-[15px] md:text-[17px] leading-7 text-gray-700 font-[500]">
+            Chalapathi University, Guntur, Andhra Pradesh, offers undergraduate, postgraduate, and research programs in Engineering, Computer Science, Artificial Intelligence, Data Science, Management, Pharmacy, Agriculture, Law, Sciences, MCA, MBA, M.Tech, and Ph.D pathways with placement training and industry-connected learning.
+          </p>
+          <p className="mt-3 text-[14px] md:text-[16px] leading-7 text-gray-600 font-[500]">
+            Students searching for ChalapathiUniversity, Chalapathi University, Chalapathi college, or Chalapathi clg can use this official website to find admissions, eligibility, campus facilities, academic departments, student life, news, events, scholarships, and contact details for the Andhra Pradesh campus.
+          </p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <Link to="/admissions" className="text-[12px] font-[800] text-[#072A6C] hover:text-[#D4AF37] underline underline-offset-4">
+              Admissions 2026-27
+            </Link>
+            <Link to="/academics/programmes" className="text-[12px] font-[800] text-[#072A6C] hover:text-[#D4AF37] underline underline-offset-4">
+              Programs Offered
+            </Link>
+            <Link to="/placements" className="text-[12px] font-[800] text-[#072A6C] hover:text-[#D4AF37] underline underline-offset-4">
+              Placements
+            </Link>
+            <Link to="/contact" className="text-[12px] font-[800] text-[#072A6C] hover:text-[#D4AF37] underline underline-offset-4">
+              Contact Chalapathi University
+            </Link>
+            <a
+              href="https://www.google.com/maps/place/Chalapathi+Institute+of+Technology/@16.3752188,80.2858169,17z"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[12px] font-[800] text-[#072A6C] hover:text-[#D4AF37] underline underline-offset-4"
+            >
+              Google Maps
+            </a>
+          </div>
+        </div>
       </section>
 
       {/* ═══ ADMISSION ALERT TICKER ═══ */}
@@ -813,9 +875,11 @@ export default function Home() {
                     {featuredSlides[activeNewsSlide] && (
                       featuredSlides[activeNewsSlide].image ? (
                         <img 
-                          src={featuredSlides[activeNewsSlide].image} 
+                          src={optimizeImageUrl(featuredSlides[activeNewsSlide].image)} 
                           alt={featuredSlides[activeNewsSlide].title || "Featured News"} 
                           onError={(e) => { (e.target as HTMLImageElement).src = "/logo.png?v=3"; }}
+                          width={720}
+                          height={480}
                           className="absolute inset-0 w-full h-full object-cover object-center transition-all duration-500"
                           loading="lazy"
                           decoding="async"
@@ -823,7 +887,7 @@ export default function Home() {
                       ) : (
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-[#072A6C] to-[#0A388F] text-white p-6 text-center">
                           <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mb-2">
-                            <img src="/logo.png?v=3" alt="Chalapathi" className="h-8 w-auto object-contain brightness-0 invert opacity-80" />
+                            <img src="/logo.png?v=3" alt="Chalapathi" width={800} height={359} className="h-8 w-auto object-contain brightness-0 invert opacity-80" />
                           </div>
                           <span className="text-[10px] font-bold text-amber-300 uppercase tracking-widest">Chalapathi University</span>
                           <span className="text-xs font-black text-white mt-1">Featured News Story</span>
@@ -1154,15 +1218,13 @@ export default function Home() {
                 <video
                   ref={campusVideoRef}
                   src={campusVideos[activeCampusVideoIdx]?.url}
-                  poster={campusTour?.poster || "/Chalapathimain.png"}
+                  poster={optimizeImageUrl(campusTour?.poster || "/Chalapathimain.png")}
                   className="w-full h-full object-cover"
-                  autoPlay
+                  preload="metadata"
                   muted={isCampusTourMuted}
                   loop
                   playsInline
                   key={activeCampusVideoIdx}
-                  onCanPlay={(e) => (e.target as HTMLVideoElement).play().catch(() => {})}
-                  onLoadedData={(e) => (e.target as HTMLVideoElement).play().catch(() => {})}
                 />
                 
                 {/* Watch Campus Tour top-left badge */}
@@ -1246,12 +1308,12 @@ export default function Home() {
             {/* Horizontal infinite gallery grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 select-none">
               {(campusGallery && campusGallery.length > 0 ? campusGallery : [
-                { title: "Annual Fest", image: "/gallery_annual_fest.png" },
-                { title: "Sports Meet", image: "/gallery_sports_meet.png" },
-                { title: "Tech Events", image: "/gallery_tech_events.png" },
-                { title: "NSS Activities", image: "/gallery_nss_activities.png" },
-                { title: "Cultural Events", image: "/gallery_cultural_events.png" },
-                { title: "Workshops", image: "/gallery_workshops.png" },
+                { title: "Annual Fest", image: "/gallery_annual_fest.webp" },
+                { title: "Sports Meet", image: "/gallery_sports_meet.webp" },
+                { title: "Tech Events", image: "/gallery_tech_events.webp" },
+                { title: "NSS Activities", image: "/gallery_nss_activities.webp" },
+                { title: "Cultural Events", image: "/gallery_cultural_events.webp" },
+                { title: "Workshops", image: "/gallery_workshops.webp" },
                 { title: "Student Clubs", image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=600&auto=format&fit=crop" },
                 { title: "Innovation Expo", image: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=600&auto=format&fit=crop" }
               ]).map((item, idx) => (
@@ -1261,8 +1323,10 @@ export default function Home() {
                 >
                   <div className="relative aspect-square overflow-hidden bg-gray-50">
                     <img
-                      src={item.image}
+                      src={optimizeImageUrl(item.image)}
                       alt={item.title}
+                      width={320}
+                      height={320}
                       className="w-full h-full object-cover"
                       loading="lazy"
                       decoding="async"
@@ -1342,7 +1406,7 @@ export default function Home() {
         const chairmanExtra = chairmanSec?.extraData || {};
         const leadership = aboutContent?.leadership || {};
         const chairmanName = leadership.chairmanName || chairmanExtra.name || (typeof window !== "undefined" ? localStorage.getItem("chalapathi_chairman_name") : null) || "Dr. Y. V Anjaneyulu";
-        const chairmanImage = leadership.chairmanImage || chairmanExtra.image || (typeof window !== "undefined" ? localStorage.getItem("chalapathi_chairman_image") : null) || "/chairman_portrait.png";
+        const chairmanImage = leadership.chairmanImage || chairmanExtra.image || (typeof window !== "undefined" ? localStorage.getItem("chalapathi_chairman_image") : null) || "/chairman_portrait.webp";
         const chairmanDesig = leadership.designation || chairmanExtra.designation || (typeof window !== "undefined" ? localStorage.getItem("chalapathi_chairman_designation") : null) || "Chairman";
         const chairmanGroup = chairmanExtra.group || (typeof window !== "undefined" ? localStorage.getItem("chalapathi_chairman_group") : null) || "Chalapathi Educational Society";
         const chairmanMsg = (leadership.messageParagraphs && leadership.messageParagraphs.length > 0 ? leadership.messageParagraphs.join("\n\n") : null) || leadership.message || chairmanExtra.message || (typeof window !== "undefined" ? localStorage.getItem("chalapathi_chairman_message") : null) || `At Chalapathi University, we believe education is the most powerful transformer of lives and the key to building a better society. Our mission is to empower young minds with knowledge, values, and innovation to help them lead with purpose and create a lasting impact on the world.\n\nWe are committed to providing a nurturing environment, world-class infrastructure, and industry-oriented education to shape future leaders and responsible citizens.`;
@@ -1381,8 +1445,10 @@ export default function Home() {
                   <div className="relative w-full max-w-[380px] rounded-[32px] overflow-hidden shadow-2xl group border-4 border-white bg-white transition-all duration-500 hover:shadow-3xl">
                     {/* Chairman Portrait */}
                     <img 
-                      src={chairmanImage} 
+                      src={optimizeImageUrl(chairmanImage)} 
                       alt={chairmanName} 
+                      width={1371}
+                      height={1148}
                       className="w-full h-auto object-cover aspect-[4/5]"
                       style={{ objectPosition: "50% 0%" }}
                       loading="lazy"
@@ -1436,8 +1502,10 @@ export default function Home() {
                         {chairmanSig && (
                           <div className="h-10 flex items-center select-none">
                             <img 
-                              src={chairmanSig} 
+                              src={optimizeImageUrl(chairmanSig)} 
                               alt="Chairman Signature" 
+                              width={600}
+                              height={450}
                               className="h-10 max-w-[180px] object-contain" 
                               loading="lazy"
                               decoding="async"
@@ -1594,7 +1662,7 @@ export default function Home() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <img src="/campus_hero.png" alt="Campus View" className="w-full h-full object-cover" loading="lazy" decoding="async" />
+            <img src="/campus_hero.webp" alt="Campus View" width={1024} height={1007} className="w-full h-full object-cover" loading="lazy" decoding="async" />
           </motion.div>
 
           <motion.div
@@ -1642,7 +1710,7 @@ export default function Home() {
         const admissionsData = admissionsSection?.extraData || {};
         const bannerTitle = admissionsData.bannerTitle || admissionsSection?.title || "ADMISSIONS OPEN 2026";
         const bannerSubtitle = admissionsData.bannerSubtitle || admissionsSection?.subtitle || "Join a community of innovators and leaders. Shape your future with Chalapathi University.";
-        const bannerImage = admissionsData.bannerImage || "/students_admission.png";
+        const bannerImage = admissionsData.bannerImage || "/students_admission.webp";
         const btn1Text = admissionsData.btn1Text || "Apply Now";
         const btn1Url = admissionsData.btn1Url || "/admissions/apply";
         const btn2Text = admissionsData.btn2Text || "Download Brochure";
@@ -1705,7 +1773,7 @@ export default function Home() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.5 }}
                 >
-                  <img src={bannerImage} alt="Students" className="w-full h-full object-cover object-left-top" loading="lazy" decoding="async" onError={(e) => { (e.target as HTMLImageElement).src = "/students_admission.png"; }} />
+                  <img src={optimizeImageUrl(bannerImage)} alt="Students" width={1024} height={1024} className="w-full h-full object-cover object-left-top" loading="lazy" decoding="async" onError={(e) => { (e.target as HTMLImageElement).src = "/students_admission.webp"; }} />
                 </motion.div>
               </div>
 
@@ -1869,8 +1937,10 @@ export default function Home() {
                       {item.image && (
                         <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-50 border border-gray-100 shrink-0">
                           <img
-                            src={item.image}
+                            src={optimizeImageUrl(item.image)}
                             alt={item.title}
+                            width={64}
+                            height={64}
                             className="w-full h-full object-cover"
                             loading="lazy"
                             decoding="async"

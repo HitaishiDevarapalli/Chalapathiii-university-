@@ -17,7 +17,7 @@ const sourceSans3 = Source_Sans_3({
 });
 
 export const metadata: Metadata = {
-  title: "Chalapathi University | Learn • Innovate • Lead",
+  title: "Chalapathi University | Premier University in Andhra Pradesh",
   description:
     "Chalapathi University is the Best University in Andhra Pradesh, located in Guntur, India. Empowering learners to innovate, lead and create a better tomorrow.",
 };

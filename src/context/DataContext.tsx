@@ -516,6 +516,7 @@ export interface FooterContent {
     instagram?: string;
     linkedin?: string;
     facebook?: string;
+    youtube?: string;
     twitter?: string;
   };
   bottomLinks?: FooterLinkItem[];
@@ -944,20 +945,20 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   logoWhiteUrl: "/logo.png?v=3",
   faviconUrl: "/favicon.ico",
   splashVideoUrl: "/chalapathi_logo_intro.mp4",
-  enableSplash: true,
+  enableSplash: false,
   contactPhone: "8886630355 | 8886630356 9905505566",
   contactEmail: "admissions@chalapathiuniversity.edu.in",
   contactAddress: "A.R. Nagar, Mothadaka, Guntur, Andhra Pradesh - 522034",
   workingHours: "Monday - Saturday: 9:00 AM - 5:00 PM",
   googleMapEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3827.4851241772656!2d80.34758507514275!3d16.399946484330836!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a4a75e3a890b0e5%3A0x6b146476bbd92bc7!2sChalapathi%20Institute%20of%20Technology!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin",
   socialLinks: {
-    instagram: "https://instagram.com",
-    linkedin: "https://linkedin.com",
-    facebook: "https://facebook.com",
-    youtube: "https://youtube.com",
-    twitter: "https://twitter.com"
+    instagram: "https://www.instagram.com/chalapathi.university.official/",
+    linkedin: "https://www.linkedin.com/school/chalapathi-ciet-lam/",
+    facebook: "https://www.facebook.com/chalapathiit/",
+    youtube: "https://www.youtube.com/channel/UCRoNvDzGs87yXFL6TAIH44A",
+    twitter: ""
   },
-  seoTitle: "Chalapathi University | Best University in Andhra Pradesh",
+  seoTitle: "Chalapathi University | Premier University in Andhra Pradesh",
   seoDescription: "Chalapathi University offers world-class higher education with premium undergraduate, postgraduate, and research programs. Admissions Open for 2026–2027.",
   seoKeywords: "Chalapathi University, Engineering College Guntur, Best University Andhra Pradesh, B.Tech Admissions",
   hiddenPages: {}
@@ -1682,7 +1683,7 @@ export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionConfig[] = [
     extraData: {
       bannerTitle: "ADMISSIONS OPEN 2026",
       bannerSubtitle: "Join a community of innovators and leaders. Shape your future with Chalapathi University.",
-      bannerImage: "/students_admission.png",
+      bannerImage: "/students_admission.webp",
       btn1Text: "Apply Now",
       btn1Url: "/admissions/apply",
       btn2Text: "Download Brochure",
@@ -1804,10 +1805,11 @@ export const DEFAULT_FOOTER_CONTENT: FooterContent = {
   contactPhones: "8886630355 | 8886630356 | 9905505566",
   contactEmail: "admissions@chalapathiuniversity.edu.in",
   socialLinks: {
-    instagram: "https://instagram.com",
-    linkedin: "https://linkedin.com",
-    facebook: "https://facebook.com",
-    twitter: "https://twitter.com"
+    instagram: "https://www.instagram.com/chalapathi.university.official/",
+    linkedin: "https://www.linkedin.com/school/chalapathi-ciet-lam/",
+    facebook: "https://www.facebook.com/chalapathiit/",
+    youtube: "https://www.youtube.com/channel/UCRoNvDzGs87yXFL6TAIH44A",
+    twitter: ""
   },
   bottomLinks: [
     { label: "Privacy Policy", to: "/privacy-policy" },
@@ -1883,18 +1885,18 @@ export const DEFAULT_CAMPUS_VIDEOS: CampusVideoItem[] = [
 export const DEFAULT_CAMPUS_TOUR: CampusTourConfig = {
   badge: "WATCH CAMPUS TOUR",
   quote: "Life at Chalapathi is about learning, growing and celebrating every moment together.",
-  poster: "/Chalapathimain.png",
+  poster: "/Chalapathimain.webp",
   heading: "CAMPUS LIFE",
   subtitle: "A vibrant campus where students learn, innovate, explore, compete, and create unforgettable memories."
 };
 
 export const DEFAULT_CAMPUS_GALLERY: CampusGalleryItem[] = [
-  { title: "Annual Fest", image: "/gallery_annual_fest.png" },
-  { title: "Sports Meet", image: "/gallery_sports_meet.png" },
-  { title: "Tech Events", image: "/gallery_tech_events.png" },
-  { title: "NSS Activities", image: "/gallery_nss_activities.png" },
-  { title: "Cultural Events", image: "/gallery_cultural_events.png" },
-  { title: "Workshops", image: "/gallery_workshops.png" },
+  { title: "Annual Fest", image: "/gallery_annual_fest.webp" },
+  { title: "Sports Meet", image: "/gallery_sports_meet.webp" },
+  { title: "Tech Events", image: "/gallery_tech_events.webp" },
+  { title: "NSS Activities", image: "/gallery_nss_activities.webp" },
+  { title: "Cultural Events", image: "/gallery_cultural_events.webp" },
+  { title: "Workshops", image: "/gallery_workshops.webp" },
   { title: "Student Clubs", image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=600&auto=format&fit=crop" },
   { title: "Innovation Expo", image: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=600&auto=format&fit=crop" }
 ];
@@ -1946,7 +1948,7 @@ export const DEFAULT_CAMPUS_LIFE_CONTENT: CampusLifeContent = {
   "/campus-life": {
     title: "Campus Overview",
     desc: "Experience the vibrant, modern, and green academic ecosystem of Chalapathi University.",
-    heroImage: "/campus_hero.png",
+    heroImage: "/campus_hero.webp",
     hasVideo: true,
     videoTitle: "EXPERIENCE CHALAPATHI",
     videoDesc: "Take a virtual guided tour of our green campus corridors, advanced pharmacy laboratories, academic buildings, and standard sporting environments that empower ambitious student minds.",
@@ -1959,13 +1961,13 @@ export const DEFAULT_CAMPUS_LIFE_CONTENT: CampusLifeContent = {
       { title: "Student Experience", desc: "Diverse student-led associations, cultural meets, and development clubs." }
     ],
     gallery: [
-      "/gallery_annual_fest.png",
-      "/gallery_sports_meet.png",
-      "/gallery_tech_events.png",
-      "/gallery_nss_activities.png",
-      "/gallery_cultural_events.png",
-      "/gallery_workshops.png",
-      "/campus_hero.png",
+      "/gallery_annual_fest.webp",
+      "/gallery_sports_meet.webp",
+      "/gallery_tech_events.webp",
+      "/gallery_nss_activities.webp",
+      "/gallery_cultural_events.webp",
+      "/gallery_workshops.webp",
+      "/campus_hero.webp",
       "/campus_placement.png"
     ]
   },
@@ -2065,7 +2067,7 @@ export const DEFAULT_CAMPUS_LIFE_CONTENT: CampusLifeContent = {
       { title: "Indoor Sports Complex", desc: "High-quality badminton courts, table tennis spaces, chess corners, and a fully-equipped gym.", image: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80" }
     ],
     gallery: [
-      "/gallery_sports_meet.png",
+      "/gallery_sports_meet.webp",
       "https://images.unsplash.com/photo-1541252260730-0412e8e2108e?auto=format&fit=crop&w=600&q=80",
       "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=80",
       "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=600&q=80",
@@ -2160,8 +2162,8 @@ export const DEFAULT_CAMPUS_LIFE_CONTENT: CampusLifeContent = {
       { title: "Coding, Music & Performing Arts", desc: "Student-run activities spanning technical hackathons, coding tasks, classical music nights, and traditional plays.", image: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80" }
     ],
     gallery: [
-      "/gallery_cultural_events.png",
-      "/gallery_annual_fest.png",
+      "/gallery_cultural_events.webp",
+      "/gallery_annual_fest.webp",
       "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=600&q=80",
       "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80",
       "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=600&q=80",
@@ -2175,10 +2177,10 @@ export const DEFAULT_CAMPUS_LIFE_CONTENT: CampusLifeContent = {
     desc: "Highlights from our annual technological symposiums, sporting events, and cultural meets.",
     heroImage: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1600&q=80",
     gallery: [
-      "/gallery_annual_fest.png",
-      "/gallery_cultural_events.png",
-      "/gallery_tech_events.png",
-      "/gallery_sports_meet.png",
+      "/gallery_annual_fest.webp",
+      "/gallery_cultural_events.webp",
+      "/gallery_tech_events.webp",
+      "/gallery_sports_meet.webp",
       "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=600&q=80",
       "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=600&q=80",
       "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=600&q=80",
@@ -2190,8 +2192,8 @@ export const DEFAULT_CAMPUS_LIFE_CONTENT: CampusLifeContent = {
     desc: "Nurturing student startups and technological solutions with workspaces and seed funding.",
     heroImage: "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1600&q=80",
     gallery: [
-      "/gallery_tech_events.png",
-      "/gallery_workshops.png",
+      "/gallery_tech_events.webp",
+      "/gallery_workshops.webp",
       "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=600&q=80",
       "https://images.unsplash.com/photo-152202176988-66273c2fd55f?auto=format&fit=crop&w=600&q=80",
       "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=600&q=80",
@@ -2223,8 +2225,8 @@ export const DEFAULT_CAMPUS_LIFE_CONTENT: CampusLifeContent = {
     desc: "Cultivating discipline, community service, and volunteer leadership among our students.",
     heroImage: "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&w=1600&q=80",
     gallery: [
-      "/gallery_nss_activities.png",
-      "/gallery_annual_fest.png",
+      "/gallery_nss_activities.webp",
+      "/gallery_annual_fest.webp",
       "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&w=600&q=80",
       "https://images.unsplash.com/photo-1464979681340-1261d70b083c?auto=format&fit=crop&w=600&q=80",
       "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=600&q=80",
@@ -2256,7 +2258,7 @@ export const DEFAULT_CAMPUS_LIFE_CONTENT: CampusLifeContent = {
 export const INITIAL_ANNOUNCEMENTS: Announcement[] = [];
 
 export const INITIAL_HERO_SLIDES: HeroSlide[] = [
-  { id: 1, image: "/Chalapathimain.png", title: "", subtitle: "" }
+  { id: 1, image: "/Chalapathimain.webp", title: "", subtitle: "" }
 ];
 
 export const INITIAL_NEWS: NewsArticle[] = [];

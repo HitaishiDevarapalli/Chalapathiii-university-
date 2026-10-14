@@ -51,10 +51,10 @@ export const ROUTES = {
 
 // ── External Links ──────────────────────────────
 export const SOCIAL_LINKS = {
-  facebook: "https://facebook.com/chalapathiuniversity",
-  instagram: "https://instagram.com/chalapathiuniversity",
-  linkedin: "https://linkedin.com/school/chalapathiuniversity",
-  youtube: "https://youtube.com/chalapathiuniversity",
+  facebook: "https://www.facebook.com/chalapathiit/",
+  instagram: "https://www.instagram.com/chalapathi.university.official/",
+  linkedin: "https://www.linkedin.com/school/chalapathi-ciet-lam/",
+  youtube: "https://www.youtube.com/channel/UCRoNvDzGs87yXFL6TAIH44A",
 } as const;
 
 // ── Contact Details ─────────────────────────────

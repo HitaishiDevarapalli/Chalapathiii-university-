@@ -5,6 +5,27 @@ import {
 } from "lucide-react";
 import { useData } from "../../context/DataContext";
 
+const OFFICIAL_SOCIAL_LINKS = {
+  instagram: "https://www.instagram.com/chalapathi.university.official/",
+  linkedin: "https://www.linkedin.com/school/chalapathi-ciet-lam/",
+  facebook: "https://www.facebook.com/chalapathiit/",
+  youtube: "https://www.youtube.com/channel/UCRoNvDzGs87yXFL6TAIH44A",
+  twitter: ""
+};
+
+const normalizeSocialUrl = (value: string | undefined, fallback: string) => {
+  if (!value) return fallback;
+  const trimmed = value.trim();
+  const genericUrls = [
+    "https://instagram.com",
+    "https://linkedin.com",
+    "https://facebook.com",
+    "https://youtube.com",
+    "https://twitter.com"
+  ];
+  return genericUrls.includes(trimmed.replace(/\/$/, "")) ? fallback : trimmed;
+};
+
 export default function Footer() {
   const { siteSettings, footerContent, placementsContent, themeColors } = useData();
 
@@ -68,11 +89,16 @@ export default function Footer() {
   ]).filter(item => item.to !== "/admin" && !item.label?.toLowerCase().includes("admin") && !isPageHidden(item.label, item.to));
 
 
-  const socialLinks = footerContent?.socialLinks || siteSettings?.socialLinks || {
-    instagram: "https://instagram.com",
-    linkedin: "https://linkedin.com",
-    facebook: "https://facebook.com",
-    twitter: "https://twitter.com"
+  const configuredSocialLinks = {
+    ...siteSettings?.socialLinks,
+    ...footerContent?.socialLinks
+  };
+  const socialLinks = {
+    instagram: normalizeSocialUrl(configuredSocialLinks.instagram, OFFICIAL_SOCIAL_LINKS.instagram),
+    linkedin: normalizeSocialUrl(configuredSocialLinks.linkedin, OFFICIAL_SOCIAL_LINKS.linkedin),
+    facebook: normalizeSocialUrl(configuredSocialLinks.facebook, OFFICIAL_SOCIAL_LINKS.facebook),
+    youtube: normalizeSocialUrl(configuredSocialLinks.youtube, OFFICIAL_SOCIAL_LINKS.youtube),
+    twitter: normalizeSocialUrl(configuredSocialLinks.twitter, OFFICIAL_SOCIAL_LINKS.twitter)
   };
 
   const contactAddress = footerContent?.contactAddress || siteSettings?.contactAddress || "A.R. Nagar, Mothadaka, Guntur, Andhra Pradesh - 522034";
@@ -94,7 +120,11 @@ export default function Footer() {
             <img
               src={siteSettings?.logoUrl || "/logo.png?v=3"}
               alt={siteSettings?.universityName || "Chalapathi University"}
+              width={800}
+              height={359}
               className="h-10 w-auto object-contain no-lift"
+              loading="lazy"
+              decoding="async"
             />
           </div>
           <p className="leading-relaxed text-[#D1D5DB] text-[11px] font-light">
@@ -228,6 +258,11 @@ export default function Footer() {
               {socialLinks?.facebook && (
                 <a href={socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="w-7 h-7 rounded-full bg-white/5 hover:bg-[#1877F2] hover:scale-110 text-white flex items-center justify-center transition-all duration-200 shadow-sm border border-white/5" title="Facebook">
                   <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                </a>
+              )}
+              {socialLinks?.youtube && (
+                <a href={socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="w-7 h-7 rounded-full bg-white/5 hover:bg-[#FF0000] hover:scale-110 text-white flex items-center justify-center transition-all duration-200 shadow-sm border border-white/5" title="YouTube">
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.016 3.016 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.016 3.016 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
                 </a>
               )}
               {socialLinks?.twitter && (

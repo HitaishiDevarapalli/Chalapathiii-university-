@@ -17,7 +17,7 @@ export default function SEO({
   type = "website", 
   image = "https://chalapathiuniversity.edu.in/logo.png",
   url = "https://chalapathiuniversity.edu.in/",
-  keywords = "Chalapathi University, ChalapathiUniversity, Chalapathi University Andhra Pradesh, Chalapathi University Guntur"
+  keywords = "Chalapathi University, ChalapathiUniversity, Chalapathi University Andhra Pradesh, Chalapathi University Guntur, Chalapathi college, Chalapathi clg"
 }: SEOProps) {
   
   return (
@@ -26,6 +26,7 @@ export default function SEO({
       <title>{title}</title>
       <meta name='description' content={description} />
       <meta name='keywords' content={keywords} />
+      <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
       <link rel='canonical' href={url} />
       
       {/* OpenGraph tags */}

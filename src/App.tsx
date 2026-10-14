@@ -197,7 +197,7 @@ function AppContent() {
     return popupCmsData.popups.find((p) => p.enabled !== false) || null;
   }, [popupCmsData]);
 
-  const [showSplash, setShowSplash] = useState(siteSettings?.enableSplash !== false);
+  const [showSplash, setShowSplash] = useState(siteSettings?.enableSplash === true);
 
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const fallbackTimerRef = React.useRef<NodeJS.Timeout | null>(null);
@@ -344,7 +344,7 @@ function AppContent() {
               autoPlay
               muted
               playsInline
-              preload="auto"
+              preload="metadata"
               onPlay={handleVideoPlay}
               onPlaying={() => setIsVideoPlaying(true)}
               onCanPlay={(e) => {
@@ -681,7 +681,11 @@ function AppContent() {
                   <img 
                     src={activePopup.image} 
                     alt={activePopup.title}
+                    width={1200}
+                    height={630}
                     className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
                   
@@ -811,6 +815,8 @@ function AppContent() {
                   <img 
                     src={siteSettings?.logoUrl || "/logo.png?v=3"} 
                     alt={siteSettings?.universityName || "Chalapathi University"} 
+                    width={800}
+                    height={359}
                     loading="eager"
                     // @ts-ignore
                     fetchpriority="high"
@@ -914,6 +920,8 @@ function AppContent() {
                   <img 
                     src={siteSettings?.logoUrl || "/logo.png?v=3"} 
                     alt={siteSettings?.universityName || "Chalapathi University"} 
+                    width={800}
+                    height={359}
                     className="h-12 w-auto object-contain" 
                   />
                 </div>
