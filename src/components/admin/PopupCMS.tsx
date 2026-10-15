@@ -1,3 +1,6 @@
+import { EnquiryPopupEditor } from "./EnquiryPopupEditor";
+import { resolveEnquiryConfig, EditableEnquiryConfig } from "../../data/enquiryPopup";
+import { useData, DEFAULT_ADMISSIONS_CONTENT } from "../../context/DataContext";
 import { readPopupConfig, publishPopupConfig } from "../../services/popupPublishing";
 import React, { useState, useEffect } from "react";
 import { 
@@ -24,6 +27,7 @@ export interface PopupItem {
   buttonText?: string;
   redirectUrl?: string;
   createdAt?: string;
+  enquiryConfig?: EditableEnquiryConfig;
 }
 
 export interface PopupCMSData {
@@ -42,6 +46,7 @@ export interface PopupCMSProps {
 }
 
 export const PopupCMS: React.FC<PopupCMSProps> = ({ notifySave }) => {
+  const { admissionsContent, siteSettings } = useData();
   const [data, setData] = useState<PopupCMSData>(DEFAULT_POPUP_DATA);
   const [publishedData, setPublishedData] = useState<PopupCMSData>(DEFAULT_POPUP_DATA);
   const isPublished = JSON.stringify(data) === JSON.stringify(publishedData);
@@ -115,7 +120,7 @@ export const PopupCMS: React.FC<PopupCMSProps> = ({ notifySave }) => {
 
   const handleOpenEditModal = (item: PopupItem) => {
     setEditingPopup(item);
-    setPopupForm({ ...item });
+    setPopupForm({ ...item, enquiryConfig: resolveEnquiryConfig(admissionsContent?.enquiryPopup || DEFAULT_ADMISSIONS_CONTENT.enquiryPopup, item.enquiryConfig) });
     setIsModalOpen(true);
   };
 
@@ -138,7 +143,7 @@ export const PopupCMS: React.FC<PopupCMSProps> = ({ notifySave }) => {
         type: popupForm.type || "event",
         enabled: popupForm.enabled ?? true,
         autoOpen: popupForm.autoOpen ?? true,
-        autoOpenDelay: Number(popupForm.autoOpenDelay) || 1,
+        autoOpenDelay: popupForm.autoOpenDelay ?? 1,
         title: popupForm.title?.trim() || "",
         subtitle: popupForm.subtitle?.trim() || "",
         description: popupForm.description?.trim() || "",
@@ -146,6 +151,7 @@ export const PopupCMS: React.FC<PopupCMSProps> = ({ notifySave }) => {
         image: popupForm.image || "",
         buttonText: popupForm.buttonText?.trim() || "",
         redirectUrl: popupForm.redirectUrl?.trim() || "",
+        enquiryConfig: popupForm.enquiryConfig,
         createdAt: new Date().toISOString()
       };
       updatedPopups = [...data.popups, newPopup];
@@ -585,6 +591,19 @@ export const PopupCMS: React.FC<PopupCMSProps> = ({ notifySave }) => {
                   placeholder="Short details regarding the event, notice, or registration..."
                   className="w-full p-2.5 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-700 focus:bg-white"
                 />
+              </div>
+
+              {popupForm.type === "enquiry" && <EnquiryPopupEditor
+                value={resolveEnquiryConfig(admissionsContent?.enquiryPopup || DEFAULT_ADMISSIONS_CONTENT.enquiryPopup, popupForm.enquiryConfig)}
+                onChange={enquiryConfig => setPopupForm({ ...popupForm, enquiryConfig })}
+                buttonText={popupForm.buttonText || ""}
+                onButtonTextChange={buttonText => setPopupForm({ ...popupForm, buttonText })}
+                defaultLogo={siteSettings.logoUrl}
+              />}
+
+              <div className="grid grid-cols-2 gap-3 p-3 border rounded-xl">
+                <label className="text-xs font-bold"><input type="checkbox" checked={popupForm.autoOpen !== false} onChange={e => setPopupForm({ ...popupForm, autoOpen: e.target.checked })} /> Open automatically</label>
+                <label className="text-xs font-bold">Delay (seconds)<input className="w-full border rounded p-2" type="number" min="0" value={popupForm.autoOpenDelay ?? 1} onChange={e => setPopupForm({ ...popupForm, autoOpenDelay: Math.max(0, Number(e.target.value)) })} /></label>
               </div>
 
               {/* Banner Image (for event, banner, custom) */}

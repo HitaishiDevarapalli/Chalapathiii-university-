@@ -1,3 +1,4 @@
+import { resolveEnquiryConfig, INDIAN_STATES, QUALIFICATIONS, YEARS_OF_PASSING, ALL_PROGRAMS, ENQUIRY_SCHOOLS_DATA } from "./data/enquiryPopup";
 import { usePublishedPopupConfig, selectActivePopup } from "./services/popupPublishing";
 import React, { useEffect, useState, useMemo } from "react";
 import { BrowserRouter, Routes, Route, useLocation, Link, useNavigate } from "react-router-dom";
@@ -35,121 +36,6 @@ const IconMap: Record<string, React.ComponentType<any>> = {
   BookOpen: BookOpen
 };
 
-const INDIAN_STATES = [
-  "Andhra Pradesh", "Telangana", "Karnataka", "Tamil Nadu", "Maharashtra", 
-  "Delhi", "Kerala", "Gujarat", "Rajasthan", "Uttar Pradesh", "West Bengal", 
-  "Madhya Pradesh", "Other"
-];
-
-const QUALIFICATIONS = [
-  "Class 12 / Intermediate", "Graduation / Under Graduate", "Post Graduation", "Diploma", "Other"
-];
-
-const YEARS_OF_PASSING = [
-  "2030", "2029", "2028", "2027", "2026", "2025", "2024", "2023", "Before 2023"
-];
-
-const ALL_PROGRAMS = [
-  "B.Tech - Computer Science and Engineering",
-  "B.Tech - CSE (Data Science)",
-  "B.Tech - CSE (Artificial Intelligence)",
-  "B.Tech - Artificial Intelligence & Machine Learning",
-  "B.Tech - CSE (Cyber Security)",
-  "M.Tech - Computer Science and Engineering",
-  "M.Tech - CSE (AI & ML)",
-  "MCA",
-  "Ph.D - Computer Science and Engineering",
-  "B.Tech - Electronics and Communication Engineering",
-  "M.Tech - VLSI and Embedded Systems Design",
-  "Ph.D - Electronics and Communication Engineering",
-  "B.Tech - Civil Engineering",
-  "M.Tech - Structural Engineering",
-  "Ph.D - Structural Engineering",
-  "Applied Mathematics & Computational Sciences",
-  "Engineering Physics & Material Sciences",
-  "Engineering Chemistry & Environmental Science",
-  "English & Professional Communication",
-  "MBA"
-];
-
-const ENQUIRY_SCHOOLS_DATA = [
-  {
-    id: "computing",
-    title: "SCHOOL OF COMPUTING SCIENCES",
-    subtitle: "Engineering Minds for the Digital Future",
-    groups: [
-      {
-        name: "Computer Science & Engineering",
-        courses: [
-          { level: "UG", name: "B.Tech - Computer Science and Engineering" },
-          { level: "PG", name: "M.Tech - Computer Science and Engineering" },
-          { level: "PG", name: "MCA" },
-          { level: "Ph.D", name: "Ph.D - Computer Science and Engineering" }
-        ]
-      },
-      {
-        name: "Data Science",
-        courses: [
-          { level: "UG", name: "B.Tech - CSE (Data Science)" }
-        ]
-      },
-      {
-        name: "Artificial Intelligence",
-        courses: [
-          { level: "UG", name: "B.Tech - CSE (Artificial Intelligence)" },
-          { level: "UG", name: "B.Tech - Artificial Intelligence & Machine Learning" },
-          { level: "PG", name: "M.Tech - CSE (AI & ML)" }
-        ]
-      },
-      {
-        name: "Cyber Security",
-        courses: [
-          { level: "UG", name: "B.Tech - CSE (Cyber Security)" }
-        ]
-      }
-    ]
-  },
-  {
-    id: "engineering",
-    title: "SCHOOL OF ENGINEERING",
-    subtitle: "Engineering Solutions for a Smarter, Stronger Tomorrow",
-    groups: [
-      {
-        name: "Electronics and Communication Engineering",
-        courses: [
-          { level: "UG", name: "B.Tech - Electronics and Communication Engineering" },
-          { level: "PG", name: "M.Tech - VLSI and Embedded Systems Design" },
-          { level: "Ph.D", name: "Ph.D - Electronics and Communication Engineering" }
-        ]
-      },
-      {
-        name: "Civil Engineering",
-        courses: [
-          { level: "UG", name: "B.Tech - Civil Engineering" },
-          { level: "PG", name: "M.Tech - Structural Engineering" },
-          { level: "Ph.D", name: "Ph.D - Structural Engineering" }
-        ]
-      },
-      {
-        name: "Basic Science & Humanities",
-        courses: []
-      }
-    ]
-  },
-  {
-    id: "business",
-    title: "SCHOOL OF BUSINESS & MANAGEMENT",
-    subtitle: "Shaping Visionary Leaders for Tomorrow's Business World",
-    groups: [
-      {
-        name: "Business and Management",
-        courses: [
-          { level: "PG", name: "MBA" }
-        ]
-      }
-    ]
-  }
-];
 
 function AppContent() {
   const location = useLocation();
@@ -165,10 +51,11 @@ function AppContent() {
     admissionsContent
   } = useData();
 
-  const enquiryPopupConfig = admissionsContent?.enquiryPopup || DEFAULT_ADMISSIONS_CONTENT.enquiryPopup;
+
 
   const popupCmsData = usePublishedPopupConfig();
   const activePopup = useMemo(() => selectActivePopup(popupCmsData), [popupCmsData]);
+  const enquiryPopupConfig = resolveEnquiryConfig(admissionsContent?.enquiryPopup || DEFAULT_ADMISSIONS_CONTENT.enquiryPopup, activePopup?.enquiryConfig);
 
   const [showSplash, setShowSplash] = useState(siteSettings?.enableSplash === true);
 
@@ -519,12 +406,12 @@ function AppContent() {
             <button
               onClick={() => setShowEnquiryModal(true)}
               style={{
-                backgroundColor: enquiryPopupConfig.tabBgColor || "#072A6C",
-                color: enquiryPopupConfig.tabTextColor || "#FFFFFF"
+                backgroundColor: enquiryPopupConfig.tabBgColor,
+                color: enquiryPopupConfig.tabTextColor
               }}
               className="w-[34px] sm:w-[38px] h-[175px] sm:h-[190px] py-4 hover:brightness-110 font-black text-[8.5px] sm:text-[9.5px] tracking-[0.5px] rounded-l-xl shadow-lg transition-all duration-300 hover:-translate-x-1 flex items-center justify-center [writing-mode:vertical-rl] whitespace-nowrap cursor-pointer uppercase border border-r-0 border-white/20 outline-none"
             >
-              {activePopup.type === "event" ? (activePopup.badge || "Campus Event") : (enquiryPopupConfig.tabLabel || "Admission Enquiry")}
+              {activePopup.type === "event" ? (activePopup.badge || "Campus Event") : (enquiryPopupConfig.tabLabel)}
             </button>
           )}
         </div>
@@ -753,7 +640,7 @@ function AppContent() {
                       : "text-gray-600 hover:text-gray-900"
                   }`}
                 >
-                  📝 Enquiry Form
+                  {enquiryPopupConfig.mobileFormLabel}
                 </button>
                 <button
                   type="button"
@@ -764,7 +651,7 @@ function AppContent() {
                       : "text-gray-600 hover:text-gray-900"
                   }`}
                 >
-                  🏫 Explore Programs
+                  {enquiryPopupConfig.mobileSchoolsLabel}
                 </button>
               </div>
 
@@ -775,7 +662,7 @@ function AppContent() {
                 {/* Logo */}
                 <div className="flex items-center justify-center mb-5 mt-1">
                   <img 
-                    src={siteSettings?.logoUrl || "/logo.png?v=3"} 
+                    src={enquiryPopupConfig.logoUrl ?? siteSettings?.logoUrl ?? "/logo.png?v=3"}
                     alt={siteSettings?.universityName || "Chalapathi University"} 
                     width={800}
                     height={359}
@@ -788,7 +675,7 @@ function AppContent() {
 
                 <div className="flex items-center justify-between mb-1">
                   <h3 className="text-[12px] font-black uppercase text-[#072A6C] tracking-wide">
-                    {enquiryPopupConfig.leftPanelTitle || "EXPLORE OUR SCHOOLS & PROGRAMS"}
+                    {enquiryPopupConfig.leftPanelTitle}
                   </h3>
                   <button
                     type="button"
@@ -799,12 +686,12 @@ function AppContent() {
                   </button>
                 </div>
                 <p className="text-[10px] text-gray-400 font-medium mb-3">
-                  {enquiryPopupConfig.leftPanelSubtitle || "Select a school to view its programs. Tap any course to auto-fill the enquiry."}
+                  {enquiryPopupConfig.leftPanelSubtitle}
                 </p>
 
                 {/* Accordions */}
                 <div className="space-y-2.5">
-                  {(enquiryPopupConfig.schools && enquiryPopupConfig.schools.length > 0 ? enquiryPopupConfig.schools : ENQUIRY_SCHOOLS_DATA).map((school) => {
+                  {enquiryPopupConfig.schools.map((school) => {
                     const isOpen = activeAccordion === school.id;
                     return (
                       <div key={school.id} className="border border-gray-150 rounded-[12px] bg-white overflow-hidden shadow-sm transition-all duration-300">
@@ -880,7 +767,7 @@ function AppContent() {
                 {/* Mobile-only University Logo */}
                 <div className="md:hidden flex items-center justify-center mb-3">
                   <img 
-                    src={siteSettings?.logoUrl || "/logo.png?v=3"} 
+                    src={enquiryPopupConfig.logoUrl ?? siteSettings?.logoUrl ?? "/logo.png?v=3"}
                     alt={siteSettings?.universityName || "Chalapathi University"} 
                     width={800}
                     height={359}
@@ -890,10 +777,10 @@ function AppContent() {
 
                 <div className="mb-3 pr-8">
                   <h2 className="text-[16px] sm:text-[18px] font-black text-[#072A6C] tracking-tight uppercase leading-snug">
-                    {activePopup?.title || enquiryPopupConfig.modalTitle || "ADMISSIONS OPEN 2026-27"}
+                    {activePopup?.title ?? enquiryPopupConfig.modalTitle}
                   </h2>
                   <p className="text-[10px] sm:text-[10.5px] text-gray-500 font-medium mt-0.5">
-                    {activePopup?.subtitle || enquiryPopupConfig.modalSubtitle || "Build Your Future. Lead with Innovation."}
+                    {activePopup?.subtitle ?? enquiryPopupConfig.modalSubtitle}
                   </p>
                 </div>
 
@@ -904,10 +791,10 @@ function AppContent() {
                   </div>
                   <div className="text-left flex-1 min-w-0">
                     <h4 className="text-[10.5px] font-black text-[#072A6C] uppercase tracking-wider leading-none mb-1">
-                      {enquiryPopupConfig.formBadgeTitle || "ENQUIRY FORM"}
+                      {enquiryPopupConfig.formBadgeTitle}
                     </h4>
                     <p className="text-[9.5px] text-gray-500 font-medium leading-tight">
-                      {enquiryPopupConfig.formBadgeDesc || "Fill in your details. Our admission team will contact you soon."}
+                      {enquiryPopupConfig.formBadgeDesc}
                     </p>
                   </div>
                   {/* Shortcut to schools tab on mobile */}
@@ -916,7 +803,7 @@ function AppContent() {
                     onClick={() => setMobilePopupTab("schools")}
                     className="md:hidden text-[10px] text-[#072A6C] bg-blue-50 hover:bg-blue-100 font-bold px-2 py-1 rounded-md shrink-0 border border-blue-100"
                   >
-                    Programs ➔
+                    {enquiryPopupConfig.programsButtonLabel}
                   </button>
                 </div>
 
@@ -924,10 +811,10 @@ function AppContent() {
                 <div className="flex flex-col items-center justify-center py-12 space-y-4 my-auto">
                   <CheckCircle2 size={56} className="text-emerald-500 animate-bounce" />
                   <h4 className="text-base font-extrabold text-[#072A6C]">
-                    {enquiryPopupConfig.successTitle || "Enquiry Submitted Successfully!"}
+                    {enquiryPopupConfig.successTitle}
                   </h4>
                   <p className="text-xs text-gray-500 text-center max-w-[340px]">
-                    {enquiryPopupConfig.successDesc || "Our admissions helpdesk representative will contact you on your registered mobile number shortly."}
+                    {enquiryPopupConfig.successDesc}
                   </p>
                   <button 
                     onClick={() => setShowEnquiryModal(false)}
@@ -941,162 +828,162 @@ function AppContent() {
                   <div className="space-y-3">
                     {/* Full Name & Mobile */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">Full Name *</label>
+                      {enquiryPopupConfig.fields.name.visible && (<div className="space-y-1">
+                        <label className="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">{enquiryPopupConfig.fields.name.label}{enquiryPopupConfig.fields.name.required ? " *" : ""}</label>
                         <div className="relative">
                           <User size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                           <input 
                             type="text" 
-                            required
-                            placeholder="Enter your full name"
+                            required={enquiryPopupConfig.fields.name.required}
+                            placeholder={enquiryPopupConfig.fields.name.placeholder}
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                             className="w-full h-10 pl-10 pr-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-semibold text-[#222222]"
                           />
                         </div>
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">Mobile Number *</label>
+                      </div>)}
+                      {enquiryPopupConfig.fields.mobile.visible && (<div className="space-y-1">
+                        <label className="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">{enquiryPopupConfig.fields.mobile.label}{enquiryPopupConfig.fields.mobile.required ? " *" : ""}</label>
                         <div className="relative">
                           <Phone size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                           <input 
                             type="tel" 
-                            required
+                            required={enquiryPopupConfig.fields.mobile.required}
                             pattern="[0-9]{10}"
-                            placeholder="Enter 10 digit mobile number"
+                            placeholder={enquiryPopupConfig.fields.mobile.placeholder}
                             value={formData.mobile}
                             onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
                             className="w-full h-10 pl-10 pr-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-semibold text-[#222222]"
                           />
                         </div>
-                      </div>
+                      </div>)}
                     </div>
 
                     {/* Email Address */}
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">Email Address *</label>
+                    {enquiryPopupConfig.fields.email.visible && (<div className="space-y-1">
+                      <label className="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">{enquiryPopupConfig.fields.email.label}{enquiryPopupConfig.fields.email.required ? " *" : ""}</label>
                       <div className="relative">
                         <Mail size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                         <input 
                           type="email" 
-                          required
-                          placeholder="Enter your email address"
+                          required={enquiryPopupConfig.fields.email.required}
+                          placeholder={enquiryPopupConfig.fields.email.placeholder}
                           value={formData.email}
                           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                           className="w-full h-10 pl-10 pr-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-semibold text-[#222222]"
                         />
                       </div>
-                    </div>
+                    </div>)}
 
                     {/* City & State */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">City *</label>
+                      {enquiryPopupConfig.fields.city.visible && (<div className="space-y-1">
+                        <label className="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">{enquiryPopupConfig.fields.city.label}{enquiryPopupConfig.fields.city.required ? " *" : ""}</label>
                         <div className="relative">
                           <MapPin size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                           <input 
                             type="text" 
-                            required
-                            placeholder="Enter your city"
+                            required={enquiryPopupConfig.fields.city.required}
+                            placeholder={enquiryPopupConfig.fields.city.placeholder}
                             value={formData.city}
                             onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                             className="w-full h-10 pl-10 pr-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-semibold text-[#222222]"
                           />
                         </div>
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">State *</label>
+                      </div>)}
+                      {enquiryPopupConfig.fields.state.visible && (<div className="space-y-1">
+                        <label className="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">{enquiryPopupConfig.fields.state.label}{enquiryPopupConfig.fields.state.required ? " *" : ""}</label>
                         <div className="relative">
                           <Landmark size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                           <select 
-                            required
+                            required={enquiryPopupConfig.fields.state.required}
                             value={formData.state}
                             onChange={(e) => setFormData({ ...formData, state: e.target.value })}
                             className="w-full h-10 pl-10 pr-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-semibold text-[#222222] bg-white appearance-none cursor-pointer"
                           >
-                            <option value="">Select your state</option>
-                            {INDIAN_STATES.map((state) => (
+                            <option value="">{enquiryPopupConfig.fields.state.placeholder}</option>
+                            {(enquiryPopupConfig.fields.state.options || []).map((state) => (
                               <option key={state} value={state}>{state}</option>
                             ))}
                           </select>
                           <ChevronDown size={14} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                         </div>
-                      </div>
+                      </div>)}
                     </div>
 
                     {/* Qualification & Year of Passing */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">Qualification *</label>
+                      {enquiryPopupConfig.fields.qualification.visible && (<div className="space-y-1">
+                        <label className="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">{enquiryPopupConfig.fields.qualification.label}{enquiryPopupConfig.fields.qualification.required ? " *" : ""}</label>
                         <div className="relative">
                           <GraduationCap size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                           <select 
-                            required
+                            required={enquiryPopupConfig.fields.qualification.required}
                             value={formData.qualification}
                             onChange={(e) => setFormData({ ...formData, qualification: e.target.value })}
                             className="w-full h-10 pl-10 pr-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-semibold text-[#222222] bg-white appearance-none cursor-pointer"
                           >
-                            <option value="">Select qualification</option>
-                            {QUALIFICATIONS.map((q) => (
+                            <option value="">{enquiryPopupConfig.fields.qualification.placeholder}</option>
+                            {(enquiryPopupConfig.fields.qualification.options || []).map((q) => (
                               <option key={q} value={q}>{q}</option>
                             ))}
                           </select>
                           <ChevronDown size={14} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                         </div>
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">Year of Passing *</label>
+                      </div>)}
+                      {enquiryPopupConfig.fields.yearOfPassing.visible && (<div className="space-y-1">
+                        <label className="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">{enquiryPopupConfig.fields.yearOfPassing.label}{enquiryPopupConfig.fields.yearOfPassing.required ? " *" : ""}</label>
                         <div className="relative">
                           <Calendar size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                           <select 
-                            required
+                            required={enquiryPopupConfig.fields.yearOfPassing.required}
                             value={formData.yearOfPassing}
                             onChange={(e) => setFormData({ ...formData, yearOfPassing: e.target.value })}
                             className="w-full h-10 pl-10 pr-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-semibold text-[#222222] bg-white appearance-none cursor-pointer"
                           >
-                            <option value="">Select year</option>
-                            {YEARS_OF_PASSING.map((year) => (
+                            <option value="">{enquiryPopupConfig.fields.yearOfPassing.placeholder}</option>
+                            {(enquiryPopupConfig.fields.yearOfPassing.options || []).map((year) => (
                               <option key={year} value={year}>{year}</option>
                             ))}
                           </select>
                           <ChevronDown size={14} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                         </div>
-                      </div>
+                      </div>)}
                     </div>
 
                     {/* Interested Program */}
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">Interested Program *</label>
+                    {enquiryPopupConfig.fields.program.visible && (<div className="space-y-1">
+                      <label className="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">{enquiryPopupConfig.fields.program.label}{enquiryPopupConfig.fields.program.required ? " *" : ""}</label>
                       <div className="relative">
                         <BookOpen size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                         <select 
-                          required
+                          required={enquiryPopupConfig.fields.program.required}
                           value={formData.program}
                           onChange={(e) => setFormData({ ...formData, program: e.target.value })}
                           className="w-full h-10 pl-10 pr-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-semibold text-[#222222] bg-white appearance-none cursor-pointer"
                         >
-                          <option value="">Select a program (Auto-filled)</option>
-                          {(enquiryPopupConfig.allPrograms && enquiryPopupConfig.allPrograms.length > 0 ? enquiryPopupConfig.allPrograms : ALL_PROGRAMS).map((prog) => (
+                          <option value="">{enquiryPopupConfig.fields.program.placeholder}</option>
+                          {enquiryPopupConfig.allPrograms.map((prog) => (
                             <option key={prog} value={prog}>{prog}</option>
                           ))}
                         </select>
                         <ChevronDown size={14} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                       </div>
-                    </div>
+                    </div>)}
 
                     {/* Any Query */}
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">Any Query (Optional)</label>
+                    {enquiryPopupConfig.fields.query.visible && (<div className="space-y-1">
+                      <label className="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">{enquiryPopupConfig.fields.query.label}{enquiryPopupConfig.fields.query.required ? " *" : ""}</label>
                       <div className="relative">
-                        <textarea 
-                          placeholder="Write your message..."
+                        <textarea required={enquiryPopupConfig.fields.query.required}
+                          placeholder={enquiryPopupConfig.fields.query.placeholder}
                           value={formData.query}
                           onChange={(e) => setFormData({ ...formData, query: e.target.value })}
                           rows={2}
                           className="w-full pl-4 pr-3 py-2 border border-[#E2E8F0] rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-semibold text-[#222222] resize-none"
                         />
                       </div>
-                    </div>
+                    </div>)}
                   </div>
 
                   <div className="space-y-3 pt-2">
@@ -1106,13 +993,13 @@ function AppContent() {
                       className="w-full h-11 bg-[#FAB005] hover:bg-[#e09e00] text-gray-900 font-extrabold text-[12px] uppercase tracking-wider rounded-xl flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer outline-none"
                     >
                       <Send size={13} className="rotate-45 -translate-y-0.5" />
-                      <span>{activePopup?.buttonText || enquiryPopupConfig.ctaButtonText || "APPLY ENQUIRY"}</span>
+                      <span>{activePopup?.buttonText ?? enquiryPopupConfig.ctaButtonText}</span>
                     </button>
 
                     {/* Privacy */}
                     <div className="flex items-center justify-center gap-1.5 text-[9px] text-gray-400 font-semibold">
                       <ShieldCheck size={12} className="text-gray-400" />
-                      <span>{enquiryPopupConfig.privacyText || "Your information is safe with us. We respect your"} <Link to="/privacy-policy" onClick={() => setShowEnquiryModal(false)} className="text-blue-500 hover:underline">privacy</Link>.</span>
+                      <span>{enquiryPopupConfig.privacyText} <Link to={enquiryPopupConfig.privacyUrl} onClick={() => setShowEnquiryModal(false)} className="text-blue-500 hover:underline">{enquiryPopupConfig.privacyLinkLabel}</Link>.</span>
                     </div>
                   </div>
                 </form>

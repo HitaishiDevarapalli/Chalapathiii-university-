@@ -23,7 +23,7 @@ export async function readPopupConfig(): Promise<PopupCMSData | null> {
 }
 export async function publishPopupConfig(config: PopupCMSData): Promise<PopupCMSData> {
   validatePopupConfig(config);
-  const saved = { ...config, popups: await Promise.all(config.popups.map(async p => ({ ...p, image: await durableImage(p.image || "") }))) };
+  const saved = { ...config, popups: await Promise.all(config.popups.map(async p => ({ ...p, image: await durableImage(p.image || ""), ...(p.enquiryConfig ? { enquiryConfig: { ...p.enquiryConfig, ...(p.enquiryConfig.logoUrl ? { logoUrl: await durableImage(p.enquiryConfig.logoUrl) } : {}) } } : {}) }))) };
   const response = await fetch(`/api/config/${KEY}`, {
     method: "PUT", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify(saved)
   });

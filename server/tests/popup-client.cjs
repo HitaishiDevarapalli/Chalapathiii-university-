@@ -35,5 +35,14 @@ const reply = (status, body) => ({ status, ok: status >= 200 && status < 300, js
   assert.equal(JSON.stringify(await publishPopupConfig(config)), JSON.stringify(durable));
   assert.equal(notices, 1);
   assert.equal(JSON.parse(requests.at(-2).options.body).popups[1].image, '/uploads/popup.jpg');
+  const enquiryModule = { exports: {} };
+  vm.runInNewContext(ts.transpileModule(fs.readFileSync('../src/data/enquiryPopup.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText, { exports: enquiryModule.exports });
+  const resolved = enquiryModule.exports.resolveEnquiryConfig({ schools: [{ id: 'old' }], allPrograms: ['Old program'] }, { schools: [], allPrograms: [], leftPanelTitle: '', fields: { name: { label: 'Applicant', visible: false } } });
+  assert.equal(resolved.schools.length, 0, 'removed schools must not return as fallback content');
+  assert.equal(resolved.allPrograms.length, 0);
+  assert.equal(resolved.leftPanelTitle, '');
+  assert.equal(resolved.fields.name.label, 'Applicant');
+  assert.equal(resolved.fields.name.visible, false);
+  assert.equal(resolved.fields.mobile.required, true, 'unedited fields retain original behavior');
   console.log('PASS: popup selection, no demo fallback, no-cache reads, rejected saves, readback verification, durable images and confirmed publication.');
 })().catch(error => { console.error(error); process.exitCode = 1; });
