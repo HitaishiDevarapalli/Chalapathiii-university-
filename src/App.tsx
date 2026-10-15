@@ -636,7 +636,7 @@ function AppContent() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
               transition={{ duration: 0.35, ease: "easeOut" }}
-              className="bg-white w-full max-w-[580px] rounded-[24px] shadow-2xl relative flex flex-col overflow-hidden border border-gray-100 font-[var(--font-poppins)] text-left select-none my-auto"
+              className={`bg-white ${activePopup.image ? "w-fit max-w-[94vw]" : "w-full max-w-[880px]"} rounded-[24px] shadow-2xl relative flex flex-col overflow-hidden border border-gray-100 font-[var(--font-poppins)] text-left select-none my-auto`}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Close Button */}
@@ -650,26 +650,13 @@ function AppContent() {
 
               {/* Poster Image */}
               {activePopup.image ? (
-                <div className="relative w-full h-56 sm:h-64 bg-slate-900 overflow-hidden flex items-center justify-center">
-                  <img 
-                    src={activePopup.image} 
+                <div className="flex items-center justify-center bg-white">
+                  <img
+                    src={activePopup.image}
                     alt={activePopup.title}
-                    width={1200}
-                    height={630}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
+                    className="block w-auto h-auto max-w-[94vw] max-h-[76dvh] object-contain"
                     decoding="async"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
-                  
-                  {/* Floating Badge */}
-                  {activePopup.badge && (
-                    <div className="absolute bottom-4 left-5 z-10">
-                      <span className="px-3 py-1 rounded-full bg-[#FAB005] text-[#072A6C] text-[10px] sm:text-[11px] font-black uppercase tracking-wider shadow-md">
-                        {activePopup.badge}
-                      </span>
-                    </div>
-                  )}
                 </div>
               ) : (
                 <div className="bg-gradient-to-r from-[#072A6C] to-[#0D47A1] p-6 text-white relative">
@@ -683,7 +670,7 @@ function AppContent() {
 
               {/* Modal Body */}
               <div className="p-6 sm:p-7 flex flex-col">
-                {!activePopup.image && activePopup.badge && (
+                {activePopup.badge && (
                   <div className="mb-2">
                     <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-[11px] font-black uppercase tracking-wider inline-block">
                       {activePopup.badge}
