@@ -146,18 +146,8 @@ export default function News() {
       });
     }
 
-    // 3. Any additional hero carousel slides explicitly added in News CMS config
-    if (Array.isArray(newsPageConfig?.featuredCarouselImages)) {
-      const hiddenSlides = (newsPageConfig as any)?.hiddenCarouselSlides || [];
-      newsPageConfig.featuredCarouselImages.forEach((img, idx) => {
-        if (img && typeof img === "string" && img.trim() && !hiddenSlides.includes(idx) && !list.includes(img.trim())) {
-          list.push(img.trim());
-        }
-      });
-    }
-
     return list;
-  }, [featuredArticle, newsPageConfig]);
+  }, [featuredArticle]);
 
   // Auto-slide effect for the Featured News image carousel - only if more than 1 real image is configured
   useEffect(() => {
