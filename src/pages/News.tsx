@@ -191,12 +191,11 @@ export default function News() {
   const eventsCount = newsPageConfig?.eventsStripCount || 3;
   const upcomingEventsList = (events || []).slice(0, eventsCount);
 
-  // Filter latest news list based on config (excluding featured article)
+  // The latest feed is a complete list of published news. A featured article is
+  // still a news article, so it must remain visible here (especially when it is
+  // the only article an admin has published).
   const latestCount = newsPageConfig?.latestNewsCount || 4;
-  const filteredLatest = featuredArticle ? visibleNews.filter(item => item.id !== featuredArticle.id) : visibleNews;
-  const latestNewsArticles = filteredLatest.length >= latestCount 
-    ? filteredLatest.slice(0, latestCount) 
-    : filteredLatest;
+  const latestNewsArticles = visibleNews.slice(0, latestCount);
 
   // Share setup
   const handleShareTrigger = (type: "news" | "event", id: number, e: React.MouseEvent) => {
