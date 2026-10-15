@@ -13262,9 +13262,7 @@ export default function AdminPortal() {
           {/* ════════════════════════════════════════════════════ */}
           {/* TAB: POPUP MODAL MANAGER CMS                         */}
           {/* ════════════════════════════════════════════════════ */}
-          {activeTab === "popup" && (
-            <PopupCMS notifySave={notifySave} />
-          )}
+
 
           {/* ════════════════════════════════════════════════════ */}
           {/* TAB 11: WEBSITE SETTINGS & BRANDING                  */}

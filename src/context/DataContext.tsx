@@ -1773,8 +1773,7 @@ export const DEFAULT_FOOTER_CONTENT: FooterContent = {
     { label: "Vision & Mission", to: "/about/vision" },
     { label: "Leadership", to: "/about/leadership" },
     { label: "Genesis & Heritage", to: "/about/genesis" },
-    { label: "Chalapathi Advantage", to: "/about/advantage" },
-    { label: "Accreditations", to: "/about" }
+    { label: "Chalapathi Advantage", to: "/about/advantage" }
   ],
   academicsLinksTitle: "Academics",
   academicsLinks: [

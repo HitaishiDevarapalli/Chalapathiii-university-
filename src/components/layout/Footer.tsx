@@ -47,10 +47,9 @@ export default function Footer() {
     { label: "Leadership", to: "/about/leadership" },
     { label: "Genesis & Heritage", to: "/about/genesis" },
     { label: "Chalapathi Advantage", to: "/about/advantage" },
-    { label: "Accreditations", to: "/about" },
   ];
 
-  const quickLinks = rawQuickLinks.filter(l => !isPageHidden(l.label, l.to));
+  const quickLinks = rawQuickLinks.filter(l => l.label.trim().toLowerCase() !== "accreditations" && !isPageHidden(l.label, l.to));
 
   const rawAcademicsLinks = footerContent?.academicsLinks || [
     { label: "Programs", to: "/academics" },
@@ -113,7 +112,7 @@ export default function Footer() {
         color: themeColors?.footerText || "#D1D5DB"
       }}
     >
-      <div className="max-w-[1440px] mx-auto px-5 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-8">
+      <div className="max-w-[1440px] mx-auto px-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-[1.1fr_1fr_1fr_1fr_1fr_1.5fr] gap-8 [&>div]:min-w-0 [overflow-wrap:anywhere]">
         {/* Col 1: Brand */}
         <div className="space-y-4 lg:col-span-1">
           <div className="bg-white rounded-[12px] p-2.5 w-fit flex items-center justify-center shadow-sm">
@@ -227,7 +226,7 @@ export default function Footer() {
             {footerContent?.contactTitle || "Contact Us"}
           </h4>
           <div className="flex gap-4 items-start">
-            <div className="space-y-3.5 text-[11px] text-[#D1D5DB] font-light flex-1">
+            <div className="space-y-3.5 text-[11px] text-[#D1D5DB] font-light flex-1 min-w-0">
               <div className="flex items-start gap-2">
                 <MapPin size={13} className="text-[#D4AF37] mt-0.5 shrink-0" />
                 <span>{contactAddress}</span>
@@ -244,7 +243,7 @@ export default function Footer() {
           </div>
           <div className="space-y-3.5 text-[11px] text-[#D1D5DB] font-light">
             {/* Social Logos */}
-            <div className="flex items-center gap-2.5 pt-3">
+            <div className="flex flex-wrap items-center gap-2.5 pt-3">
               {socialLinks?.instagram && (
                 <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="w-7 h-7 rounded-full bg-white/5 hover:bg-[#E1306C] hover:scale-110 text-white flex items-center justify-center transition-all duration-200 shadow-sm border border-white/5" title="Instagram">
                   <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
@@ -278,7 +277,7 @@ export default function Footer() {
       {/* Bottom Bar */}
       <div className="max-w-[1440px] mx-auto px-5 mt-14 pt-6 border-t border-white/5 flex flex-col md:flex-row justify-between items-center text-[10px] text-[#D1D5DB] font-light gap-3">
         <span>{footerContent?.copyrightText || "© 2026 Chalapathi University. All rights reserved."}</span>
-        <div className="flex items-center flex-wrap gap-3">
+        <div className="flex items-center justify-center flex-wrap gap-3 min-w-0 [overflow-wrap:anywhere]">
           {bottomLinks.map((item, idx) => (
             <React.Fragment key={idx}>
               {idx > 0 && <span>|</span>}
