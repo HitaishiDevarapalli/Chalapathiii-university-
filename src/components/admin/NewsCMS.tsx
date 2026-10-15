@@ -840,6 +840,28 @@ export function NewsCMS({
                       </div>
                     </div>
 
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">
+                        <div className="text-[10px] font-black uppercase tracking-wide text-[#072A6C]">Homepage featured image</div>
+                        <div className="mt-1 text-xs font-black text-amber-700">1200 × 1200 px</div>
+                        <div className="text-[9px] text-gray-500">1:1 square canvas • full image visible</div>
+                      </div>
+                      <div className="rounded-xl border border-blue-200 bg-blue-50 p-3">
+                        <div className="text-[10px] font-black uppercase tracking-wide text-[#072A6C]">News page carousel</div>
+                        <div className="mt-1 text-xs font-black text-blue-700">1200 × 1000 px</div>
+                        <div className="text-[9px] text-gray-500">6:5 canvas • full image visible</div>
+                      </div>
+                      <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+                        <div className="text-[10px] font-black uppercase tracking-wide text-[#072A6C]">Article detail slider</div>
+                        <div className="mt-1 text-xs font-black text-emerald-700">1600 × 900 px</div>
+                        <div className="text-[9px] text-gray-500">16:9 canvas • full image visible</div>
+                      </div>
+                    </div>
+
+                    <p className="rounded-lg bg-slate-50 border border-gray-200 px-3 py-2 text-[10px] leading-relaxed text-gray-500">
+                      The primary cover is reused on the homepage and News carousel. Upload at least 1200 × 1200 px; the website now fits the complete image inside each canvas without cropping the top, bottom, left, or right edges.
+                    </p>
+
                     <ImageField
                       label="Primary Cover Photo"
                       value={article.image || ""}
@@ -854,7 +876,8 @@ export function NewsCMS({
                         updated[idx] = { ...updated[idx], image: "" };
                         setNewsList(updated);
                       }}
-                      aspectRatio="video"
+                      aspectRatio="square"
+                      recommendedSize="1200 × 1200 px (1:1 master cover)"
                     />
                   </div>
 
@@ -928,7 +951,7 @@ export function NewsCMS({
                                 setNewsList(updated);
                               }}
                               aspectRatio="video"
-                              recommendedSize="1200 × 700 px"
+                              recommendedSize="1600 × 900 px (16:9 article detail)"
                             />
                           </div>
                         ))}

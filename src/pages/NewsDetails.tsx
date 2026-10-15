@@ -68,7 +68,7 @@ function ImageSlider({ images }: { images: string[] }) {
 
   return (
     <div 
-      className="relative w-full h-[300px] md:h-[500px] rounded-[18px] overflow-hidden shadow-sm select-none bg-gray-100"
+      className="relative w-full h-[300px] md:h-[500px] rounded-[18px] overflow-hidden shadow-sm select-none bg-[#E5E7EB]"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -79,7 +79,7 @@ function ImageSlider({ images }: { images: string[] }) {
             key={idx}
             src={img} 
             alt={`Slide ${idx + 1}`} 
-            className="w-full h-full object-cover shrink-0"
+            className="w-full h-full object-contain object-center shrink-0"
             loading={idx === 0 ? "eager" : "lazy"}
             decoding="async"
           />

@@ -253,13 +253,13 @@ export default function News() {
           <div className="lg:col-span-8 bg-white rounded-[24px] border border-gray-100 shadow-sm overflow-hidden flex flex-col md:flex-row items-stretch">
             
             {/* Left half: Image slider carousel */}
-            <div className="w-full md:w-1/2 relative bg-slate-900 group min-h-[320px] md:min-h-auto flex items-stretch">
+            <div className="w-full md:w-1/2 relative bg-[#E5E7EB] group min-h-[320px] md:min-h-auto flex items-stretch">
               {featuredArticle?.image ? (
                 <img 
                   src={featuredArticle.image}
                   alt={featuredArticle?.title || "Featured News"} 
                   onError={(e) => { (e.target as HTMLImageElement).src = "/logo.png?v=3"; }}
-                  className="absolute inset-0 w-full h-full object-cover object-center transition-all duration-500"
+                  className="absolute inset-0 w-full h-full object-contain object-center transition-all duration-500"
                   loading="eager"
                   decoding="async"
                 />
