@@ -117,61 +117,44 @@ export default function News() {
   }, [newsPageConfig?.headerTitle]);
 
   // Visible news excluding hidden articles
-  const visibleNews = (news || []).filter(item => !item.hidden);
+  const visibleNews = React.useMemo(
+    () => (news || []).filter(item => !item.hidden),
+    [news]
+  );
 
-  // Find the Featured news article (via config ID, or featured flag, or ID 1, or first item)
-  const featuredArticle = 
-    visibleNews.find(item => item.id === newsPageConfig?.featuredArticleId) ||
-    visibleNews.find(item => item.featured) ||
-    visibleNews.find(item => item.id === 1) ||
-    visibleNews[0] ||
-    (news && news.length > 0 ? news[0] : null) ||
-    null;
+  // Match the homepage carousel: every visible article marked Featured is one
+  // complete slide with its own image, copy, link and share action.
+  const featuredArticles = React.useMemo(() => {
+    const marked = visibleNews.filter((item) => item.featured);
+    return marked.length > 0 ? marked : visibleNews.slice(0, 1);
+  }, [visibleNews]);
+  const featuredArticle = featuredArticles.length > 0
+    ? featuredArticles[activeSlide % featuredArticles.length]
+    : null;
 
-  // Real images added via Admin only (no fake or placeholder presets)
-  const featuredImages = React.useMemo(() => {
-    const list: string[] = [];
-
-    // 1. Cover photo of the featured article
-    if (featuredArticle?.image && typeof featuredArticle.image === "string" && featuredArticle.image.trim()) {
-      list.push(featuredArticle.image.trim());
-    }
-
-    // 2. Any additional gallery slides attached to this article in admin
-    if (Array.isArray(featuredArticle?.images)) {
-      featuredArticle.images.forEach((img) => {
-        if (img && typeof img === "string" && img.trim() && !list.includes(img.trim())) {
-          list.push(img.trim());
-        }
-      });
-    }
-
-    return list;
-  }, [featuredArticle]);
-
-  // Auto-slide effect for the Featured News image carousel - only if more than 1 real image is configured
+  // Auto-slide between featured articles.
   useEffect(() => {
-    if (featuredImages.length <= 1) {
+    if (featuredArticles.length <= 1) {
       setActiveSlide(0);
       return;
     }
     const timer = setInterval(() => {
-      setActiveSlide((prev) => (prev + 1) % featuredImages.length);
+      setActiveSlide((prev) => (prev + 1) % featuredArticles.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, [featuredImages.length]);
+  }, [featuredArticles.length]);
 
   // Handle active slide controls
   const handlePrevSlide = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (featuredImages.length <= 1) return;
-    setActiveSlide((prev) => (prev - 1 + featuredImages.length) % featuredImages.length);
+    if (featuredArticles.length <= 1) return;
+    setActiveSlide((prev) => (prev - 1 + featuredArticles.length) % featuredArticles.length);
   };
 
   const handleNextSlide = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (featuredImages.length <= 1) return;
-    setActiveSlide((prev) => (prev + 1) % featuredImages.length);
+    if (featuredArticles.length <= 1) return;
+    setActiveSlide((prev) => (prev + 1) % featuredArticles.length);
   };
 
   // Find 5 Trending news articles for University Highlights sidebar
@@ -271,9 +254,9 @@ export default function News() {
             
             {/* Left half: Image slider carousel */}
             <div className="w-full md:w-1/2 relative bg-slate-900 group min-h-[320px] md:min-h-auto flex items-stretch">
-              {featuredImages.length > 0 && featuredImages[activeSlide % featuredImages.length] ? (
+              {featuredArticle?.image ? (
                 <img 
-                  src={featuredImages[activeSlide % featuredImages.length]} 
+                  src={featuredArticle.image}
                   alt={featuredArticle?.title || "Featured News"} 
                   onError={(e) => { (e.target as HTMLImageElement).src = "/logo.png?v=3"; }}
                   className="absolute inset-0 w-full h-full object-cover object-center transition-all duration-500"
@@ -297,7 +280,7 @@ export default function News() {
               </span>
 
               {/* Slider arrows */}
-              {featuredImages.length > 1 && (
+              {featuredArticles.length > 1 && (
                 <>
                   <button 
                     onClick={handlePrevSlide} 
@@ -358,14 +341,15 @@ export default function News() {
                 </div>
 
                 {/* Slider Indicator Dots */}
-                {featuredImages.length > 1 && (
+                {featuredArticles.length > 1 && (
                   <div className="flex items-center gap-1.5 pt-2">
-                    {featuredImages.map((_, idx) => (
+                    {featuredArticles.map((article, idx) => (
                       <button 
-                        key={idx}
+                        key={article.id}
                         onClick={() => setActiveSlide(idx)}
+                        aria-label={`Show featured story ${idx + 1}: ${article.title}`}
                         className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                          (activeSlide % featuredImages.length) === idx ? "bg-[#D4AF37] w-6" : "bg-gray-300"
+                          (activeSlide % featuredArticles.length) === idx ? "bg-[#D4AF37] w-6" : "bg-gray-300"
                         }`}
                       />
                     ))}
