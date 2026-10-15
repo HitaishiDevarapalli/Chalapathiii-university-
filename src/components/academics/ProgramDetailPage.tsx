@@ -1,3 +1,4 @@
+import { usePublishedPrograms } from "../../services/programPublishing";
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
@@ -38,36 +39,16 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
     return programs?.find(p => p.slug === slug);
   }, [programs, slug]);
 
-  // Load comprehensive program data
+  const published = usePublishedPrograms();
   const programData: FullProgramData = useMemo(() => {
-    const customKey = `custom_program_data_${slug}`;
-    const saved = localStorage.getItem(customKey);
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {}
-    }
-    return getProgramFullData(
-      slug,
-      matchedProgram?.title,
-      matchedProgram?.department,
-      (matchedProgram as any)?.school
+    return published[`custom_program_data_${slug}`] || getProgramFullData(
+      slug, matchedProgram?.title, matchedProgram?.department, (matchedProgram as any)?.school
     );
-  }, [slug, matchedProgram]);
-
-  // Section ordering & configuration
-  const [sections] = useState<SectionMeta[]>(() => {
-    const saved = localStorage.getItem(`program_sections_order_${slug}`);
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {}
-    }
-    return DEFAULT_PROGRAM_SECTIONS;
-  });
+  }, [published, slug, matchedProgram]);
+  const sections: SectionMeta[] = published[`program_sections_order_${slug}`] || DEFAULT_PROGRAM_SECTIONS;
 
   const enabledSections = useMemo(() => {
-    return sections.filter(s => s.enabled);
+    return sections.filter(s => s.enabled).slice().sort((a, b) => a.order - b.order);
   }, [sections]);
 
   // Active Tab: Defaults to first section ("about")

@@ -1,3 +1,4 @@
+import { usePublishedPrograms, publishProgram } from "../services/programPublishing";
 import React, { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { 
@@ -1145,13 +1146,19 @@ export default function AdminPortal() {
 
   React.useEffect(() => setProgramsList(programs), [programs]);
 
+  const publishedPrograms = usePublishedPrograms();
+  const readProgramDraft = (key: string) => {
+    if (Object.prototype.hasOwnProperty.call(publishedPrograms, key)) return JSON.stringify(publishedPrograms[key]);
+    // Preserve earlier laptop-only edits so the admin can publish them with Save.
+    return localStorage.getItem(key);
+  };
   const [progSectionsOrder, setProgSectionsOrder] = useState<SectionMeta[]>(() => {
-    const saved = localStorage.getItem(`program_sections_order_${selectedProgSlug}`);
+    const saved = readProgramDraft(`program_sections_order_${selectedProgSlug}`);
     return saved ? JSON.parse(saved) : DEFAULT_PROGRAM_SECTIONS;
   });
 
   const [customFullProgram, setCustomFullProgram] = useState<FullProgramData>(() => {
-    const saved = localStorage.getItem(`custom_program_data_${selectedProgSlug}`);
+    const saved = readProgramDraft(`custom_program_data_${selectedProgSlug}`);
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
@@ -1159,23 +1166,23 @@ export default function AdminPortal() {
   });
 
   React.useEffect(() => {
-    const savedSecs = localStorage.getItem(`program_sections_order_${selectedProgSlug}`);
+    const savedSecs = readProgramDraft(`program_sections_order_${selectedProgSlug}`);
     setProgSectionsOrder(savedSecs ? JSON.parse(savedSecs) : DEFAULT_PROGRAM_SECTIONS);
 
-    const savedFull = localStorage.getItem(`custom_program_data_${selectedProgSlug}`);
+    const savedFull = readProgramDraft(`custom_program_data_${selectedProgSlug}`);
     setCustomFullProgram(
       savedFull
         ? JSON.parse(savedFull)
         : getProgramFullData(selectedProgSlug, currentProg?.title, currentProg?.department)
     );
-  }, [selectedProgSlug, currentProg]);
+  }, [selectedProgSlug, currentProg, publishedPrograms]);
 
   const selectProgramToEdit = (slug: string) => {
     setSelectedProgSlug(slug);
     const prog = programsList.find((p) => p.slug === slug);
-    const savedSecs = localStorage.getItem(`program_sections_order_${slug}`);
+    const savedSecs = readProgramDraft(`program_sections_order_${slug}`);
     setProgSectionsOrder(savedSecs ? JSON.parse(savedSecs) : DEFAULT_PROGRAM_SECTIONS);
-    const savedFull = localStorage.getItem(`custom_program_data_${slug}`);
+    const savedFull = readProgramDraft(`custom_program_data_${slug}`);
     setCustomFullProgram(
       savedFull
         ? JSON.parse(savedFull)
@@ -1184,9 +1191,10 @@ export default function AdminPortal() {
     setAcademicsSubTab("editor");
   };
 
-  const saveProgramDetails = () => {
-    localStorage.setItem(`program_sections_order_${selectedProgSlug}`, JSON.stringify(progSectionsOrder));
-    localStorage.setItem(`custom_program_data_${selectedProgSlug}`, JSON.stringify(customFullProgram));
+  const saveProgramDetails = async () => {
+    try {
+    if (!publishedPrograms.__loaded) throw new Error("Please wait for published content to load before saving.");
+
 
     // Synchronize to DataContext programsList so all listings and search index update live!
     const updated = programsList.map((p) => {
@@ -1203,10 +1211,12 @@ export default function AdminPortal() {
       }
       return p;
     });
+    await publishProgram(selectedProgSlug, customFullProgram, progSectionsOrder, updated);
     setProgramsList(updated);
     updatePrograms(updated);
     window.dispatchEvent(new Event("chalapathi_cms_updated"));
     notifySave(`Program "${customFullProgram.title}" published live!`);
+    } catch (error) { alert(error instanceof Error ? error.message : "Publishing failed"); }
   };
 
   const handleCreateNewProgram = () => {

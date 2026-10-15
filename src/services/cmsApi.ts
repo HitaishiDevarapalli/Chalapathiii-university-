@@ -15,7 +15,7 @@ export const CmsApiService = {
   async fetchAll(): Promise<CmsSyncResponse> {
     try {
       const res = await fetch("/api/cms?action=getAll", {
-        method: "GET",
+        method: "GET", cache: "no-store", credentials: "same-origin",
         headers: { "Content-Type": "application/json" }
       });
       if (!res.ok) throw new Error(`HTTP error ${res.status}`);
@@ -43,7 +43,7 @@ export const CmsApiService = {
       return await res.json();
     } catch (e: any) {
       console.warn("CmsApiService savePage local fallback:", e.message);
-      return { success: true, page };
+      return { success: false, error: e.message };
     }
   },
 
@@ -63,7 +63,7 @@ export const CmsApiService = {
       return await res.json();
     } catch (e: any) {
       console.warn("CmsApiService deletePage local fallback:", e.message);
-      return { success: true };
+      return { success: false };
     }
   },
 
@@ -82,7 +82,7 @@ export const CmsApiService = {
       return await res.json();
     } catch (e: any) {
       console.warn("CmsApiService saveAll local fallback:", e.message);
-      return { success: true };
+      return { success: false };
     }
   }
 };

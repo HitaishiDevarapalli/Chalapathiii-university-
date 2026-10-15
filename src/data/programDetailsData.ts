@@ -1442,7 +1442,7 @@ export const PROGRAM_DETAILS_DATABASE: Record<string, FullProgramData> = {
 };
 
 // Fallback generator for other programs ensuring all 19 sections are completely populated
-export function getProgramFullData(slug: string, title?: string, department?: string, school?: string): FullProgramData {
+function buildProgramFullData(slug: string, title?: string, department?: string, school?: string): FullProgramData {
   if (PROGRAM_DETAILS_DATABASE[slug]) {
     return PROGRAM_DETAILS_DATABASE[slug];
   }
@@ -1651,4 +1651,15 @@ export function getProgramFullData(slug: string, title?: string, department?: st
       ]
     }
   };
+}
+
+// Unknown programs must not inherit invented staff, results, grants, or documents.
+export function getProgramFullData(slug: string, title?: string, department?: string, school?: string): FullProgramData {
+  const data = buildProgramFullData(slug, title, department, school);
+  if (PROGRAM_DETAILS_DATABASE[slug]) return data;
+  const empty = (value: any): any => Array.isArray(value) ? [] :
+    value && typeof value === "object" ? Object.fromEntries(Object.entries(value).map(([key, item]) => [key, empty(item)])) :
+    typeof value === "number" ? 0 : "";
+  return { ...empty(data), slug, title: data.title, shortName: data.shortName,
+    department: data.department, school: data.school, level: data.level, degreeType: data.degreeType };
 }

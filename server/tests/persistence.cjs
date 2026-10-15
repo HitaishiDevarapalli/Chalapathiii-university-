@@ -99,9 +99,21 @@ const bcrypt = require('bcryptjs');
     assert.equal((await send('/api/cms', { action: 'saveAll', settings: {} }, 'POST', false)).status, 401);
     assert.equal((await request('/api/config/' + encodeURIComponent('__session:fake'))).status, 404);
     assert.equal((await send('/api/config/news', [], 'PUT')).status, 404);
+    const programSettings = {
+      programs: [{ slug: 'test-academics', title: 'Published academic program' }],
+      custom_program_data_test: { title: 'Shared detail', facultyList: [], about: { summary: 'Saved across devices' } },
+      program_sections_order_test: [{ id: 'about', enabled: true, order: 1 }]
+    };
+    assert.equal((await send('/api/cms', { action: 'saveAll', settings: programSettings })).status, 200);
+    const independentReader = await request('/api/config');
+    assert.match(independentReader.headers.get('cache-control'), /no-store/);
+    const published = await independentReader.json();
+    for (const [key, value] of Object.entries(programSettings)) assert.deepEqual(published[key], value);
     await restart();
     assert.equal((await request('/api/auth/me', {}, true)).status, 200, 'database-backed session survives server recreation');
     assert.deepEqual(Buffer.from(await (await request(photo)).arrayBuffer()), png, 'photo is durable and publicly readable');
+    const afterRestart = await (await request('/api/config')).json();
+    for (const [key, value] of Object.entries(programSettings)) assert.deepEqual(afterRestart[key], value, 'program content survives restart');
     assert.equal((await send('/api/auth/logout', {})).status, 200);
     assert.equal((await request('/api/auth/me', {}, true)).status, 401, 'logout revokes session');
     if (process.env.BROWSER_TEST === '1') await require('./browser.cjs')(base, png);

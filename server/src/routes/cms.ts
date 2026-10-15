@@ -39,8 +39,8 @@ router.get("/", async (req: Request, res: Response) => {
 
     // Default: return all pages and site configs
     const [pages, configs] = await Promise.all([
-      prisma.cmsPage.findMany({ orderBy: { displayOrder: "asc" } }).catch(() => []),
-      prisma.siteConfig.findMany().catch(() => []),
+      prisma.cmsPage.findMany({ orderBy: { displayOrder: "asc" } }),
+      prisma.siteConfig.findMany(),
     ]);
 
     const parsedPages = pages.map((p) => {
@@ -66,14 +66,7 @@ router.get("/", async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     console.error("Error in /api/cms:", error);
-    return res.json({
-      success: true,
-      pages: [],
-      settings: {},
-      collections: {},
-      versions: [],
-      fallback: true,
-    });
+    return res.status(500).json({ success: false, error: "Unable to load published content" });
   }
 });
 
@@ -128,9 +121,9 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
 
     if (action === "deletePage") {
       if (slug) {
-        await prisma.cmsPage.delete({ where: { slug } }).catch(() => {});
+        await prisma.cmsPage.delete({ where: { slug } });
       } else if (id) {
-        await prisma.cmsPage.delete({ where: { id } }).catch(() => {});
+        await prisma.cmsPage.delete({ where: { id } });
       }
       return res.json({ success: true });
     }
@@ -138,6 +131,7 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
     if (action === "saveAll") {
       const { pages, settings, collections } = req.body || {};
 
+      await prisma.$transaction(async (prisma) => {
       // Upsert CMS pages
       if (Array.isArray(pages)) {
         for (const p of pages) {
@@ -179,7 +173,7 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
               parentNav: p.parentNav || null,
               dataJson: JSON.stringify(dataToStore),
             },
-          }).catch(() => {});
+          });
         }
       }
 
@@ -196,16 +190,17 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
           where: { key: k },
           update: { valueJson: valStr },
           create: { key: k, valueJson: valStr },
-        }).catch(() => {});
+        });
       }
 
+      });
       return res.json({ success: true, message: "All CMS pages and site configs saved successfully" });
     }
 
     return res.json({ success: true });
   } catch (err: any) {
     console.error("Error in /api/cms POST:", err);
-    return res.json({ success: true, fallback: true });
+    return res.status(500).json({ success: false, error: "Publishing failed; changes were not saved" });
   }
 });
 

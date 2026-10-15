@@ -3135,21 +3135,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   // Programs
-  const [programs, setPrograms] = useState<ProgramDetail[]>(() => {
-    const local = localStorage.getItem("chalapathi_programs_v4");
-    if (local) {
-      try {
-        const parsed = JSON.parse(local);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
-        }
-      } catch (e) {}
-    }
-    // Clean stale cache from prior sessions
-    localStorage.removeItem("chalapathi_programs");
-    localStorage.setItem("chalapathi_programs_v4", JSON.stringify(PROGRAMS_DATA));
-    return PROGRAMS_DATA;
-  });
+  const [programs, setPrograms] = useState<ProgramDetail[]>(PROGRAMS_DATA);
 
   // News
   const [news, setNews] = useState<NewsArticle[]>([]);
@@ -3500,20 +3486,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Helper to asynchronously persist config key-value to database & serverless API
   const syncConfigToBackend = async (key: string, value: any) => {
     try {
-      await Promise.allSettled([
-        fetch(`/api/config/${encodeURIComponent(key)}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(value),
-        }),
-        fetch("/api/cms", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "saveConfig", key, value }),
-        }),
-      ]);
+      const response = await fetch(`/api/config/${encodeURIComponent(key)}`, {
+        method: "PUT", credentials: "same-origin",
+        headers: { "Content-Type": "application/json" }, body: JSON.stringify(value),
+      });
+      if (!response.ok) throw new Error(`Publishing ${key} failed (${response.status})`);
+
     } catch (e) {
       console.warn(`[Sync] Backend persist failed for ${key}:`, e);
+      alert("The server could not publish these changes. Please sign in and try saving again.");
     }
   };
 
@@ -3879,7 +3860,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // 2. Also query /api/config to ensure all site configs from PostgreSQL are merged
         try {
-          const cfgRes = await fetch("/api/config");
+          const cfgRes = await fetch("/api/config", { cache: "no-store" });
           if (cfgRes.ok) {
             const cfgData = await cfgRes.json();
             if (cfgData && typeof cfgData === "object") {
@@ -3891,6 +3872,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         if (Object.keys(s).length > 0) {
+          if (s.certificationsData !== undefined) setCertificationsData(s.certificationsData);
+          if (s.certificationsPageConfig !== undefined) setCertificationsPageConfig(s.certificationsPageConfig);
+          if (s.academicFlexibilities !== undefined) setAcademicFlexibilities(s.academicFlexibilities);
+          if (s.gradingSystemData !== undefined) setGradingSystemData(s.gradingSystemData);
+          if (s.awardOfDegreesData !== undefined) setAwardOfDegreesData(s.awardOfDegreesData);
+          if (s.academicRulesData !== undefined) setAcademicRulesData(s.academicRulesData);
+          if (s.teachingEvaluationData !== undefined) setTeachingEvaluationData(s.teachingEvaluationData);
+          if (s.academicCalendarTerms !== undefined) setAcademicCalendarTerms(s.academicCalendarTerms);
+
           if (s.aboutContent) {
             setAboutContent(s.aboutContent);
             safeSetItem("chalapathi_about_v2", JSON.stringify(s.aboutContent));
@@ -4027,6 +4017,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     initCmsAndConfigs();
     fetchAnnouncements();
+    const refreshPublished = () => { if (!location.pathname.startsWith("/admin")) void initCmsAndConfigs(); };
+    window.addEventListener("focus", refreshPublished);
+    const timer = window.setInterval(refreshPublished, 15000);
+    return () => { clearInterval(timer); window.removeEventListener("focus", refreshPublished); };
+
   }, []);
 
   useEffect(() => {
@@ -4184,6 +4179,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCertificationsData(data);
     safeSetItem("chalapathi_certifications_v1", JSON.stringify(data));
     recordSave();
+    void syncConfigToBackend("certificationsData", data);
   };
 
   // Global Certifications Page Config CMS
@@ -4204,6 +4200,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCertificationsPageConfig(config);
     safeSetItem("chalapathi_certifications_page_config_v1", JSON.stringify(config));
     recordSave();
+    void syncConfigToBackend("certificationsPageConfig", config);
   };
 
   // Academic Flexibilities CMS
@@ -4224,6 +4221,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAcademicFlexibilities(data);
     safeSetItem("chalapathi_flexibilities_v1", JSON.stringify(data));
     recordSave();
+    void syncConfigToBackend("academicFlexibilities", data);
   };
 
   // Grading System CMS
@@ -4244,6 +4242,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setGradingSystemData(data);
     safeSetItem("chalapathi_grading_config", JSON.stringify(data));
     recordSave();
+    void syncConfigToBackend("gradingSystemData", data);
   };
 
   // Award of Degrees CMS
@@ -4264,6 +4263,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAwardOfDegreesData(data);
     safeSetItem("chalapathi_award_degrees_v1", JSON.stringify(data));
     recordSave();
+    void syncConfigToBackend("awardOfDegreesData", data);
   };
 
   // Academic Rules & Regulations CMS
@@ -4284,6 +4284,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAcademicRulesData(data);
     safeSetItem("chalapathi_rules_regulations_v1", JSON.stringify(data));
     recordSave();
+    void syncConfigToBackend("academicRulesData", data);
   };
 
   // Teaching & Evaluation CMS
@@ -4304,6 +4305,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setTeachingEvaluationData(data);
     safeSetItem("chalapathi_teaching_evaluation_v1", JSON.stringify(data));
     recordSave();
+    void syncConfigToBackend("teachingEvaluationData", data);
   };
 
   // Academic Calendar Terms CMS
@@ -4324,6 +4326,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAcademicCalendarTerms(data);
     safeSetItem("chalapathi_calendar_terms_v1", JSON.stringify(data));
     recordSave();
+    void syncConfigToBackend("academicCalendarTerms", data);
   };
 
   const syncCmsWithBackend = async (): Promise<boolean> => {
