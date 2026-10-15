@@ -10,7 +10,7 @@ export async function readContent(kind: Collection, admin = false) {
   if (!Array.isArray(items)) throw new Error("The content server returned an invalid response");
   return { items, revision: response.headers.get("X-Content-Revision") || "" };
 }
-async function durableImage(url: string) {
+export async function durableImage(url: string) {
   if (!url?.startsWith("data:") && !url?.startsWith("blob:")) return url;
   const blob = await (await fetch(url)).blob();
   const form = new FormData();

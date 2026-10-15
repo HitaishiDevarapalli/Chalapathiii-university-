@@ -1,3 +1,4 @@
+import { readPopupConfig, publishPopupConfig } from "../../services/popupPublishing";
 import React, { useState, useEffect } from "react";
 import { 
   MessageSquare, Plus, Trash2, Edit3, Eye, EyeOff, Save, RotateCcw, 
@@ -31,55 +32,14 @@ export interface PopupCMSData {
   popups: PopupItem[];
 }
 
+// A neutral, hidden starting template; no invented events or promotional claims.
 export const DEFAULT_POPUP_DATA: PopupCMSData = {
-  masterEnabled: true,
-  activePopupId: "popup-enquiry-default",
-  popups: [
-    {
-      id: "popup-enquiry-default",
-      name: "Admissions 2026-27 Lead Form & Schools Explorer",
-      type: "enquiry",
-      enabled: true,
-      autoOpen: true,
-      autoOpenDelay: 1,
-      title: "ADMISSIONS OPEN 2026-27",
-      subtitle: "Build Your Future. Lead with Innovation.",
-      description: "Interactive dual-panel popup featuring the Schools & Programs explorer on the left and the direct Student Enquiry lead form on the right.",
-      badge: "ADMISSIONS 2026",
-      buttonText: "APPLY ENQUIRY",
-      redirectUrl: "/admissions"
-    },
-    {
-      id: "popup-event-default",
-      name: "Upcoming Campus Events & Tech Fest",
-      type: "event",
-      enabled: true,
-      autoOpen: true,
-      autoOpenDelay: 1,
-      title: "Annual Tech Fest & Innovation Summit 2026",
-      subtitle: "Join India's Brightest Minds at Chalapathi Campus",
-      description: "Explore 40+ national events, hackathons, guest lectures, and cultural fests. Registrations closing soon for inter-university competitions.",
-      badge: "CAMPUS EVENT",
-      image: "",
-      buttonText: "View Events & Register Now",
-      redirectUrl: "/news/events"
-    },
-    {
-      id: "popup-banner-promo",
-      name: "Admissions Open Promotional Banner",
-      type: "banner",
-      enabled: false,
-      autoOpen: true,
-      autoOpenDelay: 1,
-      title: "Admissions Open for Academic Year 2026–27",
-      subtitle: "B.Tech • M.Tech • MBA • MCA • Pharmacy",
-      description: "Highest placement record, world-class labs, and merit scholarships. Apply online today for priority counseling.",
-      badge: "OFFICIAL ANNOUNCEMENT",
-      image: "/students_admission.png",
-      buttonText: "Apply Online Now",
-      redirectUrl: "/admissions/apply"
-    }
-  ]
+  masterEnabled: false, activePopupId: "popup-enquiry-default", popups: [{
+    id: "popup-enquiry-default", name: "Admissions enquiry", type: "enquiry",
+    enabled: false, autoOpen: true, autoOpenDelay: 1,
+    title: "Admissions Enquiry", subtitle: "", description: "", badge: "",
+    buttonText: "Send enquiry", redirectUrl: "/admissions"
+  }]
 };
 
 export interface PopupCMSProps {
@@ -95,7 +55,10 @@ export const PopupCMS: React.FC<PopupCMSProps> = ({ notifySave }) => {
         return {
           ...DEFAULT_POPUP_DATA,
           ...parsed,
-          popups: Array.isArray(parsed.popups) ? parsed.popups : DEFAULT_POPUP_DATA.popups
+          popups: Array.isArray(parsed.popups) ? parsed.popups.filter((popup: PopupItem) =>
+            popup.description !== "Explore 40+ national events, hackathons, guest lectures, and cultural fests. Registrations closing soon for inter-university competitions." &&
+            popup.description !== "Highest placement record, world-class labs, and merit scholarships. Apply online today for priority counseling."
+          ) : DEFAULT_POPUP_DATA.popups
         };
       }
     } catch (e) {
@@ -122,11 +85,33 @@ export const PopupCMS: React.FC<PopupCMSProps> = ({ notifySave }) => {
     redirectUrl: "/news/events"
   });
 
-  const savePopupData = (updatedData?: PopupCMSData) => {
-    const toSave = updatedData || data;
-    localStorage.setItem("chalapathi_popup_cms_data", JSON.stringify(toSave));
-    window.dispatchEvent(new Event("chalapathi_cms_updated"));
-    notifySave("Popup Modal configuration saved!");
+  const [loaded, setLoaded] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [publishError, setPublishError] = useState("");
+  useEffect(() => {
+    let active = true;
+    readPopupConfig().then(published => {
+      if (!active) return;
+      if (published) setData(published);
+      setLoaded(true);
+    }).catch(error => { if (active) setPublishError(error.message); });
+    return () => { active = false; };
+  }, []);
+  const savePopupData = async (updatedData?: PopupCMSData) => {
+    if (!loaded || saving) return false;
+    setSaving(true);
+    setPublishError("");
+    try {
+      const saved = await publishPopupConfig(updatedData || data);
+      setData(saved);
+      // Keep a draft for recovery, never a source for the public website.
+      try { localStorage.setItem("chalapathi_popup_cms_data", JSON.stringify(saved)); } catch {}
+      notifySave("Popup changes published live for all visitors.");
+      return true;
+    } catch (error) {
+      setPublishError(error instanceof Error ? error.message : "Publishing failed. Please retry.");
+      return false;
+    } finally { setSaving(false); }
   };
 
   const handleOpenAddModal = () => {
@@ -154,7 +139,7 @@ export const PopupCMS: React.FC<PopupCMSProps> = ({ notifySave }) => {
     setIsModalOpen(true);
   };
 
-  const handleSaveModal = (e: React.FormEvent) => {
+  const handleSaveModal = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!popupForm.name?.trim()) {
       alert("Please provide an administrative name for this popup.");
@@ -188,7 +173,7 @@ export const PopupCMS: React.FC<PopupCMSProps> = ({ notifySave }) => {
 
     const updatedData = { ...data, popups: updatedPopups };
     setData(updatedData);
-    savePopupData(updatedData);
+    if (!await savePopupData(updatedData)) return;
     setIsModalOpen(false);
     setEditingPopup(null);
   };
@@ -213,7 +198,7 @@ export const PopupCMS: React.FC<PopupCMSProps> = ({ notifySave }) => {
     const updatedPopups = data.popups.map((p) => {
       if (p.id === id) {
         const nextState = !p.enabled;
-        notifySave(`Popup "${p.name}" is now ${nextState ? "Visible" : "Hidden"}!`);
+
         return { ...p, enabled: nextState };
       }
       return p;
@@ -227,12 +212,15 @@ export const PopupCMS: React.FC<PopupCMSProps> = ({ notifySave }) => {
     const updatedData = { ...data, activePopupId: id };
     setData(updatedData);
     savePopupData(updatedData);
-    const item = data.popups.find((p) => p.id === id);
-    notifySave(`Active website popup set to: "${item?.name}"!`);
+
   };
 
   return (
     <div className="space-y-6 animate-fade-in text-left">
+      <p role="status" className={publishError ? "text-red-700 font-bold" : "text-sm text-gray-600"}>
+        {publishError ? `Not published: ${publishError}` : saving ? "Publishing popup changes…" : !loaded ? "Loading published popup settings…" : "Save Changes publishes to all visitors. Hidden active popups stay hidden."}
+      </p>
+      <fieldset disabled={!loaded || saving} className="space-y-6 min-w-0">
       {/* Top Header Card */}
       <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -260,7 +248,7 @@ export const PopupCMS: React.FC<PopupCMSProps> = ({ notifySave }) => {
               const updated = { ...data, masterEnabled: nextMaster };
               setData(updated);
               savePopupData(updated);
-              notifySave(`All website popups are now ${nextMaster ? "Enabled (Visible)" : "Disabled (Hidden)"}!`);
+
             }}
             className={`h-9 px-3 text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer transition-colors border shadow-xs ${
               data.masterEnabled
@@ -298,7 +286,6 @@ export const PopupCMS: React.FC<PopupCMSProps> = ({ notifySave }) => {
               if (window.confirm("Reset all popups to initial default templates?")) {
                 setData(DEFAULT_POPUP_DATA);
                 savePopupData(DEFAULT_POPUP_DATA);
-                notifySave("Popups reset to defaults!");
               }
             }}
             className="h-9 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
@@ -313,7 +300,7 @@ export const PopupCMS: React.FC<PopupCMSProps> = ({ notifySave }) => {
             onClick={() => savePopupData()}
             className="h-9 px-4 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
           >
-            <Save size={13} /> Save Popups
+            <Save size={13} /> {saving ? "Publishing…" : "Save Changes"}
           </button>
         </div>
       </div>
@@ -686,6 +673,7 @@ export const PopupCMS: React.FC<PopupCMSProps> = ({ notifySave }) => {
           </div>
         </div>
       )}
+      </fieldset>
     </div>
   );
 };

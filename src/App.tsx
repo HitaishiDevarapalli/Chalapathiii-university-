@@ -1,3 +1,4 @@
+import { usePublishedPopupConfig, selectActivePopup } from "./services/popupPublishing";
 import React, { useEffect, useState, useMemo } from "react";
 import { BrowserRouter, Routes, Route, useLocation, Link, useNavigate } from "react-router-dom";
 import { X, RefreshCw, CheckCircle2, Megaphone, Bell, Calendar, GraduationCap, FileText, Award, BookOpen, User, Phone, Mail, MapPin, Landmark, MessageSquare, ArrowRight, Send, ShieldCheck, ChevronDown, ChevronUp } from "lucide-react";
@@ -166,36 +167,8 @@ function AppContent() {
 
   const enquiryPopupConfig = admissionsContent?.enquiryPopup || DEFAULT_ADMISSIONS_CONTENT.enquiryPopup;
 
-  // Dynamic Popup CMS configuration from Admin
-  const [popupCmsData, setPopupCmsData] = useState<PopupCMSData>(() => {
-    try {
-      const saved = localStorage.getItem("chalapathi_popup_cms_data");
-      if (saved) return JSON.parse(saved);
-    } catch (e) {}
-    return DEFAULT_POPUP_DATA;
-  });
-
-  useEffect(() => {
-    const handlePopupSync = () => {
-      try {
-        const saved = localStorage.getItem("chalapathi_popup_cms_data");
-        if (saved) setPopupCmsData(JSON.parse(saved));
-      } catch (e) {}
-    };
-    window.addEventListener("chalapathi_cms_updated", handlePopupSync);
-    window.addEventListener("storage", handlePopupSync);
-    return () => {
-      window.removeEventListener("chalapathi_cms_updated", handlePopupSync);
-      window.removeEventListener("storage", handlePopupSync);
-    };
-  }, []);
-
-  const activePopup = useMemo(() => {
-    if (!popupCmsData.masterEnabled) return null;
-    const found = popupCmsData.popups.find((p) => p.id === popupCmsData.activePopupId && p.enabled !== false);
-    if (found) return found;
-    return popupCmsData.popups.find((p) => p.enabled !== false) || null;
-  }, [popupCmsData]);
+  const popupCmsData = usePublishedPopupConfig();
+  const activePopup = useMemo(() => selectActivePopup(popupCmsData), [popupCmsData]);
 
   const [showSplash, setShowSplash] = useState(siteSettings?.enableSplash === true);
 

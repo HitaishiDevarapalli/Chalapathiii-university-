@@ -99,6 +99,10 @@ const bcrypt = require('bcryptjs');
     assert.equal((await send('/api/cms', { action: 'saveAll', settings: {} }, 'POST', false)).status, 401);
     assert.equal((await request('/api/config/' + encodeURIComponent('__session:fake'))).status, 404);
     assert.equal((await send('/api/config/news', [], 'PUT')).status, 404);
+    const popupConfig = { masterEnabled: true, activePopupId: 'notice', popups: [{ id: 'notice', type: 'banner', title: 'University notice', enabled: true, image: photo }] };
+    assert.equal((await send('/api/config/popupConfig', popupConfig, 'PUT', false)).status, 401);
+    assert.equal((await send('/api/config/popupConfig', popupConfig, 'PUT')).status, 200);
+    assert.deepEqual(await (await request('/api/config/popupConfig?raw=true')).json(), popupConfig, 'independent visitor reads published popup');
     const programSettings = {
       programs: [{ slug: 'test-academics', title: 'Published academic program' }],
       custom_program_data_test: { title: 'Shared detail', facultyList: [], about: { summary: 'Saved across devices' } },
@@ -113,6 +117,7 @@ const bcrypt = require('bcryptjs');
     assert.equal((await request('/api/auth/me', {}, true)).status, 200, 'database-backed session survives server recreation');
     assert.deepEqual(Buffer.from(await (await request(photo)).arrayBuffer()), png, 'photo is durable and publicly readable');
     const afterRestart = await (await request('/api/config')).json();
+    assert.deepEqual(afterRestart.popupConfig, popupConfig, 'popup publication survives API restart');
     for (const [key, value] of Object.entries(programSettings)) assert.deepEqual(afterRestart[key], value, 'program content survives restart');
     assert.equal((await send('/api/auth/logout', {})).status, 200);
     assert.equal((await request('/api/auth/me', {}, true)).status, 401, 'logout revokes session');
