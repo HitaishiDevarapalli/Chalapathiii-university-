@@ -722,7 +722,7 @@ function AppContent() {
                     }}
                     className="w-full sm:flex-1 h-12 bg-gradient-to-r from-[#072A6C] to-[#0A388D] hover:from-[#062154] hover:to-[#082e75] text-white font-extrabold text-xs sm:text-sm rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 cursor-pointer uppercase tracking-wider"
                   >
-                    <span>{activePopup.buttonText || "Learn More & Register"}</span>
+                    <span>{activePopup.buttonText || ""}</span>
                     <ArrowRight size={15} />
                   </button>
 
