@@ -707,7 +707,8 @@ function AppContent() {
                   </p>
                 )}
 
-                {/* Action CTA Buttons */}
+                {/* Show actions only when the administrator supplies both fields. */}
+                {activePopup.redirectUrl?.trim() && activePopup.buttonText?.trim() && (
                 <div className="mt-6 pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-center gap-3">
                   <button
                     onClick={() => {
@@ -733,6 +734,7 @@ function AppContent() {
                     Dismiss
                   </button>
                 </div>
+                )}
               </div>
             </motion.div>
           ) : (

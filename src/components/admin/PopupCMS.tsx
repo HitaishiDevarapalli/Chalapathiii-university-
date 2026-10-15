@@ -628,7 +628,7 @@ export const PopupCMS: React.FC<PopupCMSProps> = ({ notifySave }) => {
                       placeholder="e.g. View Events & Register Now"
                       className="w-full h-9 px-3 text-xs bg-white border border-gray-200 rounded-lg text-gray-800 font-bold"
                     />
-                    <p className="text-[9px] text-gray-400">Text displayed on the clickable action button</p>
+                    <p className="text-[9px] text-gray-400">Fill both fields to show the bottom buttons. Leave either blank for content only.</p>
                   </div>
                 </div>
               )}
