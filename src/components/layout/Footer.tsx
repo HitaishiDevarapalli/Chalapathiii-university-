@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import {
   MapPin, Phone, Mail
@@ -80,13 +79,6 @@ export default function Footer() {
   ];
 
   const campusLifeLinks = rawCampusLifeLinks.filter(l => !isPageHidden(l.label, l.to));
-
-  const bottomLinks = (footerContent?.bottomLinks || [
-    { label: "Privacy Policy", to: "/privacy-policy" },
-    { label: "Terms & Conditions", to: "/terms-conditions" },
-    { label: "Sitemap", to: "/sitemap" }
-  ]).filter(item => item.to !== "/admin" && !item.label?.toLowerCase().includes("admin") && !isPageHidden(item.label, item.to));
-
 
   const configuredSocialLinks = {
     ...siteSettings?.socialLinks,
@@ -274,29 +266,6 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Bottom Bar */}
-      <div className="max-w-[1440px] mx-auto px-5 mt-14 pt-6 border-t border-white/5 flex flex-col md:flex-row justify-between items-center text-[10px] text-[#D1D5DB] font-light gap-3">
-        <span>{footerContent?.copyrightText || "© 2026 Chalapathi University. All rights reserved."}</span>
-        <div className="flex items-center justify-center flex-wrap gap-3 min-w-0 [overflow-wrap:anywhere]">
-          {bottomLinks.map((item, idx) => (
-            <React.Fragment key={idx}>
-              {idx > 0 && <span>|</span>}
-              {item.to.startsWith("http") ? (
-                <a href={item.to} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
-                  {item.label}
-                </a>
-              ) : (
-                <Link 
-                  to={item.to} 
-                  className="hover:text-white transition-colors"
-                >
-                  {item.label}
-                </Link>
-              )}
-            </React.Fragment>
-          ))}
-        </div>
-      </div>
     </footer>
   );
 }
