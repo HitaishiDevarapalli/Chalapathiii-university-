@@ -78,7 +78,7 @@ export function AdminSidebar({ items, activeTab, expanded, onToggle, onNavigate,
       })}
     </nav>
     <div className="admin-sidebar-footer">
-      {!collapsed && <div className="admin-account"><span className="admin-avatar">{user?.username.charAt(0).toUpperCase()}</span><div><strong>{user?.username}</strong><small>{user?.roleName || "Administrator"}</small></div><ShieldCheck size={18} /></div>}
+      {!collapsed && <div className="admin-account" role="button" tabIndex={0} onClick={() => onNavigate("security")} style={{ cursor: "pointer" }} title="Open Authorization & Security"><span className="admin-avatar">{(user?.username || "A").charAt(0).toUpperCase()}</span><div><strong>{user?.username || "Admin"}</strong><small>{user?.roleName || "Administrator"}</small></div><ShieldCheck size={18} /></div>}
       <button type="button" onClick={onLogout} title="Logout"><LogOut size={19} />{!collapsed && "Logout"}</button>
       {can("settings", "manage") && <button type="button" onClick={onReset} className="admin-restore" title="Restore Defaults"><Settings size={16} />{!collapsed && "Restore Defaults"}</button>}
     </div>
