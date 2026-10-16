@@ -602,230 +602,20 @@ const getPageContent = (path: string, programs: any[], newsPageConfig?: any) => 
     };
   }
 
-  // Campus Life Pages
+  // Campus Life page content is supplied by the Campus Life CMS.
   if (cleanPath.startsWith("/campus-life")) {
-    if (cleanPath.includes("hostels")) {
-      return {
-        title: "University Hostels & Accommodation",
-        category: "Campus Life",
-        desc: "Comfortable, safe, and modern residential facilities for students.",
-        body: (
-          <div className="space-y-6 text-gray-600 text-sm mt-4">
-            <p>City Chalapathi University provides excellent residential facilities with home-like comfort, strict security, and nutritious dining options.</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white border border-gray-100 p-5 rounded-2xl shadow-sm">
-                <h4 className="font-extrabold text-[#072A6C] mb-2">Boys Hostel</h4>
-                <p className="text-xs text-gray-500 leading-relaxed">Spacious rooms, high-speed Wi-Fi, recreation hall, and dedicated warden. Gym and sports facilities are situated nearby.</p>
-              </div>
-              <div className="bg-white border border-gray-100 p-5 rounded-2xl shadow-sm">
-                <h4 className="font-extrabold text-[#072A6C] mb-2">Girls Hostel</h4>
-                <p className="text-xs text-gray-500 leading-relaxed">24/7 security surveillance, cozy study spaces, laundry services, and healthcare facilities with an on-call doctor.</p>
-              </div>
-            </div>
-          </div>
-        )
-      };
-    }
-    if (cleanPath.includes("library")) {
-      return {
-        title: "Central Library & Information Center",
-        category: "Campus Life",
-        desc: "A vast repository of knowledge featuring digital archives, journals, and study wings.",
-        body: (
-          <div className="space-y-6 text-gray-600 text-sm mt-4">
-            <p>Our state-of-the-art Central Library spans multiple floors and hosts thousands of print books, national/international journals, and digital research databases.</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-white border border-gray-100 p-4 rounded-xl shadow-sm text-center">
-                <h5 className="font-bold text-[#072A6C] text-lg">50,000+</h5>
-                <p className="text-xs text-gray-400">Printed Volumes</p>
-              </div>
-              <div className="bg-white border border-gray-100 p-4 rounded-xl shadow-sm text-center">
-                <h5 className="font-bold text-[#072A6C] text-lg">200+</h5>
-                <p className="text-xs text-gray-400">Journal Subscriptions</p>
-              </div>
-              <div className="bg-white border border-gray-100 p-4 rounded-xl shadow-sm text-center">
-                <h5 className="font-bold text-[#072A6C] text-lg">1,500+</h5>
-                <p className="text-xs text-gray-400">E-Journals (IEEE/Elsevier)</p>
-              </div>
-            </div>
-          </div>
-        )
-      };
-    }
-    if (cleanPath.includes("sports")) {
-      return {
-        title: "Sports & Physical Education",
-        category: "Campus Life",
-        desc: "Nurturing fitness, teamwork, and athletic excellence through state-of-the-art sports facilities.",
-        body: (
-          <div className="space-y-6 text-gray-600 text-sm mt-4">
-            <p>We encourage student fitness with indoor and outdoor complexes, expert coaching staff, and regular inter-university tournaments.</p>
-            <div className="bg-white border border-gray-100 p-5 rounded-2xl shadow-sm">
-              <h4 className="font-extrabold text-[#072A6C] mb-2">Our Sports Facilities Include:</h4>
-              <ul className="list-disc list-inside space-y-2 text-xs text-gray-500">
-                <li>Athletic Track & Football Ground</li>
-                <li>Standard Basketball & Tennis Courts</li>
-                <li>Cricket Practice Nets</li>
-                <li>Indoor Badminton courts & Table Tennis Arena</li>
-                <li>Modern Gymnasium with certified trainers</li>
-              </ul>
-            </div>
-          </div>
-        )
-      };
-    }
-    if (cleanPath.includes("clubs")) {
-      return {
-        title: "Student Clubs & Societies",
-        category: "Campus Life",
-        desc: "Fostering creativity, leadership, and personal growth outside the classroom.",
-        body: (
-          <div className="space-y-6 text-gray-600 text-sm mt-4">
-            <p>From technical coding clubs to vibrant theater and art societies, students have many options to express their passions and develop leadership skills.</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-white border border-gray-100 p-4 rounded-xl shadow-sm">
-                <h5 className="font-bold text-[#072A6C] text-xs">Coding & Robotics Club</h5>
-                <p className="text-[11px] text-gray-400 mt-1">Hackathons, build competitions, and artificial intelligence workshops.</p>
-              </div>
-              <div className="bg-white border border-gray-100 p-4 rounded-xl shadow-sm">
-                <h5 className="font-bold text-[#072A6C] text-xs">Cultural & Arts Association</h5>
-                <p className="text-[11px] text-gray-400 mt-1">Music bands, traditional dance groups, theater clubs, and annual festival organization.</p>
-              </div>
-            </div>
-          </div>
-        )
-      };
-    }
-    if (cleanPath.includes("smart-classrooms")) {
-      return {
-        title: "Smart Classrooms",
-        category: "Campus Life",
-        desc: "Interactive learning environments equipped with modern digital tools.",
-        body: (
-          <div className="space-y-4 text-gray-600 text-sm mt-4">
-            <p>Our classrooms are designed with dynamic display systems, visualizers, and interactive projectors to support immersive learning paradigms.</p>
-          </div>
-        )
-      };
-    }
-    if (cleanPath.includes("laboratories")) {
-      return {
-        title: "Laboratories & Research Centres",
-        category: "Campus Life",
-        desc: "Advanced domain-specific facilities for practical learning and R&D projects.",
-        body: (
-          <div className="space-y-4 text-gray-600 text-sm mt-4">
-            <p>Explore engineering, pharmacy, and computer labs featuring cutting-edge simulation software, professional instruments, and robust data clusters.</p>
-          </div>
-        )
-      };
-    }
-    if (cleanPath.includes("cafeteria")) {
-      return {
-        title: "Cafeteria & Dining Hall",
-        category: "Campus Life",
-        desc: "Nutritious, hygienic food and popular hangout spaces on campus.",
-        body: (
-          <div className="space-y-4 text-gray-600 text-sm mt-4">
-            <p>Enjoy a wide variety of vegetarian dining choices prepared under strict quality guidelines to support students' daily nutritional requirements.</p>
-          </div>
-        )
-      };
-    }
-    if (cleanPath.includes("transportation")) {
-      return {
-        title: "Transportation Network",
-        category: "Campus Life",
-        desc: "Excellent connectivity covering Guntur, Vijayawada, and surrounding regions.",
-        body: (
-          <div className="space-y-4 text-gray-600 text-sm mt-4">
-            <p>Our fleet of GPS-enabled university buses ensures secure and punctual daily transit for all commuting students and staff members.</p>
-          </div>
-        )
-      };
-    }
-    if (cleanPath.includes("wifi")) {
-      return {
-        title: "Wi-Fi Campus Network",
-        category: "Campus Life",
-        desc: "High-speed wireless broadband coverage across the entire campus.",
-        body: (
-          <div className="space-y-4 text-gray-600 text-sm mt-4">
-            <p>Students enjoy secure, high-bandwidth connection access in all academic blocks, common lounges, residential hostels, and library corridors.</p>
-          </div>
-        )
-      };
-    }
-    if (cleanPath.includes("health-centre")) {
-      return {
-        title: "University Health Centre",
-        category: "Campus Life",
-        desc: "Primary care, emergency medical support, and student wellness counseling.",
-        body: (
-          <div className="space-y-4 text-gray-600 text-sm mt-4">
-            <p>Our medical center is staffed with resident nurses, on-call physicians, and has critical transport services prepared for emergency situations.</p>
-          </div>
-        )
-      };
-    }
-    if (cleanPath.includes("innovation-hub")) {
-      return {
-        title: "Innovation Hub & Incubation Center",
-        category: "Campus Life",
-        desc: "Nurturing student startups, technology transfers, and intellectual property portfolios.",
-        body: (
-          <div className="space-y-4 text-gray-600 text-sm mt-4">
-            <p>Providing working desk environments, mentor panels, patent assistance, and seed funding support for promising student ventures.</p>
-          </div>
-        )
-      };
-    }
-    if (cleanPath.includes("safety")) {
-      return {
-        title: "Campus Safety & Security",
-        category: "Campus Life",
-        desc: "24/7 campus surveillance, strict gate policies, and rapid response units.",
-        body: (
-          <div className="space-y-4 text-gray-600 text-sm mt-4">
-            <p>Creating a safe educational ecosystem with constant patrols, digital access controls, and strict compliance protocols.</p>
-          </div>
-        )
-      };
-    }
-    if (cleanPath.includes("nss-ncc")) {
-      return {
-        title: "NSS & NCC Wings",
-        category: "Campus Life",
-        desc: "Fostering discipline, leadership, patriotism, and social service responsibilities.",
-        body: (
-          <div className="space-y-4 text-gray-600 text-sm mt-4">
-            <p>Engage in blood donation camps, environmental cleanups, disaster relief drives, and national integration training programs.</p>
-          </div>
-        )
-      };
-    }
-    if (cleanPath.includes("grievance-cell")) {
-      return {
-        title: "Student Grievance Cell",
-        category: "Campus Life",
-        desc: "A transparent mechanism for addressing student feedback, complaints, and requests.",
-        body: (
-          <div className="space-y-4 text-gray-600 text-sm mt-4">
-            <p>Ensuring an unbiased environment where all student queries, academic appeals, or amenity concerns are addressed promptly.</p>
-          </div>
-        )
-      };
-    }
-    return {
-      title: "Campus Life & Amenities",
-      category: "Campus Life",
-      desc: "Explore details of hostels, libraries, dining halls, and student activity clubs.",
-      body: (
-        <div className="space-y-6 text-gray-600 text-sm mt-4">
-          <p>A balanced academic life requires dynamic extracurricular involvement. We feature hostels, dining amenities, athletic playgrounds, and student association programs.</p>
-        </div>
-      )
+    const titles: Record<string, string> = {
+      "/campus-life": "Campus Overview", "/campus-life/overview": "Campus Overview",
+      "/campus-life/library": "Central Library", "/campus-life/smart-classrooms": "Smart Classrooms",
+      "/campus-life/laboratories": "Laboratories", "/campus-life/hostels": "Hostel Facilities",
+      "/campus-life/sports": "Sports & Fitness", "/campus-life/cafeteria": "Cafeteria & Dining",
+      "/campus-life/transportation": "Transportation", "/campus-life/wifi": "Wi-Fi Campus",
+      "/campus-life/health-centre": "Health Centre", "/campus-life/clubs": "Student Clubs",
+      "/campus-life/events": "Events & Festivals", "/campus-life/innovation-hub": "Innovation Hub",
+      "/campus-life/safety": "Campus Safety", "/campus-life/nss-ncc": "NSS & NCC",
+      "/campus-life/grievance-cell": "Grievance Cell"
     };
+    return { title: titles[cleanPath] || "Campus Life", category: "Campus Life", desc: "", body: <></>, hideHeader: true };
   }
 
   // Contact Pages
@@ -2064,205 +1854,101 @@ export default function DynamicPage() {
   }
 
   if (isCampusLife && campusPage) {
-    const galleryItems = campusPage.gallery && campusPage.gallery.length > 0 ? campusPage.gallery : [
-      "/gallery_annual_fest.png",
-      "/gallery_sports_meet.png",
-      "/gallery_tech_events.png",
-      "/gallery_nss_activities.png",
-      "/gallery_cultural_events.png",
-      "/gallery_workshops.png",
-      "/campus_hero.png",
-      "/campus_placement.png"
-    ];
+    const pageTitle = campusPage.title || content.title;
+    const galleryItems = (campusPage.gallery || []).filter(Boolean);
+    const hasPublishedContent = Boolean(
+      campusPage.desc || campusPage.heroImage || campusPage.hasVideo && campusPage.videoUrl ||
+      campusPage.highlights?.length || campusPage.stats?.length || campusPage.sections?.length || galleryItems.length
+    );
 
     return (
-      <div className="flex-grow w-full bg-white font-[var(--font-poppins)] overflow-hidden">
-        <SEO
-          title={`${campusPage.title || content.title} | Chalapathi University`}
-          description={(campusPage as any).subtitle || `${content.title} at Chalapathi University – campus facilities and student life.`}
-          url={`https://chalapathiuniversity.edu.in${pathname}`}
-        />
-        {/* Hero Banner with University Red Gradient Overlay */}
-        <div 
-          className="relative h-[360px] md:h-[480px] w-full flex items-center justify-start bg-cover bg-center"
-          style={{ backgroundImage: `url(${campusPage.heroImage || "/campus_hero.png"})` }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-[#D71920]/90 via-[#072A6C]/85 to-transparent z-10" />
-          <div className="max-w-[1440px] mx-auto w-full px-5 relative z-20 text-white flex flex-col justify-center h-full">
-            <span className="text-xs md:text-sm font-bold uppercase tracking-widest text-[#F4B400] mb-2">CAMPUS LIFE</span>
-            <h1 className="text-3xl md:text-5xl font-black mb-4 tracking-tight leading-tight uppercase animate-fade-in">{campusPage.title}</h1>
-            <p className="text-sm md:text-lg max-w-2xl text-white/90 leading-relaxed font-medium">{campusPage.desc}</p>
+      <div className="flex-grow w-full bg-[#f7f8fb] font-[var(--font-poppins)] text-[#10264f]">
+        <SEO title={`${pageTitle} | Chalapathi University`} description={campusPage.desc || `${pageTitle} | Chalapathi University`} url={`https://chalapathiuniversity.edu.in${pathname}`} />
+        <section className={`relative isolate overflow-hidden ${campusPage.heroImage ? "min-h-[390px] md:min-h-[540px]" : "min-h-[300px] md:min-h-[360px]"}`}>
+          {campusPage.heroImage && <img src={campusPage.heroImage} alt="" className="absolute inset-0 -z-20 h-full w-full object-cover" />}
+          <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#071d43] via-[#0a2b5d]/90 to-[#0a2b5d]/45" />
+          <div className="absolute -right-24 -top-32 -z-10 h-[28rem] w-[28rem] rounded-full border border-[#d4af37]/30" />
+          <div className="absolute -right-8 -top-16 -z-10 h-[22rem] w-[22rem] rounded-full border border-white/10" />
+          <div className="mx-auto flex min-h-[inherit] max-w-[1440px] items-end px-5 pb-14 pt-24 md:pb-20">
+            <div className="max-w-3xl text-white">
+              <span className="mb-4 inline-flex items-center gap-3 text-[10px] font-bold uppercase tracking-[.28em] text-[#e2bf56]">
+                <span className="h-px w-9 bg-[#d4af37]" /> Campus Life
+              </span>
+              <h1 className="text-4xl font-semibold tracking-tight md:text-6xl">{pageTitle}</h1>
+              {campusPage.desc && <p className="mt-5 max-w-2xl text-sm leading-7 text-white/80 md:text-base">{campusPage.desc}</p>}
+            </div>
           </div>
-        </div>
+        </section>
 
-        <div className="max-w-[1440px] mx-auto px-5 py-12 md:py-20 space-y-16 md:space-y-24">
-          {/* Section 1: Campus Overview Video (if hasVideo is true) */}
-          {campusPage.hasVideo && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              <div 
-                onClick={() => setPlayingVideo(campusPage.videoUrl || "/chalapathi_logo_intro.mp4")}
-                className="lg:col-span-7 relative group rounded-[20px] overflow-hidden shadow-xl aspect-video bg-gray-900 border border-gray-100 cursor-pointer"
-              >
-                <img 
-                  src={campusPage.videoThumbnail || "/campus_life_bg.png"} 
-                  alt="Video Thumbnail"
-                  onError={(e) => { e.currentTarget.src = "/campus_life_bg.png"; }}
-                  className="w-full h-full object-cover opacity-80"
-                  loading="lazy"
-                  decoding="async"
-                />
-                <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
-                  <button 
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setPlayingVideo(campusPage.videoUrl || "/chalapathi_logo_intro.mp4");
-                    }}
-                    className="w-16 h-16 rounded-full bg-[#D4AF37] hover:bg-[#C9A84C] text-white flex items-center justify-center shadow-lg transition-transform duration-300 transform group-hover:scale-110 cursor-pointer"
-                  >
-                    <span className="ml-1 text-2xl">▶</span>
+        {!hasPublishedContent ? (
+          <div className="mx-auto max-w-[1440px] px-5 py-20 md:py-28">
+            <div className="rounded-3xl border border-[#dfe5ed] bg-white px-7 py-12 text-center shadow-[0_20px_60px_-45px_rgba(7,29,67,.35)] md:px-12">
+              <span className="text-[10px] font-bold uppercase tracking-[.24em] text-[#b18b25]">University Campus</span>
+              <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[#10264f] md:text-3xl">Campus information will appear here</h2>
+              <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-500">This page is ready for campus content and photographs from the university team.</p>
+            </div>
+          </div>
+        ) : (
+          <div className="mx-auto max-w-[1440px] space-y-16 px-5 py-14 md:space-y-24 md:py-20">
+            {campusPage.hasVideo && campusPage.videoUrl && (
+              <section className="grid items-center gap-9 lg:grid-cols-12">
+                <div className="relative aspect-video overflow-hidden rounded-3xl bg-[#071d43] shadow-xl lg:col-span-7">
+                  {campusPage.videoThumbnail && <img src={campusPage.videoThumbnail} alt="" className="absolute inset-0 h-full w-full object-cover opacity-70" />}
+                  <button type="button" aria-label="Play campus video" onClick={() => setPlayingVideo(campusPage.videoUrl || null)} className="absolute inset-0 flex items-center justify-center bg-black/20 text-white transition hover:bg-black/35">
+                    <span className="flex h-16 w-16 items-center justify-center rounded-full border border-white/60 bg-[#d4af37] text-xl shadow-xl">▶</span>
                   </button>
                 </div>
-              </div>
-              <div className="lg:col-span-5 space-y-4">
-                <h2 className="text-2xl md:text-3xl font-extrabold text-[#072A6C] tracking-tight uppercase">
-                  {campusPage.videoTitle || "EXPERIENCE CHALAPATHI"}
-                </h2>
-                <p className="text-sm text-gray-500 leading-relaxed font-medium">
-                  {campusPage.videoDesc || "Take a virtual guided tour of our green campus corridors, advanced pharmacy laboratories, academic buildings, and standard sporting environments that empower ambitious student minds."}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Highlights Grid (if highlights are present) */}
-          {campusPage.highlights && campusPage.highlights.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {campusPage.highlights.map((h, i) => (
-                <div key={i} className="bg-white border border-gray-100 rounded-[20px] p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
-                  <div className="absolute top-0 left-0 w-2 h-full bg-[#D4AF37]" />
-                  <h3 className="font-extrabold text-[#072A6C] text-sm mb-2 group-hover:text-[#D4AF37] transition-colors">{h.title}</h3>
-                  <p className="text-xs text-black font-semibold leading-relaxed">{h.desc}</p>
+                <div className="lg:col-span-5">
+                  {campusPage.videoTitle && <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">{campusPage.videoTitle}</h2>}
+                  {campusPage.videoDesc && <p className="mt-4 text-sm leading-7 text-slate-600">{campusPage.videoDesc}</p>}
                 </div>
-              ))}
-            </div>
-          )}
+              </section>
+            )}
 
-          {/* Stats Bar (if statistics are present) */}
-          {campusPage.stats && campusPage.stats.length > 0 && (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 bg-[#072A6C] text-white p-8 rounded-[20px] shadow-lg">
-              {campusPage.stats.map((s, i) => (
-                <div key={i} className="text-center space-y-1">
-                  <div className="text-2xl md:text-4xl font-black text-[#F4B400]">{s.value}</div>
-                  <div className="text-xs text-blue-200 font-bold uppercase tracking-wider">{s.label}</div>
+            {!!campusPage.highlights?.length && <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {campusPage.highlights.filter(item => item.title || item.desc).map((item, index) => <article key={`${item.title}-${index}`} className="rounded-2xl border border-[#e3e8ef] bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+                <span className="mb-5 block h-[2px] w-10 bg-[#d4af37]" />
+                {item.title && <h3 className="font-semibold text-[#10264f]">{item.title}</h3>}
+                {item.desc && <p className="mt-2 text-sm leading-6 text-slate-600">{item.desc}</p>}
+              </article>)}
+            </section>}
+
+            {!!campusPage.stats?.length && <section className="grid grid-cols-2 overflow-hidden rounded-3xl bg-[#092653] text-white md:grid-cols-4">
+              {campusPage.stats.filter(item => item.label || item.value).map((item, index) => <div key={`${item.label}-${index}`} className="border-b border-white/10 px-5 py-7 text-center md:border-b-0 md:border-r last:border-r-0">
+                {item.value && <div className="text-3xl font-semibold text-[#e2bf56] md:text-4xl">{item.value}</div>}
+                {item.label && <div className="mt-2 text-[10px] font-semibold uppercase tracking-[.18em] text-white/70">{item.label}</div>}
+              </div>)}
+            </section>}
+
+            {!!campusPage.sections?.length && <section className="space-y-12 md:space-y-16">
+              {campusPage.sections.filter(item => item.title || item.desc || item.image).map((item, index) => <article key={`${item.title}-${index}`} className="grid items-center gap-8 lg:grid-cols-2">
+                {item.image && <div className={`${index % 2 ? "lg:order-2" : ""} overflow-hidden rounded-3xl bg-white shadow-lg`}><img src={item.image} alt={item.title || "Campus facility"} className="h-[260px] w-full object-cover md:h-[390px]" loading="lazy" decoding="async" /></div>}
+                <div className={`${index % 2 && item.image ? "lg:order-1" : ""} ${item.image ? "" : "lg:col-span-2"}`}>
+                  <span className="mb-4 inline-flex items-center gap-3 text-[10px] font-bold uppercase tracking-[.22em] text-[#b18b25]"><span className="h-px w-8 bg-[#d4af37]" /> Campus detail</span>
+                  {item.title && <h2 className="text-2xl font-semibold tracking-tight md:text-4xl">{item.title}</h2>}
+                  {item.desc && <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600 md:text-base">{item.desc}</p>}
+                  {!!item.items?.length && <ul className="mt-5 space-y-2 text-sm text-slate-600">{item.items.filter(Boolean).map((entry, itemIndex) => <li key={itemIndex} className="flex gap-3"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#d4af37]" />{entry}</li>)}</ul>}
                 </div>
-              ))}
-            </div>
-          )}
+              </article>)}
+            </section>}
 
-          {/* Content Sections */}
-          {campusPage.sections && campusPage.sections.map((sect, i) => (
-            <div key={i} className={`grid grid-cols-1 lg:grid-cols-12 gap-8 items-center ${i % 2 === 1 ? 'lg:flex-row-reverse' : ''}`}>
-              <div className={`lg:col-span-6 ${i % 2 === 1 ? 'lg:order-2' : ''}`}>
-                <img 
-                  src={sect.image} 
-                  alt={sect.title}
-                  onError={(e) => { e.currentTarget.src = "/campus_hero.png"; }}
-                  className="rounded-[20px] shadow-lg w-full h-[280px] md:h-[360px] object-cover" 
-                  loading="lazy"
-                  decoding="async"
-                />
+            {!!galleryItems.length && <section>
+              <div className="mb-7 flex items-end justify-between border-b border-[#dfe5ed] pb-5">
+                <div><span className="text-[10px] font-bold uppercase tracking-[.24em] text-[#b18b25]">Campus Life</span><h2 className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">{pageTitle} gallery</h2></div>
+                <span className="hidden text-xs text-slate-500 sm:block">{galleryItems.length} {galleryItems.length === 1 ? "photograph" : "photographs"}</span>
               </div>
-              <div className="lg:col-span-6 space-y-4">
-                <h3 className="text-xl md:text-2xl font-black text-[#072A6C] uppercase tracking-tight">{sect.title}</h3>
-                <p className="text-xs md:text-sm text-gray-500 leading-relaxed font-medium">{sect.desc}</p>
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
+                {galleryItems.map((imageUrl, index) => <button type="button" key={`${imageUrl}-${index}`} onClick={() => setSelectedImage(imageUrl)} aria-label={`View campus photograph ${index + 1}`} className={`group relative overflow-hidden rounded-2xl bg-[#e7ebf0] shadow-sm ${index % 7 === 0 ? "md:col-span-2 md:row-span-2" : ""} aspect-[4/3]`}>
+                  <img src={imageUrl} alt={`${pageTitle} campus photograph ${index + 1}`} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" loading="lazy" decoding="async" />
+                  <span className="absolute inset-0 bg-gradient-to-t from-[#071d43]/55 via-transparent to-transparent opacity-0 transition group-hover:opacity-100" />
+                </button>)}
               </div>
-            </div>
-          ))}
-
-          {/* Responsive Gallery section with Lightbox */}
-          <div className="space-y-6">
-            <div className="text-center">
-              <h2 className="text-2xl md:text-3xl font-extrabold text-[#072A6C] tracking-tight uppercase">{campusPage.title} GALLERY</h2>
-              <p className="text-xs text-gray-400 mt-2 font-medium">Hover to expand and click to view full screen imagery.</p>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {galleryItems.map((imgUrl, i) => (
-                <div 
-                  key={i} 
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setSelectedImage(imgUrl);
-                  }}
-                  className="h-[180px] md:h-[220px] rounded-[20px] overflow-hidden shadow-sm hover:shadow-md cursor-pointer relative group bg-gray-100"
-                >
-                  <img 
-                    src={imgUrl} 
-                    alt={`${campusPage.title} Gallery Photo ${i + 1}`} 
-                    onError={(e) => { e.currentTarget.src = "/gallery_tech_events.png"; }}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-extrabold text-sm">
-                    VIEW IMAGE
-                  </div>
-                </div>
-              ))}
-            </div>
+            </section>}
           </div>
-        </div>
-
-        {/* Video Player Modal */}
-        {playingVideo && createPortal(
-          <div 
-            className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
-            onClick={() => setPlayingVideo(null)}
-          >
-            <div 
-              className="relative w-full max-w-4xl bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/20"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button 
-                onClick={() => setPlayingVideo(null)}
-                className="absolute top-4 right-4 text-white bg-[#D4AF37] hover:bg-[#C9A84C] w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm cursor-pointer z-10 shadow-lg"
-              >
-                ✕
-              </button>
-              <video 
-                src={playingVideo} 
-                controls 
-                autoPlay 
-                className="w-full h-auto max-h-[75vh] object-contain"
-              />
-            </div>
-          </div>,
-          document.body
         )}
 
-        {/* Lightbox Modal */}
-        {selectedImage && createPortal(
-          <div 
-            className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 cursor-zoom-out"
-            onClick={() => setSelectedImage(null)}
-          >
-            <button 
-              onClick={() => setSelectedImage(null)}
-              className="absolute top-6 right-6 text-white bg-[#D4AF37] hover:bg-[#C9A84C] w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg cursor-pointer z-10 shadow-lg"
-            >
-              ✕
-            </button>
-            <img 
-              src={selectedImage} 
-              alt="Expanded View" 
-              onError={(e) => { e.currentTarget.src = "/campus_hero.png"; }}
-              className="max-w-full max-h-[85vh] rounded-[16px] object-contain shadow-2xl animate-fade-in cursor-default" 
-              onClick={(e) => e.stopPropagation()}
-            />
-          </div>,
-          document.body
-        )}
+        {playingVideo && createPortal(<div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 p-4" onClick={() => setPlayingVideo(null)}><div className="relative w-full max-w-5xl" onClick={event => event.stopPropagation()}><button type="button" onClick={() => setPlayingVideo(null)} className="absolute -top-11 right-0 text-sm font-medium text-white">Close ✕</button><video src={playingVideo} controls autoPlay className="max-h-[85vh] w-full rounded-2xl bg-black" /></div></div>, document.body)}
+        {selectedImage && createPortal(<div className="fixed inset-0 z-[9999] flex cursor-zoom-out items-center justify-center bg-black/90 p-5" onClick={() => setSelectedImage(null)}><button type="button" onClick={() => setSelectedImage(null)} className="absolute right-6 top-6 text-lg text-white">Close ✕</button><img src={selectedImage} alt={`${pageTitle} campus photograph`} className="max-h-[88vh] max-w-full rounded-xl object-contain" onClick={event => event.stopPropagation()} /></div>, document.body)}
       </div>
     );
   }

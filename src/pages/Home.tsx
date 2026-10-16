@@ -101,13 +101,13 @@ function AnimatedCounter({ value, duration = 2500 }: { value: string; duration?:
     };
   }, [numericPart, duration, hasAnimated]);
 
-  const formattedCount = numericPart >= 10000 
-    ? count.toLocaleString("en-IN") 
+  const formattedCount = numericPart >= 10000
+    ? count.toLocaleString("en-IN")
     : count;
 
   return (
-    <span 
-      ref={elementRef} 
+    <span
+      ref={elementRef}
       className={`block text-[22px] font-[800] leading-none text-[#D4AF37] transition-all duration-300 ${
         hasAnimated && count < numericPart ? "scale-[0.95] drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]" : "scale-100"
       }`}
@@ -118,21 +118,24 @@ function AnimatedCounter({ value, duration = 2500 }: { value: string; duration?:
 }
 
 export default function Home() {
-  const { 
-    programs, 
-    successStories, 
-    placementsContent, 
-    news, 
-    events, 
+  const {
+    programs,
+    successStories,
+    placementsContent,
+    news,
+    events,
     heroSlides,
     academicStructure,
     campusVideos: contextCampusVideos,
     campusTour,
+    campusLifeContent,
     campusGallery,
     campusBanners,
     homepageSections,
     aboutContent
   } = useData();
+  const campusCards = campusLifeContent?.["/campus-life"]?.highlights?.filter(item => item.title || item.desc) || [];
+  const publishedCampusVideos = (contextCampusVideos || []).filter(item => item.url);
   const navigate = useNavigate();
   const [directionsFrom, setDirectionsFrom] = useState("");
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -285,14 +288,8 @@ export default function Home() {
   const [isCampusTourMuted, setIsCampusTourMuted] = useState(true);
   const campusVideoRef = useRef<HTMLVideoElement>(null);
 
-  // Load campus videos list
-  const campusVideos = (contextCampusVideos && contextCampusVideos.length > 0)
-    ? contextCampusVideos
-    : [
-        { url: "/chalapathi_logo_intro.mp4", title: "Campus Overview" },
-        { url: "https://assets.mixkit.co/videos/preview/mixkit-drones-eye-view-of-a-modern-university-campus-41555-large.mp4", title: "Smart Classrooms & Labs" },
-        { url: "https://assets.mixkit.co/videos/preview/mixkit-group-of-students-walking-on-college-campus-41553-large.mp4", title: "Student Life & Clubs" }
-      ];
+  // Campus videos are published only when added through the Campus Life CMS.
+  const campusVideos = publishedCampusVideos;
 
   // Autoplay sliding campus tour videos every 8 seconds
   useEffect(() => {
@@ -400,15 +397,15 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#F7F8FC] text-[#222222] overflow-x-hidden font-[var(--font-poppins)]">
-      <SEO 
-        title="Chalapathi University | Premier University in Andhra Pradesh" 
-        description="Official Chalapathi University website in Guntur, Andhra Pradesh. Explore admissions 2026-27, courses, placements, campus life, and contact details." 
+      <SEO
+        title="Chalapathi University | Premier University in Andhra Pradesh"
+        description="Official Chalapathi University website in Guntur, Andhra Pradesh. Explore admissions 2026-27, courses, placements, campus life, and contact details."
         url="https://chalapathiuniversity.edu.in/"
         keywords="Chalapathi University, ChalapathiUniversity, Chalapathi university, Chalapathi clg, Chalapathi college, Chalapathi University official website, Chalapathi University Andhra Pradesh, Chalapathi University admissions, Chalapathi University Guntur, best university in Andhra Pradesh, colleges in Guntur"
       />
       {/* ═══ HERO SECTION (Responsive height for mobile & desktop) ═══ */}
-      <section 
-        className="relative w-full overflow-hidden bg-white select-none h-[220px] min-[375px]:h-[240px] min-[420px]:h-[270px] min-[520px]:h-[340px] sm:h-[440px] md:h-[580px] lg:h-[720px]" 
+      <section
+        className="relative w-full overflow-hidden bg-white select-none h-[220px] min-[375px]:h-[240px] min-[420px]:h-[270px] min-[520px]:h-[340px] sm:h-[440px] md:h-[580px] lg:h-[720px]"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -733,7 +730,7 @@ export default function Home() {
             <h2 className="text-[32px] md:text-[38px] font-[800] text-[#072A6C] tracking-tight mb-4">
               Explore Our Schools & Programs
             </h2>
-            
+
             {/* Main Tabs (Schools) */}
             <div className="flex flex-wrap justify-center gap-4 md:gap-6 w-full max-w-6xl mb-8">
               {schools.map((school) => {
@@ -773,8 +770,8 @@ export default function Home() {
                       key={dept}
                       onClick={() => setActiveDepartmentTab(dept)}
                       className={`text-[13px] md:text-[15px] font-[700] px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${
-                        isDeptActive 
-                          ? "text-[#072A6C] bg-blue-100/60 font-black shadow-xs" 
+                        isDeptActive
+                          ? "text-[#072A6C] bg-blue-100/60 font-black shadow-xs"
                           : "text-gray-500 hover:text-[#072A6C] hover:bg-gray-100"
                       }`}
                     >
@@ -860,7 +857,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-            
+
             {/* LEFT COLUMN: Featured News Card (50% / lg:col-span-6) */}
             <div className="lg:col-span-6 bg-white rounded-[24px] border border-gray-100 shadow-sm overflow-hidden flex flex-col md:flex-row items-stretch select-none min-h-[440px]">
               {featuredSlides.length === 0 ? (
@@ -874,9 +871,9 @@ export default function Home() {
                   <div className="w-full md:w-[58%] relative bg-slate-100 group min-h-[380px] md:min-h-[440px] flex items-stretch">
                     {featuredSlides[activeNewsSlide] && (
                       featuredSlides[activeNewsSlide].image ? (
-                        <img 
-                          src={optimizeImageUrl(featuredSlides[activeNewsSlide].image)} 
-                          alt={featuredSlides[activeNewsSlide].title || "Featured News"} 
+                        <img
+                          src={optimizeImageUrl(featuredSlides[activeNewsSlide].image)}
+                          alt={featuredSlides[activeNewsSlide].title || "Featured News"}
                           onError={(e) => { (e.target as HTMLImageElement).src = "/logo.png?v=3"; }}
                           width={720}
                           height={480}
@@ -895,7 +892,7 @@ export default function Home() {
                       )
                     )}
                     <div className="absolute inset-0 bg-black/10 pointer-events-none" />
-                    
+
                     {/* Featured Badge */}
                     <span className="absolute top-4 left-4 bg-[#D4AF37] text-white text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-md shadow-sm">
                       Featured News
@@ -904,7 +901,7 @@ export default function Home() {
                     {/* Slider arrows */}
                     {featuredSlides.length > 1 && (
                       <>
-                        <button 
+                        <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -914,7 +911,7 @@ export default function Home() {
                         >
                           <ChevronLeft size={16} />
                         </button>
-                        <button 
+                        <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -956,7 +953,7 @@ export default function Home() {
                     <div className="pt-6 space-y-4">
                       {featuredSlides[activeNewsSlide] && (
                         <div className="flex items-center gap-3 relative">
-                          <button 
+                          <button
                             type="button"
                             onClick={() => navigate(`/news/${featuredSlides[activeNewsSlide].slug}`)}
                             className="h-10 px-6 bg-[#072A6C] hover:bg-[#D4AF37] text-white text-[11px] font-bold rounded-xl inline-flex items-center gap-1.5 transition-all cursor-pointer shadow-sm border-none outline-none"
@@ -964,9 +961,9 @@ export default function Home() {
                             <span>Read Full Story</span>
                             <ArrowRight size={12} />
                           </button>
-                          
+
                           <div className="relative">
-                            <button 
+                            <button
                               type="button"
                               onClick={(e) => handleShareFeaturedNews(e, featuredSlides[activeNewsSlide].slug || "")}
                               className="w-10 h-10 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-150 text-gray-600 flex items-center justify-center transition-colors cursor-pointer outline-none"
@@ -977,7 +974,7 @@ export default function Home() {
                             {/* Tooltip confirmation */}
                             <AnimatePresence>
                               {showCopiedTooltip && (
-                                <motion.div 
+                                <motion.div
                                   initial={{ opacity: 0, y: 5 }}
                                   animate={{ opacity: 1, y: 0 }}
                                   exit={{ opacity: 0, y: 5 }}
@@ -995,7 +992,7 @@ export default function Home() {
                       {featuredSlides.length > 1 && (
                         <div className="flex items-center gap-1.5">
                           {featuredSlides.map((_, idx) => (
-                            <button 
+                            <button
                               key={idx}
                               type="button"
                               onClick={() => setActiveNewsSlide(idx)}
@@ -1039,7 +1036,7 @@ export default function Home() {
                         };
                       })();
                       return (
-                        <div 
+                        <div
                           key={item.id || idx}
                           onClick={() => navigate(`/news/${item.slug}`)}
                           className="flex gap-3.5 items-start cursor-pointer group"
@@ -1070,7 +1067,7 @@ export default function Home() {
                   <h3 className="text-[12px] font-[800] uppercase tracking-widest text-[#D4AF37]">
                     Upcoming Events
                   </h3>
-                  <button 
+                  <button
                     type="button"
                     onClick={() => setIsEventsDrawerOpen(true)}
                     className="text-[10px] font-bold text-white/80 hover:text-[#D4AF37] hover:underline flex items-center gap-0.5 bg-transparent border-none cursor-pointer outline-none font-[var(--font-poppins)]"
@@ -1093,7 +1090,7 @@ export default function Home() {
                         };
                       })();
                       return (
-                        <div 
+                        <div
                           key={item.id || idx}
                           onClick={() => navigate(`/news/events/${item.slug}`)}
                           className="flex gap-3.5 items-start cursor-pointer group"
@@ -1128,196 +1125,54 @@ export default function Home() {
         <div className="absolute bottom-20 right-0 w-80 h-80 rounded-full bg-yellow-50/10 blur-3xl -z-10" />
 
         <div className="max-w-[1440px] mx-auto px-5">
-          
+
           {/* Section Header */}
-          <div className="text-left mb-16">
-            <h2 className="text-4xl md:text-6xl lg:text-7xl font-[950] text-[#072A6C] uppercase tracking-tight mb-4 leading-none">
-              {(() => {
-                const label = localStorage.getItem("chalapathi_campus_label") || "CAMPUS LIFE";
-                if (label.toLowerCase() === "campus life") {
-                  return <>Campus <span className="text-[#D4AF37]">Life</span></>;
-                }
-                return label;
-              })()}
+          <div className="mb-12 border-b border-slate-100 pb-7">
+            <span className="text-[10px] font-bold uppercase tracking-[.26em] text-[#b18b25]">Campus Life</span>
+            <h2 className="mt-3 text-4xl font-semibold tracking-tight text-[#072A6C] md:text-6xl">
+              {campusTour?.heading || "Campus Life"}
             </h2>
-            <p className="text-xs md:text-sm text-gray-500 max-w-2xl font-light leading-relaxed">
-              Beyond Classrooms. Beyond Limits. {localStorage.getItem("chalapathi_campus_subtitle") || "A vibrant campus where students learn, innovate, explore, compete, and create unforgettable memories."}
-            </p>
+            {campusTour?.subtitle && <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-500">{campusTour.subtitle}</p>}
           </div>
 
-          {/* Main Layout Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch mb-20">
-            
-            {/* LEFT SIDE: 2x4 Feature Cards Grid (55% / lg:col-span-7) */}
-            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-5 select-none">
-              {((): any[] => {
-                try {
-                  const saved = localStorage.getItem("chalapathi_campus_cards");
-                  if (saved) return JSON.parse(saved);
-                } catch (e) {}
-                return [
-                  { title: "Vibrant Community", desc: "A diverse and inclusive campus with students from across India and the world.", icon: "Users", border: "border-blue-500" },
-                  { title: "Clubs & Activities", desc: "50+ student clubs to explore passions and build leadership skills.", icon: "GraduationCap", border: "border-[#D4AF37]" },
-                  { title: "Sports & Fitness", desc: "World-class sports facilities to keep you active, healthy and motivated.", icon: "Trophy", border: "border-green-500" },
-                  { title: "Arts & Culture", desc: "Celebrate creativity with events, fests, and cultural extravaganzas.", icon: "Sparkles", border: "border-pink-500" },
-                  { title: "Smart Learning Spaces", desc: "Modern classrooms, advanced labs, and digital resources for future-ready learning.", icon: "Building2", border: "border-purple-500" },
-                  { title: "Hostel Life", desc: "Safe, comfortable and modern hostels that feel like a second home.", icon: "Landmark", border: "border-orange-500" },
-                  { title: "Food & Cafeteria", desc: "Hygienic, affordable and variety-rich meals for every taste.", icon: "Coffee", border: "border-teal-500" },
-                  { title: "Transport Facility", desc: "Convenient and reliable transportation across city routes.", icon: "Bus", border: "border-indigo-500" }
-                ];
-              })().map((card, idx) => {
-                const getCardPath = (titleStr: string) => {
-                  switch (titleStr) {
-                    case "Clubs & Activities": return "/campus-life/clubs";
-                    case "Sports & Fitness": return "/campus-life/sports";
-                    case "Hostel Life": return "/campus-life/hostels";
-                    case "Smart Learning Spaces": return "/campus-life/library";
-                    default: return "/campus-life";
-                  }
-                };
-                return (
-                  <div 
-                    key={idx}
-                    onClick={() => navigate(getCardPath(card.title))}
-                    className="p-5 border-l-2 border-[#072A6C]/20 hover:border-[#072A6C] transition-all duration-300 text-left flex flex-col justify-between group cursor-pointer bg-white/60 hover:bg-white"
-                  >
-                    <div>
-                      {/* Title */}
-                      <h4 className="text-sm font-black text-[#072A6C] mb-1.5 uppercase tracking-wide group-hover:text-amber-600 transition-colors">
-                        {card.title}
-                      </h4>
-                      {/* Description */}
-                      <p className="text-xs text-gray-500 font-medium leading-relaxed">
-                        {card.desc}
-                      </p>
-                    </div>
-                    <span className="text-[11px] font-bold text-[#072A6C] mt-3 group-hover:underline">
-                      Explore &rarr;
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* RIGHT SIDE: Campus Tour Video Card (45% / lg:col-span-5) */}
-            <div className="lg:col-span-5 flex flex-col justify-between bg-[#072A6C] text-white rounded-[32px] overflow-hidden shadow-2xl relative min-h-[480px]">
-              
-              {/* HTML5 Video Player */}
-              <div 
-                className="relative w-full h-[300px] bg-[#072A6C] cursor-pointer group"
-                onClick={() => {
-                  if (campusVideoRef.current) {
-                    if (campusVideoRef.current.paused) {
-                      campusVideoRef.current.play().catch((e) => console.log("Video play error:", e));
-                    } else {
-                      campusVideoRef.current.pause();
-                    }
-                  }
-                }}
-              >
-                <video
-                  ref={campusVideoRef}
-                  src={campusVideos[activeCampusVideoIdx]?.url}
-                  poster={optimizeImageUrl(campusTour?.poster || "/Chalapathimain.png")}
-                  className="w-full h-full object-cover"
-                  preload="metadata"
-                  muted={isCampusTourMuted}
-                  loop
-                  playsInline
-                  key={activeCampusVideoIdx}
-                />
-                
-                {/* Watch Campus Tour top-left badge */}
-                <div className="absolute top-4 left-4 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full flex items-center gap-1.5 border border-white/10 z-10">
-                  <Play size={10} fill="currentColor" className="text-[#D4AF37]" />
-                  <span className="text-[9px] font-black uppercase tracking-wider">{campusTour?.badge || "Watch Campus Tour"}</span>
-                </div>
-
-                {/* Mute/Unmute top-right control */}
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsCampusTourMuted(!isCampusTourMuted);
-                  }}
-                  className="absolute top-4 right-4 w-7 h-7 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:bg-black/60 cursor-pointer outline-none z-10"
-                >
-                  <span className="text-[10px] font-bold flex items-center justify-center">
-                    {isCampusTourMuted ? <VolumeX size={13} className="text-white" /> : <Volume2 size={13} className="text-white" />}
-                  </span>
-                </button>
-
-                {/* Center overlay play button */}
-                <div className="absolute inset-0 flex items-center justify-center z-10">
-                  <div className="w-14 h-14 rounded-full bg-[#072A6C]/90 backdrop-blur-md flex items-center justify-center text-white border border-[#D4AF37]/50 shadow-xl">
-                    <Play size={20} fill="currentColor" className="ml-0.5 text-[#D4AF37]" />
-                  </div>
-                </div>
+          {/* Published campus highlights and campus tour */}
+          {(campusCards.length > 0 || campusVideos.length > 0) && <div className="mb-16 grid grid-cols-1 gap-8 lg:grid-cols-12">
+            {!!campusCards.length && <div className={`grid grid-cols-1 gap-4 sm:grid-cols-2 ${campusVideos.length ? "lg:col-span-7" : "lg:col-span-12 lg:grid-cols-3"}`}>
+              {campusCards.map((card, idx) => <button key={`${card.title}-${idx}`} type="button" onClick={() => navigate("/campus-life")} className="group rounded-2xl border border-slate-200 bg-white p-6 text-left shadow-sm transition hover:-translate-y-1 hover:border-[#d4af37]/60 hover:shadow-lg">
+                <span className="mb-5 block h-[2px] w-9 bg-[#d4af37] transition-all group-hover:w-14" />
+                {card.title && <span className="block text-sm font-semibold text-[#072A6C]">{card.title}</span>}
+                {card.desc && <span className="mt-2 block text-xs leading-6 text-slate-500">{card.desc}</span>}
+                <span className="mt-5 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-[#072A6C]">Explore <ArrowRight size={13} /></span>
+              </button>)}
+            </div>}
+            {!!campusVideos.length && <div className={`overflow-hidden rounded-3xl bg-[#092653] text-white shadow-xl ${campusCards.length ? "lg:col-span-5" : "lg:col-span-12"}`}>
+              <div className="relative h-[270px] bg-[#071d43] md:h-[350px]">
+                <video ref={campusVideoRef} src={campusVideos[activeCampusVideoIdx]?.url} poster={campusTour?.poster || undefined} className="h-full w-full object-cover" preload="metadata" muted={isCampusTourMuted} loop playsInline key={activeCampusVideoIdx} controls />
+                {campusTour?.badge && <span className="absolute left-5 top-5 rounded-full border border-white/20 bg-black/40 px-4 py-2 text-[9px] font-bold uppercase tracking-[.18em] backdrop-blur">{campusTour.badge}</span>}
+                <button type="button" aria-label={isCampusTourMuted ? "Unmute campus tour" : "Mute campus tour"} onClick={() => setIsCampusTourMuted(!isCampusTourMuted)} className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-black/40 text-white"><span className="text-xs">{isCampusTourMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}</span></button>
               </div>
-
-              {/* Quote details block at bottom */}
-              <div className="p-6 md:p-8 flex-1 flex flex-col justify-between text-left relative z-10">
-                <span className="text-4xl font-serif text-white/10 absolute top-4 left-4 select-none pointer-events-none">“</span>
-                <p className="text-xs md:text-sm font-light leading-relaxed max-w-md relative pl-2">
-                  "{campusTour?.quote || "Life at Chalapathi is about learning, growing and celebrating every moment together."}"
-                </p>
-
-                {/* Slider controls & slide counter */}
-                <div className="flex items-center justify-between border-t border-white/10 pt-5 mt-6">
-                  {/* Slider counter label */}
-                  <span className="text-[10px] font-black uppercase tracking-widest text-[#D4AF37]">
-                    {String(activeCampusVideoIdx + 1).padStart(2, "0")} / {String(campusVideos.length).padStart(2, "0")}
-                  </span>
-                  
-                  {/* Previous / Next buttons */}
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setActiveCampusVideoIdx((prev) => (prev - 1 + campusVideos.length) % campusVideos.length)}
-                      className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 border-none text-white flex items-center justify-center cursor-pointer transition-colors"
-                    >
-                      ←
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setActiveCampusVideoIdx((prev) => (prev + 1) % campusVideos.length)}
-                      className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 border-none text-white flex items-center justify-center cursor-pointer transition-colors"
-                    >
-                      →
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          </div>
+              {(campusTour?.quote || campusVideos.length > 1) && <div className="flex items-center justify-between gap-6 px-6 py-5 md:px-8">
+                {campusTour?.quote && <p className="max-w-xl text-sm leading-6 text-white/80">{campusTour.quote}</p>}
+                {campusVideos.length > 1 && <div className="flex shrink-0 items-center gap-3"><span className="text-[10px] font-bold tracking-widest text-[#e2bf56]">{String(activeCampusVideoIdx + 1).padStart(2, "0")} / {String(campusVideos.length).padStart(2, "0")}</span><button type="button" aria-label="Previous campus video" onClick={() => setActiveCampusVideoIdx(prev => (prev - 1 + campusVideos.length) % campusVideos.length)} className="h-8 w-8 rounded-full bg-white/10">←</button><button type="button" aria-label="Next campus video" onClick={() => setActiveCampusVideoIdx(prev => (prev + 1) % campusVideos.length)} className="h-8 w-8 rounded-full bg-white/10">→</button></div>}
+              </div>}
+            </div>}
+          </div>}
 
           {/* ════ PHOTO MEMORIES GALLERY ROW ════ */}
-          <div className="space-y-4 mb-20">
+          {!!campusGallery?.filter(item => item.image).length && <div className="mb-16 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-gray-100 pb-3">
               <div>
                 <span className="text-[10px] font-black uppercase tracking-widest text-[#D4AF37] block">
                   Campus Life Gallery
                 </span>
-                <h3 className="text-xl font-black text-[#072A6C] tracking-tight">
-                  Moments that make <span className="text-[#D4AF37]">Memories</span>
-                </h3>
+                <h3 className="text-xl font-semibold text-[#072A6C] tracking-tight">Campus photographs</h3>
               </div>
             </div>
 
             {/* Horizontal infinite gallery grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 select-none">
-              {(campusGallery && campusGallery.length > 0 ? campusGallery : [
-                { title: "Annual Fest", image: "/gallery_annual_fest.webp" },
-                { title: "Sports Meet", image: "/gallery_sports_meet.webp" },
-                { title: "Tech Events", image: "/gallery_tech_events.webp" },
-                { title: "NSS Activities", image: "/gallery_nss_activities.webp" },
-                { title: "Cultural Events", image: "/gallery_cultural_events.webp" },
-                { title: "Workshops", image: "/gallery_workshops.webp" },
-                { title: "Student Clubs", image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=600&auto=format&fit=crop" },
-                { title: "Innovation Expo", image: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=600&auto=format&fit=crop" }
-              ]).map((item, idx) => (
-                <div 
+              {(campusGallery || []).filter(item => item.image).map((item, idx) => (
+                <div
                   key={idx}
                   className="bg-white border border-gray-150 rounded-xl overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 group cursor-pointer"
                 >
@@ -1330,9 +1185,6 @@ export default function Home() {
                       className="w-full h-full object-cover"
                       loading="lazy"
                       decoding="async"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=300&auto=format&fit=crop";
-                      }}
                     />
                   </div>
                   <div className="p-2.5 text-center">
@@ -1343,33 +1195,33 @@ export default function Home() {
                 </div>
               ))}
             </div>
-          </div>
+          </div>}
 
           {/* BOTTOM CTA: Two Equal Premium Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 select-none">
-            
-            {/* LEFT CARD: Blue Gradient */}
-            <div 
-              onClick={() => navigate(campusBanners?.community?.url || "/campus-life")}
+          {(campusBanners?.community?.title || campusBanners?.events?.title) && <div className="grid grid-cols-1 gap-6 select-none md:grid-cols-2">
+
+            {/* CMS community feature */}
+            {campusBanners?.community?.title && <div
+              onClick={() => navigate(campusBanners.community.url || "/campus-life")}
               className="bg-gradient-to-br from-[#072A6C] to-indigo-950 text-white rounded-[24px] p-8 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 text-left relative overflow-hidden group cursor-pointer"
             >
               <div className="absolute right-0 top-0 w-24 h-24 bg-white/5 rounded-full blur-xl pointer-events-none" />
               <div className="space-y-2 max-w-[340px]">
-                <h4 className="text-sm font-black uppercase tracking-wider">{campusBanners?.community?.title || "Be a Part of Our Community"}</h4>
+                <h4 className="text-sm font-black uppercase tracking-wider">{campusBanners?.community?.title}</h4>
                 <p className="text-xs text-white/80 font-light leading-relaxed">
-                  {campusBanners?.community?.desc || "Experience life beyond academics and build a brighter future."}
+                  {campusBanners?.community?.desc}
                 </p>
               </div>
               <button
                 type="button"
                 className="h-10 px-5 bg-white hover:bg-[#D4AF37] text-[#072A6C] hover:text-white text-[9.5px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 cursor-pointer outline-none border-none shrink-0"
               >
-                {campusBanners?.community?.buttonText || "Explore Campus Life →"}
+                {campusBanners?.community?.buttonText}
               </button>
-            </div>
+            </div>}
 
-            {/* RIGHT CARD: Red Gradient */}
-            <div 
+            {/* CMS events feature */}
+            {campusBanners?.events?.title && <div
               onClick={() => {
                 const link = campusBanners?.events?.url;
                 if (link && link !== "#events-drawer") {
@@ -1382,20 +1234,19 @@ export default function Home() {
             >
               <div className="absolute right-0 top-0 w-24 h-24 bg-white/5 rounded-full blur-xl pointer-events-none" />
               <div className="space-y-2 max-w-[340px]">
-                <h4 className="text-sm font-black uppercase tracking-wider">{campusBanners?.events?.title || "Upcoming Campus Events"}</h4>
+                <h4 className="text-sm font-black uppercase tracking-wider">{campusBanners?.events?.title}</h4>
                 <p className="text-xs text-white/80 font-light leading-relaxed">
-                  {campusBanners?.events?.desc || "There's always something exciting happening."}
+                  {campusBanners?.events?.desc}
                 </p>
               </div>
               <button
                 type="button"
                 className="h-10 px-5 bg-white hover:bg-[#072A6C] text-[#D4AF37] hover:text-white text-[9.5px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 cursor-pointer outline-none border-none shrink-0"
               >
-                {campusBanners?.events?.buttonText || "View All Events →"}
+                {campusBanners?.events?.buttonText}
               </button>
-            </div>
-
-          </div>
+            </div>}
+          </div>}
 
         </div>
       </section>
@@ -1435,18 +1286,18 @@ export default function Home() {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-                
+
                 {/* LEFT COLUMN (45% / lg:col-span-5) */}
                 <div className="lg:col-span-5 flex justify-center relative select-none">
                   {/* Background abstract decorations */}
                   <div className="absolute -top-6 -left-6 w-16 h-16 bg-blue-500/10 rounded-full blur-lg animate-pulse" />
                   <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-yellow-500/10 rounded-full blur-xl" />
-                  
+
                   <div className="relative w-full max-w-[380px] rounded-[32px] overflow-hidden shadow-2xl group border-4 border-white bg-white transition-all duration-500 hover:shadow-3xl">
                     {/* Chairman Portrait */}
-                    <img 
-                      src={optimizeImageUrl(chairmanImage)} 
-                      alt={chairmanName} 
+                    <img
+                      src={optimizeImageUrl(chairmanImage)}
+                      alt={chairmanName}
                       width={1371}
                       height={1148}
                       className="w-full h-auto object-cover aspect-[4/5]"
@@ -1454,7 +1305,7 @@ export default function Home() {
                       loading="lazy"
                       decoding="async"
                     />
-                    
+
                     {/* Image tint overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent pointer-events-none" />
 
@@ -1474,7 +1325,7 @@ export default function Home() {
                 {/* RIGHT COLUMN (55% / lg:col-span-7) */}
                 <div className="lg:col-span-7">
                   <div className="bg-white/90 border border-gray-150 rounded-[32px] p-8 md:p-10 shadow-sm relative overflow-hidden text-left flex flex-col justify-between min-h-[420px] transition-all duration-300 hover:shadow-md">
-                    
+
                     {/* Campus Building outline in background */}
                     <div className="absolute right-0 bottom-0 w-80 h-80 opacity-[0.03] pointer-events-none select-none">
                       <svg viewBox="0 0 200 200" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[#072A6C] w-full h-full">
@@ -1501,12 +1352,12 @@ export default function Home() {
                       <div className="space-y-2">
                         {chairmanSig && (
                           <div className="h-10 flex items-center select-none">
-                            <img 
-                              src={optimizeImageUrl(chairmanSig)} 
-                              alt="Chairman Signature" 
+                            <img
+                              src={optimizeImageUrl(chairmanSig)}
+                              alt="Chairman Signature"
                               width={600}
                               height={450}
-                              className="h-10 max-w-[180px] object-contain" 
+                              className="h-10 max-w-[180px] object-contain"
                               loading="lazy"
                               decoding="async"
                             />
@@ -1538,7 +1389,7 @@ export default function Home() {
               onClick={() => setShowChairmanVideo(false)}
               className="absolute inset-0 bg-black/85 backdrop-blur-sm"
             />
-            
+
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -1568,7 +1419,7 @@ export default function Home() {
 
       {/* ═══ CHALAPATHI JOURNEY & CAMPUS SECTION (Grouping into White Card containers) ═══ */}
       <section className="max-w-[1440px] mx-auto w-full px-5 py-20 grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-        
+
         {/* Left Card: Journey */}
         <div className="lg:col-span-4 bg-white border border-gray-100 rounded-[16px] p-6 shadow-sm hover:shadow transition-shadow">
           <div>
@@ -1589,14 +1440,14 @@ export default function Home() {
             {/* Vertical timeline connector */}
             <div className="absolute left-[70px] top-6 bottom-6 w-0.5 bg-gray-100 z-0">
               {/* Green animated line overlay */}
-              <div 
-                className="absolute top-0 left-0 w-full bg-[#10B981] shadow-[0_0_8px_#10B981]" 
+              <div
+                className="absolute top-0 left-0 w-full bg-[#10B981] shadow-[0_0_8px_#10B981]"
                 style={{
                   height: '100%',
                   transformOrigin: 'top',
                   animation: 'drawTimelineLine 4.5s cubic-bezier(0.4, 0, 0.2, 1) infinite',
                   background: 'linear-gradient(to bottom, #10B981, #10B981 80%, rgba(16, 185, 129, 0.2))'
-                }} 
+                }}
               />
               <style>{`
                 @keyframes drawTimelineLine {
@@ -1678,8 +1529,8 @@ export default function Home() {
             </div>
 
             {/* Combined Input Bar */}
-            <form 
-              onSubmit={handleDirections} 
+            <form
+              onSubmit={handleDirections}
               className="w-full md:w-auto flex-1 flex flex-col sm:flex-row gap-2 sm:gap-0 max-w-xl bg-transparent sm:bg-white sm:rounded-full sm:p-1 overflow-hidden sm:shadow-sm sm:border sm:border-gray-100"
             >
               <div className="flex items-center gap-2 px-3.5 py-2.5 sm:py-1 bg-white rounded-full flex-1 border border-gray-100 sm:border-none shadow-xs sm:shadow-none min-w-0">
@@ -1692,8 +1543,8 @@ export default function Home() {
                   className="w-full text-black text-[12px] sm:text-[13px] outline-none bg-transparent min-w-0"
                 />
               </div>
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="w-full sm:w-auto bg-[#D4AF37] hover:bg-[#C9A84C] text-white font-[700] px-5 py-2.5 sm:py-2 rounded-full text-[12px] flex items-center justify-center gap-1.5 shrink-0 whitespace-nowrap active:scale-95 transition-all shadow-xs"
               >
                 <span>Get Directions</span> <MapPin size={12} />
@@ -1811,7 +1662,7 @@ export default function Home() {
 
                 {/* Map Frame */}
                 {mapLinkUrl && (
-                  <a 
+                  <a
                     href={mapLinkUrl}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -1899,7 +1750,7 @@ export default function Home() {
                             {item.category}
                           </span>
                         )}
-                        
+
                         {/* Title */}
                         <h3 className="text-[13.5px] font-black text-[#D4AF37] leading-snug group-hover:underline">
                           {item.title}

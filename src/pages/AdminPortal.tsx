@@ -809,25 +809,14 @@ export default function AdminPortal() {
   const [campusVideosList, setCampusVideosList] = useState<CampusVideoItem[]>(campusVideos);
   const [campusGalleryList, setCampusGalleryList] = useState<CampusGalleryItem[]>(campusGallery);
   const [campusBannersData, setCampusBannersData] = useState<CampusBannersConfig>(campusBanners);
-  const [campusCardsList, setCampusCardsList] = useState<any[]>(() => {
-    try {
-      const saved = localStorage.getItem("chalapathi_campus_cards");
-      if (saved) return JSON.parse(saved);
-    } catch (e) {}
-    return [
-      { title: "Vibrant Community", desc: "A diverse and inclusive campus with students from across India and the world.", icon: "Users" },
-      { title: "Clubs & Activities", desc: "50+ student clubs to explore passions and build leadership skills.", icon: "GraduationCap" },
-      { title: "Sports & Fitness", desc: "World-class sports facilities to keep you active, healthy and motivated.", icon: "Trophy" },
-      { title: "Arts & Culture", desc: "Celebrate creativity with events, fests, and cultural extravaganzas.", icon: "Sparkles" },
-      { title: "Smart Learning Spaces", desc: "Modern classrooms, advanced labs, and digital resources for future-ready learning.", icon: "Building2" },
-      { title: "Hostel Life", desc: "Safe, comfortable and modern hostels that feel like a second home.", icon: "Landmark" },
-      { title: "Food & Cafeteria", desc: "Hygienic, affordable and variety-rich meals for every taste.", icon: "Coffee" },
-      { title: "Transport Facility", desc: "Convenient and reliable transportation across city routes.", icon: "Bus" }
-    ];
-  });
+  const [campusCardsList, setCampusCardsList] = useState<any[]>(Array.from({ length: 8 }, () => ({ title: "", desc: "", icon: "Users" })));
 
   React.useEffect(() => {
-    if (campusLifeContent) setCampusLifeForm(campusLifeContent);
+    if (campusLifeContent) {
+      setCampusLifeForm(campusLifeContent);
+      const highlights = campusLifeContent["/campus-life"]?.highlights || [];
+      setCampusCardsList([...highlights, ...Array.from({ length: Math.max(0, 8 - highlights.length) }, () => ({ title: "", desc: "", icon: "Users" }))]);
+    }
   }, [campusLifeContent]);
   React.useEffect(() => setCampusTourData(campusTour), [campusTour]);
   React.useEffect(() => setCampusVideosList(campusVideos), [campusVideos]);
@@ -849,12 +838,19 @@ export default function AdminPortal() {
 
   const saveFullCampusCMS = () => {
     try {
-      updateCampusLifeContent(campusLifeForm);
+      const publishedCampusLife = {
+        ...campusLifeForm,
+        "/campus-life": {
+          ...(campusLifeForm["/campus-life"] || DEFAULT_CAMPUS_LIFE_CONTENT["/campus-life"]),
+          highlights: campusCardsList.filter((card) => card.title || card.desc).map(({ title, desc }: any) => ({ title, desc }))
+        }
+      };
+      setCampusLifeForm(publishedCampusLife);
+      updateCampusLifeContent(publishedCampusLife);
       updateCampusTour(campusTourData);
       updateCampusVideos(campusVideosList);
       updateCampusGallery(campusGalleryList);
       updateCampusBanners(campusBannersData);
-      safeSetItem("chalapathi_campus_cards", JSON.stringify(campusCardsList));
       notifySave(`Campus Life: "${currentCampusPage.title}" & all gallery photos saved and live!`);
     } catch (err) {
       console.error("Error saving Campus Life CMS:", err);
