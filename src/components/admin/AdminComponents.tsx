@@ -581,7 +581,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
   saveSuccess
 }) => {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-6 border-b border-gray-200 text-left">
+    <div className="admin-section-header flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-6 border-b border-gray-200 text-left">
       <div>
         <h2 className="text-lg font-black text-[#072A6C] uppercase tracking-tight">{title}</h2>
         <p className="text-xs text-gray-500 font-medium">{subtitle}</p>

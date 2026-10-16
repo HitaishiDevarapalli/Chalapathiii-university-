@@ -88,6 +88,7 @@ import { SettingsCMS } from "../components/admin/SettingsCMS";
 import { PagesCMS } from "../components/admin/PagesCMS";
 import { CertificationsCMS } from "../components/admin/CertificationsCMS";
 import { PopupCMS } from "../components/admin/PopupCMS";
+import { AdminSidebar, AdminOverview, workspaceLabels } from "../components/admin/AdminWorkspace";
 import { AcademicsCMS } from "../components/admin/AcademicsCMS";
 
 import { 
@@ -180,6 +181,9 @@ export default function AdminPortal() {
   >("dashboard");
 
   const [newsEventsModuleTab, setNewsEventsModuleTab] = useState<"news" | "events" | "announcements">("news");
+
+  const [workspaceSearch, setWorkspaceSearch] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
 
   // Notification / Save feedback
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -1564,14 +1568,14 @@ export default function AdminPortal() {
   // Navigation expansion state
   const [expandedNavSections, setExpandedNavSections] = useState<Record<string, boolean>>({
     homepage: false,
-    about: true,
-    academics: true,
+    about: false,
+    academics: false,
     "news-events": false,
   });
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen w-full flex flex-col lg:flex-row bg-[#F8F9FD] font-[var(--font-poppins)] overflow-x-hidden selection:bg-[#071A3A] selection:text-white">
+      <div className="admin-portal admin-login min-h-screen w-full flex flex-col lg:flex-row bg-[#F8F9FD] font-[var(--font-poppins)] overflow-x-hidden selection:bg-[#071A3A] selection:text-white">
         
         {/* LEFT PANEL: Dark Navy Slanted Hero Branding */}
         <div className="w-full lg:w-[50%] xl:w-[52%] relative min-h-[480px] lg:min-h-screen bg-[#071A3A] text-white flex flex-col justify-between p-8 sm:p-12 lg:p-16 overflow-hidden">
@@ -1803,8 +1807,8 @@ export default function AdminPortal() {
     { id: "admissions", label: "Admissions Page Settings", icon: UserPlus, badge: `${enquiries.filter(e => e.status === "New").length || ""}` },
     { id: "research", label: "Research & Innovation Settings", icon: Trophy },
     { id: "directories", label: "Faculty & Directories Settings", icon: Users },
-    { id: "campus-life", label: "Campus Life Page Settings", icon: Library },
-    { id: "placements", label: "Placements Page Settings", icon: Briefcase },
+    { id: "campus-life", label: "Campus Life Page Settings", icon: BookOpen },
+    { id: "placements", label: "Placements Page Settings", icon: Handshake },
     {
       id: "news-events",
       label: "News & Events Settings",
@@ -1829,10 +1833,26 @@ export default function AdminPortal() {
     { id: "settings", label: "Website Settings & Branding", icon: Settings },
     { id: "links", label: "Header & Navigation Links", icon: Link2 },
   ];
+  const orderedNavItems = [
+    ...navItems.filter(item => item.id === "dashboard" || item.id === "pages").map(item => ({ ...item, section: undefined })),
+    ...navItems.filter(item => item.id !== "dashboard" && item.id !== "pages").map(item => ({ ...item, section: item.id === "homepage" ? "Website content" : item.id === "popup" ? "Tools & settings" : undefined })),
+  ];
+  const navigateWorkspace = (id: string) => setActiveTab(id as typeof activeTab);
+  const searchResults = orderedNavItems.flatMap(item => [
+    { key: item.id, label: workspaceLabels[item.id] || item.label, group: "Workspace", action: () => navigateWorkspace(item.id) },
+    ...(item.subItems || []).map(sub => ({ key: item.id + sub.id, label: sub.label, group: workspaceLabels[item.id], action: sub.onClick })),
+  ]).filter(item => (item.label + " " + item.group).toLowerCase().includes(workspaceSearch.trim().toLowerCase())).slice(0, 8);
+  const sidebarProps = {
+    items: orderedNavItems, activeTab, expanded: isSectionExpanded,
+    onToggle: toggleNavSection, onNavigate: navigateWorkspace, onLogout: handleLogout,
+    onReset: resetToDefaults, logo: siteSettings?.logoUrl || "/logo.png?v=3",
+    university: siteSettings?.universityName || "Chalapathi University",
+  };
+
 
 
   return (
-    <div className="min-h-screen bg-[#F1F5F9] font-[var(--font-poppins)] text-slate-800 flex flex-col antialiased">
+    <div className={`admin-portal admin-shell ${activeTab === "dashboard" ? "dashboard-active" : ""} ${sidebarOpen ? "" : "sidebar-collapsed"}`}>
       {/* Save Notification Toast */}
       <AnimatePresence>
         {saveSuccess && (
@@ -1840,7 +1860,8 @@ export default function AdminPortal() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed top-4 right-4 z-[99999] bg-emerald-600 text-white px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2 text-xs font-bold"
+            role="status"
+            className="admin-toast fixed top-4 right-4 z-[99999] bg-emerald-600 text-white px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2 text-xs font-bold"
           >
             <CheckCircle2 size={16} />
             {saveMessage}
@@ -1848,439 +1869,37 @@ export default function AdminPortal() {
         )}
       </AnimatePresence>
 
-      {/* Top Navigation Bar */}
-      <header className="h-16 bg-[#072A6C] text-white flex items-center justify-between px-4 sm:px-6 sticky top-0 z-40 shadow-md">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="hidden md:flex p-1.5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
-            title="Toggle Sidebar"
-          >
-            <Menu size={20} />
-          </button>
-          <button
-            onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            className="flex md:hidden p-1.5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
-          >
-            <Menu size={20} />
-          </button>
-
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-white rounded-lg p-1 flex items-center justify-center">
-              <img src="/logo.png?v=3" alt="Chalapathi" className="h-6 w-auto object-contain" />
-            </div>
-            <div>
-              <h1 className="text-sm font-black uppercase tracking-wider leading-none">Chalapathi CMS</h1>
-              <span className="text-[10px] text-blue-200 font-medium leading-none">Admin Control Center</span>
-            </div>
+      <AdminSidebar {...sidebarProps} collapsed={!sidebarOpen} />
+      <div className="admin-body">
+        <header className="admin-topbar">
+          <div className="admin-breadcrumb">
+            <button type="button" onClick={() => setSidebarOpen(!sidebarOpen)} className="admin-menu-desktop" aria-label="Toggle sidebar" aria-expanded={sidebarOpen}><Menu size={20} /></button>
+            <button type="button" onClick={() => setMobileSidebarOpen(true)} className="admin-menu-mobile" aria-label="Open navigation"><Menu size={21} /></button>
+            <span>Workspace</span><span className="admin-breadcrumb-divider">/</span><strong>{workspaceLabels[activeTab] || "Content editor"}</strong>
           </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          {lastSavedTime && (
-            <span className="hidden lg:inline-flex items-center gap-1.5 text-[10px] bg-white/10 px-2.5 py-1 rounded-full text-blue-100 font-medium">
-              <Clock size={11} /> Last saved: {lastSavedTime}
-            </span>
-          )}
-
-          {/* Live PostgreSQL status badge */}
-          <span className="hidden xl:inline-flex items-center gap-1.5 text-[10.5px] bg-emerald-500/20 border border-emerald-400/40 px-2.5 py-1 rounded-full text-emerald-200 font-semibold select-none">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            Database Synced
-          </span>
-
-          <button
-            type="button"
-            disabled={isSyncingDb}
-            onClick={handlePushAllToDatabase}
-            className="h-8 px-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs disabled:opacity-50"
-            title="Push all CMS content and About Us changes directly to PostgreSQL database"
-          >
-            <UploadCloud size={13} />
-            <span className="hidden sm:inline">{isSyncingDb ? "Syncing..." : "Push to DB"}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setShowSyncModal(true)}
-            className="h-8 px-3 bg-[#D4AF37] hover:bg-[#c49f28] text-slate-900 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
-            title="Backup & Sync CMS Data between Localhost and Live Website"
-          >
-            <Download size={13} />
-            <span className="hidden sm:inline">Sync / Backup Data</span>
-          </button>
-
-          <Link
-            to="/"
-            target="_blank"
-            className="h-8 px-3 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 transition-colors"
-          >
-            <ExternalLink size={13} />
-            <span className="hidden sm:inline">View Website</span>
-          </Link>
-
-          <button
-            onClick={handleLogout}
-            className="h-8 px-3 bg-red-600/80 hover:bg-red-600 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
-          >
-            <LogOut size={13} />
-            <span className="hidden sm:inline">Logout</span>
-          </button>
-        </div>
-      </header>
-
-      {/* Body Layout (Sidebar + Main Content) */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar */}
-        <aside
-          className={`bg-[#051c4a] text-white flex flex-col shrink-0 transition-all duration-300 ${
-            sidebarOpen ? "w-72" : "w-18"
-          } hidden md:flex border-r border-blue-950/40 select-none`}
-        >
-          <div className="flex-1 overflow-y-auto p-3 space-y-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeTab === item.id;
-              const isExpanded = isSectionExpanded(item.id);
-              return (
-                <React.Fragment key={item.id}>
-                  {item.section && sidebarOpen && (
-                    <div className="pt-3 pb-1 px-3">
-                      <span className="text-[10px] font-black uppercase tracking-wider text-[#D4AF37]">
-                        {item.section}
-                      </span>
-                    </div>
-                  )}
-                  {item.section && !sidebarOpen && (
-                    <div className="my-2 border-t border-white/10" />
-                  )}
-
-                  {sidebarOpen ? (
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => {
-                            setActiveTab(item.id as any);
-                            if (item.subItems && !isExpanded) {
-                              toggleNavSection(item.id);
-                            }
-                          }}
-                          className={`flex-1 flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all text-left cursor-pointer ${
-                            isActive
-                              ? "bg-[#D4AF37] text-slate-900 shadow-md font-extrabold"
-                              : "text-blue-100 hover:bg-white/10 hover:text-white"
-                          }`}
-                          title={item.label}
-                        >
-                          <div className="flex items-center gap-2.5 truncate">
-                            <Icon size={16} className={isActive ? "text-slate-900 shrink-0" : "text-blue-300 shrink-0"} />
-                            <span className="truncate">{item.label}</span>
-                          </div>
-                          {item.badge && (
-                            <span
-                              className={`text-[9px] px-1.5 py-0.5 rounded-full font-extrabold ${
-                                isActive ? "bg-slate-900 text-white" : "bg-blue-600 text-white"
-                              }`}
-                            >
-                              {item.badge}
-                            </span>
-                          )}
-                        </button>
-
-                        {item.subItems && (
-                          <button
-                            type="button"
-                            onClick={(e) => toggleNavSection(item.id, e)}
-                            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                              isActive
-                                ? "text-slate-900 hover:bg-black/10"
-                                : "text-blue-300 hover:text-white hover:bg-white/10"
-                            }`}
-                            title={isExpanded ? "Collapse sub-options" : "Expand sub-options"}
-                          >
-                            {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Sub-items accordion */}
-                      {item.subItems && isExpanded && (
-                        <div className="ml-5 pl-2.5 border-l-2 border-white/20 py-1 space-y-1">
-                          {item.subItems.map((sub) => (
-                            <button
-                              key={sub.id}
-                              type="button"
-                              onClick={() => sub.onClick()}
-                              className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all text-left cursor-pointer ${
-                                sub.isActive
-                                  ? "bg-[#D4AF37] text-slate-900 font-black shadow-xs"
-                                  : "text-blue-200 hover:text-white hover:bg-white/10"
-                              }`}
-                            >
-                              <span
-                                className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                                  sub.isActive ? "bg-slate-900" : "bg-blue-400"
-                                }`}
-                              />
-                              <span className="truncate">{sub.label}</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => setActiveTab(item.id as any)}
-                      className={`w-full flex flex-col items-center justify-center p-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                        isActive
-                          ? "bg-[#D4AF37] text-slate-900 shadow-md"
-                          : "text-blue-100 hover:bg-white/10 hover:text-white"
-                      }`}
-                      title={item.label}
-                    >
-                      <Icon size={18} />
-                      <span className="truncate text-[9px] font-bold mt-1 max-w-[50px]">
-                        {item.label.split(" ")[0]}
-                      </span>
-                    </button>
-                  )}
-                </React.Fragment>
-              );
-            })}
+          <div className="admin-search" onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget as Node)) setSearchOpen(false); }}>
+            <Search size={19} />
+            <input type="search" placeholder="Search pages and content tools…" aria-label="Search admin pages" value={workspaceSearch} onChange={event => { setWorkspaceSearch(event.target.value); setSearchOpen(true); }} onFocus={() => setSearchOpen(true)} onKeyDown={event => {
+              if (event.key === "Escape") setSearchOpen(false);
+              if (event.key === "Enter" && searchResults[0]) { searchResults[0].action(); setSearchOpen(false); setWorkspaceSearch(""); }
+            }} />
+            {searchOpen && workspaceSearch.trim() && <div className="admin-search-results">
+              {searchResults.map(result => <button type="button" key={result.key} onMouseDown={event => event.preventDefault()} onClick={() => { result.action(); setSearchOpen(false); setWorkspaceSearch(""); }}><span>{result.label}<small>{result.group}</small></span><ArrowRight size={16} /></button>)}
+              {searchResults.length === 0 && <p>No matching pages or tools.</p>}
+            </div>}
           </div>
-
-          <div className="p-3 border-t border-white/10">
-            <button
-              onClick={resetToDefaults}
-              className="w-full h-8 px-2 bg-white/5 hover:bg-red-500/20 text-red-200 hover:text-red-100 text-[10px] font-bold rounded-lg flex items-center justify-center transition-colors cursor-pointer"
-            >
-              {sidebarOpen ? "Restore Defaults" : "Reset"}
-            </button>
-          </div>
-        </aside>
-
-        {/* Mobile Drawer Sidebar */}
-        {mobileSidebarOpen && (
-          <div
-            className="fixed inset-0 z-50 bg-black/60 flex md:hidden"
-            onClick={() => setMobileSidebarOpen(false)}
-          >
-            <div
-              className="w-72 bg-[#051c4a] text-white h-full p-4 flex flex-col space-y-1 overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between pb-3 mb-2 border-b border-white/10">
-                <h3 className="font-bold text-xs uppercase tracking-wider text-blue-200">CMS Menu</h3>
-                <button onClick={() => setMobileSidebarOpen(false)} className="text-white text-xs font-bold">
-                  Close
-                </button>
-              </div>
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = activeTab === item.id;
-                const isExpanded = isSectionExpanded(item.id);
-                return (
-                  <React.Fragment key={item.id}>
-                    {item.section && (
-                      <div className="pt-3 pb-1 px-3">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-[#D4AF37]">
-                          {item.section}
-                        </span>
-                      </div>
-                    )}
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => {
-                            setActiveTab(item.id as any);
-                            if (item.subItems) {
-                              toggleNavSection(item.id);
-                            } else {
-                              setMobileSidebarOpen(false);
-                            }
-                          }}
-                          className={`flex-1 flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all text-left cursor-pointer ${
-                            isActive ? "bg-[#D4AF37] text-slate-900 shadow-md font-extrabold" : "text-blue-100 hover:bg-white/10"
-                          }`}
-                        >
-                          <div className="flex items-center gap-2 truncate">
-                            <Icon size={16} className={isActive ? "text-slate-900 shrink-0" : "text-blue-300 shrink-0"} />
-                            <span className="truncate">{item.label}</span>
-                          </div>
-                          {item.badge && (
-                            <span className="text-[9px] px-1.5 py-0.5 rounded-full font-extrabold bg-blue-600 text-white">
-                              {item.badge}
-                            </span>
-                          )}
-                        </button>
-                        {item.subItems && (
-                          <button
-                            type="button"
-                            onClick={(e) => toggleNavSection(item.id, e)}
-                            className="p-2 text-blue-200 hover:text-white"
-                          >
-                            {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                          </button>
-                        )}
-                      </div>
-
-                      {item.subItems && isExpanded && (
-                        <div className="ml-5 pl-2.5 border-l-2 border-white/20 py-1 space-y-1">
-                          {item.subItems.map((sub) => (
-                            <button
-                              key={sub.id}
-                              type="button"
-                              onClick={() => {
-                                sub.onClick();
-                                setMobileSidebarOpen(false);
-                              }}
-                              className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all text-left cursor-pointer ${
-                                sub.isActive
-                                  ? "bg-[#D4AF37] text-slate-900 font-black shadow-xs"
-                                  : "text-blue-200 hover:text-white hover:bg-white/10"
-                              }`}
-                            >
-                              <span
-                                className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                                  sub.isActive ? "bg-slate-900" : "bg-blue-400"
-                                }`}
-                              />
-                              <span className="truncate">{sub.label}</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </React.Fragment>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
+          <div className="admin-save-status"><span className="admin-status-dot" /><div><strong>Content workspace</strong><small>{lastSavedTime ? "Last saved: " + lastSavedTime : "Save updates in each editor"}</small></div></div>
+          <button type="button" className="admin-topbar-backup" onClick={() => setShowSyncModal(true)} title="Sync / Backup Data" aria-label="Sync / Backup Data"><Download size={20} /></button>
+          <div className="admin-topbar-account"><span className="admin-avatar">A</span><strong>Admin</strong></div>
+        </header>
+        {mobileSidebarOpen && <div className="admin-drawer-backdrop" onClick={() => setMobileSidebarOpen(false)}><div className="admin-drawer" onClick={event => event.stopPropagation()}><AdminSidebar {...sidebarProps} mobile onClose={() => setMobileSidebarOpen(false)} /></div></div>}
+        <div className="admin-workspace-toolbar"><span><span className="admin-status-dot" /> University content management</span><div><Link to="/" target="_blank" className="admin-button admin-button-secondary" aria-label="Preview website"><ExternalLink size={17} /><span className="admin-preview-label">Preview website</span></Link><button type="button" className="admin-button admin-button-secondary" onClick={() => setShowSyncModal(true)}><Download size={17} /> Sync / Backup Data</button><button type="button" className="admin-button admin-button-primary" disabled={isSyncingDb} onClick={handlePushAllToDatabase} title="Push all CMS content to the database"><UploadCloud size={18} />{isSyncingDb ? "Syncing…" : "Publish changes"}</button></div></div>
         {/* Main Workspace */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+        <main className="admin-workspace" id="admin-workspace" key={activeTab}>
           {/* ════════════════════════════════════════════════════ */}
           {/* TAB 1: DASHBOARD OVERVIEW                            */}
           {/* ════════════════════════════════════════════════════ */}
-          {activeTab === "dashboard" && (
-            <div className="space-y-6 animate-fade-in">
-              <SectionHeader
-                title="CMS Overview & Quick Actions"
-                subtitle="Manage and monitor all university website content in real-time"
-                icon={LayoutDashboard}
-              />
-
-              {/* Metrics - Clean borderless typography without boxes or icons */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 py-6 border-b border-gray-200/80 text-left">
-                <div className="border-l-3 border-[#072A6C] pl-4">
-                  <div className="text-3xl sm:text-4xl font-black text-[#072A6C] tracking-tight">{programs.length}</div>
-                  <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mt-1">Academic Programs</p>
-                </div>
-
-                <div className="border-l-3 border-[#D4AF37] pl-4">
-                  <div className="text-3xl sm:text-4xl font-black text-[#072A6C] tracking-tight">{enquiries.length}</div>
-                  <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mt-1">Enquiry Leads</p>
-                </div>
-
-                <div className="border-l-3 border-[#072A6C] pl-4">
-                  <div className="text-3xl sm:text-4xl font-black text-[#072A6C] tracking-tight">{news.length + events.length}</div>
-                  <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mt-1">News & Events</p>
-                </div>
-
-                <div className="border-l-3 border-[#D4AF37] pl-4">
-                  <div className="text-3xl sm:text-4xl font-black text-[#072A6C] tracking-tight">{announcements.length}</div>
-                  <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mt-1">Announcements</p>
-                </div>
-              </div>
-
-              {/* Quick Management Shortcuts - Clean typographic links without boxes or icons */}
-              <div className="py-4 text-left space-y-3">
-                <h3 className="text-xs font-black uppercase tracking-wider text-gray-400">Quick Management Shortcuts</h3>
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-bold">
-                  <button
-                    onClick={() => setActiveTab("homepage")}
-                    className="text-[#072A6C] hover:text-[#D4AF37] hover:underline cursor-pointer transition-colors"
-                  >
-                    Homepage Sections &rarr;
-                  </button>
-                  <button
-                    onClick={() => { setActiveTab("homepage"); setActiveHomeSubTab("placements"); }}
-                    className="text-[#072A6C] hover:text-[#D4AF37] hover:underline cursor-pointer transition-colors"
-                  >
-                    Placement Stories &rarr;
-                  </button>
-                  <button
-                    onClick={() => { setActiveTab("homepage"); setActiveHomeSubTab("virtualTour"); }}
-                    className="text-[#072A6C] hover:text-[#D4AF37] hover:underline cursor-pointer transition-colors"
-                  >
-                    Admissions & Map &rarr;
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("admissions")}
-                    className="text-[#072A6C] hover:text-[#D4AF37] hover:underline cursor-pointer transition-colors"
-                  >
-                    Enquiries ({enquiries.length}) &rarr;
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("news-events")}
-                    className="text-[#072A6C] hover:text-[#D4AF37] hover:underline cursor-pointer transition-colors"
-                  >
-                    Post News/Events &rarr;
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("academics")}
-                    className="text-[#072A6C] hover:text-[#D4AF37] hover:underline cursor-pointer transition-colors"
-                  >
-                    Edit Programs &rarr;
-                  </button>
-                </div>
-              </div>
-
-              {/* Recent Enquiries Preview */}
-              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs text-left space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-black text-[#072A6C] uppercase tracking-wider">Recent Admission Enquiries</h3>
-                  <button
-                    onClick={() => setActiveTab("admissions")}
-                    className="text-xs text-[#072A6C] font-bold hover:underline cursor-pointer"
-                  >
-                    View All Enquiries →
-                  </button>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-left">
-                    <thead className="bg-slate-50 text-gray-500 uppercase text-[10px] font-bold border-b border-gray-200">
-                      <tr>
-                        <th className="p-2.5">Name</th>
-                        <th className="p-2.5">Mobile</th>
-                        <th className="p-2.5">Program</th>
-                        <th className="p-2.5">City</th>
-                        <th className="p-2.5">Date</th>
-                        <th className="p-2.5">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {enquiries.slice(0, 5).map((e) => (
-                        <tr key={e.id} className="hover:bg-slate-50/50">
-                          <td className="p-2.5 font-bold text-slate-800">{e.name}</td>
-                          <td className="p-2.5 text-gray-600">{e.mobile}</td>
-                          <td className="p-2.5 text-gray-700 font-medium">{e.program}</td>
-                          <td className="p-2.5 text-gray-600">{e.city}</td>
-                          <td className="p-2.5 text-gray-500">{e.date}</td>
-                          <td className="p-2.5">
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-600">
-                              {e.status || "New"}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
+          {activeTab === "dashboard" && <AdminOverview programs={programs.length} enquiries={enquiries} newsEvents={news.length + events.length} announcements={announcements.length} settings={siteSettings} lastSavedTime={lastSavedTime} onNavigate={navigateWorkspace} onHomeSection={id => { setActiveTab("homepage"); setActiveHomeSubTab(id); }} />}
 
           {/* ════════════════════════════════════════════════════ */}
           {/* TAB: PAGES & PAGE BUILDER                            */}

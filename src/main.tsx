@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
 import App from "./App";
 import "./app/globals.css";
+import "./styles/admin.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
