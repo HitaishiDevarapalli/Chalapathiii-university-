@@ -66,7 +66,7 @@ export const PagesCMS: React.FC = () => {
     seoTitle: "",
     seoDescription: "",
     seoKeywords: "",
-    status: "published",
+    status: "draft",
     showInNav: false,
     parentNav: "Academics"
   });
@@ -101,6 +101,8 @@ export const PagesCMS: React.FC = () => {
 
   // Expanded section editor ID in builder
   const [expandedSectionId, setExpandedSectionId] = useState<string | null>(null);
+  const [draggedSectionId, setDraggedSectionId] = useState<string | null>(null);
+  const [dropTargetSectionId, setDropTargetSectionId] = useState<string | null>(null);
 
   // Currently editing page object
   const activePage = useMemo(() => {
@@ -135,7 +137,7 @@ export const PagesCMS: React.FC = () => {
   };
 
   // Create Page Handler
-  const handleCreatePage = (e: React.FormEvent) => {
+  const handleCreatePage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPageData.name.trim() || !newPageData.slug.trim()) {
       alert("Page Name and Slug are required.");
@@ -151,107 +153,8 @@ export const PagesCMS: React.FC = () => {
       return;
     }
 
-    // Generate initial sections based on PageType
+    // Start with an empty page; templates should never publish invented copy or imagery.
     const initialSections: CmsSection[] = [];
-    
-    // 1. Hero Section for all pages
-    initialSections.push({
-      id: `sec_hero_${Date.now()}`,
-      type: "hero",
-      title: newPageData.title || newPageData.name,
-      subtitle: newPageData.shortDescription || "Welcome to Chalapathi University.",
-      badge: newPageData.name.toUpperCase(),
-      status: "published",
-      order: 1,
-      settings: { layout: "split", bgColor: "#072A6C", textColor: "#FFFFFF" }
-    });
-
-    if (newPageData.type === "sections") {
-      initialSections.push({
-        id: `sec_cards_${Date.now() + 1}`,
-        type: "cards",
-        title: "Key Highlights & Offerings",
-        subtitle: "Explore our institutional advantages and features",
-        status: "published",
-        order: 2,
-        settings: { columns: 3, layout: "grid" },
-        items: [
-          { id: "c1", title: "Cutting-Edge Infrastructure", description: "Modern AI labs, smart classrooms, and research facilities.", iconName: "Cpu", enabled: true, order: 1 },
-          { id: "c2", title: "Global Certifications", description: "Industry-aligned curricula with AWS, Google, and Microsoft credentials.", iconName: "Award", enabled: true, order: 2 },
-          { id: "c3", title: "Top Corporate Placements", description: "350+ recruiting partners offering high-tier career opportunities.", iconName: "Briefcase", enabled: true, order: 3 }
-        ]
-      });
-    } else if (newPageData.type === "table") {
-      initialSections.push({
-        id: `sec_tbl_${Date.now() + 1}`,
-        type: "table",
-        title: "Data Table",
-        subtitle: "Detailed schedule and structured information",
-        status: "published",
-        order: 2,
-        table: {
-          name: `${newPageData.name} Table`,
-          columns: [
-            { id: "col1", label: "Item / Course", type: "text" },
-            { id: "col2", label: "Category", type: "badge" },
-            { id: "col3", label: "Details", type: "text" },
-            { id: "col4", label: "Link / Action", type: "link" }
-          ],
-          rows: [
-            { id: "r1", enabled: true, order: 1, cells: { col1: "Sample Record 1", col2: "Undergraduate", col3: "4-Year Bachelor Degree", col4: "/admissions/apply" } },
-            { id: "r2", enabled: true, order: 2, cells: { col1: "Sample Record 2", col2: "Postgraduate", col3: "2-Year Masters Degree", col4: "/admissions/apply" } }
-          ]
-        }
-      });
-    } else if (newPageData.type === "directory") {
-      initialSections.push({
-        id: `sec_dir_${Date.now() + 1}`,
-        type: "faculty-directory",
-        title: "Faculty & Staff Directory",
-        subtitle: "Meet our experienced academic educators and research scholars",
-        status: "published",
-        order: 2,
-        settings: { columns: 4, layout: "grid" }
-      });
-    } else if (newPageData.type === "faq") {
-      initialSections.push({
-        id: `sec_faq_${Date.now() + 1}`,
-        type: "faq",
-        title: "Frequently Asked Questions",
-        subtitle: "Answers to common queries regarding admissions, programs, and campus facilities",
-        status: "published",
-        order: 2,
-        items: [
-          { id: "f1", title: "What are the eligibility requirements for admission?", description: "Candidates must have completed 10+2 with minimum 50% aggregate in relevant subjects.", enabled: true, order: 1 },
-          { id: "f2", title: "Are merit scholarships available for students?", description: "Yes, merit scholarships covering up to 100% of tuition fees are awarded based on entrance exam ranks.", enabled: true, order: 2 },
-          { id: "f3", title: "How do I apply online for upcoming sessions?", description: "You can apply directly through the online admission portal on our official website.", enabled: true, order: 3 }
-        ]
-      });
-    } else if (newPageData.type === "gallery") {
-      initialSections.push({
-        id: `sec_gal_${Date.now() + 1}`,
-        type: "gallery",
-        title: "Campus Photo Gallery",
-        subtitle: "Glimpses of vibrant life, academic complexes, and cultural events",
-        status: "published",
-        order: 2,
-        items: [
-          { id: "g1", title: "Academic Building & Quadrangle", image: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?q=80&w=800&auto=format&fit=crop", enabled: true, order: 1 },
-          { id: "g2", title: "Advanced Computing Research Laboratory", image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=800&auto=format&fit=crop", enabled: true, order: 2 },
-          { id: "g3", title: "Central Library & Digital Hub", image: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=800&auto=format&fit=crop", enabled: true, order: 3 }
-        ]
-      });
-    } else {
-      initialSections.push({
-        id: `sec_txt_${Date.now() + 1}`,
-        type: "rich-text",
-        title: `About ${newPageData.name}`,
-        subtitle: "Comprehensive overview and institutional information",
-        content: "Chalapathi University provides multidisciplinary education fostering innovation, critical inquiry, and global leadership skills. Our cutting-edge curriculum is tailored to industry needs and technological advancements.",
-        status: "published",
-        order: 2
-      });
-    }
 
     const newPage: CmsPage = {
       id: `page_${Date.now()}`,
@@ -267,6 +170,7 @@ export const PagesCMS: React.FC = () => {
       displayOrder: cmsPages.length + 1,
       showInNav: newPageData.showInNav,
       parentNav: newPageData.parentNav,
+      navLabel: newPageData.name,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       sections: initialSections,
@@ -281,14 +185,14 @@ export const PagesCMS: React.FC = () => {
       ]
     };
 
-    saveCmsPage(newPage, "Initial Page Creation");
+    if (!await saveCmsPage(newPage, "Initial Page Creation")) { showToast("Could not save the page. Check your admin session and try again."); return; }
     setIsAddPageOpen(false);
     setActivePageId(newPage.id);
     showToast(`✓ Page "${newPage.name}" created successfully!`);
   };
 
   // Section CRUD inside active page
-  const handleAddSection = (sectionType: SectionType) => {
+  const handleAddSection = async (sectionType: SectionType) => {
     if (!activePage) return;
 
     const def = SECTION_COMPONENT_DEFINITIONS.find(d => d.type === sectionType);
@@ -297,44 +201,17 @@ export const PagesCMS: React.FC = () => {
     let newSec: CmsSection = {
       id: `sec_${sectionType}_${Date.now()}`,
       type: sectionType,
-      title: def?.label || "New Section",
-      subtitle: def?.description || "",
+      title: "",
+      subtitle: "",
       status: "published",
       order: newOrder,
       settings: { layout: "grid", columns: 3 }
     };
 
-    if (sectionType === "hero") {
-      newSec.settings = { layout: "split", bgColor: "#072A6C", textColor: "#FFFFFF" };
-      newSec.badge = "ANNOUNCEMENT";
-    } else if (sectionType === "table") {
-      newSec.table = {
-        name: "New Data Table",
-        columns: [
-          { id: "col1", label: "Column 1", type: "text" },
-          { id: "col2", label: "Column 2", type: "badge" },
-          { id: "col3", label: "Column 3", type: "text" }
-        ],
-        rows: [
-          { id: "r1", enabled: true, order: 1, cells: { col1: "Row 1 Data", col2: "Active", col3: "Details" } },
-          { id: "r2", enabled: true, order: 2, cells: { col1: "Row 2 Data", col2: "Pending", col3: "Details" } }
-        ]
-      };
-    } else if (["cards", "statistics", "timeline", "accordion", "faq", "gallery", "downloads", "testimonials"].includes(sectionType)) {
-      newSec.items = [
-        { id: `itm_1`, title: "Item 1", description: "Description for item 1", enabled: true, order: 1, statNumber: "100+", statLabel: "Metric Label", iconName: "Sparkles" },
-        { id: `itm_2`, title: "Item 2", description: "Description for item 2", enabled: true, order: 2, statNumber: "95%", statLabel: "Success Rate", iconName: "Award" },
-        { id: `itm_3`, title: "Item 3", description: "Description for item 3", enabled: true, order: 3, statNumber: "350+", statLabel: "Partners", iconName: "Users" }
-      ];
-    } else if (sectionType === "cta") {
-      newSec.settings = {
-        bgColor: "#072A6C",
-        buttonText: "Apply Online",
-        buttonLink: "/admissions/apply",
-        secondaryButtonText: "Contact Admissions",
-        secondaryButtonLink: "/contact"
-      };
-    }
+    if (["cards", "statistics", "timeline", "accordion", "faq", "gallery", "downloads", "testimonials"].includes(sectionType)) newSec.items = [];
+    if (sectionType === "hero") newSec.settings = { layout: "split" };
+    if (sectionType === "table") newSec.table = { name: "", columns: [], rows: [] };
+    if (sectionType === "cta") newSec.settings = {};
 
     const updatedSections = [...(activePage.sections || []), newSec];
     const updatedPage: CmsPage = {
@@ -343,7 +220,7 @@ export const PagesCMS: React.FC = () => {
       updatedAt: new Date().toISOString()
     };
 
-    saveCmsPage(updatedPage, `Added ${def?.label || sectionType} section`);
+    if (!await saveCmsPage(updatedPage, `Added ${def?.label || sectionType} section`)) { showToast("Section was not saved. Please retry."); return; }
     setIsAddSectionOpen(false);
     setExpandedSectionId(newSec.id);
     showToast(`✓ Added section: ${def?.label || sectionType}`);
@@ -413,6 +290,19 @@ export const PagesCMS: React.FC = () => {
     saveCmsPage(updatedPage, "Reordered sections");
   };
 
+  const handleDropSection = (targetId: string) => {
+    if (!activePage || !draggedSectionId || draggedSectionId === targetId) return;
+    const ordered = [...(activePage.sections || [])];
+    const from = ordered.findIndex(s => s.id === draggedSectionId);
+    const to = ordered.findIndex(s => s.id === targetId);
+    if (from < 0 || to < 0) return;
+    const [moved] = ordered.splice(from, 1);
+    ordered.splice(to, 0, moved);
+    void saveCmsPage({ ...activePage, sections: ordered.map((s, i) => ({ ...s, order: i + 1 })), updatedAt: new Date().toISOString() }, "Reordered sections");
+    setDraggedSectionId(null);
+    setDropTargetSectionId(null);
+  };
+
   // Repeated Item Manager inside section
   const handleAddItemToSection = (sectionId: string) => {
     if (!activePage) return;
@@ -422,12 +312,12 @@ export const PagesCMS: React.FC = () => {
     const currentItems = sec.items || [];
     const newItem = {
       id: `itm_${Date.now()}`,
-      title: `New Item ${currentItems.length + 1}`,
-      description: "Enter detailed content here.",
+      title: "",
+      description: "",
       enabled: true,
       order: currentItems.length + 1,
-      statNumber: "0",
-      statLabel: "Label",
+      statNumber: "",
+      statLabel: "",
       iconName: "Sparkles"
     };
 
@@ -791,10 +681,9 @@ export const PagesCMS: React.FC = () => {
               </button>
 
               <button
-                onClick={() => {
+                onClick={async () => {
                   const updated = { ...activePage, status: "draft" as PageStatus };
-                  saveCmsPage(updated, "Saved as draft");
-                  showToast("✓ Page saved as Draft");
+                  showToast(await saveCmsPage(updated, "Saved as draft") ? "✓ Page saved as Draft" : "Draft could not be saved. Please retry.");
                 }}
                 className="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-900 rounded-xl text-xs font-black uppercase tracking-wider transition-colors cursor-pointer"
               >
@@ -802,10 +691,9 @@ export const PagesCMS: React.FC = () => {
               </button>
 
               <button
-                onClick={() => {
+                onClick={async () => {
                   const updated = { ...activePage, status: "published" as PageStatus };
-                  saveCmsPage(updated, "Published to live website");
-                  showToast("✓ Page published live to database and public website!");
+                  showToast(await saveCmsPage(updated, "Published to live website") ? "✓ Page published live to database and public website!" : "Publish failed. Please retry.");
                 }}
                 className="px-4 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-md transition-colors cursor-pointer flex items-center gap-1.5"
               >
@@ -852,7 +740,12 @@ export const PagesCMS: React.FC = () => {
                   return (
                     <div 
                       key={sec.id}
-                      className="bg-white rounded-2xl border border-gray-150 shadow-sm overflow-hidden transition-all duration-200"
+                      draggable
+                      onDragStart={() => setDraggedSectionId(sec.id)}
+                      onDragOver={(event) => { event.preventDefault(); setDropTargetSectionId(sec.id); }}
+                      onDrop={(event) => { event.preventDefault(); handleDropSection(sec.id); }}
+                      onDragEnd={() => { setDraggedSectionId(null); setDropTargetSectionId(null); }}
+                      className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition-all duration-200 ${dropTargetSectionId === sec.id ? "border-[#D4AF37] ring-2 ring-[#D4AF37]/40" : "border-gray-150"} ${draggedSectionId === sec.id ? "opacity-50" : ""}`}
                     >
                       {/* Section Card Header */}
                       <div className="p-4 bg-slate-50/70 border-b border-gray-150 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -993,21 +886,30 @@ export const PagesCMS: React.FC = () => {
                             </div>
                           )}
 
+                          {(sec.type === "rich-text" || sec.type === "image-text" || sec.type === "cta" || sec.type === "hero") && <div className="grid grid-cols-2 md:grid-cols-4 gap-3 rounded-xl border border-gray-100 bg-slate-50 p-4">
+                            <label className="text-[10px] font-extrabold uppercase text-gray-500">Text alignment<select value={sec.settings?.align || "left"} onChange={e => handleUpdateSection({...sec,settings:{...sec.settings,align:e.target.value as "left"|"center"|"right"}})} className="mt-1 w-full rounded-lg border p-2 text-xs"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></label>
+                            <label className="text-[10px] font-extrabold uppercase text-gray-500">Font size<input value={sec.settings?.fontSize || ""} onChange={e => handleUpdateSection({...sec,settings:{...sec.settings,fontSize:e.target.value}})} placeholder="16px" className="mt-1 w-full rounded-lg border p-2 text-xs" /></label>
+                            <label className="text-[10px] font-extrabold uppercase text-gray-500">Font family<input value={sec.settings?.fontFamily || ""} onChange={e => handleUpdateSection({...sec,settings:{...sec.settings,fontFamily:e.target.value}})} placeholder="inherit" className="mt-1 w-full rounded-lg border p-2 text-xs" /></label>
+                            <label className="text-[10px] font-extrabold uppercase text-gray-500">Section spacing<input value={sec.settings?.spacing || ""} onChange={e => handleUpdateSection({...sec,settings:{...sec.settings,spacing:e.target.value}})} placeholder="48px" className="mt-1 w-full rounded-lg border p-2 text-xs" /></label>
+                            <label className="text-[10px] font-extrabold uppercase text-gray-500">Background<input type="color" value={sec.settings?.bgColor || "#ffffff"} onChange={e => handleUpdateSection({...sec,settings:{...sec.settings,bgColor:e.target.value}})} className="mt-1 h-9 w-full rounded-lg border p-1" /></label>
+                            <label className="text-[10px] font-extrabold uppercase text-gray-500">Text color<input type="color" value={sec.settings?.textColor || "#1f2937"} onChange={e => handleUpdateSection({...sec,settings:{...sec.settings,textColor:e.target.value}})} className="mt-1 h-9 w-full rounded-lg border p-1" /></label>
+                            <label className="text-[10px] font-extrabold uppercase text-gray-500">Weight<select value={sec.settings?.fontWeight || "normal"} onChange={e => handleUpdateSection({...sec,settings:{...sec.settings,fontWeight:e.target.value as "normal"|"bold"}})} className="mt-1 w-full rounded-lg border p-2 text-xs"><option value="normal">Regular</option><option value="bold">Bold</option></select></label>
+                            <label className="text-[10px] font-extrabold uppercase text-gray-500">Emphasis<select value={sec.settings?.fontStyle || "normal"} onChange={e => handleUpdateSection({...sec,settings:{...sec.settings,fontStyle:e.target.value as "normal"|"italic"}})} className="mt-1 w-full rounded-lg border p-2 text-xs"><option value="normal">Normal</option><option value="italic">Italic</option></select></label>
+                            <label className="text-[10px] font-extrabold uppercase text-gray-500">Underline<select value={sec.settings?.textDecoration || "none"} onChange={e => handleUpdateSection({...sec,settings:{...sec.settings,textDecoration:e.target.value as "none"|"underline"}})} className="mt-1 w-full rounded-lg border p-2 text-xs"><option value="none">Off</option><option value="underline">On</option></select></label>
+                          </div>}
+
+                          {["cards", "statistics", "gallery", "testimonials"].includes(sec.type) && <div className="grid max-w-md grid-cols-2 gap-3">
+                            <label className="text-[10px] font-extrabold uppercase text-gray-500">Columns<select value={sec.settings?.columns || 3} onChange={e => handleUpdateSection({...sec,settings:{...sec.settings,columns:Number(e.target.value) as 1|2|3|4}})} className="mt-1 w-full rounded-lg border p-2 text-xs">{[1,2,3,4].map(n => <option key={n} value={n}>{n} columns</option>)}</select></label>
+                            {sec.type === "cards" && <label className="text-[10px] font-extrabold uppercase text-gray-500">Layout<select value={sec.settings?.layout || "grid"} onChange={e => handleUpdateSection({...sec,settings:{...sec.settings,layout:e.target.value as "grid"|"list"}})} className="mt-1 w-full rounded-lg border p-2 text-xs"><option value="grid">Grid</option><option value="list">List</option></select></label>}
+                          </div>}
+
+                          {sec.type === "gallery" && <label className="block max-w-xs text-[10px] font-extrabold uppercase text-gray-500">Image layout<select value={sec.settings?.layout || "grid"} onChange={e => handleUpdateSection({...sec,settings:{...sec.settings,layout:e.target.value as "grid"|"carousel"}})} className="mt-1 w-full rounded-lg border p-2 text-xs"><option value="grid">Responsive grid</option><option value="carousel">Horizontal carousel</option></select></label>}
+
                           {/* Media URL Editor */}
-                          {(sec.type === "hero" || sec.type === "image" || sec.type === "image-text" || sec.type === "person-profile" || sec.media) && (
+                          {(sec.type === "hero" || sec.type === "image" || sec.type === "image-text" || sec.type === "person-profile" || sec.type === "video" || sec.media) && (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 border border-gray-150">
                               <div className="space-y-1">
-                                <label className="text-[10px] font-extrabold text-gray-500 uppercase">Image / Media URL</label>
-                                <input
-                                  type="text"
-                                  placeholder="https://..."
-                                  value={sec.media?.url || ""}
-                                  onChange={(e) => handleUpdateSection({
-                                    ...sec,
-                                    media: { ...sec.media, url: e.target.value }
-                                  })}
-                                  className="w-full h-9 px-3 text-xs border border-gray-200 rounded-lg bg-white"
-                                />
+                                {sec.type === "video" ? <label className="text-[10px] font-extrabold uppercase text-gray-500">Video URL<input value={sec.media?.url || ""} onChange={e => handleUpdateSection({...sec,media:{...sec.media,url:e.target.value}})} placeholder="Video file URL or YouTube embed URL" className="mt-1 w-full rounded-lg border bg-white p-2 text-xs" /></label> : <ImageField label="Image / Media" value={sec.media?.url || ""} onChange={(url) => handleUpdateSection({ ...sec, media: { ...sec.media, url } })} altText={sec.media?.alt} onAltChange={(alt) => handleUpdateSection({ ...sec, media: { ...sec.media, alt } })} compact aspectRatio="wide" />}
                               </div>
                               <div className="space-y-1">
                                 <label className="text-[10px] font-extrabold text-gray-500 uppercase">Alt Text / Caption</label>
@@ -1021,6 +923,14 @@ export const PagesCMS: React.FC = () => {
                                   })}
                                   className="w-full h-9 px-3 text-xs border border-gray-200 rounded-lg bg-white"
                                 />
+                              </div>
+                              {sec.type === "image" && <label className="space-y-1 text-[10px] font-extrabold uppercase text-gray-500">Image link<input value={sec.media?.link || ""} onChange={e => handleUpdateSection({...sec,media:{...sec.media,link:e.target.value}})} placeholder="Optional destination URL" className="mt-1 h-9 w-full rounded-lg border bg-white px-3 text-xs normal-case" /></label>}
+                              <div className="sm:col-span-2 grid grid-cols-2 md:grid-cols-4 gap-3">
+                                {sec.type === "image-text" && <label className="text-[10px] text-slate-600">Image position<select value={sec.settings?.imagePosition || "right"} onChange={e => handleUpdateSection({...sec, settings:{...sec.settings,imagePosition:e.target.value as "left"|"right"}})} className="mt-1 w-full rounded-lg border p-2 text-xs"><option value="left">Left</option><option value="right">Right</option></select></label>}
+                                <label className="text-[10px] text-slate-600">Image width<input value={sec.settings?.imageWidth || "100%"} onChange={e => handleUpdateSection({...sec,settings:{...sec.settings,imageWidth:e.target.value}})} className="mt-1 w-full rounded-lg border p-2 text-xs" placeholder="100%" /></label>
+                                <label className="text-[10px] text-slate-600">Image height<input value={sec.settings?.imageHeight || "auto"} onChange={e => handleUpdateSection({...sec,settings:{...sec.settings,imageHeight:e.target.value}})} className="mt-1 w-full rounded-lg border p-2 text-xs" placeholder="auto / 420px" /></label>
+                                <label className="text-[10px] text-slate-600">Corner radius<input value={sec.settings?.borderRadius || "16px"} onChange={e => handleUpdateSection({...sec,settings:{...sec.settings,borderRadius:e.target.value}})} className="mt-1 w-full rounded-lg border p-2 text-xs" /></label>
+                                <label className="text-[10px] text-slate-600">Background color<input type="color" value={sec.settings?.bgColor || "#ffffff"} onChange={e => handleUpdateSection({...sec,settings:{...sec.settings,bgColor:e.target.value}})} className="mt-1 h-9 w-full rounded-lg border p-1" /></label>
                               </div>
                             </div>
                           )}
@@ -1110,6 +1020,7 @@ export const PagesCMS: React.FC = () => {
                                       }}
                                       className="w-full p-2 text-xs border border-gray-200 rounded-lg bg-white"
                                     />
+                                    {(["gallery", "cards", "testimonials"].includes(sec.type)) && <ImageField label="Item image" value={itm.image || ""} onChange={image => { const updated = [...sec.items!]; updated[iIdx] = {...updated[iIdx],image}; handleUpdateSection({...sec,items:updated}); }} compact aspectRatio="wide" />}
                                   </div>
                                 ))}
                               </div>
@@ -1371,21 +1282,12 @@ export const PagesCMS: React.FC = () => {
                 </div>
 
                 {newPageData.showInNav && (
-                  <div className="space-y-1 pt-2 border-t border-gray-200">
-                    <label className="text-[10px] font-extrabold text-gray-500 uppercase">Parent Menu</label>
-                    <select
-                      value={newPageData.parentNav}
-                      onChange={(e) => setNewPageData({ ...newPageData, parentNav: e.target.value })}
-                      className="w-full h-9 px-3 text-xs border border-gray-200 rounded-xl bg-white"
-                    >
-                      <option value="Academics">Academics</option>
-                      <option value="About">About Us</option>
-                      <option value="Admissions">Admissions</option>
-                      <option value="Research">Research</option>
-                      <option value="Campus Life">Campus Life</option>
-                      <option value="Placements">Placements</option>
-                      <option value="Contact">Contact</option>
-                    </select>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-gray-200">
+                    <label className="text-[10px] font-extrabold text-gray-500 uppercase">Menu Label<input value={newPageData.name} onChange={e => setNewPageData({...newPageData,name:e.target.value})} className="mt-1 w-full h-9 px-3 text-xs border border-gray-200 rounded-xl bg-white" /></label>
+                    <label className="text-[10px] font-extrabold text-gray-500 uppercase">Parent Menu<select value={newPageData.parentNav} onChange={(e) => setNewPageData({ ...newPageData, parentNav: e.target.value })} className="mt-1 w-full h-9 px-3 text-xs border border-gray-200 rounded-xl bg-white">
+                      <option value="Main Menu">Main Menu</option><option value="Academics">Academics</option><option value="About Us">About Us</option><option value="Admissions">Admissions</option><option value="Research">Research</option><option value="Faculty">Faculty</option><option value="Campus Life">Campus Life</option><option value="Placements">Placements</option><option value="News & Events">News & Events</option>
+                    </select></label>
+                    <label className="text-[10px] font-extrabold text-gray-500 uppercase">Menu Position<input type="number" min="1" value={cmsPages.length + 1} readOnly className="mt-1 w-full h-9 px-3 text-xs border border-gray-200 rounded-xl bg-slate-100" /></label>
                   </div>
                 )}
               </div>
@@ -1605,6 +1507,15 @@ export const PagesCMS: React.FC = () => {
                   }}
                   className="w-full h-10 px-3 text-xs font-mono font-bold border border-gray-200 rounded-xl"
                 />
+              </div>
+
+              <div className="rounded-xl border border-gray-200 bg-slate-50 p-4 space-y-3">
+                <label className="flex items-center justify-between text-xs font-bold text-[#072A6C]">Add to Navigation Menu<input type="checkbox" checked={activePage.showInNav} onChange={e => { void saveCmsPage({...activePage,showInNav:e.target.checked},"Updated page navigation"); }} /></label>
+                {activePage.showInNav && <>
+                  <label className="block text-[10px] font-extrabold uppercase text-gray-500">Menu label<input value={activePage.navLabel || activePage.name} onChange={e => { void saveCmsPage({...activePage,navLabel:e.target.value},"Updated navigation label"); }} className="mt-1 h-9 w-full rounded-lg border bg-white px-3 text-xs" /></label>
+                  <label className="block text-[10px] font-extrabold uppercase text-gray-500">Parent menu<select value={activePage.parentNav || "Main Menu"} onChange={e => { void saveCmsPage({...activePage,parentNav:e.target.value},"Updated navigation placement"); }} className="mt-1 h-9 w-full rounded-lg border bg-white px-3 text-xs"><option>Main Menu</option><option>Academics</option><option>About Us</option><option>Admissions</option><option>Research</option><option>Faculty</option><option>Campus Life</option><option>Placements</option><option>News & Events</option></select></label>
+                  <label className="block text-[10px] font-extrabold uppercase text-gray-500">Position<input type="number" min="1" value={activePage.displayOrder} onChange={e => { void saveCmsPage({...activePage,displayOrder:Number(e.target.value)},"Updated navigation position"); }} className="mt-1 h-9 w-full rounded-lg border bg-white px-3 text-xs" /></label>
+                </>}
               </div>
 
               <div className="space-y-1">

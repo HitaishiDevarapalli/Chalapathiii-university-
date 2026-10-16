@@ -36,6 +36,8 @@ export type SectionType =
   | "contact-form"
   | "cta"
   | "testimonials"
+  | "spacer"
+  | "divider"
   | "custom";
 
 export interface TableColumn {
@@ -89,7 +91,7 @@ export interface CmsSection {
   status: "published" | "draft" | "hidden";
   order: number;
   settings?: {
-    layout?: "grid" | "list" | "split" | "full" | "cards";
+    layout?: "grid" | "list" | "split" | "full" | "cards" | "carousel";
     columns?: 1 | 2 | 3 | 4;
     bgColor?: string;
     textColor?: string;
@@ -100,12 +102,22 @@ export interface CmsSection {
     secondaryButtonText?: string;
     secondaryButtonLink?: string;
     aspectRatio?: string;
+    imageWidth?: string;
+    imageHeight?: string;
+    borderRadius?: string;
+    spacing?: string;
+    fontSize?: string;
+    fontFamily?: string;
+    textDecoration?: "none" | "underline";
+    fontWeight?: "normal" | "bold";
+    fontStyle?: "normal" | "italic";
   };
   media?: {
     url?: string;
     poster?: string;
     alt?: string;
     caption?: string;
+    link?: string;
   };
   items?: Array<{
     id: string;
@@ -157,6 +169,7 @@ export interface CmsPage {
   displayOrder: number;
   showInNav: boolean;
   parentNav?: string;
+  navLabel?: string;
   createdAt: string;
   updatedAt: string;
   sections: CmsSection[];
@@ -263,5 +276,7 @@ export const SECTION_COMPONENT_DEFINITIONS: Array<{
   { type: "contact-form", label: "Contact & Enquiry Form", description: "Interactive enquiry lead capture form with fields.", category: "Interactive", icon: "Send" },
   { type: "cta", label: "Call to Action (CTA)", description: "High-contrast action banner prompting admissions or visit.", category: "Interactive", icon: "Megaphone" },
   { type: "testimonials", label: "Testimonials / Student Reviews", description: "Student, alumni, and recruiter quote cards.", category: "Basic", icon: "Quote" },
+  { type: "spacer", label: "Spacer", description: "Add responsive vertical breathing room.", category: "Basic", icon: "MoveDown" },
+  { type: "divider", label: "Divider", description: "Add a subtle horizontal separator.", category: "Basic", icon: "Minus" },
   { type: "custom", label: "Custom HTML / Embed", description: "Custom HTML code, widgets, or third-party embeds.", category: "Basic", icon: "Code" }
 ];

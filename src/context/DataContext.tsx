@@ -896,7 +896,7 @@ interface DataContextType {
 
   cmsPages: CmsPage[];
   updateCmsPages: (pages: CmsPage[]) => void;
-  saveCmsPage: (page: CmsPage, note?: string) => void;
+  saveCmsPage: (page: CmsPage, note?: string) => Promise<boolean>;
   deleteCmsPage: (id: string) => void;
   duplicateCmsPage: (id: string) => void;
   restorePageVersion: (pageId: string, versionId: string) => void;
@@ -3540,9 +3540,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
           const res = await CmsApiService.fetchAll();
           if (res && res.success) {
-            if (Array.isArray(res.pages) && res.pages.length > 0) {
+            if (Array.isArray(res.pages)) {
               setCmsPages(res.pages);
-              safeSetItem("chalapathi_cms_pages_v3", JSON.stringify(res.pages));
             }
             if (res.settings && typeof res.settings === "object") {
               s = { ...s, ...res.settings };
@@ -3762,51 +3761,26 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     recordSave();
   };
 
-  const saveCmsPage = (page: CmsPage, note = "Page updated from Admin CMS") => {
-    setCmsPages((prev) => {
-      const existingIdx = prev.findIndex((p) => p.id === page.id || p.slug === page.slug);
-      let updatedList: CmsPage[];
-
-      const versionEntry = {
-        id: `v_${Date.now()}`,
-        timestamp: new Date().toISOString(),
-        author: "Admin",
-        note,
-        snapshot: JSON.parse(JSON.stringify(page))
-      };
-
-      const updatedPage: CmsPage = {
-        ...page,
-        updatedAt: new Date().toISOString(),
-        versionHistory: [versionEntry, ...(page.versionHistory || []).slice(0, 25)]
-      };
-
-      if (existingIdx >= 0) {
-        updatedList = [...prev];
-        updatedList[existingIdx] = updatedPage;
-      } else {
-        updatedList = [...prev, updatedPage];
-      }
-
-      localStorage.setItem("chalapathi_cms_pages_v3", JSON.stringify(updatedList));
-      // Asynchronously sync to backend API / database
-      CmsApiService.savePage(updatedPage, note).catch((e) => console.warn("API sync save error:", e));
-
-      return updatedList;
+  const saveCmsPage = async (page: CmsPage, note = "Page updated from Admin CMS"): Promise<boolean> => {
+    const versionEntry = { id: `v_${Date.now()}`, timestamp: new Date().toISOString(), author: "Admin", note, snapshot: JSON.parse(JSON.stringify(page)) };
+    const updatedPage: CmsPage = { ...page, updatedAt: new Date().toISOString(), versionHistory: [versionEntry, ...(page.versionHistory || []).slice(0, 25)] };
+    const response = await CmsApiService.savePage(updatedPage, note);
+    if (!response.success) return false;
+    setCmsPages(prev => {
+      const existingIdx = prev.findIndex(p => p.id === page.id || p.slug === page.slug);
+      if (existingIdx < 0) return [...prev, updatedPage];
+      const next = [...prev]; next[existingIdx] = updatedPage; return next;
     });
     recordSave();
+    return true;
   };
 
-  const deleteCmsPage = (id: string) => {
-    setCmsPages((prev) => {
-      const targetPage = prev.find((p) => p.id === id);
-      const filtered = prev.filter((p) => p.id !== id);
-      localStorage.setItem("chalapathi_cms_pages_v3", JSON.stringify(filtered));
-      if (targetPage) {
-        CmsApiService.deletePage(targetPage.slug, targetPage.id).catch((e) => console.warn("API delete error:", e));
-      }
-      return filtered;
-    });
+  const deleteCmsPage = async (id: string) => {
+    const targetPage = cmsPages.find(p => p.id === id);
+    if (!targetPage) return;
+    const response = await CmsApiService.deletePage(targetPage.slug, targetPage.id);
+    if (!response.success) return;
+    setCmsPages(prev => prev.filter(p => p.id !== id));
     recordSave();
   };
 

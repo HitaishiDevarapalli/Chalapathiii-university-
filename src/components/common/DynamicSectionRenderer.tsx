@@ -176,9 +176,10 @@ export const DynamicSectionRenderer: React.FC<DynamicSectionRendererProps> = ({
 
   // 2. RICH TEXT
   if (type === "rich-text") {
+    const paragraphs = (content || "").split(/\n\n+/).filter(Boolean);
     return (
-      <section className="py-12 md:py-16 bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+      <section className="py-12 md:py-16" style={{backgroundColor: settings?.bgColor || "#ffffff", color: settings?.textColor || undefined, paddingTop: settings?.spacing, paddingBottom: settings?.spacing}}>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6" style={{textAlign: settings?.align || "left", fontSize: settings?.fontSize, fontFamily: settings?.fontFamily, fontWeight: settings?.fontWeight, fontStyle: settings?.fontStyle, textDecoration: settings?.textDecoration, color: settings?.textColor}}>
           {badge && (
             <span className="text-xs font-black uppercase tracking-widest text-[#D71920]">{badge}</span>
           )}
@@ -194,9 +195,7 @@ export const DynamicSectionRenderer: React.FC<DynamicSectionRendererProps> = ({
           )}
           {content && (
             <div className="prose prose-blue max-w-none text-gray-700 leading-relaxed space-y-4 text-sm sm:text-base font-normal">
-              {content.split("\n\n").map((para, pIdx) => (
-                <p key={pIdx}>{para}</p>
-              ))}
+              {paragraphs.map((para, pIdx) => <p key={pIdx}>{para.split("\n").map((line, lineIdx) => <React.Fragment key={lineIdx}>{lineIdx > 0 && <br />}{line.replace(/^[-*]\s+/, "• ")}</React.Fragment>)}</p>)}
             </div>
           )}
         </div>
@@ -208,12 +207,12 @@ export const DynamicSectionRenderer: React.FC<DynamicSectionRendererProps> = ({
   if (type === "image") {
     return (
       <section className="py-12 bg-[#F7F8FC]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 text-center">
+        <div className={`${settings?.imageWidth === "100vw" ? "max-w-none" : "max-w-6xl"} mx-auto px-4 sm:px-6 lg:px-8 space-y-4`} style={{textAlign:settings?.align || "center"}}>
           {title && <h3 className="text-xl sm:text-2xl font-bold text-[#072A6C]">{title}</h3>}
           {subtitle && <p className="text-sm text-gray-500 max-w-2xl mx-auto">{subtitle}</p>}
           {media?.url && (
-            <div className="rounded-2xl overflow-hidden shadow-lg border border-gray-100 mt-6 bg-white p-2">
-              <img src={media.url} alt={media.alt || "Showcase"} className="w-full h-auto max-h-[550px] object-cover rounded-xl" />
+          <div className="overflow-hidden shadow-lg border border-gray-100 mt-6 bg-white p-2" style={{borderRadius: settings?.borderRadius || "16px", backgroundColor: settings?.bgColor || "#fff", padding: settings?.spacing || "8px"}}>
+              {media.link ? <a href={media.link} aria-label={media.alt || title || "Open linked image"}><img src={media.url} alt={media.alt || "Showcase"} className="max-w-full object-cover" style={{width: settings?.imageWidth || "100%", height: settings?.imageHeight || "auto", maxHeight: "70vh", objectPosition: settings?.align || "center", borderRadius: settings?.borderRadius || "16px", marginLeft: settings?.align === "right" ? "auto" : undefined, marginRight: settings?.align === "left" ? "auto" : undefined}} /></a> : <img src={media.url} alt={media.alt || "Showcase"} className="max-w-full object-cover" style={{width: settings?.imageWidth || "100%", height: settings?.imageHeight || "auto", maxHeight: "70vh", objectPosition: settings?.align || "center", borderRadius: settings?.borderRadius || "16px", marginLeft: settings?.align === "right" ? "auto" : undefined, marginRight: settings?.align === "left" ? "auto" : undefined}} />}
               {media.caption && <p className="text-xs text-gray-500 mt-2 italic">{media.caption}</p>}
             </div>
           )}
@@ -231,8 +230,8 @@ export const DynamicSectionRenderer: React.FC<DynamicSectionRendererProps> = ({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
             <div className={`lg:col-span-6 ${isImageLeft ? "lg:order-1" : "lg:order-2"}`}>
               {media?.url && (
-                <div className="relative rounded-2xl overflow-hidden shadow-xl border border-gray-100">
-                  <img src={media.url} alt={media.alt || title || "Image"} className="w-full h-80 sm:h-96 object-cover" />
+                <div className="relative overflow-hidden shadow-xl border border-gray-100" style={{ borderRadius: settings?.borderRadius || "16px", backgroundColor: settings?.bgColor || "#fff", padding: settings?.spacing || undefined }}>
+                  <img src={media.url} alt={media.alt || title || "Image"} className="w-full object-cover" style={{ height: settings?.imageHeight || "auto", maxHeight: "70vh", objectPosition: settings?.align || "center", borderRadius: settings?.borderRadius || "16px" }} />
                 </div>
               )}
             </div>
@@ -300,7 +299,7 @@ export const DynamicSectionRenderer: React.FC<DynamicSectionRendererProps> = ({
           )}
 
           <div className={`grid grid-cols-1 ${gridCols} gap-6`}>
-            {(items || []).filter(item => item.enabled !== false).map((item, iIdx) => {
+            {(items || []).filter(item => item.enabled !== false && (item.title || item.description || item.image || item.link)).map((item, iIdx) => {
               const IconComp = item.iconName ? ICON_MAP[item.iconName] || Sparkles : Sparkles;
               return (
                 <div 
@@ -546,12 +545,12 @@ export const DynamicSectionRenderer: React.FC<DynamicSectionRendererProps> = ({
             </div>
           )}
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {(items || []).filter(item => item.enabled !== false).map((item, gIdx) => (
+          <div className={settings?.layout === "carousel" ? "flex gap-4 overflow-x-auto snap-x snap-mandatory pb-3" : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"}>
+            {(items || []).filter(item => item.enabled !== false && item.image).map((item, gIdx) => (
               <div 
                 key={item.id || gIdx}
                 onClick={() => setActiveGalleryImg(item.image || "")}
-                className="group relative rounded-2xl overflow-hidden aspect-[4/3] bg-gray-200 shadow-sm cursor-pointer hover:shadow-xl transition-all"
+                className={`group relative rounded-2xl overflow-hidden aspect-[4/3] bg-gray-200 shadow-sm cursor-pointer hover:shadow-xl transition-all ${settings?.layout === "carousel" ? "min-w-[78vw] sm:min-w-[48vw] lg:min-w-[32%] snap-start" : ""}`}
               >
                 {item.image && (
                   <img src={item.image} alt={item.title || "Gallery"} className="w-full h-full object-cover" />
@@ -937,18 +936,19 @@ export const DynamicSectionRenderer: React.FC<DynamicSectionRendererProps> = ({
 
   // 16. CALL TO ACTION (CTA)
   if (type === "cta") {
+    if (!title && !subtitle && !settings?.buttonText && !settings?.secondaryButtonText) return null;
     return (
-      <section className="py-14 md:py-20 bg-gradient-to-r from-[#072A6C] via-[#0b388d] to-[#072A6C] text-white text-center">
+      <section className="py-14 md:py-20 text-white text-center" style={{backgroundColor: settings?.bgColor || "#072A6C"}}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
           {badge && <span className="inline-block px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest bg-white/10 text-[#D4AF37]">{badge}</span>}
-          <h2 className="text-2xl sm:text-4xl font-extrabold leading-tight">{title || "Empower Your Future with Chalapathi University"}</h2>
+          {title && <h2 className="text-2xl sm:text-4xl font-extrabold leading-tight">{title}</h2>}
           {subtitle && <p className="text-sm sm:text-base text-white/80 font-light max-w-2xl mx-auto leading-relaxed">{subtitle}</p>}
           <div className="flex flex-wrap justify-center gap-4 pt-4">
             <Link
-              to={settings?.buttonLink || "/admissions/apply"}
+              to={settings?.buttonLink || "#"}
               className="px-7 py-3.5 bg-[#D4AF37] hover:bg-[#b5952f] text-[#072A6C] font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-lg transition-transform hover:-translate-y-0.5 inline-flex items-center gap-2"
             >
-              {settings?.buttonText || "Apply Now 2026-27"}
+              {settings?.buttonText}
               <ChevronRight size={16} />
             </Link>
             {settings?.secondaryButtonText && (
@@ -963,6 +963,14 @@ export const DynamicSectionRenderer: React.FC<DynamicSectionRendererProps> = ({
         </div>
       </section>
     );
+  }
+
+  if (type === "video") {
+    const videoUrl = media?.url || "";
+    return <section className="bg-white py-12 md:py-16"><div className="mx-auto max-w-6xl px-4 sm:px-6">
+      {(title || subtitle) && <header className="mb-6 text-center">{title && <h2 className="text-2xl font-bold text-[#072A6C]">{title}</h2>}{subtitle && <p className="mt-2 text-gray-600">{subtitle}</p>}</header>}
+      {videoUrl && <div className="mx-auto aspect-video overflow-hidden rounded-2xl bg-black shadow-xl"><video src={videoUrl} poster={media?.poster} controls className="h-full w-full" aria-label={title || "Embedded video"} /> </div>}
+    </div></section>;
   }
 
   // 17. TESTIMONIALS
@@ -985,9 +993,7 @@ export const DynamicSectionRenderer: React.FC<DynamicSectionRendererProps> = ({
                 </p>
 
                 <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 overflow-hidden shrink-0">
-                    <img src={item.image || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop"} alt={item.title} className="w-full h-full object-cover" />
-                  </div>
+                  {item.image && <div className="w-10 h-10 rounded-full bg-blue-100 overflow-hidden shrink-0"><img src={item.image} alt={item.title} className="w-full h-full object-cover" /></div>}
                   <div>
                     <h4 className="text-xs font-bold text-[#072A6C] leading-none">{item.title}</h4>
                     <p className="text-[10px] text-gray-400 mt-0.5">{item.designation || item.subtitle}</p>
@@ -1002,6 +1008,10 @@ export const DynamicSectionRenderer: React.FC<DynamicSectionRendererProps> = ({
   }
 
   // 18. CUSTOM RAW HTML
+  if (type === "spacer") return <div aria-hidden="true" style={{height: settings?.spacing || "48px"}} />;
+  if (type === "divider") return <hr className="mx-auto max-w-6xl border-0 border-t border-slate-200" style={{marginBlock: settings?.spacing || "24px", borderColor: settings?.bgColor || undefined}} />;
+
+  // 19. CUSTOM RAW HTML
   if (type === "custom" && (rawHtml || content)) {
     return (
       <section className="py-12 bg-white">

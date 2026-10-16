@@ -13,6 +13,7 @@ import { ApplyOnlineView } from "../components/admissions/ApplyOnlineView";
 import ProgramDetailPage from "../components/academics/ProgramDetailPage";
 import { ResearchView } from "../components/research/ResearchView";
 import SEO from "../components/SEO";
+import { DynamicSectionRenderer } from "../components/common/DynamicSectionRenderer";
 
 
 const getProgramTimeline = (title: string) => {
@@ -1792,7 +1793,7 @@ function LatestNewsView() {
 
 export default function DynamicPage() {
   const { pathname } = useLocation();
-  const { programs, campusLifeContent, newsPageConfig, siteSettings, placementsContent } = useData();
+  const { programs, campusLifeContent, newsPageConfig, siteSettings, placementsContent, cmsPages } = useData();
   const content = getPageContent(pathname, programs, newsPageConfig);
   const isManagement = pathname.toLowerCase().startsWith("/management");
   const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
@@ -1805,6 +1806,7 @@ export default function DynamicPage() {
     hiddenMap[cleanPath] ||
     hiddenMap[pathname] ||
     (content.title && (hiddenMap[content.title] || hiddenMap[content.title.toLowerCase()]));
+  const cmsPage = (cmsPages || []).find(page => page.slug.replace(/\/$/, "").toLowerCase() === (cleanPath || "/") && page.status === "published");
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1833,6 +1835,13 @@ export default function DynamicPage() {
         </div>
       </div>
     );
+  }
+
+  if (cmsPage) {
+    return <main className="min-h-[60vh] bg-white text-[#10264f]">
+      <SEO title={cmsPage.seoTitle || `${cmsPage.title} | Chalapathi University`} description={cmsPage.seoDescription || cmsPage.shortDescription || ""} url={`https://chalapathiuniversity.edu.in${cmsPage.slug}`} />
+      {(cmsPage.sections || []).filter(section => section.status === "published").sort((a,b) => a.order - b.order).map((section,index) => <DynamicSectionRenderer key={section.id} section={section} index={index} />)}
+    </main>;
   }
 
   const isCampusLife = cleanPath.startsWith("/campus-life");

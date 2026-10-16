@@ -85,6 +85,7 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
         sections: page.sections || [],
         customData: page.customData || {},
         tableData: page.tableData || null,
+        navLabel: page.navLabel || page.name || page.title || "",
       };
 
       const pageRecord = await prisma.cmsPage.upsert({

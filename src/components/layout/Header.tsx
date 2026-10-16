@@ -107,7 +107,7 @@ const CATEGORY_INFO: Record<string, { desc: string; linkText: string; to: string
 };
 
 export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {}) {
-  const { announcements, showAnnouncementsDrawer, setShowAnnouncementsDrawer, programs, siteSettings, themeColors, searchConfig, placementsContent } = useData();
+  const { announcements, showAnnouncementsDrawer, setShowAnnouncementsDrawer, programs, siteSettings, themeColors, searchConfig, placementsContent, cmsPages } = useData();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -150,9 +150,11 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
     { label: "Chalapathi Advantage", to: "/about/advantage" }
   ];
 
+  const dynamicMenuPages = (cmsPages || []).filter(page => page.status === "published" && page.showInNav && page.slug);
+  const dynamicTopLinks = dynamicMenuPages.filter(page => !page.parentNav || page.parentNav === "Main Menu").sort((a,b) => a.displayOrder - b.displayOrder);
   const navLinks = [
     "About Us", "Academics", "Admissions", "Research", "Faculty",
-    "Campus Life", "Placements", "News & Events", "Contact Us",
+    "Campus Life", "Placements", "News & Events", "Contact Us", ...dynamicTopLinks.map(p => p.navLabel || p.name),
   ];
 
   const navHrefs: Record<string, string> = {
@@ -165,6 +167,7 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
     "Placements": "/placements",
     "Contact Us": "/contact",
   };
+  dynamicTopLinks.forEach(page => { navHrefs[page.navLabel || page.name] = page.slug; });
 
   const newsEventsItems = [
     { label: "News", to: "/news" },
@@ -208,11 +211,12 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
   ];
 
   const visibleNavLinks = navLinks.filter(name => !isPageHidden(name, navHrefs[name]));
-  const visibleAboutItems = aboutItems.filter(item => !isPageHidden(item.label, item.to));
-  const visibleAcademicsItems = academicsItems.filter(item => !isPageHidden(item.label, item.to));
-  const visibleFacultyItems = facultyItems.filter(item => !isPageHidden(item.label, item.to));
-  const visibleCampusLifeItems = campusLifeItems.filter(item => !isPageHidden(item.label, item.to));
-  const visibleNewsEventsItems = newsEventsItems.filter(item => !isPageHidden(item.label, item.to));
+  const childPagesFor = (parent: string) => dynamicMenuPages.filter(page => page.parentNav === parent).sort((a,b) => a.displayOrder - b.displayOrder).map(page => ({ label: page.navLabel || page.name, to: page.slug }));
+  const visibleAboutItems = [...aboutItems, ...childPagesFor("About Us")].filter(item => !isPageHidden(item.label, item.to));
+  const visibleAcademicsItems = [...academicsItems, ...childPagesFor("Academics")].filter(item => !isPageHidden(item.label, item.to));
+  const visibleFacultyItems = [...facultyItems, ...childPagesFor("Faculty")].filter(item => !isPageHidden(item.label, item.to));
+  const visibleCampusLifeItems = [...campusLifeItems, ...childPagesFor("Campus Life")].filter(item => !isPageHidden(item.label, item.to));
+  const visibleNewsEventsItems = [...newsEventsItems, ...childPagesFor("News & Events")].filter(item => !isPageHidden(item.label, item.to));
 
   useEffect(() => {
     if (!searchQuery.trim()) {

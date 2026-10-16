@@ -59,6 +59,28 @@ const bcrypt = require('bcryptjs');
     const upload = await request('/api/upload', { method: 'POST', body: form() }, true);
     assert.equal(upload.status, 200);
     const photo = (await upload.json()).url;
+    const cmsSlug = '/builder-workflow-test';
+    const builderPage = { id: 'workflow-page', slug: cmsSlug, name: 'Builder Workflow Test', title: 'Builder Workflow Test', type: 'custom', status: 'draft', displayOrder: 901, showInNav: true, navLabel: 'Builder Test', parentNav: 'Campus Life', sections: [
+      { id: 'hero-image', type: 'image', title: 'Page image', status: 'published', order: 1, media: { url: photo, alt: 'Workflow test image' }, settings: { imageWidth: '100%', borderRadius: '16px' } },
+      { id: 'intro-copy', type: 'rich-text', title: 'Page text', content: 'Text below the image', status: 'published', order: 2 },
+      { id: 'photo-carousel', type: 'gallery', title: 'Photo carousel', status: 'published', order: 3, settings: { layout: 'carousel' }, items: [{ id: 'carousel-item', title: 'Uploaded image', image: photo, enabled: true, order: 1 }] }
+    ] };
+    assert.equal((await send('/api/cms', { action: 'savePage', page: builderPage })).status, 200, 'builder saves a page with ordered image, text and carousel sections');
+    let publicCms = await (await request('/api/cms?action=getAll')).json();
+    assert.ok(!publicCms.pages.some(page => page.slug === cmsSlug), 'draft page is not exposed publicly');
+    assert.equal((await send('/api/cms', { action: 'savePage', page: { ...builderPage, status: 'published' }, note: 'Publish and add to navigation' })).status, 200);
+    publicCms = await (await request('/api/cms?action=getAll')).json();
+    const visibleBuilderPage = publicCms.pages.find(page => page.slug === cmsSlug);
+    assert.ok(visibleBuilderPage, 'published builder page appears to public readers');
+    assert.equal(visibleBuilderPage.navLabel, 'Builder Test', 'navigation label persists');
+    assert.equal(visibleBuilderPage.parentNav, 'Campus Life', 'navigation parent persists');
+    assert.equal(visibleBuilderPage.sections[2].settings.layout, 'carousel', 'block order and carousel settings persist');
+    assert.equal((await send('/api/cms', { action: 'savePage', page: { ...builderPage, status: 'published', title: 'Edited after publish', sections: builderPage.sections.slice(0, 2) }, note: 'Edit after publish' })).status, 200);
+    publicCms = await (await request('/api/cms?action=getAll')).json();
+    assert.equal(publicCms.pages.find(page => page.slug === cmsSlug).title, 'Edited after publish', 'published page can be edited and remains available');
+    assert.equal((await send('/api/cms', { action: 'deletePage', slug: cmsSlug })).status, 200);
+    publicCms = await (await request('/api/cms?action=getAll')).json();
+    assert.ok(!publicCms.pages.some(page => page.slug === cmsSlug), 'deleted page disappears from the public navigation source');
     const bad = new FormData(); bad.append('file', new Blob(['<script>alert(1)</script>'], { type: 'image/png' }), 'bad.png');
     assert.equal((await request('/api/upload', { method: 'POST', body: bad }, true)).status, 400);
     for (const kind of ['news', 'events']) {
