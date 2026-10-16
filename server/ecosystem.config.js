@@ -2,8 +2,8 @@ module.exports = {
   apps: [
     {
       name: "chalapathi-api",
-      script: "npm",
-      args: "start",
+      cwd: __dirname,
+      script: "dist/index.js",
       env: {
         NODE_ENV: "production",
         PORT: 5000
