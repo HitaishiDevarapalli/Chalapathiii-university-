@@ -4656,52 +4656,58 @@ function ContactUsView() {
   const { contactPageContent } = useData();
   const content = contactPageContent || DEFAULT_CONTACT_PAGE_CONTENT;
 
-  const [captchaText, setCaptchaText] = React.useState("p s t 5 s");
-  const [formData, setFormData] = React.useState({ firstName: "", lastName: "", mobile: "", email: "", message: "", captcha: "" });
+  const hasContactDetails = Boolean(content.phoneNumber || content.emailAddress || content.locationAddress || content.workingHoursDays || content.workingHoursClosed);
+  const hasMapContent = Boolean(content.mapAddress || content.mapExternalUrl || content.mapEmbedUrl);
+  const [formData, setFormData] = React.useState({ firstName: "", lastName: "", mobile: "", email: "", message: "" });
+  const [submitState, setSubmitState] = React.useState<"idle" | "sending" | "sent" | "error">("idle");
 
-  const handleCaptchaRefresh = () => {
-    const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-    let text = "";
-    for (let i = 0; i < 5; i++) {
-      text += chars.charAt(Math.floor(Math.random() * chars.length)) + " ";
-    }
-    setCaptchaText(text.trim());
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.captcha.replace(/\s+/g, "") !== captchaText.replace(/\s+/g, "")) {
-      alert("Invalid captcha text. Please try again.");
-      return;
+    setSubmitState("sending");
+    try {
+      const response = await fetch("/api/enquiries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          name: `${formData.firstName} ${formData.lastName}`.trim(),
+          mobile: formData.mobile,
+          email: formData.email,
+          query: formData.message,
+          program: "Contact page inquiry"
+        })
+      });
+      if (!response.ok) throw new Error("Submission failed");
+      setSubmitState("sent");
+      setFormData({ firstName: "", lastName: "", mobile: "", email: "", message: "" });
+    } catch {
+      setSubmitState("error");
     }
-    alert(content.formSuccessMessage || "Message sent successfully! Our representative will contact you shortly.");
-    setFormData({ firstName: "", lastName: "", mobile: "", email: "", message: "", captcha: "" });
-    handleCaptchaRefresh();
   };
 
   return (
     <div className="space-y-10 text-left font-[var(--font-poppins)] mt-4">
       {/* Hero Banner header matching Placements page styling but with Contact details */}
-      <div className="bg-[#072A6C] rounded-2xl sm:rounded-3xl p-4 sm:p-8 text-white relative overflow-hidden border border-gray-100 shadow-sm mb-4 sm:mb-6">
+      {(content.heroBadge || content.heroTitle || content.heroDescription) && <div className="bg-[#072A6C] rounded-2xl sm:rounded-3xl p-4 sm:p-8 text-white relative overflow-hidden border border-gray-100 shadow-sm mb-4 sm:mb-6">
         <div className="absolute inset-y-0 right-0 w-1/3 opacity-15 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white to-transparent pointer-events-none" />
         <div className="z-10 relative space-y-1.5 sm:space-y-2">
           <div className="inline-flex items-center gap-2 px-2.5 py-0.5 bg-white/10 text-white rounded-lg font-bold text-[9px] sm:text-[10px] uppercase tracking-wider">
-            {content.heroBadge || "CONTACT SUPPORT"}
+            {content.heroBadge}
           </div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-tight">{content.heroTitle || "CONTACT US"}</h1>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-tight">{content.heroTitle}</h1>
           <p className="text-xs text-blue-100 font-light max-w-xl leading-relaxed">
-            {content.heroDescription || "Whether you're a prospective student, parent, recruiter, alumnus, or visitor, we're here to help. Reach out to us for admissions, academic inquiries, placements, scholarships, or any assistance regarding campus life."}
+            {content.heroDescription}
           </p>
         </div>
-      </div>
+      </div>}
 
-      {/* Main Two-Column Block (Matching screenshot layout) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-8 items-stretch">
+      {/* Main Two-Column Block */}
+      <div className={`grid grid-cols-1 gap-5 sm:gap-8 items-stretch ${hasContactDetails ? "lg:grid-cols-2" : "lg:grid-cols-1"}`}>
         
         {/* Left Side: Get In Touch Cards Grid */}
-        <div className="lg:col-span-6 bg-white border border-gray-200/80 rounded-2xl overflow-hidden shadow-sm flex flex-col">
+        {hasContactDetails && <div className="bg-white border border-gray-200/80 rounded-2xl overflow-hidden shadow-sm flex flex-col">
           <div className="bg-[#072A6C] text-white py-3 sm:py-4 px-4 sm:px-6 text-center font-extrabold text-xs sm:text-sm uppercase tracking-wider">
-            {content.getInTouchTitle || "GET IN TOUCH WITH US NOW!"}
+            {content.getInTouchTitle || "Contact details"}
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-gray-100 flex-1">
@@ -4711,12 +4717,12 @@ function ContactUsView() {
               <span className="p-2.5 sm:p-3 bg-[#072A6C]/5 text-[#072A6C] rounded-full">
                 <Phone size={18} className="sm:w-5 sm:h-5" />
               </span>
-              <span className="font-extrabold text-[#072A6C] text-[11px] sm:text-xs uppercase tracking-wide">{content.phoneTitle || "PHONE NUMBER"}</span>
+              <span className="font-extrabold text-[#072A6C] text-[11px] sm:text-xs uppercase tracking-wide">{content.phoneTitle || "Phone"}</span>
               <a 
-                href={`tel:${(content.phoneNumber || "+91 95055 05566").replace(/[^0-9+]/g, "")}`} 
+                href={`tel:${(content.phoneNumber || "").replace(/[^0-9+]/g, "")}`}
                 className="text-xs font-semibold text-gray-700 hover:text-[#072A6C] hover:underline"
               >
-                {content.phoneNumber || "+91 95055 05566"}
+                {content.phoneNumber}
               </a>
             </div>
 
@@ -4725,12 +4731,12 @@ function ContactUsView() {
               <span className="p-2.5 sm:p-3 bg-[#072A6C]/5 text-[#072A6C] rounded-full">
                 <Mail size={18} className="sm:w-5 sm:h-5" />
               </span>
-              <span className="font-extrabold text-[#072A6C] text-[11px] sm:text-xs uppercase tracking-wide">{content.emailTitle || "EMAIL"}</span>
+              <span className="font-extrabold text-[#072A6C] text-[11px] sm:text-xs uppercase tracking-wide">{content.emailTitle || "Email"}</span>
               <a 
-                href={`mailto:${content.emailAddress || "info@chalapathiuniversity.edu.in"}`} 
+                href={`mailto:${content.emailAddress || ""}`}
                 className="text-xs font-semibold text-gray-700 hover:text-[#072A6C] hover:underline truncate max-w-[200px]"
               >
-                {content.emailAddress || "info@chalapathiuniversity.edu.in"}
+                {content.emailAddress || ""}
               </a>
             </div>
 
@@ -4739,9 +4745,9 @@ function ContactUsView() {
               <span className="p-2.5 sm:p-3 bg-[#072A6C]/5 text-[#072A6C] rounded-full">
                 <Globe size={18} className="sm:w-5 sm:h-5" />
               </span>
-              <span className="font-extrabold text-[#072A6C] text-[11px] sm:text-xs uppercase tracking-wide">{content.locationTitle || "LOCATION"}</span>
+              <span className="font-extrabold text-[#072A6C] text-[11px] sm:text-xs uppercase tracking-wide">{content.locationTitle || "Location"}</span>
               <span className="text-[10px] sm:text-[11px] text-gray-500 leading-normal font-light whitespace-pre-line">
-                {content.locationAddress || "A.R. Nagar, Mothadaka,\nGuntur, AP – 522016"}
+                {content.locationAddress}
               </span>
             </div>
 
@@ -4750,42 +4756,42 @@ function ContactUsView() {
               <span className="p-2.5 sm:p-3 bg-[#072A6C]/5 text-[#072A6C] rounded-full">
                 <Clock size={18} className="sm:w-5 sm:h-5" />
               </span>
-              <span className="font-extrabold text-[#072A6C] text-[11px] sm:text-xs uppercase tracking-wide">{content.workingHoursTitle || "WORKING HOURS"}</span>
+              <span className="font-extrabold text-[#072A6C] text-[11px] sm:text-xs uppercase tracking-wide">{content.workingHoursTitle || "Working hours"}</span>
               <span className="text-[10px] sm:text-[11px] text-gray-500 font-semibold leading-normal">
-                {content.workingHoursDays || "Mon - Sat: 09:00 AM - 05:00 PM"}<br />
-                <span className="text-[#D4AF37] font-normal">{content.workingHoursClosed || "Sunday: Closed"}</span>
+                {content.workingHoursDays}<br />
+                <span className="text-[#D4AF37] font-normal">{content.workingHoursClosed}</span>
               </span>
             </div>
 
           </div>
-        </div>
+        </div>}
 
         {/* Right Side: Message Submission Form */}
-        <div className="lg:col-span-6 bg-white border border-gray-200/80 rounded-2xl overflow-hidden shadow-sm flex flex-col">
+        <div className="bg-white border border-gray-200/80 rounded-2xl overflow-hidden shadow-sm flex flex-col">
           <div className="bg-[#072A6C] text-white py-3 sm:py-4 px-4 sm:px-6 text-center font-extrabold text-xs sm:text-sm uppercase tracking-wider">
-            {content.formTitle || "CONTACT US"}
+            {content.formTitle || "Send an inquiry"}
           </div>
           
           <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-3.5 sm:space-y-4 text-left bg-gray-50/55 flex-1">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <label className="block text-[10px] font-bold text-gray-600 uppercase tracking-wider mb-1">First Name *</label>
+                <label className="block text-[10px] font-bold text-gray-600 uppercase tracking-wider mb-1">{content.formFirstNameLabel || "First Name *"}</label>
                 <input 
                   type="text" 
                   required
                   value={formData.firstName}
                   onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                  placeholder="First name"
+                  placeholder={content.formFirstNameLabel || "First name"}
                   className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs outline-none focus:ring-1 focus:ring-[#072A6C]" 
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-gray-600 uppercase tracking-wider mb-1">Last Name</label>
+                <label className="block text-[10px] font-bold text-gray-600 uppercase tracking-wider mb-1">{content.formLastNameLabel || "Last Name"}</label>
                 <input 
                   type="text" 
                   value={formData.lastName}
                   onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                  placeholder="Last name"
+                  placeholder={content.formLastNameLabel || "Last name"}
                   className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs outline-none focus:ring-1 focus:ring-[#072A6C]" 
                 />
               </div>
@@ -4793,70 +4799,48 @@ function ContactUsView() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <label className="block text-[10px] font-bold text-gray-600 uppercase tracking-wider mb-1">Mobile No *</label>
+                <label className="block text-[10px] font-bold text-gray-600 uppercase tracking-wider mb-1">{content.formMobileLabel || "Mobile No *"}</label>
                 <input 
                   type="tel" 
                   required
                   value={formData.mobile}
                   onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
-                  placeholder="Phone number"
+                  placeholder={content.formMobileLabel || "Phone number"}
                   className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs outline-none focus:ring-1 focus:ring-[#072A6C]" 
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-gray-600 uppercase tracking-wider mb-1">Email ID *</label>
+                <label className="block text-[10px] font-bold text-gray-600 uppercase tracking-wider mb-1">{content.formEmailLabel || "Email ID *"}</label>
                 <input 
                   type="email" 
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="name@domain.com"
+                  placeholder={content.formEmailLabel || "Email address"}
                   className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs outline-none focus:ring-1 focus:ring-[#072A6C]" 
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold text-gray-600 uppercase tracking-wider mb-1">Message</label>
+              <label className="block text-[10px] font-bold text-gray-600 uppercase tracking-wider mb-1">{content.formMessageLabel || "Message"}</label>
               <textarea 
                 rows={3}
                 value={formData.message}
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                placeholder="Type your message..."
+                placeholder={content.formMessageLabel || "Type your message"}
                 className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs outline-none focus:ring-1 focus:ring-[#072A6C] resize-none" 
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="block text-[10px] font-bold text-gray-600 uppercase tracking-wider mb-1">Please type the characters *</label>
-              <div className="flex gap-4 items-center">
-                <input 
-                  type="text" 
-                  required
-                  value={formData.captcha}
-                  onChange={(e) => setFormData({ ...formData, captcha: e.target.value })}
-                  className="w-1/2 px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs outline-none focus:ring-1 focus:ring-[#072A6C]" 
-                  placeholder="Characters"
-                />
-                <div className="w-1/2 bg-white border border-gray-200 rounded-xl py-2 px-4 text-center font-mono font-bold tracking-[6px] select-none select-all relative overflow-hidden flex items-center justify-between">
-                  <span className="text-[#072A6C] text-xs">{captchaText}</span>
-                  <button 
-                    type="button" 
-                    onClick={handleCaptchaRefresh}
-                    className="text-[9px] font-bold text-gray-400 hover:text-gray-600 outline-none border-none bg-transparent cursor-pointer"
-                  >
-                    Refresh
-                  </button>
-                </div>
-              </div>
-              <p className="text-[9px] text-gray-400 italic">This helps us prevent spam, thank you.</p>
-            </div>
+            {submitState === "sent" && <p role="status" className="text-sm text-emerald-700">{content.formSuccessMessage || "Your inquiry has been submitted."}</p>}
+            {submitState === "error" && <p role="alert" className="text-sm text-red-700">Your inquiry could not be submitted. Please try again.</p>}
 
             <button 
               type="submit"
               className="w-full py-3 bg-[#D4AF37] hover:bg-[#C9A84C] text-white font-bold text-xs rounded-xl transition-colors uppercase tracking-wider flex items-center justify-center gap-2 mt-4 cursor-pointer outline-none border-none"
             >
-              {content.formSubmitButtonText || "SUBMIT REQUEST"}
+              {submitState === "sending" ? "Sending…" : content.formSubmitButtonText || "Send inquiry"}
             </button>
           </form>
         </div>
@@ -4915,14 +4899,14 @@ function ContactUsView() {
       </div>
 
       {/* Google Maps Container */}
-      <div className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm space-y-4">
+      {hasMapContent && <div className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h3 className="text-sm font-extrabold text-[#072A6C] uppercase tracking-wider">
-              {content.mapHeading || "FIND US ON THE MAP"}
+              {content.mapHeading || "Location"}
             </h3>
             <p className="text-xs text-gray-400 font-light leading-normal">
-              {content.mapAddress || "Chalapathi University (Autonomous), Abburi Raghavaiah Nagar, Mothadaka, Guntur, AP – 522016, India."}
+              {content.mapAddress}
             </p>
           </div>
           {content.mapExternalUrl && (
@@ -4932,7 +4916,7 @@ function ContactUsView() {
               rel="noopener noreferrer"
               className="h-10 px-5 bg-[#072A6C] hover:bg-[#0c409c] text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-colors shrink-0 outline-none border-none text-center"
             >
-              {content.mapButtonText || "Open in Google Maps"}
+              {content.mapButtonText || "Open map"}
             </a>
           )}
         </div>
@@ -4940,7 +4924,7 @@ function ContactUsView() {
         {/* Map iframe */}
         <div className="rounded-xl overflow-hidden border border-gray-200 h-64 md:h-80 shadow-inner">
           <iframe 
-            src={content.mapEmbedUrl || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3826.974950454796!2d80.28581691486445!3d16.375218788685984!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a4a79679802cfad%3A0xe67e2a901bbd33fe!2sChalapathi%20Institute%20of%20Technology!5e0!3m2!1sen!2sin!4v1657523129846!5m2!1sen!2sin"} 
+            src={content.mapEmbedUrl}
             width="100%" 
             height="100%" 
             style={{ border: 0 }} 
@@ -4949,7 +4933,7 @@ function ContactUsView() {
             referrerPolicy="no-referrer-when-downgrade"
           />
         </div>
-      </div>
+      </div>}
     </div>
   );
 }

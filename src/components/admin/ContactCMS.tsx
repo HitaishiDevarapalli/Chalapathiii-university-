@@ -31,28 +31,34 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
     }
   }, [contactPageContent]);
 
-  const handleSave = () => {
-    updateContactPageContent(formState);
+  const handleSave = async () => {
+    const contactSaved = await updateContactPageContent(formState);
     
     // Also sync standard siteSettings contact fields
-    updateSiteSettings({
+    const settingsSaved = await updateSiteSettings({
       ...siteSettings,
-      contactPhone: formState.phoneNumber || siteSettings.contactPhone,
-      contactEmail: formState.emailAddress || siteSettings.contactEmail,
-      contactAddress: formState.locationAddress || siteSettings.contactAddress,
-      googleMapEmbedUrl: formState.mapEmbedUrl || siteSettings.googleMapEmbedUrl
+      contactPhone: formState.phoneNumber || "",
+      contactEmail: formState.emailAddress || "",
+      contactAddress: formState.locationAddress || "",
+      googleMapEmbedUrl: formState.mapEmbedUrl || ""
     });
 
+    if (!contactSaved || !settingsSaved) {
+      notifySave("Contact content could not be published. Please check your connection and try again.");
+      return;
+    }
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 2500);
     notifySave("Contact Us page CMS content saved live!");
   };
 
   const handleReset = () => {
-    if (window.confirm("Reset all Contact Us page content to original university defaults?")) {
+    if (window.confirm("Clear all Contact Us page content? This removes the contact details and map from the public page.")) {
       setFormState(DEFAULT_CONTACT_PAGE_CONTENT);
-      updateContactPageContent(DEFAULT_CONTACT_PAGE_CONTENT);
-      notifySave("Contact Us page content reset to defaults!");
+      void Promise.all([
+        updateContactPageContent(DEFAULT_CONTACT_PAGE_CONTENT),
+        updateSiteSettings({ ...siteSettings, contactPhone: "", contactEmail: "", contactAddress: "", googleMapEmbedUrl: "" })
+      ]).then(([contactSaved, settingsSaved]) => notifySave(contactSaved && settingsSaved ? "Contact page content cleared." : "Unable to clear all contact content."));
     }
   };
 
@@ -65,7 +71,7 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
         onSave={handleSave}
         saveSuccess={saveSuccess}
         onReset={handleReset}
-        resetLabel="Reset Contact Page"
+        resetLabel="Clear Contact Page"
       />
 
       <PageVisibilityBanner
@@ -138,20 +144,20 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                 <label className="text-[11px] font-bold text-gray-700 uppercase">Top Badge Text</label>
                 <input
                   type="text"
-                  value={formState.heroBadge ?? "CONTACT SUPPORT"}
+                  value={formState.heroBadge ?? ""}
                   onChange={(e) => setFormState({ ...formState, heroBadge: e.target.value })}
                   className="w-full h-10 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C] focus:bg-white"
-                  placeholder="CONTACT SUPPORT"
+                  placeholder="Enter a badge"
                 />
               </div>
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold text-gray-700 uppercase">Main Heading (Title)</label>
                 <input
                   type="text"
-                  value={formState.heroTitle ?? "CONTACT US"}
+                  value={formState.heroTitle ?? ""}
                   onChange={(e) => setFormState({ ...formState, heroTitle: e.target.value })}
                   className="w-full h-10 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-black text-[#072A6C] focus:bg-white"
-                  placeholder="CONTACT US"
+                  placeholder="Enter a page title"
                 />
               </div>
             </div>
@@ -173,7 +179,7 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
               <div className="bg-[#072A6C] rounded-2xl p-6 text-white relative overflow-hidden shadow-sm">
                 <div className="space-y-2 relative z-10">
                   <div className="inline-flex items-center gap-2 px-2.5 py-0.5 bg-white/10 text-white rounded-lg font-bold text-[10px] uppercase tracking-wider">
-                    {formState.heroBadge || "CONTACT SUPPORT"}
+                    {formState.heroBadge}
                   </div>
                   <h2 className="text-2xl font-black uppercase tracking-tight">{formState.heroTitle || "CONTACT US"}</h2>
                   <p className="text-xs text-blue-100 font-light max-w-xl leading-relaxed">
@@ -205,10 +211,10 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
               <label className="text-[11px] font-bold text-gray-700 uppercase">Card Header Bar Text</label>
               <input
                 type="text"
-                value={formState.getInTouchTitle ?? "GET IN TOUCH WITH US NOW!"}
+                value={formState.getInTouchTitle ?? ""}
                 onChange={(e) => setFormState({ ...formState, getInTouchTitle: e.target.value })}
                 className="w-full h-10 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
-                placeholder="GET IN TOUCH WITH US NOW!"
+                placeholder="Enter a section title"
               />
             </div>
 
@@ -222,7 +228,7 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                   <label className="text-[10px] font-bold text-gray-500 uppercase">Box Label</label>
                   <input
                     type="text"
-                    value={formState.phoneTitle ?? "PHONE NUMBER"}
+                    value={formState.phoneTitle ?? ""}
                     onChange={(e) => setFormState({ ...formState, phoneTitle: e.target.value })}
                     className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold"
                   />
@@ -231,10 +237,10 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                   <label className="text-[10px] font-bold text-gray-500 uppercase">Phone Value</label>
                   <input
                     type="text"
-                    value={formState.phoneNumber ?? "+91 95055 05566"}
+                    value={formState.phoneNumber ?? ""}
                     onChange={(e) => setFormState({ ...formState, phoneNumber: e.target.value })}
                     className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold text-[#072A6C]"
-                    placeholder="+91 95055 05566"
+                    placeholder="Enter an official phone number"
                   />
                 </div>
               </div>
@@ -248,7 +254,7 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                   <label className="text-[10px] font-bold text-gray-500 uppercase">Box Label</label>
                   <input
                     type="text"
-                    value={formState.emailTitle ?? "EMAIL"}
+                    value={formState.emailTitle ?? ""}
                     onChange={(e) => setFormState({ ...formState, emailTitle: e.target.value })}
                     className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold"
                   />
@@ -257,10 +263,10 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                   <label className="text-[10px] font-bold text-gray-500 uppercase">Email Value</label>
                   <input
                     type="email"
-                    value={formState.emailAddress ?? "info@chalapathiuniversity.edu.in"}
+                    value={formState.emailAddress ?? ""}
                     onChange={(e) => setFormState({ ...formState, emailAddress: e.target.value })}
                     className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold text-[#072A6C]"
-                    placeholder="info@chalapathiuniversity.edu.in"
+                    placeholder="Enter an official email address"
                   />
                 </div>
               </div>
@@ -274,7 +280,7 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                   <label className="text-[10px] font-bold text-gray-500 uppercase">Box Label</label>
                   <input
                     type="text"
-                    value={formState.locationTitle ?? "LOCATION"}
+                    value={formState.locationTitle ?? ""}
                     onChange={(e) => setFormState({ ...formState, locationTitle: e.target.value })}
                     className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold"
                   />
@@ -283,10 +289,10 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                   <label className="text-[10px] font-bold text-gray-500 uppercase">Address Value</label>
                   <input
                     type="text"
-                    value={formState.locationAddress ?? "A.R. Nagar, Mothadaka, Guntur, AP – 522016"}
+                    value={formState.locationAddress ?? ""}
                     onChange={(e) => setFormState({ ...formState, locationAddress: e.target.value })}
                     className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-medium text-gray-700"
-                    placeholder="A.R. Nagar, Mothadaka, Guntur, AP – 522016"
+                    placeholder="Enter the official address"
                   />
                 </div>
               </div>
@@ -300,7 +306,7 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                   <label className="text-[10px] font-bold text-gray-500 uppercase">Box Label</label>
                   <input
                     type="text"
-                    value={formState.workingHoursTitle ?? "WORKING HOURS"}
+                    value={formState.workingHoursTitle ?? ""}
                     onChange={(e) => setFormState({ ...formState, workingHoursTitle: e.target.value })}
                     className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold"
                   />
@@ -310,7 +316,7 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                     <label className="text-[10px] font-bold text-gray-500 uppercase">Mon-Sat Timings</label>
                     <input
                       type="text"
-                      value={formState.workingHoursDays ?? "Mon - Sat: 09:00 AM - 05:00 PM"}
+                      value={formState.workingHoursDays ?? ""}
                       onChange={(e) => setFormState({ ...formState, workingHoursDays: e.target.value })}
                       className="w-full h-8 px-2 text-xs bg-white border border-gray-200 rounded-lg font-semibold text-gray-700"
                     />
@@ -319,7 +325,7 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                     <label className="text-[10px] font-bold text-[#D4AF37] uppercase">Sunday Status</label>
                     <input
                       type="text"
-                      value={formState.workingHoursClosed ?? "Sunday: Closed"}
+                      value={formState.workingHoursClosed ?? ""}
                       onChange={(e) => setFormState({ ...formState, workingHoursClosed: e.target.value })}
                       className="w-full h-8 px-2 text-xs bg-white border border-gray-200 rounded-lg font-bold text-[#D4AF37]"
                     />
@@ -351,32 +357,53 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                 <label className="text-[11px] font-bold text-gray-700 uppercase">Form Header Bar Title</label>
                 <input
                   type="text"
-                  value={formState.formTitle ?? "CONTACT US"}
+                  value={formState.formTitle ?? ""}
                   onChange={(e) => setFormState({ ...formState, formTitle: e.target.value })}
                   className="w-full h-10 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
-                  placeholder="CONTACT US"
+                  placeholder="Enter a page title"
                 />
               </div>
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold text-gray-700 uppercase">Submit Button Label</label>
                 <input
                   type="text"
-                  value={formState.formSubmitButtonText ?? "SUBMIT REQUEST"}
+                  value={formState.formSubmitButtonText ?? ""}
                   onChange={(e) => setFormState({ ...formState, formSubmitButtonText: e.target.value })}
                   className="w-full h-10 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#D4AF37]"
-                  placeholder="SUBMIT REQUEST"
+                  placeholder="Enter button text"
                 />
               </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {([
+                ["formFirstNameLabel", "First name field label"],
+                ["formLastNameLabel", "Last name field label"],
+                ["formMobileLabel", "Mobile field label"],
+                ["formEmailLabel", "Email field label"],
+                ["formMessageLabel", "Message field label"]
+              ] as const).map(([field, label]) => (
+                <label key={field} className="space-y-1 text-[10px] font-bold text-gray-600 uppercase">
+                  {label}
+                  <input
+                    type="text"
+                    value={formState[field] ?? ""}
+                    onChange={(e) => setFormState({ ...formState, [field]: e.target.value })}
+                    className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-medium normal-case"
+                    placeholder="Leave blank for standard label"
+                  />
+                </label>
+              ))}
             </div>
 
             <div className="space-y-1.5">
               <label className="text-[11px] font-bold text-gray-700 uppercase">Submission Success Alert Message</label>
               <input
                 type="text"
-                value={formState.formSuccessMessage ?? "Message sent successfully! Our representative will contact you shortly."}
+                value={formState.formSuccessMessage ?? ""}
                 onChange={(e) => setFormState({ ...formState, formSuccessMessage: e.target.value })}
                 className="w-full h-10 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800"
-                placeholder="Message sent successfully! Our representative will contact you shortly."
+                placeholder="Enter a confirmation message"
               />
             </div>
 
@@ -385,9 +412,7 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                 <CheckCircle2 size={15} className="text-emerald-600" /> Form Features Included:
               </div>
               <p className="text-[11px] text-emerald-700 leading-relaxed font-light">
-                • Mandatory First Name, Mobile Number, and Email ID fields.<br />
-                • Anti-spam alphanumeric dynamic Captcha generator with refresh button.<br />
-                • Inquiries automatically trigger email and SMS notifications to admissions staff.
+                Submissions are saved to the shared enquiries list after the server confirms receipt.
               </p>
             </div>
           </div>
@@ -411,11 +436,7 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                 <button
                   type="button"
                   onClick={() => {
-                    setFormState({
-                      ...formState,
-                      departments: DEFAULT_CONTACT_PAGE_CONTENT.departments
-                    });
-                    notifySave("Reset department helplines to default!");
+                    setFormState({ ...formState, departments: [] });
                   }}
                   className="px-3 py-1.5 text-xs font-bold text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all cursor-pointer"
                 >
@@ -426,9 +447,9 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                   onClick={() => {
                     const newDept: DepartmentContact = {
                       id: `dept_${Date.now()}`,
-                      name: "NEW DEPARTMENT OFFICE",
-                      phones: ["+91 88866 30000"],
-                      emails: ["dept@chalapathiuniversity.edu.in"]
+                      name: "",
+                      phones: [],
+                      emails: []
                     };
                     setFormState({
                       ...formState,
@@ -528,7 +549,7 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                           setFormState({ ...formState, departments: updated });
                         }}
                         className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold text-gray-800"
-                        placeholder="e.g. Dr. Kolla Naga Sreenivasa Rao"
+                        placeholder="Enter an official contact name"
                       />
                     </div>
 
@@ -545,7 +566,7 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                           setFormState({ ...formState, departments: updated });
                         }}
                         className="w-full h-8 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-semibold text-gray-800"
-                        placeholder="+91 88866 30340, +91 88866 30341"
+                        placeholder="Enter official phone numbers"
                       />
                     </div>
 
@@ -627,7 +648,7 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                 <label className="text-[11px] font-bold text-gray-700 uppercase">Map Section Title</label>
                 <input
                   type="text"
-                  value={formState.mapHeading ?? "FIND US ON THE MAP"}
+                  value={formState.mapHeading ?? ""}
                   onChange={(e) => setFormState({ ...formState, mapHeading: e.target.value })}
                   className="w-full h-10 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
                   placeholder="FIND US ON THE MAP"
@@ -637,7 +658,7 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                 <label className="text-[11px] font-bold text-gray-700 uppercase">Map Button Label</label>
                 <input
                   type="text"
-                  value={formState.mapButtonText ?? "Open in Google Maps"}
+                  value={formState.mapButtonText ?? ""}
                   onChange={(e) => setFormState({ ...formState, mapButtonText: e.target.value })}
                   className="w-full h-10 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-gray-800"
                   placeholder="Open in Google Maps"
@@ -649,7 +670,7 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
               <label className="text-[11px] font-bold text-gray-700 uppercase">Campus Location Address</label>
               <input
                 type="text"
-                value={formState.mapAddress ?? "Chalapathi University (Autonomous), Abburi Raghavaiah Nagar, Mothadaka, Guntur, AP – 522016, India."}
+                value={formState.mapAddress ?? ""}
                 onChange={(e) => setFormState({ ...formState, mapAddress: e.target.value })}
                 className="w-full h-10 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800"
                 placeholder="Chalapathi University (Autonomous), Abburi Raghavaiah Nagar..."
@@ -719,7 +740,7 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                 <label className="text-[11px] font-bold text-gray-700 uppercase">Quick Nav Card Heading</label>
                 <input
                   type="text"
-                  value={formState.quickNavTitle ?? "QUICK NAVIGATION"}
+                  value={formState.quickNavTitle ?? ""}
                   onChange={(e) => setFormState({ ...formState, quickNavTitle: e.target.value })}
                   className="w-full h-10 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
                   placeholder="QUICK NAVIGATION"
@@ -729,10 +750,10 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                 <label className="text-[11px] font-bold text-gray-700 uppercase">Admission Helpdesk Heading</label>
                 <input
                   type="text"
-                  value={formState.helpdeskTitle ?? "ADMISSION HELPDESK"}
+                  value={formState.helpdeskTitle ?? ""}
                   onChange={(e) => setFormState({ ...formState, helpdeskTitle: e.target.value })}
                   className="w-full h-10 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
-                  placeholder="ADMISSION HELPDESK"
+                  placeholder="Enter a section title"
                 />
               </div>
             </div>
@@ -741,7 +762,7 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
               <label className="text-[11px] font-bold text-gray-700 uppercase">Helpdesk Description Text</label>
               <textarea
                 rows={2}
-                value={formState.helpdeskDescription ?? "Have questions about registration, courses, or hostels? Reach our advisors directly."}
+                value={formState.helpdeskDescription ?? ""}
                 onChange={(e) => setFormState({ ...formState, helpdeskDescription: e.target.value })}
                 className="w-full p-2.5 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-800"
                 placeholder="Have questions about registration, courses, or hostels? Reach our advisors directly."
@@ -753,17 +774,17 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                 <label className="text-[11px] font-bold text-gray-700 uppercase">Counselor Phone Number</label>
                 <input
                   type="text"
-                  value={formState.helpdeskPhone ?? "8886630355"}
+                  value={formState.helpdeskPhone ?? ""}
                   onChange={(e) => setFormState({ ...formState, helpdeskPhone: e.target.value })}
                   className="w-full h-10 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
-                  placeholder="8886630355"
+                  placeholder="Enter an official phone number"
                 />
               </div>
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold text-gray-700 uppercase">Call Button Text</label>
                 <input
                   type="text"
-                  value={formState.helpdeskButtonText ?? "Call Counselor"}
+                  value={formState.helpdeskButtonText ?? ""}
                   onChange={(e) => setFormState({ ...formState, helpdeskButtonText: e.target.value })}
                   className="w-full h-10 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#D4AF37]"
                   placeholder="Call Counselor"
@@ -823,7 +844,7 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                 <label className="text-[10px] font-bold text-gray-600 uppercase">Destination Landmark</label>
                 <input
                   type="text"
-                  value={formState.locationAddress || "Chalapathi Institute of Technology, Mothadaka, Guntur, AP - 522016"}
+                  value={formState.locationAddress || ""}
                   onChange={(e) => setFormState({ ...formState, locationAddress: e.target.value })}
                   className="w-full h-9 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#072A6C]"
                 />
@@ -858,7 +879,7 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                 <label className="text-[10px] font-bold text-gray-600 uppercase">Main Telephone</label>
                 <input
                   type="text"
-                  value={formState.phoneNumber || "+91 91543 99999"}
+                  value={formState.phoneNumber || ""}
                   onChange={(e) => setFormState({ ...formState, phoneNumber: e.target.value })}
                   className="w-full h-8 px-2 text-xs bg-white border border-gray-200 rounded-lg font-bold text-[#072A6C]"
                 />
@@ -867,7 +888,7 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                 <label className="text-[10px] font-bold text-gray-600 uppercase">Admissions Hotline</label>
                 <input
                   type="text"
-                  value={formState.helpdeskPhone || "+91 88866 30355"}
+                  value={formState.helpdeskPhone || ""}
                   onChange={(e) => setFormState({ ...formState, helpdeskPhone: e.target.value })}
                   className="w-full h-8 px-2 text-xs bg-white border border-gray-200 rounded-lg font-bold text-emerald-700"
                 />
@@ -876,7 +897,7 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                 <label className="text-[10px] font-bold text-gray-600 uppercase">Primary Email</label>
                 <input
                   type="text"
-                  value={formState.emailAddress || "info@chalapathi.ac.in"}
+                  value={formState.emailAddress || ""}
                   onChange={(e) => setFormState({ ...formState, emailAddress: e.target.value })}
                   className="w-full h-8 px-2 text-xs bg-white border border-gray-200 rounded-lg font-bold text-[#072A6C]"
                 />
@@ -885,7 +906,7 @@ export const ContactCMS: React.FC<ContactCMSProps> = ({ notifySave }) => {
                 <label className="text-[10px] font-bold text-gray-600 uppercase">Visiting Timings</label>
                 <input
                   type="text"
-                  value={formState.workingHoursDays || "Mon - Sat: 9:00 AM - 5:00 PM"}
+                  value={formState.workingHoursDays || ""}
                   onChange={(e) => setFormState({ ...formState, workingHoursDays: e.target.value })}
                   className="w-full h-8 px-2 text-xs bg-white border border-gray-200 rounded-lg font-bold text-gray-800"
                 />
