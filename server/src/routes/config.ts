@@ -3,8 +3,10 @@ import prisma from "../prisma";
 
 import { requireAuth } from "../middleware/auth";
 import { SESSION_PREFIX } from "../sessionStore";
+import { authenticatedUser } from "../middleware/auth";
+import { isInternalConfig, visibleConfig } from "../security/apiPermissions";
 const router = Router();
-const reserved = (key: string) => key.startsWith(SESSION_PREFIX) || ["news", "events"].includes(key);
+const reserved = (key: string) => key.startsWith(SESSION_PREFIX) || isInternalConfig(key) || ["news", "events"].includes(key);
 router.use((req, res, next) => {
   if (req.params.key && reserved(req.params.key)) return res.sendStatus(404);
   if (req.method !== "GET" || req.path.includes("backup")) return requireAuth(req, res, next);
@@ -40,11 +42,12 @@ function safeJsonStringify(val: any, fallback = "{}"): string {
 // GET / - get ALL configs as an object: { key1: parsedJson1, key2: parsedJson2, ... }
 router.get("/", async (req: Request, res: Response) => {
   try {
+    await authenticatedUser(req);
     const configs = await prisma.siteConfig.findMany();
     const result: Record<string, any> = {};
 
     for (const item of configs) {
-      if (reserved(item.key)) continue;
+      if (reserved(item.key) || !visibleConfig(req, item.key)) continue;
       result[item.key] = safeJsonParse(item.valueJson, item.valueJson);
     }
 
@@ -152,8 +155,9 @@ router.post("/restore", async (req: Request, res: Response) => {
 // GET /:key - get single config by key. Parse valueJson.
 router.get("/:key", async (req: Request, res: Response) => {
   try {
+    await authenticatedUser(req);
     const { key } = req.params;
-    if (reserved(key)) return res.sendStatus(404);
+    if (reserved(key) || !visibleConfig(req, key)) return res.sendStatus(404);
 
     const config = await prisma.siteConfig.findUnique({
       where: { key },

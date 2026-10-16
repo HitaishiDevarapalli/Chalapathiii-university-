@@ -25,12 +25,15 @@ import {
 } from "../../context/DataContext";
 import { SectionHeader, ImageField, ColorField, PageVisibilityBanner } from "./AdminComponents";
 import { ApplyOnlineCMS } from "./ApplyOnlineCMS";
+import { useAdminAccess } from "../../security/adminAccess";
 
 export interface AdmissionsCMSProps {
   notifySave: (msg: string) => void;
 }
 
 export const AdmissionsCMS: React.FC<AdmissionsCMSProps> = ({ notifySave }) => {
+  const { user, can } = useAdminAccess();
+  const tabModule = (id: string) => id === "leads" ? "enquiries" : id === "applications" ? "applications" : id === "popup" ? "popup" : "admissions";
   const { 
     admissionsContent, 
     updateAdmissionsContent,
@@ -49,6 +52,12 @@ export const AdmissionsCMS: React.FC<AdmissionsCMSProps> = ({ notifySave }) => {
   });
 
   const [activeTab, setActiveTab] = useState<"portal" | "apply_online" | "fees" | "scholarships" | "popup" | "leads" | "applications" | "homepage">("portal");
+  React.useEffect(() => {
+    if (!can(tabModule(activeTab))) {
+      const first = ["portal", "leads", "applications", "popup"].find(id => can(tabModule(id)));
+      if (first) setActiveTab(first as typeof activeTab);
+    }
+  }, [activeTab, user]);
   
   // Subtab 6 (Applications): Search and filter
   const [appSearch, setAppSearch] = useState("");
@@ -257,14 +266,14 @@ export const AdmissionsCMS: React.FC<AdmissionsCMSProps> = ({ notifySave }) => {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in text-left">
+    <div className="space-y-6 animate-fade-in text-left" data-admin-module={tabModule(activeTab)}>
       {/* 🌟 STANDARDIZED PAGE VISIBILITY HIDE / SHOW BANNER */}
-      <PageVisibilityBanner
+      {can("settings", "publish") && <PageVisibilityBanner
         pageName="Admissions & Enrollment"
         routePath="/admissions"
         isHidden={isAdmissionsHidden}
         onToggle={toggleAdmissionsVisibility}
-      />
+      />}
 
       <SectionHeader
         title="Admissions & Enrollment CMS"
@@ -287,7 +296,7 @@ export const AdmissionsCMS: React.FC<AdmissionsCMSProps> = ({ notifySave }) => {
           { id: "leads", label: "Enquiries & Lead Management", icon: Users, count: `${enquiries.length} Leads` },
           { id: "applications", label: "Online Student Applications", icon: GraduationCap, count: `${onlineApplications?.length || 0} Apps` },
           { id: "homepage", label: "8. Homepage Admissions Strip, Ticker & Visit Us", icon: Sliders, count: "Homepage" }
-        ].map((tab) => {
+        ].filter(tab => can(tabModule(tab.id))).map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
           return (
@@ -2260,7 +2269,7 @@ export const AdmissionsCMS: React.FC<AdmissionsCMSProps> = ({ notifySave }) => {
       {/* SUBTAB 5: LEADS & ENQUIRIES MANAGEMENT                                */}
       {/* ═════════════════════════════════════════════════════════════════════ */}
       {activeTab === "leads" && (
-        <div className="space-y-6">
+        <div className="space-y-6" data-admin-module="enquiries">
           {/* Controls Bar */}
           <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs flex flex-col sm:flex-row gap-3 items-center justify-between">
             <div className="flex flex-1 items-center gap-2 w-full">
@@ -2486,7 +2495,7 @@ export const AdmissionsCMS: React.FC<AdmissionsCMSProps> = ({ notifySave }) => {
       {/* SUBTAB 6: ONLINE APPLICATIONS MANAGER                      */}
       {/* ────────────────────────────────────────────────────────── */}
       {activeTab === "applications" && (
-        <div className="space-y-6">
+        <div className="space-y-6" data-admin-module="applications">
           {/* Top Bar with Search & Export */}
           <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>

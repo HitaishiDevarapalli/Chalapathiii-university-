@@ -13,6 +13,7 @@ const bcrypt = require('bcryptjs');
   await db.exec(readFileSync('prisma/migrations/20261010105629_init/migration.sql', 'utf8'));
   await db.exec(readFileSync('prisma/migrations/202610130002_event_visibility/migration.sql', 'utf8'));
   await db.exec(readFileSync('prisma/migrations/202610130003_content_order/migration.sql', 'utf8'));
+  await db.exec(readFileSync('prisma/migrations/202610160001_admin_security/migration.sql', 'utf8'));
   const socket = new PGLiteSocketServer({ db, host: '127.0.0.1', port: 55440 });
   await socket.start();
   process.env.DATABASE_URL = 'postgresql://postgres:postgres@127.0.0.1:55440/postgres?connection_limit=1';
@@ -24,9 +25,10 @@ const bcrypt = require('bcryptjs');
   await new Promise(resolve => server.once('listening', resolve));
   let base = `http://127.0.0.1:${server.address().port}`;
   let cookie = '';
-  const request = (url, options = {}, admin = false) => fetch(base + url, {
-    ...options, headers: { ...(admin ? { cookie } : {}), ...options.headers }
-  });
+  const request = async (url, options = {}, admin = false) => {
+    const csrf = admin && !['GET', 'HEAD', 'OPTIONS'].includes(options.method || 'GET') ? (await (await fetch(base + '/api/auth/csrf', { headers: { cookie } })).json()).csrfToken : null;
+    return fetch(base + url, { ...options, headers: { ...(admin ? { cookie } : {}), ...(csrf ? { 'X-CSRF-Token': csrf } : {}), ...options.headers } });
+  };
   const send = (url, body, method = 'POST', admin = true) => request(url, {
     method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
   }, admin);
@@ -37,7 +39,7 @@ const bcrypt = require('bcryptjs');
     base = `http://127.0.0.1:${server.address().port}`;
   };
   try {
-    await prisma.adminUser.create({ data: { username: 'test-admin', passwordHash: await bcrypt.hash('Test-only-password-123', 10) } });
+    await prisma.adminUser.create({ data: { username: 'test-admin', passwordHash: await bcrypt.hash('Test-only-password-123', 10), role: 'superadmin', credentialMode: 'legacy', mustChangePassword: false, requireGoogle: false, requireTotp: false } });
     assert.equal((await send('/api/auth/login', { username: 'test-admin', password: 'wrong' }, 'POST', false)).status, 401);
     for (const collection of ['news', 'events']) {
       for (const [method, suffix] of [['POST', ''], ['PUT', '/1'], ['DELETE', '/1'], ['POST', '/sync']]) {

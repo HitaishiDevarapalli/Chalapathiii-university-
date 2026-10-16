@@ -3,9 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
+    "security": "node dist/security/cli.js",
+    "test:security": "npm run build && node tests/security.cjs",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "ts-node prisma/seed.ts",
@@ -15,12 +17,18 @@
   },
   "dependencies": {
     "@prisma/client": "^5.10.0",
+    "argon2": "^0.45.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
+    "dotenv": "^18.0.8",
     "express": "^4.21.0",
     "express-session": "^1.18.0",
+    "google-auth-library": "^11.3.1",
     "multer": "^2.4.0",
-    "uuid": "^10.0.0"
+    "otpauth": "^9.5.2",
+    "qrcode": "^1.5.4",
+    "uuid": "^11.1.1",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.9",
@@ -31,10 +39,12 @@
     "@types/express-session": "^1.18.0",
     "@types/multer": "^1.4.11",
     "@types/node": "^20",
+    "@types/qrcode": "^1.5.6",
     "@types/uuid": "^10.0.0",
     "prisma": "^5.10.0",
+    "puppeteer-core": "^25.14.0",
     "ts-node": "^10.9.2",
-    "ts-node-dev": "^2.0.0",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }

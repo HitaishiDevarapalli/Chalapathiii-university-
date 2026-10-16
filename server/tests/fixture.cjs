@@ -15,7 +15,7 @@ const bcrypt = require('bcryptjs');
   process.env.UPLOADS_DIR=path.resolve('../work/test-uploads');
   process.env.SESSION_SECRET='browser-test-secret-with-at-least-32-characters';
   const prisma = require('../dist/prisma').default;
-  await prisma.adminUser.create({ data: { username: 'test-admin', passwordHash: await bcrypt.hash('Test-only-password-123', 10) } });
+  await prisma.adminUser.create({ data: { username: 'test-admin', passwordHash: await bcrypt.hash('Test-only-password-123', 10), role: 'superadmin', credentialMode: 'legacy', mustChangePassword: false, requireGoogle: false, requireTotp: false } });
   const app = require('../dist/index').default;
   const express = require('express');
   app.use(express.static(path.resolve('../dist')));

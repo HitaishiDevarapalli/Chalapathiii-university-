@@ -3,8 +3,11 @@ import prisma from "../prisma";
 
 import { requireAuth } from "../middleware/auth";
 import { SESSION_PREFIX } from "../sessionStore";
+import { authenticatedUser } from "../middleware/auth";
+import { isInternalConfig, visibleConfig } from "../security/apiPermissions";
+import { permitted } from "../security/core";
 const router = Router();
-const reserved = (key: string) => key.startsWith(SESSION_PREFIX) || ["news", "events"].includes(key);
+const reserved = (key: string) => key.startsWith(SESSION_PREFIX) || isInternalConfig(key) || ["news", "events"].includes(key);
 
 
 function safeJsonParse<T = any>(val: string | null | undefined, fallback: T): T {
@@ -19,6 +22,7 @@ function safeJsonParse<T = any>(val: string | null | undefined, fallback: T): T 
 // GET /api/cms
 router.get("/", async (req: Request, res: Response) => {
   try {
+    await authenticatedUser(req);
     const { action, slug } = req.query;
 
     if (action === "getPage" && slug) {
@@ -26,6 +30,7 @@ router.get("/", async (req: Request, res: Response) => {
         where: { slug: String(slug) },
       });
       if (pageRecord) {
+        if (pageRecord.status !== "published" && !permitted(req.adminUser, "pages.view")) return res.sendStatus(404);
         return res.json({
           success: true,
           page: {
@@ -39,7 +44,7 @@ router.get("/", async (req: Request, res: Response) => {
 
     // Default: return all pages and site configs
     const [pages, configs] = await Promise.all([
-      prisma.cmsPage.findMany({ orderBy: { displayOrder: "asc" } }),
+      prisma.cmsPage.findMany({ where: permitted(req.adminUser, "pages.view") ? undefined : { status: "published" }, orderBy: { displayOrder: "asc" } }),
       prisma.siteConfig.findMany(),
     ]);
 
@@ -53,7 +58,7 @@ router.get("/", async (req: Request, res: Response) => {
 
     const parsedSettings: Record<string, any> = {};
     for (const c of configs) {
-      if (reserved(c.key)) continue;
+      if (reserved(c.key) || !visibleConfig(req, c.key)) continue;
       parsedSettings[c.key] = safeJsonParse(c.valueJson, c.valueJson);
     }
 

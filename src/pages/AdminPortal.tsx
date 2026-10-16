@@ -89,6 +89,9 @@ import { PagesCMS } from "../components/admin/PagesCMS";
 import { CertificationsCMS } from "../components/admin/CertificationsCMS";
 import { PopupCMS } from "../components/admin/PopupCMS";
 import { AdminSidebar, AdminOverview, workspaceLabels } from "../components/admin/AdminWorkspace";
+import { AdminLoginSteps } from "../components/admin/AdminLoginSteps";
+import { SecurityCMS } from "../components/admin/SecurityCMS";
+import { AdminAccessContext, AdminActionGuard, AdminIdentity, canAccess, canViewTab, securityRequest } from "../security/adminAccess";
 import { AcademicsCMS } from "../components/admin/AcademicsCMS";
 
 import { 
@@ -161,9 +164,24 @@ export default function AdminPortal() {
 
   // Authentication states
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [adminIdentity, setAdminIdentity] = useState<AdminIdentity | null>(null);
+  const [authStep, setAuthStep] = useState("credentials");
+  const refreshIdentity = async () => {
+    const data = await securityRequest("auth/me");
+    setAdminIdentity(data.user); setIsAuthenticated(true); setAuthStep("credentials");
+    window.dispatchEvent(new Event("admin-auth-changed"));
+  };
   React.useEffect(() => {
     fetch("/api/auth/me", { credentials: "same-origin", cache: "no-store" })
-      .then(res => { setIsAuthenticated(res.ok); if (res.ok) window.dispatchEvent(new Event("admin-auth-changed")); })
+      .then(async res => {
+        setIsAuthenticated(res.ok);
+        if (res.ok) { const data = await res.json(); setAdminIdentity(data.user); window.dispatchEvent(new Event("admin-auth-changed")); }
+        else {
+          const data = await securityRequest("auth/status");
+          if (data.next === "complete") { setAdminIdentity(data.user); setIsAuthenticated(true); }
+          else setAuthStep(data.next || "credentials");
+        }
+      })
       .catch(() => setIsAuthenticated(false));
   }, []);
   const [username, setUsername] = useState("");
@@ -177,10 +195,24 @@ export default function AdminPortal() {
   const [activeTab, setActiveTab] = useState<
     "dashboard" | "pages" | "homepage" | "about" | "academics" | "certifications" | "admissions" | 
     "research" | "directories" | "campus-life" | "placements" | "news" | "events" | "news-events" | 
-    "contact" | "links" | "gallery" | "footer" | "settings" | "popup"
+    "contact" | "links" | "gallery" | "footer" | "settings" | "popup" | "security"
   >("dashboard");
+  const can = (module: string, action = "view") => canAccess(adminIdentity, module, action);
+  React.useEffect(() => {
+    if (!adminIdentity) return;
+    if (!canViewTab(adminIdentity, activeTab)) {
+      const first = ["dashboard", "pages", "homepage", "about", "academics", "admissions", "research", "directories", "campus-life", "placements", "news-events", "contact", "popup", "gallery", "footer", "settings", "links", "security"].find(id => canViewTab(adminIdentity, id));
+      if (first) setActiveTab(first as typeof activeTab);
+    }
+  }, [adminIdentity, activeTab]);
 
   const [newsEventsModuleTab, setNewsEventsModuleTab] = useState<"news" | "events" | "announcements">("news");
+  React.useEffect(() => {
+    if (adminIdentity && !can(newsEventsModuleTab)) {
+      const first = (["news", "events", "announcements"] as const).find(module => can(module));
+      if (first) setNewsEventsModuleTab(first);
+    }
+  }, [adminIdentity, newsEventsModuleTab]);
 
   const [workspaceSearch, setWorkspaceSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -274,9 +306,10 @@ export default function AdminPortal() {
         body: JSON.stringify({ username: username.trim(), password: passcode })
       });
       if (!response.ok) throw new Error(response.status === 401 ? "Invalid username or password" : "Sign in unavailable. Please retry.");
-      setIsAuthenticated(true);
+      const data = await response.json();
       setPasscode("");
-      window.dispatchEvent(new Event("admin-auth-changed"));
+      if (data.next && data.next !== "complete") { setAuthStep(data.next); return; }
+      await refreshIdentity();
     } catch (error: any) { setAuthError(error.message); }
   };
 
@@ -285,6 +318,7 @@ export default function AdminPortal() {
       const response = await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" });
       if (!response.ok) throw new Error("Sign out failed. Please retry.");
       setIsAuthenticated(false);
+      setAdminIdentity(null);
       window.dispatchEvent(new Event("admin-auth-changed"));
     } catch (error: any) { alert(error.message); }
   };
@@ -1649,7 +1683,7 @@ export default function AdminPortal() {
             </p>
 
             {/* Login Form */}
-            <form onSubmit={handleLogin} className="space-y-4">
+            {authStep !== "credentials" ? <AdminLoginSteps step={authStep} onStep={setAuthStep} onComplete={() => { void refreshIdentity(); }} onBack={() => { setAuthStep("credentials"); setPasscode(""); }} /> : <form onSubmit={handleLogin} className="space-y-4">
               {authError && (
                 <div className="bg-red-50 text-red-600 p-3 rounded-xl text-xs font-semibold border border-red-200">
                   {authError}
@@ -1712,7 +1746,7 @@ export default function AdminPortal() {
                   ← Back to Home Page
                 </Link>
               </div>
-            </form>
+            </form>}
           </div>
 
           <div className="text-center text-xs text-gray-400 font-medium">
@@ -1744,7 +1778,7 @@ export default function AdminPortal() {
   }
 
   interface AdminNavItem {
-    id: "dashboard" | "pages" | "homepage" | "about" | "academics" | "certifications" | "admissions" | "research" | "directories" | "campus-life" | "placements" | "news" | "events" | "news-events" | "contact" | "links" | "gallery" | "footer" | "settings" | "popup";
+    id: "dashboard" | "pages" | "homepage" | "about" | "academics" | "certifications" | "admissions" | "research" | "directories" | "campus-life" | "placements" | "news" | "events" | "news-events" | "contact" | "links" | "gallery" | "footer" | "settings" | "popup" | "security";
     label: string;
     icon: any;
     badge?: string;
@@ -1832,11 +1866,13 @@ export default function AdminPortal() {
     { id: "footer", label: "Footer Builder", icon: Layers },
     { id: "settings", label: "Website Settings & Branding", icon: Settings },
     { id: "links", label: "Header & Navigation Links", icon: Link2 },
+    { id: "security", label: "Authorization & Security", icon: ShieldCheck },
   ];
   const orderedNavItems = [
     ...navItems.filter(item => item.id === "dashboard" || item.id === "pages").map(item => ({ ...item, section: undefined })),
     ...navItems.filter(item => item.id !== "dashboard" && item.id !== "pages").map(item => ({ ...item, section: item.id === "homepage" ? "Website content" : item.id === "popup" ? "Tools & settings" : undefined })),
-  ];
+  ].filter(item => canViewTab(adminIdentity, item.id)).map(item => ({ ...item,
+    subItems: item.id === "news-events" ? item.subItems?.filter(sub => can(sub.id)) : item.subItems }));
   const navigateWorkspace = (id: string) => setActiveTab(id as typeof activeTab);
   const searchResults = orderedNavItems.flatMap(item => [
     { key: item.id, label: workspaceLabels[item.id] || item.label, group: "Workspace", action: () => navigateWorkspace(item.id) },
@@ -1852,6 +1888,7 @@ export default function AdminPortal() {
 
 
   return (
+    <AdminAccessContext.Provider value={adminIdentity}>
     <div className={`admin-portal admin-shell ${activeTab === "dashboard" ? "dashboard-active" : ""} ${sidebarOpen ? "" : "sidebar-collapsed"}`}>
       {/* Save Notification Toast */}
       <AnimatePresence>
@@ -1889,13 +1926,16 @@ export default function AdminPortal() {
             </div>}
           </div>
           <div className="admin-save-status"><span className="admin-status-dot" /><div><strong>Content workspace</strong><small>{lastSavedTime ? "Last saved: " + lastSavedTime : "Save updates in each editor"}</small></div></div>
-          <button type="button" className="admin-topbar-backup" onClick={() => setShowSyncModal(true)} title="Sync / Backup Data" aria-label="Sync / Backup Data"><Download size={20} /></button>
-          <div className="admin-topbar-account"><span className="admin-avatar">A</span><strong>Admin</strong></div>
+          {can("backup", "export") && <button type="button" className="admin-topbar-backup" onClick={() => setShowSyncModal(true)} title="Sync / Backup Data" aria-label="Sync / Backup Data"><Download size={20} /></button>}
+          <div className="admin-topbar-account"><span className="admin-avatar">{adminIdentity?.username.charAt(0).toUpperCase()}</span><strong>{adminIdentity?.username}</strong></div>
         </header>
         {mobileSidebarOpen && <div className="admin-drawer-backdrop" onClick={() => setMobileSidebarOpen(false)}><div className="admin-drawer" onClick={event => event.stopPropagation()}><AdminSidebar {...sidebarProps} mobile onClose={() => setMobileSidebarOpen(false)} /></div></div>}
-        <div className="admin-workspace-toolbar"><span><span className="admin-status-dot" /> University content management</span><div><Link to="/" target="_blank" className="admin-button admin-button-secondary" aria-label="Preview website"><ExternalLink size={17} /><span className="admin-preview-label">Preview website</span></Link><button type="button" className="admin-button admin-button-secondary" onClick={() => setShowSyncModal(true)}><Download size={17} /> Sync / Backup Data</button><button type="button" className="admin-button admin-button-primary" disabled={isSyncingDb} onClick={handlePushAllToDatabase} title="Push all CMS content to the database"><UploadCloud size={18} />{isSyncingDb ? "Syncing…" : "Publish changes"}</button></div></div>
+        <div className="admin-workspace-toolbar"><span><span className="admin-status-dot" /> University content management</span><div><Link to="/" target="_blank" className="admin-button admin-button-secondary" aria-label="Preview website"><ExternalLink size={17} /><span className="admin-preview-label">Preview website</span></Link>{can("backup", "export") && <button type="button" className="admin-button admin-button-secondary" onClick={() => setShowSyncModal(true)}><Download size={17} /> Sync / Backup Data</button>}{can("settings", "manage") && <button type="button" className="admin-button admin-button-primary" disabled={isSyncingDb} onClick={handlePushAllToDatabase} title="Push all CMS content to the database"><UploadCloud size={18} />{isSyncingDb ? "Syncing…" : "Publish changes"}</button>}</div></div>
         {/* Main Workspace */}
         <main className="admin-workspace" id="admin-workspace" key={activeTab}>
+          {!canViewTab(adminIdentity, activeTab) ? <div className="admin-panel security-empty"><ShieldCheck size={28} /><h2>No modules have been assigned</h2><p>Ask a Super Administrator to grant the permissions required for your work.</p></div> :
+          <AdminActionGuard module={activeTab === "news-events" ? newsEventsModuleTab : activeTab}>
+          {activeTab === "security" && <SecurityCMS />}
           {/* ════════════════════════════════════════════════════ */}
           {/* TAB 1: DASHBOARD OVERVIEW                            */}
           {/* ════════════════════════════════════════════════════ */}
@@ -12488,6 +12528,8 @@ export default function AdminPortal() {
                 <button
                   type="button"
                   onClick={() => setNewsEventsModuleTab("news")}
+                  hidden={!can("news")}
+                  data-admin-denied={!can("news") ? "true" : undefined}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     newsEventsModuleTab === "news"
                       ? "bg-[#072A6C] text-white shadow-md shadow-[#072A6C]/20"
@@ -12499,6 +12541,8 @@ export default function AdminPortal() {
                 <button
                   type="button"
                   onClick={() => setNewsEventsModuleTab("events")}
+                  hidden={!can("events")}
+                  data-admin-denied={!can("events") ? "true" : undefined}
                   className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     newsEventsModuleTab === "events"
                       ? "bg-[#072A6C] text-white shadow-md shadow-[#072A6C]/20"
@@ -12510,6 +12554,8 @@ export default function AdminPortal() {
                 <button
                   type="button"
                   onClick={() => setNewsEventsModuleTab("announcements")}
+                  hidden={!can("announcements")}
+                  data-admin-denied={!can("announcements") ? "true" : undefined}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     newsEventsModuleTab === "announcements"
                       ? "bg-[#072A6C] text-white shadow-md shadow-[#072A6C]/20"
@@ -12899,6 +12945,7 @@ export default function AdminPortal() {
           {activeTab === "settings" && (
             <SettingsCMS notifySave={notifySave} saveSuccess={saveSuccess} />
           )}
+          </AdminActionGuard>}
         </main>
       </div>
 
@@ -13044,5 +13091,6 @@ export default function AdminPortal() {
         </div>
       )}
     </div>
+    </AdminAccessContext.Provider>
   );
 }

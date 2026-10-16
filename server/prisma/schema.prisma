@@ -17,7 +17,188 @@ model AdminUser {
   role         String   @default("admin") // admin | superadmin
   createdAt    DateTime @default(now()) @map("created_at")
 
+  email              String?                   @unique
+  status             String                    @default("Active")
+  credentialMode     String                    @default("secured")
+  mustChangePassword Boolean                   @default(true)
+  requireGoogle      Boolean                   @default(true)
+  requireTotp        Boolean                   @default(true)
+  securityVersion    Int                       @default(1)
+  roleId             String?
+  assignedRole       AdminRole?                @relation(fields: [roleId], references: [id])
+  updatedAt          DateTime                  @default(now()) @updatedAt @db.Timestamptz(3)
+  lastLoginAt        DateTime?                 @db.Timestamptz(3)
+  permissions        AdminUserPermission[]
+  googleAccounts     AuthorizedGoogleAccount[]
+  authenticator      UserAuthenticator?
+  recoveryCodes      AdminRecoveryCode[]
+  sessions           AdminAuthSession[]
+  events             AdminSecurityEvent[]
+
   @@map("admin_users")
+}
+
+model AdminRole {
+  id          String                @id @default(uuid())
+  name        String                @unique
+  description String                @default("")
+  system      Boolean               @default(false)
+  permissions AdminRolePermission[]
+  users       AdminUser[]
+  createdAt   DateTime              @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime              @updatedAt @db.Timestamptz(3)
+
+  @@map("admin_roles")
+}
+
+model AdminPermission {
+  key    String                @id
+  module String
+  action String
+  roles  AdminRolePermission[]
+  users  AdminUserPermission[]
+
+  @@unique([module, action])
+  @@map("admin_permissions")
+}
+
+model AdminRolePermission {
+  roleId        String
+  permissionKey String
+  role          AdminRole       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission    AdminPermission @relation(fields: [permissionKey], references: [key], onDelete: Cascade)
+
+  @@id([roleId, permissionKey])
+  @@map("admin_role_permissions")
+}
+
+model AdminUserPermission {
+  userId        Int
+  permissionKey String
+  allowed       Boolean         @default(true)
+  user          AdminUser       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permission    AdminPermission @relation(fields: [permissionKey], references: [key], onDelete: Cascade)
+
+  @@id([userId, permissionKey])
+  @@map("admin_user_permissions")
+}
+
+model AuthorizedGoogleAccount {
+  id          String    @id @default(uuid())
+  email       String    @unique
+  subject     String?   @unique
+  userId      Int
+  status      String    @default("Active")
+  requireTotp Boolean   @default(true)
+  verifiedAt  DateTime? @db.Timestamptz(3)
+  lastLoginAt DateTime? @db.Timestamptz(3)
+  addedBy     Int?
+  modifiedBy  Int?
+  createdAt   DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime  @updatedAt @db.Timestamptz(3)
+  user        AdminUser @relation(fields: [userId], references: [id])
+
+  @@index([userId, status])
+  @@map("authorized_google_accounts")
+}
+
+model UserAuthenticator {
+  userId       Int       @id
+  secretBox    String
+  enabled      Boolean   @default(false)
+  enrolledAt   DateTime? @db.Timestamptz(3)
+  pendingUntil DateTime? @db.Timestamptz(3)
+  lastCounter  BigInt    @default(-1)
+  user         AdminUser @relation(fields: [userId], references: [id])
+
+  @@map("user_authenticators")
+}
+
+model AdminRecoveryCode {
+  id        String    @id @default(uuid())
+  userId    Int
+  codeHash  String    @unique
+  usedAt    DateTime? @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  user      AdminUser @relation(fields: [userId], references: [id])
+
+  @@index([userId, usedAt])
+  @@map("admin_recovery_codes")
+}
+
+model AdminAuthSession {
+  id         String     @id
+  userId     Int?
+  dataJson   String
+  createdAt  DateTime   @default(now()) @db.Timestamptz(3)
+  expiresAt  DateTime   @db.Timestamptz(3)
+  lastSeenAt DateTime   @default(now()) @db.Timestamptz(3)
+  revokedAt  DateTime?  @db.Timestamptz(3)
+  user       AdminUser? @relation(fields: [userId], references: [id])
+
+  @@index([userId, revokedAt])
+  @@index([expiresAt])
+  @@map("admin_auth_sessions")
+}
+
+model AdminSecurityEvent {
+  id          String     @id @default(uuid())
+  userId      Int?
+  username    String?
+  email       String?
+  role        String?
+  category    String     @default("security")
+  event       String
+  success     Boolean
+  createdAt   DateTime   @default(now()) @db.Timestamptz(3)
+  ip          String?
+  userAgent   String?
+  target      String?
+  description String
+  sessionId   String?
+  user        AdminUser? @relation(fields: [userId], references: [id])
+
+  @@index([createdAt, id])
+  @@index([userId, createdAt])
+  @@index([event, success, createdAt])
+  @@index([email, createdAt])
+  @@map("admin_security_events")
+}
+
+model AdminLoginThrottle {
+  key       String   @id
+  attempts  Int      @default(0)
+  expiresAt DateTime @db.Timestamptz(3)
+
+  @@index([expiresAt])
+  @@map("admin_login_throttles")
+}
+
+model AdminOAuthState {
+  id          String    @id
+  userId      Int
+  sessionHash String
+  nonceHash   String
+  verifierBox String
+  expiresAt   DateTime  @db.Timestamptz(3)
+  consumedAt  DateTime? @db.Timestamptz(3)
+
+  @@map("admin_oauth_states")
+}
+
+model AdminSecurityPolicy {
+  id                    Int       @id @default(1)
+  requireGoogle         Boolean   @default(true)
+  requireTotp           Boolean   @default(true)
+  idleMinutes           Int       @default(30)
+  sessionHours          Int       @default(12)
+  maxAttempts           Int       @default(8)
+  lockoutMinutes        Int       @default(15)
+  retentionDays         Int       @default(365)
+  transitionCompletedAt DateTime? @db.Timestamptz(3)
+  updatedAt             DateTime  @updatedAt @db.Timestamptz(3)
+
+  @@map("admin_security_policy")
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -39,7 +220,7 @@ model NewsArticle {
   featured  Boolean  @default(false)
   readTime  String?  @map("read_time")
   hidden    Boolean  @default(false)
-  sortOrder        Int      @default(0) @map("sort_order")
+  sortOrder Int      @default(0) @map("sort_order")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -168,19 +349,19 @@ model OnlineApplication {
 // 9. FACULTY MEMBERS (Faculty + Board + Staff directories)
 // ─────────────────────────────────────────────────────────────
 model FacultyMember {
-  id            Int    @id @default(autoincrement())
+  id            Int     @id @default(autoincrement())
   name          String
-  title         String @default("") // Designation
-  edu           String @default("") // Qualifications
-  interests     String @default("") // Research areas
-  phone         String @default("")
-  email         String @default("")
-  avatar        String @default("") // Image URL
-  age           String @default("")
-  experience    String @default("")
-  idNo          String @default("") @map("id_no") // Employee ID
-  department    String @default("")
-  school        String @default("")
+  title         String  @default("") // Designation
+  edu           String  @default("") // Qualifications
+  interests     String  @default("") // Research areas
+  phone         String  @default("")
+  email         String  @default("")
+  avatar        String  @default("") // Image URL
+  age           String  @default("")
+  experience    String  @default("")
+  idNo          String  @default("") @map("id_no") // Employee ID
+  department    String  @default("")
+  school        String  @default("")
   isHod         Boolean @default(false) @map("is_hod")
   directoryType String  @default("faculty") @map("directory_type") // faculty | board | staff
 
@@ -310,7 +491,7 @@ model CmsPageVersion {
 // 17. DEPARTMENT CONTACTS
 // ─────────────────────────────────────────────────────────────
 model DepartmentContact {
-  id            String @id @default(uuid())
+  id            String  @id @default(uuid())
   name          String
   contactPerson String? @map("contact_person")
   phones        String  @default("[]") // JSON array

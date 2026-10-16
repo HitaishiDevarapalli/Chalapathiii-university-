@@ -2,6 +2,7 @@ import { Router, Request } from "express";
 import { createHash } from "crypto";
 import prisma from "../prisma";
 import { requireAuth } from "../middleware/auth";
+import { assertPermission } from "../middleware/auth";
 
 function revision(items: any[]) {
   return createHash("sha256").update(JSON.stringify(items)).digest("hex");
@@ -74,6 +75,13 @@ export function contentRouter(kind: "news" | "events") {
     const result = await prisma.$transaction(async (tx: any) => {
       await lock(tx);
       const before = await read(tx);
+      const incomingIds = new Set(prepared.map(item => item.id));
+      for (const item of prepared) {
+        const prior = before.find((row: any) => row.id === item.id);
+        if (!prior) await assertPermission(req, kind + ".create");
+        else if (Object.entries(item.data).some(([key, value]) => prior[key] !== value)) await assertPermission(req, kind + ".edit");
+      }
+      if (before.some((row: any) => !incomingIds.has(row.id))) await assertPermission(req, kind + ".delete");
       if (!req.body.revision || revision(before) !== req.body.revision) throw failure(409, "Content changed. Reload this page before saving again.");
       const existing = new Set(before.map((r: any) => r.id));
       const keep = prepared.filter(i => validId(i.id) && existing.has(i.id)).map(i => i.id);

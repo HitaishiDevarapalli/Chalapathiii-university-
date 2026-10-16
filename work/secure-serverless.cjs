@@ -1,0 +1,13 @@
+const fs = require('node:fs');
+fs.writeFileSync('api/cms.ts', 'import { forwardVpsApi } from "../src/server/vpsProxy";\nexport default function handler(req: any, res: any) { return forwardVpsApi(req, res, "cms"); }\n');
+fs.writeFileSync('api/config.ts', 'import { forwardVpsApi } from "../src/server/vpsProxy";\nexport default function handler(req: any, res: any) { const key = req.query.key ? "/" + encodeURIComponent(String(req.query.key).replace(/^\\//, "")) : ""; return forwardVpsApi(req, res, "config" + key); }\n');
+const schemaFile = 'server/prisma/schema.prisma';
+let schema = fs.readFileSync(schemaFile, 'utf8');
+const start = schema.indexOf('model AdminRole');
+const end = schema.indexOf('// ─', start);
+if (start < 0 || end < 0) throw new Error('Security schema boundaries not found');
+const segment = schema.slice(start, end).split('\n').map(line => /\bDateTime\??\b/.test(line) && !line.includes('@db.Timestamptz') ? line.trimEnd() + ' @db.Timestamptz(3)' : line).join('\n');
+schema = schema.slice(0, start) + segment + schema.slice(end);
+schema = schema.replace(/(updatedAt\s+DateTime\s+@default\(now\(\)\) @updatedAt)(?! @db)/, '$1 @db.Timestamptz(3)');
+schema = schema.replace(/(lastLoginAt\s+DateTime\?)(?!\s+@db)/, '$1 @db.Timestamptz(3)');
+fs.writeFileSync(schemaFile, schema);

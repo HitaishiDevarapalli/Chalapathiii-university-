@@ -1,6 +1,8 @@
 import { Router, Request, Response } from "express";
 import { randomUUID } from "crypto";
 import prisma from "../prisma";
+import { authenticatedUser } from "../middleware/auth";
+import { permitted } from "../security/core";
 
 const router = Router();
 
@@ -33,12 +35,14 @@ function safeJsonStringify(val: any, fallback = "{}"): string {
 // GET / - list all pages
 router.get("/", async (req: Request, res: Response) => {
   try {
+    await authenticatedUser(req);
     const { status, type } = req.query;
     const where: any = {};
 
     if (status && typeof status === "string") {
       where.status = status;
     }
+    if (!permitted(req.adminUser, "pages.view")) where.status = "published";
     if (type && typeof type === "string") {
       where.type = type;
     }
@@ -239,6 +243,7 @@ router.post("/:slug/versions", async (req: Request, res: Response) => {
 // GET /:slug - get page by slug with versions
 router.get("/:slug", async (req: Request, res: Response) => {
   try {
+    await authenticatedUser(req);
     const { slug } = req.params;
 
     const page = await prisma.cmsPage.findUnique({
@@ -250,14 +255,14 @@ router.get("/:slug", async (req: Request, res: Response) => {
       },
     });
 
-    if (!page) {
+    if (!page || page.status !== "published" && !permitted(req.adminUser, "pages.view")) {
       return res.status(404).json({ error: "Page not found" });
     }
 
     return res.json({
       ...page,
       dataJson: safeJsonParse(page.dataJson, {}),
-      versions: page.versions.map((v) => ({
+      versions: (permitted(req.adminUser, "pages.view") ? page.versions : []).map((v) => ({
         ...v,
         snapshotJson: safeJsonParse(v.snapshotJson, {}),
       })),

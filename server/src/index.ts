@@ -1,11 +1,14 @@
+import "dotenv/config";
 import express from "express";
 import { randomBytes } from "crypto";
 import { DatabaseSessionStore } from "./sessionStore";
 import { sameOrigin } from "./middleware/auth";
+import { adminApiGuard } from "./security/apiPermissions";
+import securityRoutes from "./routes/security";
 import { uploadsDirectory } from "./middleware/upload";
 import session from "express-session";
 
-import authRoutes from "./routes/auth";
+import authRoutes from "./routes/adminAuth";
 import newsRoutes from "./routes/news";
 import eventsRoutes from "./routes/events";
 import announcementsRoutes from "./routes/announcements";
@@ -28,6 +31,17 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.set("trust proxy", 1);
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("Referrer-Policy", "no-referrer");
+  res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  if (process.env.NODE_ENV === "production") {
+    res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+    if (!req.secure) return res.status(426).json({ error: "HTTPS is required" });
+  }
+  next();
+});
 app.use("/api", (_req, res, next) => { res.setHeader("Cache-Control", "no-store"); next(); });
 app.use("/api", sameOrigin);
 const sessionSecret = process.env.SESSION_SECRET;
@@ -52,6 +66,7 @@ app.use(
   })
 );
 
+app.use("/api", adminApiGuard);
 app.use("/uploads", express.static(uploadsDirectory, {
   maxAge: "30d", immutable: true,
   setHeaders: res => { res.setHeader("X-Content-Type-Options", "nosniff"); }
@@ -59,6 +74,7 @@ app.use("/uploads", express.static(uploadsDirectory, {
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/security", securityRoutes);
 app.use("/api/news", newsRoutes);
 app.use("/api/events", eventsRoutes);
 app.use("/api/announcements", announcementsRoutes);
@@ -78,7 +94,7 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api/cms", cmsRoutes);
 
 app.use((error: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error("Request rejected:", error.message);
+  console.error("Request rejected");
   res.status(error.code === "LIMIT_FILE_SIZE" ? 413 : 400).json({ error: "Upload or request rejected. Check the file type and size." });
 });
 
