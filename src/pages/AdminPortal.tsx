@@ -836,7 +836,7 @@ export default function AdminPortal() {
     setCampusLifeForm(updated);
   };
 
-  const saveFullCampusCMS = () => {
+  const saveFullCampusCMS = async () => {
     try {
       const publishedCampusLife = {
         ...campusLifeForm,
@@ -846,15 +846,21 @@ export default function AdminPortal() {
         }
       };
       setCampusLifeForm(publishedCampusLife);
-      updateCampusLifeContent(publishedCampusLife);
-      updateCampusTour(campusTourData);
-      updateCampusVideos(campusVideosList);
-      updateCampusGallery(campusGalleryList);
-      updateCampusBanners(campusBannersData);
-      notifySave(`Campus Life: "${currentCampusPage.title}" & all gallery photos saved and live!`);
+      const results = await Promise.all([
+        updateCampusLifeContent(publishedCampusLife),
+        updateCampusTour(campusTourData),
+        updateCampusVideos(campusVideosList),
+        updateCampusGallery(campusGalleryList),
+        updateCampusBanners(campusBannersData),
+      ]);
+      if (results.some(result => !result)) {
+        notifySave("Some Campus Life changes could not be published. Check your connection and save again.");
+        return;
+      }
+      notifySave(`Campus Life: "${currentCampusPage.title}" changes are live.`);
     } catch (err) {
       console.error("Error saving Campus Life CMS:", err);
-      notifySave(`Saved Campus Life "${currentCampusPage.title}"!`);
+      notifySave(`Campus Life "${currentCampusPage.title}" could not be published. Please retry.`);
     }
   };
 

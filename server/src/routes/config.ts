@@ -8,6 +8,7 @@ import { isInternalConfig, visibleConfig } from "../security/apiPermissions";
 const router = Router();
 const reserved = (key: string) => key.startsWith(SESSION_PREFIX) || isInternalConfig(key) || ["news", "events"].includes(key);
 router.use((req, res, next) => {
+  if (req.method === "GET") res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
   if (req.params.key && reserved(req.params.key)) return res.sendStatus(404);
   if (req.method !== "GET" || req.path.includes("backup")) return requireAuth(req, res, next);
   next();

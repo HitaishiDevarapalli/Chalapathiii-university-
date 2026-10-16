@@ -22,8 +22,17 @@ function safeJsonParse<T = any>(val: string | null | undefined, fallback: T): T 
 // GET /api/cms
 router.get("/", async (req: Request, res: Response) => {
   try {
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
     await authenticatedUser(req);
     const { action, slug } = req.query;
+
+    if (action === "revision") {
+      const [latestConfig, latestPage] = await Promise.all([
+        prisma.siteConfig.findFirst({ orderBy: { updatedAt: "desc" }, select: { id: true, updatedAt: true } }),
+        prisma.cmsPage.findFirst({ orderBy: { updatedAt: "desc" }, select: { id: true, updatedAt: true } }),
+      ]);
+      return res.json({ success: true, revision: `${latestConfig?.id || 0}:${latestConfig?.updatedAt.toISOString() || ""}|${latestPage?.id || ""}:${latestPage?.updatedAt.toISOString() || ""}` });
+    }
 
     if (action === "getPage" && slug) {
       const pageRecord = await prisma.cmsPage.findUnique({

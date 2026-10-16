@@ -11,6 +11,16 @@ export interface CmsSyncResponse {
 }
 
 export const CmsApiService = {
+  async fetchRevision(): Promise<string | null> {
+    try {
+      const res = await fetch("/api/cms?action=revision", { cache: "no-store", credentials: "same-origin" });
+      if (!res.ok) return null;
+      const json = await res.json();
+      return typeof json.revision === "string" ? json.revision : null;
+    } catch {
+      return null;
+    }
+  },
   // Fetch all CMS data from API / database
   async fetchAll(): Promise<CmsSyncResponse> {
     try {

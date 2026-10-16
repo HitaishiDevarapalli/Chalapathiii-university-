@@ -59,6 +59,7 @@ const bcrypt = require('bcryptjs');
     const upload = await request('/api/upload', { method: 'POST', body: form() }, true);
     assert.equal(upload.status, 200);
     const photo = (await upload.json()).url;
+    const revisionBeforePage = (await (await request('/api/cms?action=revision')).json()).revision;
     const cmsSlug = '/builder-workflow-test';
     const builderPage = { id: 'workflow-page', slug: cmsSlug, name: 'Builder Workflow Test', title: 'Builder Workflow Test', type: 'custom', status: 'draft', displayOrder: 901, showInNav: true, navLabel: 'Builder Test', parentNav: 'Campus Life', sections: [
       { id: 'hero-image', type: 'image', title: 'Page image', status: 'published', order: 1, media: { url: photo, alt: 'Workflow test image' }, settings: { imageWidth: '100%', borderRadius: '16px' } },
@@ -66,6 +67,8 @@ const bcrypt = require('bcryptjs');
       { id: 'photo-carousel', type: 'gallery', title: 'Photo carousel', status: 'published', order: 3, settings: { layout: 'carousel' }, items: [{ id: 'carousel-item', title: 'Uploaded image', image: photo, enabled: true, order: 1 }] }
     ] };
     assert.equal((await send('/api/cms', { action: 'savePage', page: builderPage })).status, 200, 'builder saves a page with ordered image, text and carousel sections');
+    const revisionAfterPage = (await (await request('/api/cms?action=revision')).json()).revision;
+    assert.notEqual(revisionAfterPage, revisionBeforePage, 'the public revision changes immediately after a page save');
     let publicCms = await (await request('/api/cms?action=getAll')).json();
     assert.ok(!publicCms.pages.some(page => page.slug === cmsSlug), 'draft page is not exposed publicly');
     assert.equal((await send('/api/cms', { action: 'savePage', page: { ...builderPage, status: 'published' }, note: 'Publish and add to navigation' })).status, 200);

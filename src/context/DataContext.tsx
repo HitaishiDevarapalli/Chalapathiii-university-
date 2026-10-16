@@ -804,7 +804,7 @@ interface DataContextType {
   updateAdmissionsContent: (content: AdmissionsContent) => void;
 
   campusLifeContent: CampusLifeContent;
-  updateCampusLifeContent: (content: CampusLifeContent) => void;
+  updateCampusLifeContent: (content: CampusLifeContent) => Promise<boolean>;
   updateCampusLifePage: (path: string, pageData: CampusLifePageData) => void;
 
   themeColors: ThemeColors;
@@ -842,16 +842,16 @@ interface DataContextType {
   updateEvents: (list: EventItem[]) => Promise<void>;
 
   campusVideos: CampusVideoItem[];
-  updateCampusVideos: (list: CampusVideoItem[]) => void;
+  updateCampusVideos: (list: CampusVideoItem[]) => Promise<boolean>;
 
   campusTour: CampusTourConfig;
-  updateCampusTour: (tour: CampusTourConfig) => void;
+  updateCampusTour: (tour: CampusTourConfig) => Promise<boolean>;
 
   campusGallery: CampusGalleryItem[];
-  updateCampusGallery: (list: CampusGalleryItem[]) => void;
+  updateCampusGallery: (list: CampusGalleryItem[]) => Promise<boolean>;
 
   campusBanners: CampusBannersConfig;
-  updateCampusBanners: (banners: CampusBannersConfig) => void;
+  updateCampusBanners: (banners: CampusBannersConfig) => Promise<boolean>;
 
   aboutContent: AboutUsContent;
   updateAboutContent: (content: AboutUsContent) => void;
@@ -3178,17 +3178,17 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [themeColors]);
   // Helper to asynchronously persist config key-value to database & serverless API
-  const syncConfigToBackend = async (key: string, value: any) => {
+  const syncConfigToBackend = async (key: string, value: any): Promise<boolean> => {
     try {
       const response = await fetch(`/api/config/${encodeURIComponent(key)}`, {
         method: "PUT", credentials: "same-origin",
         headers: { "Content-Type": "application/json" }, body: JSON.stringify(value),
       });
       if (!response.ok) throw new Error(`Publishing ${key} failed (${response.status})`);
-
+      return true;
     } catch (e) {
       console.warn(`[Sync] Backend persist failed for ${key}:`, e);
-      alert("The server could not publish these changes. Please sign in and try saving again.");
+      return false;
     }
   };
 
@@ -3405,14 +3405,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     syncConfigToBackend("academicStructure", structure);
   };
 
-  const updateCampusVideos = (list: CampusVideoItem[]) => {
+  const updateCampusVideos = async (list: CampusVideoItem[]) => {
     setCampusVideos(list);
     safeSetItem("chalapathi_campus_videos", JSON.stringify(list));
     recordSave();
-    syncConfigToBackend("campusVideos", list);
+    return syncConfigToBackend("campusVideos", list);
   };
 
-  const updateCampusTour = (tour: CampusTourConfig) => {
+  const updateCampusTour = async (tour: CampusTourConfig) => {
     setCampusTour(tour);
     safeSetItem("chalapathi_campus_poster", tour.poster);
     safeSetItem("chalapathi_campus_badge", tour.badge);
@@ -3420,21 +3420,21 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (tour.heading) safeSetItem("chalapathi_campus_label", tour.heading);
     if (tour.subtitle) safeSetItem("chalapathi_campus_subtitle", tour.subtitle);
     recordSave();
-    syncConfigToBackend("campusTour", tour);
+    return syncConfigToBackend("campusTour", tour);
   };
 
-  const updateCampusGallery = (list: CampusGalleryItem[]) => {
+  const updateCampusGallery = async (list: CampusGalleryItem[]) => {
     setCampusGallery(list);
     safeSetItem("chalapathi_campus_gallery", JSON.stringify(list));
     recordSave();
-    syncConfigToBackend("campusGallery", list);
+    return syncConfigToBackend("campusGallery", list);
   };
 
-  const updateCampusBanners = (banners: CampusBannersConfig) => {
+  const updateCampusBanners = async (banners: CampusBannersConfig) => {
     setCampusBanners(banners);
     safeSetItem("chalapathi_campus_banners", JSON.stringify(banners));
     recordSave();
-    syncConfigToBackend("campusBanners", banners);
+    return syncConfigToBackend("campusBanners", banners);
   };
 
   // Campus Life Pages Content
@@ -3450,11 +3450,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return DEFAULT_CAMPUS_LIFE_CONTENT;
   });
 
-  const updateCampusLifeContent = (content: CampusLifeContent) => {
+  const updateCampusLifeContent = async (content: CampusLifeContent) => {
     setCampusLifeContent(content);
     safeSetItem("chalapathi_campus_life_content", JSON.stringify(content));
     recordSave();
-    syncConfigToBackend("campusLifeContent", content);
+    return syncConfigToBackend("campusLifeContent", content);
   };
 
   const updateCampusLifePage = (path: string, pageData: CampusLifePageData) => {
@@ -3553,7 +3553,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // 2. Also query /api/config to ensure all site configs from PostgreSQL are merged
         try {
-          const cfgRes = await fetch("/api/config", { cache: "no-store" });
+          const cfgRes = await fetch("/api/config", { cache: "no-store", credentials: "same-origin" });
           if (cfgRes.ok) {
             const cfgData = await cfgRes.json();
             if (cfgData && typeof cfgData === "object") {
@@ -3642,7 +3642,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
               safeSetItem("chalapathi_campus_banners", JSON.stringify(s.campusBanners));
             }
             if (s.campusLifeContent) {
-              setCampusLifeContent((prev) => ({ ...prev, ...s.campusLifeContent }));
+              setCampusLifeContent(s.campusLifeContent);
               safeSetItem("chalapathi_campus_life_content", JSON.stringify(s.campusLifeContent));
             }
             if (s.heroSlides && Array.isArray(s.heroSlides)) {
@@ -3708,12 +3708,31 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (err) {}
     };
 
-    initCmsAndConfigs();
-    fetchAnnouncements();
-    const refreshPublished = () => { if (!location.pathname.startsWith("/admin")) void initCmsAndConfigs(); };
+    let knownRevision: string | null = null;
+    let checkingRevision = false;
+    const refreshPublished = () => {
+      if (!location.pathname.startsWith("/admin")) void initCmsAndConfigs();
+    };
+    const checkPublishedRevision = async () => {
+      if (checkingRevision || location.pathname.startsWith("/admin")) return;
+      checkingRevision = true;
+      try {
+        const revision = await CmsApiService.fetchRevision();
+        if (revision && knownRevision && revision !== knownRevision) {
+          knownRevision = revision;
+          await initCmsAndConfigs();
+        } else if (revision) knownRevision = revision;
+      } finally {
+        checkingRevision = false;
+      }
+    };
+    void initCmsAndConfigs();
+    void fetchAnnouncements();
     window.addEventListener("focus", refreshPublished);
-    const timer = window.setInterval(refreshPublished, 15000);
-    return () => { clearInterval(timer); window.removeEventListener("focus", refreshPublished); };
+    const revisionTimer = window.setInterval(() => { void checkPublishedRevision(); }, 2000);
+    const visibilityChanged = () => { if (document.visibilityState === "visible") refreshPublished(); };
+    document.addEventListener("visibilitychange", visibilityChanged);
+    return () => { clearInterval(revisionTimer); window.removeEventListener("focus", refreshPublished); document.removeEventListener("visibilitychange", visibilityChanged); };
 
   }, []);
 
