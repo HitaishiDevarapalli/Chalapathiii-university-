@@ -123,6 +123,7 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
   const [mobileCampusLifeOpen, setMobileCampusLifeOpen] = useState(false);
   const [newsEventsOpen, setNewsEventsOpen] = useState(false);
   const [mobileNewsEventsOpen, setMobileNewsEventsOpen] = useState(false);
+  const [mobileCmsParentOpen, setMobileCmsParentOpen] = useState<string | null>(null);
   const [activeSchool, setActiveSchool] = useState("School of Computing Sciences");
   const [hoveredCategory, setHoveredCategory] = useState("Programmes Offered");
   
@@ -212,6 +213,7 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
 
   const visibleNavLinks = navLinks.filter(name => !isPageHidden(name, navHrefs[name]));
   const childPagesFor = (parent: string) => dynamicMenuPages.filter(page => page.parentNav === parent).sort((a,b) => a.displayOrder - b.displayOrder).map(page => ({ label: page.navLabel || page.name, to: page.slug }));
+  const cmsChildrenFor = (parent: string) => childPagesFor(parent).filter(item => !isPageHidden(item.label, item.to));
   const visibleAboutItems = [...aboutItems, ...childPagesFor("About Us")].filter(item => !isPageHidden(item.label, item.to));
   const visibleAcademicsItems = [...academicsItems, ...childPagesFor("Academics")].filter(item => !isPageHidden(item.label, item.to));
   const visibleFacultyItems = [...facultyItems, ...childPagesFor("Faculty")].filter(item => !isPageHidden(item.label, item.to));
@@ -684,6 +686,13 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
                 );
               }
 
+              const cmsChildren = cmsChildrenFor(name);
+              if (cmsChildren.length) return (
+                <div key={name} className="relative h-full flex items-center group" onMouseEnter={() => setMobileCmsParentOpen(name)} onMouseLeave={() => setMobileCmsParentOpen(null)}>
+                  <Link to={navHrefs[name] || `/${name.toLowerCase().replace(/\s+/g, "-")}`} className="px-1.5 min-[1280px]:px-2 min-[1440px]:px-2.5 py-2 text-[12.5px] min-[1280px]:text-[13.5px] min-[1440px]:text-[14.5px] font-[600] text-[#072A6C] hover:text-[#D4AF37] transition-colors whitespace-nowrap font-[var(--font-poppins)] inline-flex items-center gap-1">{name}<ChevronDown size={12}/></Link>
+                  <div className="absolute left-0 top-full hidden min-w-48 rounded-xl border border-gray-200 bg-white py-2 shadow-xl group-hover:flex group-focus-within:flex flex-col z-50">{cmsChildren.map(item => <Link key={item.to} to={item.to} className="px-4 py-2 text-xs text-gray-700 hover:bg-slate-50 hover:text-[#D4AF37]">{item.label}</Link>)}</div>
+                </div>
+              );
               return (
                 <Link
                   key={name}
@@ -1002,6 +1011,11 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
               );
             }
 
+            const cmsChildren = cmsChildrenFor(name);
+            if (cmsChildren.length) return <div key={name} className="border-b border-gray-100 py-3">
+              <div className="flex items-center justify-between"><Link to={navHrefs[name] || `/${name.toLowerCase().replace(/\s+/g, "-")}`} className="text-[15px] font-semibold text-[#222]">{name}</Link><button type="button" aria-label={`Toggle ${name} submenu`} onClick={() => setMobileCmsParentOpen(mobileCmsParentOpen === name ? null : name)}><ChevronDown size={16}/></button></div>
+              {mobileCmsParentOpen === name && <div className="mt-2 flex flex-col gap-2 border-t border-gray-100 pt-2 pl-4">{cmsChildren.map(item => <Link key={item.to} to={item.to} onClick={() => setMobileOpen(false)} className="py-1 text-sm text-gray-600">{item.label}</Link>)}</div>}
+            </div>;
             return (
               <Link
                 key={name}
