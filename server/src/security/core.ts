@@ -22,13 +22,15 @@ export const permissionSet = new Set(PERMISSIONS);
 export const digest = (value: string) => createHash("sha256").update(value).digest("hex");
 export const token = () => randomBytes(32).toString("base64url");
 export function constantEqual(a: unknown, b: unknown) {
-  return typeof a === "string" && typeof b === "string" && a.length === b.length && timingSafeEqual(Buffer.from(a), Buffer.from(b));
+  if (typeof a !== "string" || typeof b !== "string") return false;
+  const left = Buffer.from(a); const right = Buffer.from(b);
+  return left.length === right.length && timingSafeEqual(left, right);
 }
 export function encryptionKey() {
   const raw = process.env.ADMIN_TOTP_ENCRYPTION_KEY || "";
   const key = Buffer.from(raw, "base64");
   if (key.length === 32) return key;
-  return Buffer.from("chalapathi-admin-encryption-32b!", "utf8");
+  throw new Error("Configure ADMIN_TOTP_ENCRYPTION_KEY with a 32-byte base64 key before using Google or authenticator authentication");
 }
 export function seal(value: string) {
   const iv = randomBytes(12);
@@ -73,7 +75,7 @@ export function publicUser(user: any) {
     lastLoginAt: user.lastLoginAt, permissions: effectivePermissions(user),
     overrides: (user.permissions || []).map((p: any) => ({ key: p.permissionKey, allowed: p.allowed })) };
 }
-export const defaultPolicy = { requireGoogle: true, requireTotp: true, idleMinutes: 30, sessionHours: 12, maxAttempts: 8, lockoutMinutes: 15, retentionDays: 365 };
+export const defaultPolicy = { requireGoogle: false, requireTotp: true, idleMinutes: 30, sessionHours: 12, maxAttempts: 8, lockoutMinutes: 15, retentionDays: 365 };
 export async function policy() { return await prisma.adminSecurityPolicy.findUnique({ where: { id: 1 } }) || defaultPolicy; }
 export async function audit(req: Request | null, event: string, success: boolean, description: string, user?: any, target?: string, db: any = prisma) {
   const identity = user || (req as any)?.adminUser;

@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import { randomBytes } from "crypto";
 import prisma from "../prisma";
-import { audit, encryptionKey, hashPassword, loadUser, revokeSessions, token } from "./core";
+import { audit, encryptionKey, hashPassword, loadUser, policy, revokeSessions, token } from "./core";
 
 // Run only from a trusted server/operator shell. No password or secret is printed.
 const args = process.argv.slice(2);
@@ -34,7 +34,8 @@ async function main() {
     phase = "provisioning-configuration";
     const email = option("email")?.trim().toLowerCase();
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Provide --email for the institution-owned Google identity");
-    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET || !process.env.GOOGLE_REDIRECT_URI) throw new Error("Configure Google OIDC before provisioning the replacement administrator");
+    const settings = await policy();
+    if (settings.requireGoogle && (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET || !process.env.GOOGLE_REDIRECT_URI)) throw new Error("Configure Google OIDC when Google account sign-in is required");
     phase = "account-uniqueness-check";
     if (await prisma.adminUser.findFirst({ where: { OR: [{ username }, { email }] } })) throw new Error("That account already exists; no credentials were changed");
     const password = token() + "aA1!";
@@ -44,7 +45,7 @@ async function main() {
       phase = "provisioning-transaction";
       await prisma.$transaction(async tx => {
         const user = await tx.adminUser.create({ data: { username, email, passwordHash: await hashPassword(password), role: "superadmin",
-          credentialMode: "secured", status: "Pending", mustChangePassword: true, requireGoogle: true, requireTotp: true,
+          credentialMode: "secured", status: "Pending", mustChangePassword: true, requireGoogle: settings.requireGoogle, requireTotp: true,
           googleAccounts: { create: { email, requireTotp: true } } } });
         await audit(null, "super_administrator_provisioned", true, "Trusted server operator provisioned a replacement Super Administrator", undefined, String(user.id), tx);
       });
@@ -58,9 +59,9 @@ async function main() {
   if (!user) throw new Error("Account not found");
   if (command === "activate") {
     if (user.role !== "superadmin" || user.credentialMode !== "secured" || user.status !== "Active" || user.mustChangePassword ||
-      !user.passwordHash.startsWith("$argon2id$") || !user.lastLoginAt || !user.authenticator?.enabled || !user.requireTotp || !user.requireGoogle ||
-      !user.googleAccounts.some(account => account.status === "Active" && account.verifiedAt && account.lastLoginAt)) {
-      throw new Error("Complete and verify the replacement administrator's password change, Google identity, authenticator enrollment and full sign-in before activation");
+      !user.passwordHash.startsWith("$argon2id$") || !user.lastLoginAt || !user.authenticator?.enabled || !user.requireTotp ||
+      user.requireGoogle && !user.googleAccounts.some(account => account.status === "Active" && account.verifiedAt && account.lastLoginAt)) {
+      throw new Error("Complete the replacement administrator's password change, authenticator enrollment, required Google sign-in and full login before activation");
     }
     await prisma.$transaction(async tx => {
       await tx.$executeRawUnsafe("SELECT pg_advisory_xact_lock(724150)");
@@ -86,7 +87,7 @@ async function main() {
       await prisma.$transaction(async tx => {
         await tx.userAuthenticator.deleteMany({ where: { userId: user.id } }); await tx.adminRecoveryCode.deleteMany({ where: { userId: user.id } });
         await tx.adminUser.update({ where: { id: user.id }, data: { passwordHash: await hashPassword(password), mustChangePassword: true,
-          status: "Pending", credentialMode: "secured", requireTotp: true, requireGoogle: true, securityVersion: { increment: 1 }, ...(email ? { email } : {}) } });
+          status: "Pending", credentialMode: "secured", requireTotp: true, requireGoogle: user.requireGoogle, securityVersion: { increment: 1 }, ...(email ? { email } : {}) } });
         if (email) {
           await tx.authorizedGoogleAccount.updateMany({ where: { userId: user.id }, data: { status: "Revoked" } });
           const existing = await tx.authorizedGoogleAccount.findUnique({ where: { email } });

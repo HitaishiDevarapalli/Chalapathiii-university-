@@ -539,9 +539,24 @@ model BuilderMedia {
   height Int?
   alt String @default("")
   uploadedBy Int
+  folderId String? @map("folder_id")
+  folder MediaFolder? @relation(fields: [folderId], references: [id], onDelete: Restrict)
   createdAt DateTime @default(now())
+  @@index([folderId, createdAt])
   @@index([createdAt])
   @@map("builder_media")
+}
+
+model MediaFolder {
+  id String @id @default(uuid())
+  name String
+  parentId String? @map("parent_id")
+  parent MediaFolder? @relation("MediaFolderTree", fields: [parentId], references: [id], onDelete: Restrict)
+  children MediaFolder[] @relation("MediaFolderTree")
+  files BuilderMedia[]
+  createdAt DateTime @default(now()) @map("created_at")
+  @@index([parentId])
+  @@map("media_folders")
 }
 
 // ─────────────────────────────────────────────────────────────

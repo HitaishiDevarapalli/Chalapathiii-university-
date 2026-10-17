@@ -36,6 +36,7 @@ import {
   X,
 } from "lucide-react";
 import { useAdminAccess, formatIST } from "../security/adminAccess";
+import { MediaPicker } from "../components/admin/MediaStorage";
 import {
   BuilderDocument,
   BuilderNode,
@@ -599,7 +600,7 @@ function Properties({
           </p>
           {input("url", "Image URL")}
           <Button data-admin-action="view" onClick={openMedia}>
-            Choose from media library
+            Browse Media Storage
           </Button>
           {input("alt", "Alternative text")}
           {input("caption", "Caption")}
@@ -616,7 +617,7 @@ function Properties({
       {node.type === "gallery" && (
         <>
           <Button data-admin-action="view" onClick={openMedia}>
-            Add images from media library
+            Add images from Media Storage
           </Button>
           {p.images?.map((image, i) => (
             <div className="pb-gallery-control" key={i}>
@@ -1032,7 +1033,6 @@ export default function PageBuilder({
   const [menus, setMenus] = useState<any[]>([]);
   const [links, setLinks] = useState<any[]>([]);
   const [media, setMedia] = useState<Media[]>([]);
-  const [mediaPage, setMediaPage] = useState(1);
   const [revisions, setRevisions] = useState<any[]>([]);
   const [revisionPage, setRevisionPage] = useState(1);
   const [revisionPreview, setRevisionPreview] =
@@ -1297,18 +1297,9 @@ export default function PageBuilder({
     if (active) window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
   });
-  const showMedia = async (mediaPageNumber = 1, nodeId = selected) => {
+  const showMedia = async (_mediaPageNumber = 1, nodeId = selected) => {
     mediaTarget.current = nodeId;
     setModal("media");
-    setMediaPage(mediaPageNumber);
-    try {
-      const values = await builderApi<Media[]>(
-        `/media?page=${mediaPageNumber}`,
-      );
-      setMedia(values);
-    } catch (e: any) {
-      setError(e.message);
-    }
   };
   const history = async (revisionPageNumber = 1) => {
     if (!active) return;
@@ -2397,108 +2388,10 @@ export default function PageBuilder({
         </Modal>
       )}
       {modal === "media" && (
-        <Modal
-          error={error}
-          dismissError={() => setError("")}
-          title="Media library"
-          wide
-          close={() => setModal("")}
-        >
-          <div className="pb-media">
-            <p>
-              Upload a file or choose one below. It will be added to the
-              selected component automatically.
-            </p>
-            {can("gallery", "create") && (
-              <label className="admin-button admin-button-primary pb-upload">
-                <UploadCloud size={17} />
-                {busy
-                  ? "Uploading…"
-                  : findNode(doc?.nodes || [], mediaTarget.current)?.type ===
-                      "download"
-                    ? "Upload PDF"
-                    : "Upload photo"}
-                <input
-                  type="file"
-                  accept={
-                    findNode(doc?.nodes || [], mediaTarget.current)?.type ===
-                    "download"
-                      ? "application/pdf"
-                      : "image/png,image/jpeg,image/webp,image/gif"
-                  }
-                  disabled={busy}
-                  onChange={async (e) => {
-                    const input = e.currentTarget;
-                    const file = input.files?.[0];
-                    if (!file) return;
-                    await uploadFile(file, mediaTarget.current || selected);
-                    input.value = "";
-                  }}
-                />
-              </label>
-            )}
-            <p className="pb-hint">
-              Maximum 10 MB. Images are optimized and validated on the server.
-            </p>
-            <div className="pb-media-grid">
-              {media
-                .filter((asset) =>
-                  findNode(doc?.nodes || [], mediaTarget.current)?.type ===
-                  "download"
-                    ? asset.mime === "application/pdf"
-                    : asset.mime.startsWith("image/"),
-                )
-                .map((asset) => (
-                  <button
-                    key={asset.id}
-                    disabled={!editable}
-                    data-admin-action="edit"
-                    onClick={() => {
-                      try {
-                        chooseMedia(asset);
-                      } catch (e: any) {
-                        setError(e.message);
-                      }
-                    }}
-                  >
-                    {asset.mime.startsWith("image/") ? (
-                      <img src={asset.url} alt={asset.alt} />
-                    ) : (
-                      <FileText size={40} />
-                    )}
-                    <strong>{asset.originalName}</strong>
-                    <span>
-                      {asset.width
-                        ? `${asset.width} × ${asset.height}`
-                        : "PDF document"}
-                    </span>
-                  </button>
-                ))}
-            </div>
-            {!media.length && (
-              <div className="pb-empty">
-                No media on this page. Upload a file to get started.
-              </div>
-            )}
-            <div className="pb-pagination">
-              <Button
-                data-admin-action="view"
-                disabled={mediaPage <= 1}
-                onClick={() => showMedia(mediaPage - 1)}
-              >
-                Previous
-              </Button>
-              <span>Page {mediaPage}</span>
-              <Button
-                data-admin-action="view"
-                disabled={media.length < 40}
-                onClick={() => showMedia(mediaPage + 1)}
-              >
-                Next
-              </Button>
-            </div>
-          </div>
-        </Modal>
+        <MediaPicker type={findNode(doc?.nodes || [], mediaTarget.current)?.type === "download" ? "pdf" : "image"}
+          onClose={() => setModal("")} onSelect={asset => {
+            if (editable) chooseMedia({ ...asset, width: asset.width ?? undefined, height: asset.height ?? undefined });
+          }} />
       )}
       {modal === "revisions" && (
         <Modal

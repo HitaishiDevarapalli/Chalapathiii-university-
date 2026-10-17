@@ -161,23 +161,26 @@ module.exports = async function builderBrowserTest(base) {
     await fill("Table caption", "University information");
     await click("Image", ".pb-library-item button");
     await click("Upload or choose photo");
-    await page.waitForSelector(".pb-media-grid img");
+    await page.waitForSelector(".media-grid img");
     const uploadPath = path.join(out, "photo-upload.webp");
     const existingPhoto = await page.$eval(
-      ".pb-media-grid img",
+      ".media-grid img",
       (image) => image.src,
     );
     fs.writeFileSync(
       uploadPath,
       Buffer.from(await (await fetch(existingPhoto)).arrayBuffer()),
     );
-    await (await page.$('.pb-media input[type="file"]')).uploadFile(uploadPath);
-    await page.waitForFunction(() => !document.querySelector(".pb-modal"));
+    await (await page.$('.media-storage input[type="file"]')).uploadFile(uploadPath);
+    await page.waitForFunction(() => document.querySelector('.media-notice')?.textContent.includes('1 file added'));
+    await page.waitForFunction(existing => [...document.querySelectorAll('.media-grid img')].some(img => img.src !== existing), {}, existingPhoto);
+    await page.evaluate(existing => [...document.querySelectorAll('.media-grid img')].find(img => img.src !== existing).closest('button').click(), existingPhoto);
+    await page.waitForFunction(() => !document.querySelector(".media-picker-dialog"));
     await page.waitForSelector(".pb-canvas .pb-type-image img");
     assert.notEqual(
       await page.$eval(".pb-canvas .pb-type-image img", (image) => image.src),
       existingPhoto,
-      "Uploading automatically attaches the new photo",
+      "Selecting the uploaded storage photo attaches it to the page",
     );
     await fill("Alternative text", "Verified server image");
     const heightHandle = await page.$('[aria-label="Resize component height"]');

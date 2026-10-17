@@ -15,10 +15,10 @@ export async function advanceLogin(req: Request) {
   const user = await pendingUser(req);
   const pending = req.session.pendingAuth!;
   if (user.mustChangePassword) return { success: true, next: "password", csrfToken: req.session.csrfToken };
-  if (user.requireGoogle && !pending.googleId) return { success: true, next: "google", configured: !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET, csrfToken: req.session.csrfToken };
+  if (user.requireGoogle && !pending.googleId) return { success: true, next: "google", configured: !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET && !!process.env.GOOGLE_REDIRECT_URI, csrfToken: req.session.csrfToken };
   const google = pending.googleId ? user.googleAccounts.find(g => g.id === pending.googleId && g.status === "Active" && g.verifiedAt) : null;
   if (pending.googleId && !google) fail("Authentication could not be completed.", 401);
-  if (user.requireTotp || google?.requireTotp) {
+  if (user.requireTotp || google?.requireTotp || user.authenticator?.enabled) {
     if (!user.authenticator?.enabled) return { success: true, next: "enroll", csrfToken: req.session.csrfToken };
     if (!pending.totpPassed) return { success: true, next: "totp", csrfToken: req.session.csrfToken };
   }

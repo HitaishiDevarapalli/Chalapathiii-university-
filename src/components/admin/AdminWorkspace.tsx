@@ -18,7 +18,7 @@ export const workspaceLabels: Record<string, string> = {
   academics: "Academics", certifications: "Certifications", admissions: "Admissions",
   research: "Research & Innovation", directories: "Faculty & Directories", "campus-life": "Campus Life",
   placements: "Placements", "news-events": "News & Events", news: "News", events: "Events",
-  contact: "Contact Us", popup: "Popup Manager", gallery: "Media Library", footer: "Footer",
+  contact: "Contact Us", popup: "Popup Manager", gallery: "Gallery & Moments", "media-storage": "Media Storage", footer: "Footer",
   settings: "SEO & Settings", links: "Navigation Links", security: "Authorization & Security",
 };
 

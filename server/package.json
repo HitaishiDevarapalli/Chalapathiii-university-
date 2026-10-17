@@ -2,12 +2,17 @@
   "name": "chalapathi-server",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": ">=22 <25"
+  },
   "scripts": {
+    "test:media": "npm run build && node tests/media-storage-runner.cjs",
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start": "node start.cjs",
     "security": "node dist/security/cli.js",
     "test:security": "npm run build && node tests/security.cjs",
+    "test:security:browser": "npm run build && node tests/security-browser-runner.cjs",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "ts-node prisma/seed.ts",

@@ -47,7 +47,9 @@ router.get("/catalog", requirePermission("roles.view"), handler(async (_req, res
   res.json({ modules: MODULES, actions: ACTIONS, permissions: PERMISSIONS });
 }));
 router.get("/options", requireAnyPermission(["users.view", "roles.view"]), handler(async (_req, res) => {
-  res.json({ modules: MODULES, roles: await prisma.adminRole.findMany({ select: { id: true, name: true }, orderBy: { name: "asc" } }) });
+  const settings = await policy();
+  res.json({ modules: MODULES, roles: await prisma.adminRole.findMany({ select: { id: true, name: true }, orderBy: { name: "asc" } }),
+    authenticationDefaults: { requireGoogle: settings.requireGoogle, requireTotp: settings.requireTotp } });
 }));
 router.get("/authenticators", requirePermission("mfa.view"), handler(async (req, res) => {
   const { page, size } = pager(req); const search = searchText(req);
@@ -85,7 +87,7 @@ router.post("/users", requirePermission("users.create"), handler(async (req, res
   const user = await prisma.$transaction(async tx => {
     const account = await tx.adminUser.create({ data: { username: input.username, email: input.email, passwordHash: await hashPassword(temporaryPassword),
       role: input.superAdmin ? "superadmin" : "admin", roleId: input.roleId, status: "Pending", credentialMode: "secured", mustChangePassword: true,
-      requireGoogle: input.superAdmin ? true : input.requireGoogle ?? settings.requireGoogle,
+      requireGoogle: input.requireGoogle ?? settings.requireGoogle,
       requireTotp: input.superAdmin ? true : input.requireTotp ?? settings.requireTotp,
       permissions: { create: (input.permissions || []).map(p => ({ permissionKey: p.key, allowed: p.allowed })) },
       googleAccounts: { create: { email: input.email, addedBy: req.adminUser.id, modifiedBy: req.adminUser.id } } } });
@@ -99,14 +101,14 @@ router.patch("/users/:id", requirePermission("users.edit"), handler(async (req, 
   if (target.id === req.adminUser.id && (input.roleId !== undefined || input.permissions || input.superAdmin !== undefined || input.status && input.status !== "Active")) fail("Use another authorized administrator to change your own authority or account status.", 403);
   if (input.superAdmin !== undefined && req.adminUser.role !== "superadmin") fail("Only Super Administrators may change Super Administrator authority.", 403);
   if (req.adminUser.role !== "superadmin" && (input.requireGoogle !== undefined || input.requireTotp !== undefined)) fail("Authentication policies require Super Administrator authority.", 403);
-  if (target.role === "superadmin" && (input.requireGoogle === false || input.requireTotp === false)) fail("Super Administrators require Google and authenticator verification.");
+  if (target.role === "superadmin" && input.requireTotp === false) fail("Super Administrators require authenticator verification.");
   const settings = await policy();
   if (target.credentialMode === "legacy" && "transitionCompletedAt" in settings && settings.transitionCompletedAt && input.status === "Active") fail("Reset and securely reprovision this obsolete account before reactivation.");
   if (input.email !== undefined && input.email !== target.email && !permitted(req.adminUser, "google.manage")) fail("Google account management permission is required to change the account's email.", 403);
   await assignedRole(req, input.roleId); grantable(req, (input.permissions || []).filter(p => p.allowed).map(p => p.key));
   const data: any = { ...input, securityVersion: { increment: 1 } }; delete data.superAdmin; delete data.permissions;
   if (input.superAdmin !== undefined) data.role = input.superAdmin ? "superadmin" : "admin";
-  if (input.superAdmin === true) { data.requireGoogle = true; data.requireTotp = true; }
+  if (input.superAdmin === true) { data.requireTotp = true; }
   await prisma.$transaction(async tx => {
     await privilegedLock(tx); await preserveSuper(tx, target, data);
     if (input.permissions) { await tx.adminUserPermission.deleteMany({ where: { userId: target.id } }); data.permissions = { create: input.permissions.map(p => ({ permissionKey: p.key, allowed: p.allowed })) }; }
@@ -123,9 +125,10 @@ router.patch("/users/:id", requirePermission("users.edit"), handler(async (req, 
 }));
 router.post("/users/:id/reset-password", requirePermission("users.manage"), handler(async (req, res) => {
   fresh(req); const target = await targetUser(req, Number(req.params.id)); const temporaryPassword = token() + "aA1!";
+  const settings = await policy();
   await prisma.$transaction(async tx => {
     await tx.adminUser.update({ where: { id: target.id }, data: { passwordHash: await hashPassword(temporaryPassword), mustChangePassword: true, securityVersion: { increment: 1 },
-      ...(target.credentialMode === "legacy" ? { credentialMode: "secured", requireGoogle: true, requireTotp: true } : {}) } });
+      ...(target.credentialMode === "legacy" ? { credentialMode: "secured", requireGoogle: settings.requireGoogle, requireTotp: true } : {}) } });
     await revokeSessions(target.id, tx);
     await audit(req, "password_reset", true, "Temporary password issued; first-login change required; sessions revoked", undefined, String(target.id), tx);
   });
@@ -233,7 +236,8 @@ router.get("/events", requirePermission("audit.view"), handler(async (req, res) 
   const order = req.query.order === "asc" ? "asc" : "desc";
   const [rows, total] = await Promise.all([prisma.adminSecurityEvent.findMany({ where, orderBy: [{ createdAt: order }, { id: order }], skip: (page - 1) * size, take: size }), prisma.adminSecurityEvent.count({ where })]);
   const sessions = await prisma.adminAuthSession.findMany({ where: { id: { in: rows.map(row => row.sessionId).filter(Boolean) as string[] } }, select: { id: true, expiresAt: true, revokedAt: true } });
-  res.json({ items: rows.map(row => { const session = sessions.find(s => s.id === row.sessionId); return { ...row, sessionStatus: !session ? "Unknown" : session.revokedAt ? "Revoked or signed out" : session.expiresAt <= new Date() ? "Expired" : "Active" }; }), total, page, size, timezone: "Asia/Kolkata" });
+  const roleOptions = await prisma.adminSecurityEvent.findMany({ where: { role: { not: null } }, distinct: ["role"], select: { role: true }, orderBy: { role: "asc" } });
+  res.json({ items: rows.map(row => { const session = sessions.find(s => s.id === row.sessionId); return { ...row, sessionStatus: !session ? "Unknown" : session.revokedAt ? "Revoked or signed out" : session.expiresAt <= new Date() ? "Expired" : "Active" }; }), total, page, size, timezone: "Asia/Kolkata", roles: roleOptions.map(row => row.role) });
 }));
 router.get("/policy", requirePermission("security.view"), handler(async (_req, res) => {
   res.json({ policy: await policy(), configuration: { google: !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET && !!process.env.GOOGLE_REDIRECT_URI,

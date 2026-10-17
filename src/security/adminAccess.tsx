@@ -5,10 +5,11 @@ export interface AdminIdentity {
   permissions: string[]; totpEnabled?: boolean; credentialMode?: string;
 }
 export function canAccess(user: AdminIdentity | null, module: string, action = "view") {
-  if (!user) return true;
-  return user.role === "superadmin" || user.role === "admin" || user.credentialMode === "legacy" || user.permissions?.includes(module + "." + action);
+  if (!user) return false;
+  return user.role === "superadmin" || !!user.permissions?.includes(module + "." + action);
 }
 export function canViewTab(user: AdminIdentity | null, tab: string) {
+  if (tab === "media-storage") return canAccess(user, "gallery");
   if (tab === "page-builder") return !!user && (user.role === "superadmin" || user.permissions.includes("pages.view"));
   const grouped: Record<string, string[]> = { "news-events": ["news", "events", "announcements"], admissions: ["admissions", "enquiries", "applications"],
     security: ["security", "users", "roles", "google", "mfa", "audit", "sessions"] };
@@ -41,7 +42,7 @@ export function AdminActionGuard({ module, children }: { module: string; childre
     if (!root.current || user?.role === "superadmin" || module === "security") return;
     const scan = () => {
       root.current?.querySelectorAll<HTMLButtonElement>("button").forEach(button => {
-        const scope = button.closest<HTMLElement>("[data-admin-module]")?.dataset.adminModule || module;
+        const scope = button.closest<HTMLElement>("[data-admin-module]")?.dataset.adminModule || (module === "media-storage" ? "gallery" : module);
         const label = ((button.textContent || "") + " " + button.title + " " + button.getAttribute("aria-label")).toLowerCase();
         let action = button.dataset.adminAction;
         if (!action) {
@@ -56,7 +57,7 @@ export function AdminActionGuard({ module, children }: { module: string; childre
         else button.removeAttribute("data-admin-denied");
       });
       root.current?.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>("input, textarea, select").forEach(input => {
-        const scope = input.closest<HTMLElement>("[data-admin-module]")?.dataset.adminModule || module;
+        const scope = input.closest<HTMLElement>("[data-admin-module]")?.dataset.adminModule || (module === "media-storage" ? "gallery" : module);
         const search = input.type === "search" || /search|filter/.test((input.getAttribute("placeholder") || "").toLowerCase()) || !!input.closest("[data-admin-filter]");
         const allowed = search || can(scope, "edit") || can(scope, "create");
         if (!allowed) { input.setAttribute("data-admin-readonly", "true"); if ("readOnly" in input) input.readOnly = true; else input.disabled = true; }

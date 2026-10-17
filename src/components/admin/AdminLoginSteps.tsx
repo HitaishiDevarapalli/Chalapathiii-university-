@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Lock, ShieldCheck, ArrowRight, RefreshCw } from "lucide-react";
 import { securityRequest } from "../../security/adminAccess";
 
@@ -7,6 +7,19 @@ export function AdminLoginSteps({ step, onStep, onComplete, onBack }: { step: st
   const [code, setCode] = useState(""); const [recovery, setRecovery] = useState(false);
   const [setup, setSetup] = useState<{ qrCode: string; manualKey: string } | null>(null);
   const [codes, setCodes] = useState<string[]>([]); const [busy, setBusy] = useState(false); const [error, setError] = useState("");
+  const [googleReady, setGoogleReady] = useState(false);
+  useEffect(() => {
+    if (step !== "google") return;
+    let active = true; setGoogleReady(false); setError("");
+    void securityRequest("auth/status").then(data => {
+      if (!active) return;
+      if (data.next === "google") {
+        setGoogleReady(data.configured === true);
+        if (!data.configured) setError("This account requires Google account sign-in, which is unavailable. Ask your administrator to select the password and Authenticator login policy.");
+      }
+    }).catch(err => { if (active) setError(err.message); });
+    return () => { active = false; };
+  }, [step]);
   const complete = (data: any) => { setCode(""); setPassword(""); setConfirm(""); if (data.recoveryCodes) setCodes(data.recoveryCodes); else if (data.next === "complete") onComplete(); else onStep(data.next); };
   const submit = async (event: React.FormEvent) => {
     event.preventDefault(); setError(""); setBusy(true);
@@ -23,7 +36,7 @@ export function AdminLoginSteps({ step, onStep, onComplete, onBack }: { step: st
     <h3>{step === "password" ? "Choose your new password" : step === "google" ? "Verify your Google identity" : step === "enroll" ? "Set up Google Authenticator" : "Verify your authenticator"}</h3>
     <p>{step === "password" ? "Your temporary password must be replaced before continuing." : step === "google" ? "Continue with the Google account authorized by the university. Your account remains restricted until all required steps are complete." : step === "enroll" ? "Scan your personal QR code with Google Authenticator, then enter its current six-digit code." : recovery ? "Enter one unused recovery code." : "Enter the current six-digit code from Google Authenticator."}</p>
     {error && <div role="alert" className="security-error">{error}</div>}
-    {step === "google" ? <a className="admin-button admin-button-primary" href="/api/auth/google/start">Continue with Google <ArrowRight size={17} /></a> : step === "enroll" && !setup ? <button type="button" className="admin-button admin-button-primary" disabled={busy} onClick={enroll}><ShieldCheck size={17} />{busy ? "Preparing secure enrollment…" : "Create my enrollment QR code"}</button> :
+    {step === "google" ? googleReady ? <a className="admin-button admin-button-primary" href="/api/auth/google/start">Continue with Google <ArrowRight size={17} /></a> : <button type="button" className="admin-button admin-button-primary" disabled>Google account sign-in unavailable</button> : step === "enroll" && !setup ? <button type="button" className="admin-button admin-button-primary" disabled={busy} onClick={enroll}><ShieldCheck size={17} />{busy ? "Preparing secure enrollment…" : "Create my enrollment QR code"}</button> :
       <form onSubmit={submit} className="space-y-4">
         {step === "password" ? <><label>New password<input type="password" autoComplete="new-password" minLength={14} required value={password} onChange={e => setPassword(e.target.value)} /></label><label>Confirm password<input type="password" autoComplete="new-password" required value={confirm} onChange={e => setConfirm(e.target.value)} /></label><small>At least 14 characters, including uppercase, lowercase, a number and a symbol.</small></> :
           <>{setup && <div className="security-qr"><img src={setup.qrCode} alt="Your personal Google Authenticator enrollment QR code" /><details><summary>Enter a setup key manually</summary><code>{setup.manualKey}</code></details></div>}<label>{recovery ? "Recovery code" : "Authenticator code"}<input autoComplete="one-time-code" inputMode={recovery ? "text" : "numeric"} pattern={recovery ? undefined : "[0-9]{6}"} maxLength={recovery ? 80 : 6} required value={code} onChange={e => setCode(e.target.value.trim())} /></label></>}

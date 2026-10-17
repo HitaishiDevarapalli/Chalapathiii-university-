@@ -611,6 +611,7 @@ const { PGLiteSocketServer } = require("@electric-sql/pglite-socket");
     pass("database-backed edit budgets reject excessive operations");
     if (process.env.BROWSER_TEST === "1")
       await require("./page-builder-browser.cjs")(base);
+    if (process.env.MEDIA_TEST === "1") await require("./media-storage.cjs")({ base, admin, viewer, visitor, prisma, directory, db });
     const sectionUser = await prisma.adminUser.findUnique({
       where: { username: "builder-viewer" },
     });
@@ -668,9 +669,7 @@ const { PGLiteSocketServer } = require("@electric-sql/pglite-socket");
     pass(
       "protected section summaries include saved drafts, omit component data, and paginate without duplicates",
     );
-    console.log(
-      "PASS: visual page builder integration suite completed against isolated PostgreSQL.",
-    );
+    console.log("PASS: visual page builder integration suite completed against isolated PostgreSQL.");
   } finally {
     await new Promise((resolve) => server.close(resolve));
     await prisma.$disconnect();

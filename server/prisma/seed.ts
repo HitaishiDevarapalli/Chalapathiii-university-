@@ -17,10 +17,10 @@ async function main() {
         username: "admin",
         passwordHash,
         role: "superadmin", email, status: "Pending", credentialMode: "secured", mustChangePassword: true,
-        requireGoogle: true, requireTotp: true, googleAccounts: { create: { email, requireTotp: true } }
+        requireGoogle: false, requireTotp: true, googleAccounts: { create: { email, requireTotp: true } }
       }
     });
-    console.log("Created pending administrator; password change, Google verification and authenticator enrollment are required.");
+    console.log("Created pending administrator; password change and Authenticator enrollment are required.");
   } else {
     console.log("Admin user already exists");
   }

@@ -45,6 +45,18 @@ const { OAuth2Client } = require('google-auth-library');
   };
   const prisma = require('../dist/prisma').default;
   const core = require('../dist/security/core');
+  const encryptionKey = process.env.ADMIN_TOTP_ENCRYPTION_KEY;
+  for (const invalidKey of ['', 'invalid']) {
+    process.env.ADMIN_TOTP_ENCRYPTION_KEY = invalidKey;
+    assert.throws(() => core.seal('fixture-secret'), /Configure ADMIN_TOTP_ENCRYPTION_KEY/);
+  }
+  process.env.ADMIN_TOTP_ENCRYPTION_KEY = encryptionKey;
+  const sealed = core.seal('fixture-secret');
+  assert.equal(core.unseal(sealed), 'fixture-secret');
+  process.env.ADMIN_TOTP_ENCRYPTION_KEY = crypto.randomBytes(32).toString('base64');
+  assert.throws(() => core.unseal(sealed));
+  process.env.ADMIN_TOTP_ENCRYPTION_KEY = encryptionKey;
+  assert.equal(core.constantEqual('é', 'a'), false);
   const app = require('../dist/index').default;
   const server = app.listen(0, '127.0.0.1');
   await new Promise(resolve => server.once('listening', resolve));
@@ -79,7 +91,7 @@ const { OAuth2Client } = require('google-auth-library');
     return { result: await client.request(url), url };
   }
   async function createUser(username, extra = {}) {
-    const result = await admin.request('/api/security/users', 'POST', { username, email: username + '@gmail.com', roleId: 'administrative-admin', ...extra });
+    const result = await admin.request('/api/security/users', 'POST', { username, email: username + '@gmail.com', roleId: 'administrative-admin', requireGoogle: true, ...extra });
     assert.equal(result.status, 201, JSON.stringify(result.body));
     return result.body;
   }
@@ -103,12 +115,47 @@ const { OAuth2Client } = require('google-auth-library');
     finally { await db.exec('DEALLOCATE ALL'); }
   };
   try {
-    await prisma.adminSecurityPolicy.update({ where: { id: 1 }, data: { maxAttempts: 20 } });
+    await prisma.adminSecurityPolicy.update({ where: { id: 1 }, data: { maxAttempts: 20, requireGoogle: false, requireTotp: true } });
     assert.equal((await admin.login('existing-admin', 'Existing-test-password-123!')).body.next, 'complete');
     assert.equal((await admin.request('/api/auth/me')).status, 200);
     const legacy = await prisma.adminUser.findUnique({ where: { username: 'existing-admin' } });
     assert.equal(legacy.credentialMode, 'legacy'); assert.match(legacy.passwordHash, /^\$argon2id\$/);
     pass('additive migration preserves existing administrator access and upgrades bcrypt on verified login');
+    const legacyFactorUser = await prisma.adminUser.create({ data: { username: 'legacy-factor-test',
+      passwordHash: await core.hashPassword('Legacy-factor-password-123!'), role: 'superadmin', status: 'Active',
+      credentialMode: 'legacy', mustChangePassword: false, requireGoogle: false, requireTotp: false } });
+    const legacyFactorClient = new Client();
+    assert.equal((await legacyFactorClient.login('legacy-factor-test', 'Legacy-factor-password-123!')).body.next, 'complete');
+    assert.equal((await legacyFactorClient.request('/api/security/users/' + legacyFactorUser.id, 'PATCH', { requireTotp: true })).status, 200);
+    assert.equal((await legacyFactorClient.request('/api/auth/me')).status, 401, 'enabling MFA invalidates the password-only session');
+    const googleIdForFactorTest = process.env.GOOGLE_CLIENT_ID;
+    delete process.env.GOOGLE_CLIENT_ID;
+    try {
+      assert.equal((await legacyFactorClient.login('legacy-factor-test', 'Legacy-factor-password-123!')).body.next, 'enroll');
+      const legacyFactor = await enroll(legacyFactorClient);
+      const factorIdentity = (await legacyFactorClient.request('/api/auth/me')).body.user;
+      assert.equal(factorIdentity.requireTotp, true); assert.equal(factorIdentity.totpEnabled, true);
+      assert.equal(factorIdentity.requireGoogle, false, 'Authenticator setup does not enable unconfigured Google sign-in');
+      await legacyFactorClient.request('/api/auth/logout', 'POST', {});
+      assert.equal((await legacyFactorClient.login('legacy-factor-test', 'Legacy-factor-password-123!')).body.next, 'totp');
+      assert.equal((await legacyFactorClient.request('/api/auth/me')).status, 401);
+      const nextFactorCode = core.totp(legacyFactor.secret).generate({ timestamp: Date.now() + 30000 });
+      assert.equal((await legacyFactorClient.request('/api/auth/totp', 'POST', { code: nextFactorCode })).body.next, 'complete');
+      await legacyFactorClient.request('/api/auth/logout', 'POST', {});
+    } finally { process.env.GOOGLE_CLIENT_ID = googleIdForFactorTest; }
+    await prisma.adminUser.update({ where: { id: legacyFactorUser.id }, data: { status: 'Disabled' } });
+    pass('existing administrators can require and enroll Authenticator without Google sign-in; later logins require a code');
+    const defaults = await admin.request('/api/security/options');
+    assert.deepEqual(defaults.body.authenticationDefaults, { requireGoogle: false, requireTotp: true });
+    const defaultStaff = await createUser('default-factor-staff', { requireGoogle: undefined });
+    assert.equal(defaultStaff.user.requireGoogle, false); assert.equal(defaultStaff.user.requireTotp, true);
+    const defaultStaffClient = new Client();
+    assert.equal((await defaultStaffClient.login(defaultStaff.user.email, defaultStaff.temporaryPassword)).body.next, 'password');
+    assert.equal((await defaultStaffClient.request('/api/auth/password', 'POST', { password: 'Default-factor-password-123!' })).body.next, 'enroll');
+    assert.equal((await defaultStaffClient.request('/api/auth/me')).status, 401);
+    await enroll(defaultStaffClient);
+    assert.equal((await defaultStaffClient.request('/api/auth/me')).status, 200);
+    pass('staff Gmail and one-time password lead to password change, QR enrollment and verified Authenticator access without Google sign-in');
     assert.equal((await guest.login('missing-user', 'wrong')).status, 401);
     assert.equal((await guest.login('existing-admin', 'wrong')).status, 401);
     assert.equal((await guest.request('/api/enquiries')).status, 401);
@@ -207,6 +254,14 @@ const { OAuth2Client } = require('google-auth-library');
     await admin.request('/api/security/roles/' + role.body.role.id, 'PUT', { name: 'Read-only admissions', description: 'Updated', permissions: [] });
     assert.equal((await viewerClient.request('/api/auth/me')).status, 401);
     pass('custom roles default-deny unassigned resources; role changes revoke affected sessions');
+    const restorer = await createUser('restore-test', { requireGoogle: false, requireTotp: false,
+      permissions: ['backup.manage', 'settings.edit', 'settings.publish'].map(key => ({ key, allowed: true })) });
+    const restoreClient = new Client(); await restoreClient.login('restore-test', restorer.temporaryPassword);
+    await restoreClient.request('/api/auth/password', 'POST', { password: 'Restore-test-password-123!' });
+    assert.equal((await restoreClient.request('/api/config/restore', 'POST', [{ key: 'newsPageConfig', value: { title: 'Denied' } }])).status, 403);
+    assert.equal((await restoreClient.request('/api/config/restore', 'POST', { configs: { newsPageConfig: { title: 'Denied' } } })).status, 403);
+    assert.equal(await prisma.siteConfig.count({ where: { key: 'newsPageConfig' } }), 0);
+    pass('array and object backup restores verify permissions for every target module before writing');
     const freshClient = new Client(); await freshClient.login('existing-admin', 'Existing-test-password-123!');
     const sid = (await prisma.adminAuthSession.findMany({ where: { userId: legacy.id }, orderBy: { createdAt: 'desc' }, take: 1 }))[0];
     await prisma.adminAuthSession.update({ where: { id: sid.id }, data: { expiresAt: new Date(Date.now() - 1000) } });
@@ -214,6 +269,10 @@ const { OAuth2Client } = require('google-auth-library');
     pass('server-side session expiry rejects a still-present browser cookie');
     const logs = await admin.request('/api/security/events');
     assert.equal(logs.status, 200); assert.ok(logs.body.total > 20); assert.equal(logs.body.timezone, 'Asia/Kolkata');
+    assert.ok(logs.body.roles.includes('Admissions Staff'));
+    const admissionsHistory = await admin.request('/api/security/events?role=Admissions%20Staff');
+    assert.ok(admissionsHistory.body.items.length > 0);
+    assert.ok(admissionsHistory.body.items.every(row => row.role === 'Admissions Staff'));
     for (const event of ['login_success', 'password_verified', 'google_verified', 'authenticator_enrolled', 'authenticator_recovery', 'password_reset', 'authenticator_reset', 'permissions_changed', 'role_changed', 'access_rejected', 'logout', 'session_expired']) {
       assert.ok(await prisma.adminSecurityEvent.count({ where: { event } }), 'event persisted: ' + event);
     }
@@ -229,13 +288,30 @@ const { OAuth2Client } = require('google-auth-library');
     const keyFile = path.join(directory, 'operator-key.json');
     await operator(['key', '--output', keyFile]); assert.equal(Buffer.from(JSON.parse(fs.readFileSync(keyFile)).ADMIN_TOTP_ENCRYPTION_KEY, 'base64').length, 32);
     const bootstrapFile = path.join(directory, 'replacement.json');
+    const savedGoogleId = process.env.GOOGLE_CLIENT_ID;
+    delete process.env.GOOGLE_CLIENT_ID;
     await operator(['create-super', '--username', 'replacement-super', '--email', 'replacement-super@gmail.com', '--output', bootstrapFile]);
     await assert.rejects(() => operator(['activate', '--username', 'replacement-super']));
     assert.equal((await prisma.adminUser.findUnique({ where: { id: legacy.id } })).status, 'Active');
     const bootstrap = JSON.parse(fs.readFileSync(bootstrapFile));
     const replacement = new Client(); await replacement.login(bootstrap.username, bootstrap.temporaryPassword);
-    await replacement.request('/api/auth/password', 'POST', { password: 'Replacement-password-123!' }); await google(replacement, bootstrap.email); await enroll(replacement);
-    if (process.env.BROWSER_TEST === '1') await require('./security-browser.cjs')({ base, adminPassword: 'Existing-test-password-123!', google: () => ({ set: value => { googlePayload = value.payload; expectedChallenge = value.challenge; } }) });
+    assert.equal((await replacement.request('/api/auth/password', 'POST', { password: 'Replacement-password-123!' })).body.next, 'enroll');
+    await enroll(replacement);
+    process.env.GOOGLE_CLIENT_ID = savedGoogleId;
+    if (process.env.BROWSER_TEST === '1') await require('./security-browser.cjs')({ app, base, adminPassword: 'Existing-test-password-123!', google: value => { googlePayload = value.payload; expectedChallenge = value.challenge; } });
+    const { configureAuthenticator } = require('../scripts/configure-authenticator.cjs');
+    const priorKey = process.env.ADMIN_TOTP_ENCRYPTION_KEY;
+    process.env.ADMIN_TOTP_ENCRYPTION_KEY = crypto.randomBytes(32).toString('base64');
+    await assert.rejects(() => configureAuthenticator(prisma));
+    assert.equal((await prisma.adminUser.findUnique({ where: { id: staff.user.id } })).requireGoogle, true);
+    process.env.ADMIN_TOTP_ENCRYPTION_KEY = priorKey;
+    assert.ok(await configureAuthenticator(prisma) > 0);
+    assert.equal(await prisma.adminUser.count({ where: { OR: [{ requireGoogle: true }, { requireTotp: false }] } }), 0);
+    assert.equal((await prisma.adminUser.findUnique({ where: { id: staff.user.id } })).passwordHash.startsWith('$argon2id$'), true);
+    assert.equal((await prisma.userAuthenticator.findUnique({ where: { userId: legacyFactorUser.id } })).enabled, true);
+    assert.equal((await admin.request('/api/auth/me')).status, 401);
+    assert.equal(await configureAuthenticator(prisma), 0, 'reapplying the same profile does not invalidate more sessions');
+    pass('operator profile converts existing accounts, preserves passwords and enrolled factors, revokes old sessions and rejects an incorrect encryption key');
     await operator(['activate', '--username', 'replacement-super']);
     assert.equal((await prisma.adminUser.findUnique({ where: { id: legacy.id } })).status, 'Disabled');
     assert.equal((await admin.request('/api/auth/me')).status, 401);
@@ -243,6 +319,7 @@ const { OAuth2Client } = require('google-auth-library');
     const recoveryFile = path.join(directory, 'recovery.json');
     await operator(['recover', '--username', 'replacement-super', '--output', recoveryFile, '--acknowledge-identity-verification', 'yes']);
     assert.equal(await prisma.userAuthenticator.count({ where: { userId: (await prisma.adminUser.findUnique({ where: { username: 'replacement-super' } })).id } }), 0);
+    assert.equal((await prisma.adminUser.findUnique({ where: { username: 'replacement-super' } })).requireGoogle, false, 'recovery preserves the selected Authenticator-only flow');
     assert.ok(await prisma.adminSecurityEvent.count({ where: { event: 'operator_account_recovery' } }));
     pass('operator-assisted account recovery creates protected one-time credentials and an auditable mandatory re-enrollment path');
     const brute = new Client();

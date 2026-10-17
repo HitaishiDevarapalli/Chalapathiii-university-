@@ -8,10 +8,9 @@ import {
   Bell, TrendingUp, UserPlus, CheckSquare, FileSpreadsheet, Building, CreditCard, MessageSquare,
   Library, BarChart2, CheckCircle2, Clock, Search, Filter, Image as ImageIcon, Sparkles, Layers, RefreshCw, GraduationCap,
   ArrowUp, ArrowDown, RotateCcw, Sliders, ExternalLink, Compass, MapPin, Phone, Mail, Award, X, Copy, Check, Save,
-  Palette, Type, Trophy, Handshake, Link2
+  Palette, Type, Trophy, Handshake, Link2, FolderOpen
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { compressImage } from "../lib/imageCompressor";
 import { safeSetItem, notifyStorageChange } from "../lib/safeStorage";
 import { 
   useData, 
@@ -74,6 +73,7 @@ import {
   PROGRAMS_DATA
 } from "../context/DataContext";
 import { ImageField, ColorField, SectionHeader, VideoField, PageVisibilityBanner } from "../components/admin/AdminComponents";
+import { MediaBrowser, MediaBrowseButton, uploadMedia } from "../components/admin/MediaStorage";
 import { PlacementsCMS } from "../components/admin/PlacementsCMS";
 import { ResearchCMS } from "../components/admin/ResearchCMS";
 import { FacultyCMS } from "../components/admin/FacultyCMS";
@@ -168,23 +168,30 @@ export default function AdminPortal() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [adminIdentity, setAdminIdentity] = useState<AdminIdentity | null>(null);
   const [authStep, setAuthStep] = useState("credentials");
+  const authGeneration = React.useRef(0);
   const refreshIdentity = async () => {
+    const generation = ++authGeneration.current;
     const data = await securityRequest("auth/me");
+    if (generation !== authGeneration.current) return;
     setAdminIdentity(data.user); setIsAuthenticated(true); setAuthStep("credentials");
-    window.dispatchEvent(new Event("admin-auth-changed"));
+    window.dispatchEvent(new CustomEvent("admin-auth-changed", { detail: { user: data.user } }));
   };
   React.useEffect(() => {
-    fetch("/api/auth/me", { credentials: "same-origin", cache: "no-store" })
-      .then(async res => {
-        setIsAuthenticated(res.ok);
-        if (res.ok) { const data = await res.json(); setAdminIdentity(data.user); window.dispatchEvent(new Event("admin-auth-changed")); }
-        else {
-          const data = await securityRequest("auth/status");
-          if (data.next === "complete") { setAdminIdentity(data.user); setIsAuthenticated(true); }
-          else setAuthStep(data.next || "credentials");
+    let active = true;
+    const generation = authGeneration.current;
+    // Status returns the appropriate login stage without an expected guest 401.
+    securityRequest("auth/status")
+      .then(data => {
+        if (!active || generation !== authGeneration.current) return;
+        if (data.next === "complete" && data.user) {
+          setAdminIdentity(data.user); setIsAuthenticated(true);
+          window.dispatchEvent(new CustomEvent("admin-auth-changed", { detail: { user: data.user } }));
+        } else {
+          setAdminIdentity(null); setIsAuthenticated(false); setAuthStep(data.next || "credentials");
         }
       })
-      .catch(() => setIsAuthenticated(false));
+      .catch(() => { if (active && generation === authGeneration.current) setIsAuthenticated(false); });
+    return () => { active = false; };
   }, []);
   const [username, setUsername] = useState("");
   const [passcode, setPasscode] = useState("");
@@ -197,7 +204,7 @@ export default function AdminPortal() {
   const [activeTab, setActiveTab] = useState<
     "dashboard" | "pages" | "page-builder" | "homepage" | "about" | "academics" | "certifications" | "admissions" |
     "research" | "directories" | "campus-life" | "placements" | "news" | "events" | "news-events" | 
-    "contact" | "links" | "gallery" | "footer" | "settings" | "popup" | "security"
+    "contact" | "links" | "gallery" | "media-storage" | "footer" | "settings" | "popup" | "security"
   >("dashboard");
   const [sectionPageId, setSectionPageId] = useState("");
   const [sectionPageOpenVersion, setSectionPageOpenVersion] = useState(0);
@@ -319,11 +326,12 @@ export default function AdminPortal() {
 
   const handleLogout = async () => {
     try {
+      ++authGeneration.current;
       const response = await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" });
       if (!response.ok) throw new Error("Sign out failed. Please retry.");
       setIsAuthenticated(false);
       setAdminIdentity(null);
-      window.dispatchEvent(new Event("admin-auth-changed"));
+      window.dispatchEvent(new CustomEvent("admin-auth-changed", { detail: { user: null } }));
     } catch (error: any) { alert(error.message); }
   };
 
@@ -1784,7 +1792,7 @@ export default function AdminPortal() {
   }
 
   interface AdminNavItem {
-    id: "dashboard" | "pages" | "page-builder" | "homepage" | "about" | "academics" | "certifications" | "admissions" | "research" | "directories" | "campus-life" | "placements" | "news" | "events" | "news-events" | "contact" | "links" | "gallery" | "footer" | "settings" | "popup" | "security";
+    id: "dashboard" | "pages" | "page-builder" | "homepage" | "about" | "academics" | "certifications" | "admissions" | "research" | "directories" | "campus-life" | "placements" | "news" | "events" | "news-events" | "contact" | "links" | "gallery" | "media-storage" | "footer" | "settings" | "popup" | "security";
     label: string;
     icon: any;
     badge?: string;
@@ -1870,6 +1878,7 @@ export default function AdminPortal() {
     { id: "pages", label: "Pages & Page Builder", icon: Layers, badge: `${cmsPages.length}` },
     { id: "popup", label: "Popup Modal Manager", icon: MessageSquare, badge: "Custom" },
     { id: "gallery", label: "Gallery & Media", icon: ImageIcon },
+    { id: "media-storage", label: "Media Storage", icon: FolderOpen },
     { id: "footer", label: "Footer Builder", icon: Layers },
     { id: "settings", label: "Website Settings & Branding", icon: Settings },
     { id: "links", label: "Header & Navigation Links", icon: Link2 },
@@ -1946,6 +1955,7 @@ export default function AdminPortal() {
           <AdminActionGuard module={activeTab === "news-events" ? newsEventsModuleTab : activeTab === "page-builder" ? "pages" : activeTab}>
           {activeTab === "page-builder" && <React.Suspense fallback={<div role="status" className="admin-panel pb-empty">Loading Page Builder…</div>}><PageBuilder key={sectionPageId ? `${sectionPageId}:${sectionPageOpenVersion}` : "builder"} initialPageId={sectionPageId} onReturnToPages={() => setSectionPageId("")} /></React.Suspense>}
           {activeTab === "security" && <SecurityCMS />}
+          {activeTab === "media-storage" && <MediaBrowser />}
           {/* ════════════════════════════════════════════════════ */}
           {/* TAB 1: DASHBOARD OVERVIEW                            */}
           {/* ════════════════════════════════════════════════════ */}
@@ -4480,27 +4490,19 @@ export default function AdminPortal() {
                                   <span>Upload Logo</span>
                                   <input
                                     type="file"
-                                    accept="image/*,.svg"
+                                    accept="image/png,image/jpeg,image/webp,image/gif"
                                     className="hidden"
                                     onChange={async (e) => {
                                       const file = e.target.files?.[0];
                                       if (file) {
                                         try {
-                                          const url = await compressImage(file, { maxWidth: 400, maxHeight: 200, quality: 0.85 });
+                                          const { url } = await uploadMedia(file);
                                           const updated = [...(placementsForm.recruiters || [])];
                                           updated[pIdx] = { ...updated[pIdx], logo: url };
                                           setPlacementsForm({ ...placementsForm, recruiters: updated });
                                           notifySave(`Updated ${partner.name} logo`);
-                                        } catch (err) {
-                                          const reader = new FileReader();
-                                          reader.onload = (re) => {
-                                            const url = re.target?.result as string;
-                                            const updated = [...(placementsForm.recruiters || [])];
-                                            updated[pIdx] = { ...updated[pIdx], logo: url };
-                                            setPlacementsForm({ ...placementsForm, recruiters: updated });
-                                            notifySave(`Updated ${partner.name} logo`);
-                                          };
-                                          reader.readAsDataURL(file);
+                                        } catch (err: any) {
+                                          alert(err.message || "Logo upload failed. Please retry.");
                                         }
                                       }
                                     }}
@@ -4509,6 +4511,11 @@ export default function AdminPortal() {
                               </div>
 
                               <div className="space-y-1.5">
+                                <MediaBrowseButton onSelect={asset => {
+                                  const updated = [...(placementsForm.recruiters || [])];
+                                  updated[pIdx] = { ...updated[pIdx], logo: asset.url };
+                                  setPlacementsForm({ ...placementsForm, recruiters: updated });
+                                }} />
                                 <div>
                                   <label className="text-[9px] font-bold text-gray-500 uppercase tracking-wide">Company Name</label>
                                   <input
@@ -12166,6 +12173,7 @@ export default function AdminPortal() {
                         >
                           <Plus size={14} /> Add by URL
                         </button>
+                        <MediaBrowseButton onSelect={asset => updateSelectedPage({ gallery: [...(currentCampusPage.gallery || []), asset.url] })} />
                         <label className="h-9 px-4 bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 cursor-pointer transition-colors">
                           <UploadCloud size={14} className="text-blue-600" />
                           <span>Upload File</span>
@@ -12177,23 +12185,11 @@ export default function AdminPortal() {
                               const file = e.target.files?.[0];
                               if (file) {
                                 try {
-                                  const compressed = await compressImage(file, {
-                                    maxWidth: 1200,
-                                    maxHeight: 900,
-                                    quality: 0.82
-                                  });
+                                  const { url } = await uploadMedia(file);
                                   const current = currentCampusPage.gallery || [];
-                                  updateSelectedPage({ gallery: [...current, compressed] });
-                                } catch (err) {
-                                  console.error("Gallery upload error:", err);
-                                  const reader = new FileReader();
-                                  reader.onload = (ev) => {
-                                    if (ev.target?.result) {
-                                      const current = currentCampusPage.gallery || [];
-                                      updateSelectedPage({ gallery: [...current, ev.target.result as string] });
-                                    }
-                                  };
-                                  reader.readAsDataURL(file);
+                                  updateSelectedPage({ gallery: [...current, url] });
+                                } catch (err: any) {
+                                  alert(err.message || "Gallery upload failed. Please retry.");
                                 }
                               }
                             }}
@@ -12261,6 +12257,11 @@ export default function AdminPortal() {
                           </div>
 
                           <div className="space-y-1">
+                            <MediaBrowseButton onSelect={asset => {
+                              const updated = [...(currentCampusPage.gallery || [])];
+                              updated[gIdx] = asset.url;
+                              updateSelectedPage({ gallery: updated });
+                            }} />
                             <input
                               type="text"
                               value={imgUrl}
@@ -12283,25 +12284,12 @@ export default function AdminPortal() {
                                     const file = e.target.files?.[0];
                                     if (file) {
                                       try {
-                                        const compressed = await compressImage(file, {
-                                          maxWidth: 1200,
-                                          maxHeight: 900,
-                                          quality: 0.82
-                                        });
+                                        const { url } = await uploadMedia(file);
                                         const updated = [...(currentCampusPage.gallery || [])];
-                                        updated[gIdx] = compressed;
+                                        updated[gIdx] = url;
                                         updateSelectedPage({ gallery: updated });
-                                      } catch (err) {
-                                        console.error("Gallery replace error:", err);
-                                        const reader = new FileReader();
-                                        reader.onload = (ev) => {
-                                          if (ev.target?.result) {
-                                            const updated = [...(currentCampusPage.gallery || [])];
-                                            updated[gIdx] = ev.target.result as string;
-                                            updateSelectedPage({ gallery: updated });
-                                          }
-                                        };
-                                        reader.readAsDataURL(file);
+                                      } catch (err: any) {
+                                        alert(err.message || "Gallery upload failed. Please retry.");
                                       }
                                     }
                                   }}

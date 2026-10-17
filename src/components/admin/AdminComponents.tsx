@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { UploadCloud, Image as ImageIcon, X, CheckCircle2, AlertCircle, RotateCcw, Save, ExternalLink, Eye, EyeOff } from "lucide-react";
+import { MediaBrowseButton, uploadMedia } from "./MediaStorage";
+import { useAdminAccess } from "../../security/adminAccess";
 
 interface ImageFieldProps {
   label: string;
@@ -32,6 +34,7 @@ export const ImageField: React.FC<ImageFieldProps> = ({
   placeholder = "/logo.png",
   compact = false
 }) => {
+  const { can } = useAdminAccess();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -138,29 +141,9 @@ export const ImageField: React.FC<ImageFieldProps> = ({
 
     setIsUploading(true);
     try {
-      // 1. Try direct upload to backend server /api/upload endpoint first
-      const formData = new FormData();
-      formData.append("file", file);
-      
-      const uploadRes = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (uploadRes.ok) {
-        const uploadData = await uploadRes.json();
-        if (uploadData && uploadData.url) {
-          onChange(uploadData.url);
-          setImageMeta({
-            isValid: true,
-            size: uploadData.size ? `${Math.round(uploadData.size / 1024)} KB` : "Uploaded",
-            errorMsg: undefined
-          });
-          setIsUploading(false);
-          return;
-        }
-      }
-      throw new Error("Photo upload failed. Please sign in and retry.");
+      const asset = await uploadMedia(file);
+      onChange(asset.url);
+      setImageMeta({ isValid: true, size: `${Math.round(asset.size / 1024)} KB` });
     } catch (error: any) {
       setImageMeta({ isValid: false, errorMsg: error.message || "Photo upload failed" });
       alert(error.message || "Photo upload failed. Please retry.");
@@ -170,6 +153,7 @@ export const ImageField: React.FC<ImageFieldProps> = ({
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) processFile(file);
+    e.target.value = "";
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -201,6 +185,7 @@ export const ImageField: React.FC<ImageFieldProps> = ({
       default: return "aspect-[16/10] w-full max-h-36";
     }
   };
+  const browseStorage = <MediaBrowseButton onSelect={asset => { onChange(asset.url); if (onAltChange) onAltChange(asset.alt); }} />;
 
   if (compact) {
     return (
@@ -249,7 +234,7 @@ export const ImageField: React.FC<ImageFieldProps> = ({
 
         {/* Thumbnail preview */}
         <div 
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => { if (can("gallery", "create")) fileInputRef.current?.click(); }}
           className={`${getAspectClass()} rounded-lg bg-white border ${
             isDragging ? "border-dashed border-blue-500" : "border-gray-200"
           } overflow-hidden relative shadow-xs flex items-center justify-center cursor-pointer group mx-auto`}
@@ -310,11 +295,13 @@ export const ImageField: React.FC<ImageFieldProps> = ({
               type="button"
               onClick={() => fileInputRef.current?.click()}
               className="h-7 px-2 bg-[#072A6C] hover:bg-[#051c4a] text-white text-[10px] font-bold rounded-md flex items-center gap-1 transition-colors cursor-pointer shrink-0 shadow-2xs"
+              disabled={isUploading || !can("gallery", "create")}
             >
               <UploadCloud size={11} />
-              Browse
+              Upload
             </button>
           </div>
+          {browseStorage}
 
           <div className="text-[9px] text-gray-500 flex items-center justify-between">
             <span className="font-bold text-red-500 truncate">Target: {targetSize}</span>
@@ -373,7 +360,7 @@ export const ImageField: React.FC<ImageFieldProps> = ({
       <div className="flex flex-col gap-2.5 pt-1 w-full min-w-0">
         {/* Preview Container / Drop Zone - Full Width, Beautiful & Stable */}
         <div 
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => { if (can("gallery", "create")) fileInputRef.current?.click(); }}
           className={`${getAspectClass()} rounded-xl bg-white border ${
             isDragging ? "border-dashed border-blue-500 bg-blue-50/50" : "border-gray-200"
           } overflow-hidden relative shadow-xs flex items-center justify-center cursor-pointer group w-full`}
@@ -434,11 +421,13 @@ export const ImageField: React.FC<ImageFieldProps> = ({
             type="button"
             onClick={() => fileInputRef.current?.click()}
             className="h-8 px-3 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-xs"
+            disabled={isUploading || !can("gallery", "create")}
           >
             <UploadCloud size={13} />
-            Browse
+            Upload
           </button>
         </div>
+        {browseStorage}
 
         {/* Validation & Status line */}
         {value ? (

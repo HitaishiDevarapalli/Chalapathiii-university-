@@ -3,10 +3,10 @@ module.exports = {
     {
       name: "chalapathi-api",
       cwd: __dirname,
-      script: "dist/index.js",
+      script: "start.cjs",
       env: {
         NODE_ENV: "production",
-        PORT: 5000
+        PORT: 5004
       }
     }
   ]

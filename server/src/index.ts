@@ -33,6 +33,7 @@ import configRoutes from "./routes/config";
 import uploadRoutes from "./routes/upload";
 import cmsRoutes from "./routes/cms";
 import pageBuilderRoutes from "./routes/pageBuilder";
+import mediaRoutes from "./routes/media";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -51,9 +52,12 @@ app.use((req, res, next) => {
 });
 app.use("/api", (_req, res, next) => { res.setHeader("Cache-Control", "no-store"); next(); });
 app.use("/api", sameOrigin);
-const sessionSecret = (process.env.SESSION_SECRET && process.env.SESSION_SECRET.length >= 32)
-  ? process.env.SESSION_SECRET
-  : "chalapathi-university-secure-session-production-secret-key-2026-fallback";
+const configuredSessionSecret = process.env.SESSION_SECRET;
+if (process.env.NODE_ENV === "production" && (!configuredSessionSecret || configuredSessionSecret.length < 32)) {
+  throw new Error("Configure SESSION_SECRET with at least 32 characters before starting the production server");
+}
+const sessionSecret = configuredSessionSecret && configuredSessionSecret.length >= 32
+  ? configuredSessionSecret : randomBytes(32).toString("hex");
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
@@ -99,6 +103,7 @@ app.use("/api/config", configRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/cms", cmsRoutes);
 app.use("/api/page-builder", pageBuilderRoutes);
+app.use("/api/media", mediaRoutes);
 
 app.use((error: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error("Request rejected");

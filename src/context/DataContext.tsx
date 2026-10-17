@@ -1,4 +1,5 @@
 import { readContent, saveContent, readNewsConfig, saveNewsConfig } from "../services/contentApi";
+import { canAccess, type AdminIdentity } from "../security/adminAccess";
 import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { safeSetItem } from "../lib/safeStorage";
 import { PROGRAMS_DATA, ProgramDetail } from "../data/programsData";
@@ -3696,25 +3697,37 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     let active = true;
     let pending = false;
+    let queued = false;
+    let generation = 0;
+    let adminIdentity: AdminIdentity | null = null;
     const refresh = async () => {
-      if (pending) return;
+      if (!active) return;
+      if (pending) { queued = true; return; }
       pending = true;
+      const requestGeneration = generation;
       try {
-        const admin = window.location.pathname.startsWith("/admin");
+        const admin = window.location.pathname.startsWith("/admin") && !!adminIdentity;
         const [articles, calendar, pageConfig] = await Promise.all([
-          readContent("news", admin), readContent("events", admin), readNewsConfig()
+          readContent("news", admin && canAccess(adminIdentity, "news")),
+          readContent("events", admin && canAccess(adminIdentity, "events")), readNewsConfig()
         ]);
-        if (!active) return;
+        if (!active || requestGeneration !== generation) return;
         contentRevisions.current = { news: articles.revision, events: calendar.revision };
         setNews(articles.items);
         setEvents(calendar.items);
         if (pageConfig) setNewsPageConfig({ ...DEFAULT_NEWS_PAGE_CONFIG, ...pageConfig });
-      } catch (error) { console.error("News & Events could not be loaded", error); }
-      finally { pending = false; }
+      } catch (error) { if (active && requestGeneration === generation) console.error("News & Events could not be loaded", error); }
+      finally {
+        pending = false;
+        if (queued && active) { queued = false; void refresh(); }
+      }
     };
     const publicRefresh = () => { if (!window.location.pathname.startsWith("/admin")) void refresh(); };
-    void refresh();
-    const authChanged = () => {
+    // The portal signals a server-verified identity before private reads begin.
+    if (!window.location.pathname.startsWith("/admin")) void refresh();
+    const authChanged = (event: Event) => {
+      adminIdentity = (event as CustomEvent<{ user: AdminIdentity | null }>).detail?.user || null;
+      ++generation;
       contentRevisions.current = {};
       setNews([]);
       setEvents([]);

@@ -6,6 +6,11 @@ export type LucideProps = Record<string, any>;
 const NullComponent: React.FC<any> = () => null;
 
 const SVG_ICONS: Record<string, React.ReactNode> = {
+  Folder: <path d="M3 7V5a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z" />,
+  FolderOpen: <><path d="M3 10V5a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v2" /><path d="M3 10h18l-2 10H5L3 10Z" /></>,
+  FolderPlus: <><path d="M3 7V5a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z" /><path d="M12 10v7m-3.5-3.5h7" /></>,
+  HardDrive: <><rect x="3" y="12" width="18" height="8" rx="2" /><path d="m3 14 3-10h12l3 10M7 16h.01M11 16h.01" /></>,
+  Image: <><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" /></>,
   Undo2: <><path d="M3 10h11a7 7 0 0 1 0 14" transform="translate(0 -5)" /><path d="m7 1-4 4 4 4" /></>,
   Redo2: <><path d="M21 5H10a7 7 0 0 0 0 14" /><path d="m17 1 4 4-4 4" /></>,
   Monitor: <><rect x="3" y="3" width="18" height="13" rx="2" /><path d="M8 21h8m-4-5v5" /></>,

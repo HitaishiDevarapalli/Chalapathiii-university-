@@ -40,7 +40,7 @@ const publicCreates = new Set(["enquiries", "applications", "event-registrations
 export function adminApiGuard(req: Request, res: Response, next: NextFunction) {
   const [resource, ...rest] = req.path.replace(/^\//, "").split("/");
   // The builder applies session, CSRF and action-specific pages.* checks in its router.
-  if (["auth", "security", "health", "page-builder"].includes(resource)) return next();
+  if (["auth", "security", "health", "page-builder", "media"].includes(resource)) return next();
   const read = ["GET", "HEAD", "OPTIONS"].includes(req.method);
   const root = rest.filter(Boolean).length === 0;
   if (publicCreates.has(resource) && root && req.method === "POST" && !req.session?.adminId) {
@@ -53,7 +53,12 @@ export function adminApiGuard(req: Request, res: Response, next: NextFunction) {
     let keys: string[] = [];
     if (resource === "config") {
       if (rest[0] === "backup") keys = ["backup.export"];
-      else if (rest[0] === "restore") keys = ["backup.manage", ...Object.keys(req.body.configs || req.body || {}).map(key => `${configModule(key) || "settings"}.publish`)];
+      else if (rest[0] === "restore") {
+        const body = req.body || {};
+        const configKeys = Array.isArray(body) ? body.filter(item => item?.key).map(item => String(item.key)) : Object.keys(body.configs || body);
+        keys = ["backup.manage", ...configKeys.filter(key => key !== "timestamp" && !isInternalConfig(key)).flatMap(key =>
+          [`${configModule(key) || "settings"}.edit`, `${configModule(key) || "settings"}.publish`])];
+      }
       else {
         const key = decodeURIComponent(rest.join("/"));
         if (isInternalConfig(key)) return res.sendStatus(404);

@@ -1,4 +1,4 @@
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
@@ -6,7 +6,9 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN apk add --no-cache python3 make g++
+RUN npm ci --include=dev
+RUN npm_config_build_from_source=true npm_config_napi_build_version=8 npm rebuild argon2 --foreground-scripts
 
 # Copy source code
 COPY . .
@@ -16,7 +18,7 @@ RUN npx prisma generate
 RUN npm run build
 
 # Production stage
-FROM node:20-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
@@ -24,6 +26,7 @@ WORKDIR /app
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/start.cjs ./
 COPY --from=builder /app/prisma ./prisma
 
 # Expose port
