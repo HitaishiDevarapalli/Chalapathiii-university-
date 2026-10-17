@@ -115,6 +115,14 @@ python3 scripts/resolve-page-builder-vps.py --apply
 python3 -m unittest discover -s scripts/tests -p test_page_builder_vps_resolver.py -v
 ```
 
+For the section editor update on a VPS that used the earlier conflict resolver, use `scripts/update-page-sections-vps.py`. A context-based Git patch can fail because the earlier resolver preserved different parentheses and surrounding sidebar code. This updater checks individual anchors in the current portal, preserves unrelated security code, validates all changes before writing, saves the original portal under `~/chalapathi-backups/section-portal-*`, and supports repeated runs. It updates only `src/pages/AdminPortal.tsx`; fetch/copy the feature-owned builder files and API route, build both applications, and restart/copy through the existing operator workflow afterward. No database migration is required for this update.
+
+```sh
+python3 scripts/update-page-sections-vps.py
+python3 scripts/update-page-sections-vps.py --apply
+python3 -m unittest discover -s scripts/tests -p test_page_sections_vps_updater.py -v
+```
+
 New implementation: `src/pageBuilder/{PageBuilder,Renderer,DraftPreview}.tsx`, `model.ts`, `builder.css`; `server/src/pageBuilder/{schema.ts,menus.json}`; `server/src/routes/pageBuilder.ts`; the additive migration; API/browser tests and their runner; this document and the inspection plan.
 
 Integration changes: portal navigation/permission mapping, existing public header/homepage/router, page model relations, protected legacy page/CMS writes, and the existing icon wrapper. Dependencies: `@dnd-kit/core` in the frontend and `sharp` in the backend. Other pre-existing uncommitted security/deployment edits are intentionally excluded from the feature commit.
