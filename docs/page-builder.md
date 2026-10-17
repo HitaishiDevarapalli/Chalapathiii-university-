@@ -6,6 +6,16 @@ Placement changes take effect only after publication. In Page Settings, choose t
 
 Revision dialogs keep feedback inside the dialog and isolate editor shortcuts. Saved-state comparison ignores JSON object key order while preserving real text, placement and component-order edits. Genuine unsaved edits can be saved or explicitly discarded inside revision history before restoring a revision.
 
+## Edit pages from their website section
+
+After saving a draft's placement, the page appears under its matching Content Studio sidebar section, alongside the existing editors. Navigation pages use their parent section (About Us, Academics, Campus Life, and so on); homepage placements use **Homepage**; top-level navigation pages use **Navigation Links**; standalone pages use **Website Pages**. Archived pages leave these section shortcuts and remain available in the builder's archived list. Hidden or unpublished pages remain editable in the admin sidebar. A draft badge distinguishes pages that are not live.
+
+Click a section's new page entry to open **Page content**. Fill text, tables, FAQs and links in the form, or use **Upload photo / Replace photo** to attach an image directly. Existing alternative text is preserved when replacing a photo. **Choose from media library** reuses an existing image. Uploading through the media dialog now also attaches the uploaded image/PDF to the selected component automatically; incompatible file types are filtered out. Server upload validation and existing media permissions remain in force.
+
+Use **Layout & components** when you need additional blocks, nesting, spacing or design changes. Switching editing modes keeps the same unsaved document; both save to the same database draft. The content editor also offers quick additions for headings, paragraphs, photos and galleries. Empty image blocks have an explicit **Upload or choose photo** action.
+
+**Save draft** updates the section shortcut and keeps public content unchanged. **Publish / Update live page**, followed by confirmation, updates the public page and navigation/homepage placement together. Saving a new parent moves the admin shortcut immediately; the public link moves only when that change is published. Section shortcuts require `pages.view`; their content remains subject to `pages.edit`, `pages.publish` and `gallery.create`. Access to a new page does not grant access to the section's existing CMS tools.
+
 ## Implemented behavior
 
 - Server-created drafts and stable component identifiers; library insertion, nested drag-and-drop, move controls, copy/paste, duplication/deletion, undo/redo, width/height resizing, and precise property controls.
@@ -41,6 +51,7 @@ All endpoints are under `/api/page-builder` and use the existing session/CSRF pr
 | `GET /placements`                          | Published automatic navigation and homepage content                                           |
 | `GET /?search=…&status=…&page=…`           | Paginated drafts/page management; `pages.view`                                                |
 | `GET /menus`, `GET /links`                 | Existing menu registry and published internal destinations; `pages.view`                      |
+| `GET /section-pages?page=…`                | Paginated saved-draft placement/title summaries for admin sidebar shortcuts; `pages.view`     |
 | `POST /`                                   | Create draft; `pages.view` + `pages.create`                                                   |
 | `GET /:id`                                 | Secure editing and draft preview; `pages.view`                                                |
 | `PUT /:id`                                 | Save validated draft with current `version`; `pages.edit`                                     |

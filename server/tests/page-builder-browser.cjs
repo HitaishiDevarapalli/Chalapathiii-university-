@@ -160,9 +160,25 @@ module.exports = async function builderBrowserTest(base) {
     );
     await fill("Table caption", "University information");
     await click("Image", ".pb-library-item button");
-    await click("Choose from media library");
+    await click("Upload or choose photo");
     await page.waitForSelector(".pb-media-grid img");
-    await page.click(".pb-media-grid button");
+    const uploadPath = path.join(out, "photo-upload.webp");
+    const existingPhoto = await page.$eval(
+      ".pb-media-grid img",
+      (image) => image.src,
+    );
+    fs.writeFileSync(
+      uploadPath,
+      Buffer.from(await (await fetch(existingPhoto)).arrayBuffer()),
+    );
+    await (await page.$('.pb-media input[type="file"]')).uploadFile(uploadPath);
+    await page.waitForFunction(() => !document.querySelector(".pb-modal"));
+    await page.waitForSelector(".pb-canvas .pb-type-image img");
+    assert.notEqual(
+      await page.$eval(".pb-canvas .pb-type-image img", (image) => image.src),
+      existingPhoto,
+      "Uploading automatically attaches the new photo",
+    );
     await fill("Alternative text", "Verified server image");
     const heightHandle = await page.$('[aria-label="Resize component height"]');
     await heightHandle.scrollIntoView();
@@ -248,6 +264,57 @@ module.exports = async function builderBrowserTest(base) {
       ).status,
       404,
     );
+    // Saved placement creates a section editor entry before public publication.
+    const aboutExpand = await page.$('[aria-label="Expand About Us"]');
+    if (aboutExpand) await aboutExpand.click();
+    await click("Visual browser test · draft", ".admin-subnavigation button");
+    await page.waitForSelector(".pb-content-editor");
+    const paragraphId = current.document.nodes[1].children[0].children[0].id;
+    await fill(
+      "Text content",
+      "Paragraph filled from About Us",
+      `.pb-content-card[data-node-id="${paragraphId}"]`,
+    );
+    const imageId = current.document.nodes.find(
+      (node) => node.type === "image",
+    ).id;
+    const photoControl = `.pb-content-card[data-node-id="${imageId}"]`;
+    const previousPhoto = await page.$eval(
+      photoControl + " img",
+      (image) => image.src,
+    );
+    await (
+      await page.$(photoControl + ' input[type="file"]')
+    ).uploadFile(uploadPath);
+    await page.waitForFunction(
+      ({ selector, previous }) =>
+        document.querySelector(selector)?.src !== previous,
+      {},
+      { selector: photoControl + " img", previous: previousPhoto },
+    );
+    await click("Save draft");
+    await saved();
+    const sectionSaved = await api("/" + current.id);
+    assert.equal(
+      sectionSaved.body.document.nodes[1].children[0].children[0].props.text,
+      "Paragraph filled from About Us",
+    );
+    assert.notEqual(
+      sectionSaved.body.document.nodes.find((node) => node.type === "image")
+        .props.url,
+      current.document.nodes.find((node) => node.type === "image").props.url,
+    );
+    assert.equal(
+      sectionSaved.body.document.nodes.find((node) => node.type === "image")
+        .props.alt,
+      "Verified server image",
+    );
+    await page.screenshot({
+      path: path.join(out, "section-content-editor.png"),
+      fullPage: true,
+    });
+    await click("Layout & components");
+    await page.waitForSelector(".pb-canvas");
     await page.screenshot({
       path: path.join(out, "editor-desktop.png"),
       fullPage: true,
@@ -444,6 +511,35 @@ module.exports = async function builderBrowserTest(base) {
       () => !document.querySelector(".pb-revision-warning"),
     );
     await page.click('[aria-label="Close dialog"]');
+    await click("Page settings");
+    await select("Parent menu", "Campus Life");
+    await click("Done");
+    await click("Save draft");
+    await saved();
+    await page.waitForFunction(() => {
+      const group = [...document.querySelectorAll(".admin-nav-group")].find(
+        (group) =>
+          group.querySelector(".admin-nav-link")?.textContent.trim() ===
+          "Campus Life",
+      );
+      return group
+        ?.querySelector(".admin-subnavigation")
+        ?.textContent.includes("Visual browser test");
+    });
+    assert.ok(
+      (await api("/placements")).body.navigation.some(
+        (page) => page.id === current.id && page.parentNav === "About Us",
+      ),
+      "Draft placement moves the admin entry while the published menu stays unchanged",
+    );
+    await click("Visual browser test", ".admin-subnavigation button");
+    await page.waitForSelector(".pb-content-editor");
+    await click("Page settings");
+    await select("Parent menu", "About Us");
+    await click("Done");
+    await click("Save draft");
+    await saved();
+    await click("Layout & components");
     await click("Unpublish");
     await click("Confirm unpublish");
     await page.waitForFunction(() =>
@@ -477,6 +573,105 @@ module.exports = async function builderBrowserTest(base) {
         .querySelector(".pb-manager")
         ?.textContent.includes("Visual browser test"),
     );
+    await page.setViewport({ width: 1440, height: 1000 });
+    for (const [kind, parent, title, group] of [
+      ["homepage", "", "Added homepage feature", "Homepage"],
+      [
+        "navigation",
+        "Main Menu",
+        "Added top navigation page",
+        "Navigation Links",
+      ],
+      ["standalone", "", "Added standalone page", "Website Pages"],
+    ]) {
+      const result = await api("", "POST", {
+        document: {
+          ...current.document,
+          title,
+          slug: "/pages/" + title.toLowerCase().replaceAll(" ", "-"),
+          nodes: [],
+          placement: {
+            ...current.document.placement,
+            kind,
+            parent,
+            label: title,
+          },
+        },
+      });
+      assert.equal(result.status, 201);
+      await page.evaluate(() =>
+        window.dispatchEvent(new Event("builder-document-saved")),
+      );
+      await page.waitForSelector(`[aria-label="Expand ${group}"]`);
+      await page.click(`[aria-label="Expand ${group}"]`);
+      await page.waitForFunction(
+        ({ group, title }) => {
+          const item = [...document.querySelectorAll(".admin-nav-group")].find(
+            (item) => item.querySelector(".admin-nav-link")?.title === group,
+          );
+          return item
+            ?.querySelector(".admin-subnavigation")
+            ?.textContent.includes(title);
+        },
+        {},
+        { group, title },
+      );
+    }
+    const readerContext = await browser.createBrowserContext();
+    const reader = await readerContext.newPage();
+    reader.on("pageerror", (e) => errors.push(e.message));
+    await reader.setViewport({ width: 1440, height: 1000 });
+    await reader.goto(base + "/admin");
+    await reader.waitForSelector(
+      'input[placeholder="Enter your username or email"]',
+    );
+    await reader.type(
+      'input[placeholder="Enter your username or email"]',
+      "builder-viewer",
+    );
+    await reader.type(
+      'input[placeholder="Enter password"]',
+      "Builder-test-password-123!",
+    );
+    await reader.click('button[type="submit"]');
+    await reader.waitForSelector('[aria-label="Expand About Us"]');
+    await reader.click('[aria-label="Expand About Us"]');
+    await reader.waitForFunction(() =>
+      [...document.querySelectorAll(".admin-subnavigation button")].some(
+        (button) => button.textContent.includes("Visual browser test"),
+      ),
+    );
+    assert.equal(
+      await reader.$eval(".admin-subnavigation", (nav) =>
+        nav.textContent.includes("Genesis"),
+      ),
+      false,
+      "Pages-only access does not expose existing About CMS modules",
+    );
+    const readerEntry = await reader.evaluateHandle(() =>
+      [...document.querySelectorAll(".admin-subnavigation button")].find(
+        (button) => button.textContent.includes("Visual browser test"),
+      ),
+    );
+    await readerEntry.asElement().click();
+    await reader.waitForSelector(".pb-content-editor");
+    assert.equal(
+      await reader.$eval(
+        ".pb-content-card fieldset",
+        (fieldset) => fieldset.disabled,
+      ),
+      true,
+      "View-only section forms cannot edit content",
+    );
+    assert.equal(
+      await reader.$eval(
+        '.pb-content-card input[type="file"]',
+        (input) => input.disabled,
+      ),
+      true,
+      "View-only users cannot upload photos",
+    );
+    await readerContext.close();
     assert.deepEqual(errors, [], "no browser runtime errors");
     fs.writeFileSync(
       path.join(out, "report.json"),
@@ -489,6 +684,11 @@ module.exports = async function builderBrowserTest(base) {
             "nested pointer drag",
             "tables",
             "media selection",
+            "automatic photo upload and replacement",
+            "section sidebar draft discovery and content forms",
+            "section moves preserve draft/live separation",
+            "homepage, main navigation and standalone section grouping",
+            "pages-only read access without legacy module or photo upload access",
             "width resizing",
             "undo/redo",
             "server save",

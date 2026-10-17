@@ -256,12 +256,14 @@ function Frame({
   children,
   disabled,
   resize,
+  chooseImage,
 }: {
   node: BuilderNode;
   selected: boolean;
   select: (id: string) => void;
   children?: React.ReactNode;
   disabled: boolean;
+  chooseImage: (id: string) => void;
   resize: (
     id: string,
     dimension: "width" | "height" | "minHeight",
@@ -300,9 +302,23 @@ function Frame({
         </button>
         <span>{node.type}</span>
       </div>
-      <NodeContent node={node} editing>
-        {children}
-      </NodeContent>
+      {node.type === "image" && !node.props.url ? (
+        <Button
+          disabled={disabled}
+          data-admin-action="edit"
+          onClick={(e) => {
+            e.stopPropagation();
+            select(node.id);
+            chooseImage(node.id);
+          }}
+        >
+          <UploadCloud size={18} /> Upload or choose photo
+        </Button>
+      ) : (
+        <NodeContent node={node} editing>
+          {children}
+        </NodeContent>
+      )}
       {selected && !disabled && (
         <button
           className="pb-resize"
@@ -391,6 +407,9 @@ function Properties({
   openMedia,
   links,
   disabled,
+  contentOnly = false,
+  uploadImage,
+  canUploadPhoto,
 }: {
   node: BuilderNode;
   device: Device;
@@ -399,6 +418,9 @@ function Properties({
   openMedia: () => void;
   links: any[];
   disabled: boolean;
+  contentOnly?: boolean;
+  uploadImage: (file: File) => Promise<void>;
+  canUploadPhoto: boolean;
 }) {
   const textRef = useRef<HTMLTextAreaElement>(null);
   const p = node.props;
@@ -548,6 +570,33 @@ function Properties({
         select("level", "Heading level", ["h1", "h2", "h3", "h4", "h5", "h6"])}
       {node.type === "image" && (
         <>
+          {p.url && (
+            <img
+              className="pb-image-control-preview"
+              src={p.url}
+              alt={p.alt || "Selected image"}
+            />
+          )}
+          <label className="admin-button admin-button-primary pb-upload">
+            <UploadCloud size={17} /> {p.url ? "Replace photo" : "Upload photo"}
+            <input
+              type="file"
+              aria-label="Upload photo"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              disabled={disabled || !canUploadPhoto}
+              onChange={async (e) => {
+                const input = e.currentTarget;
+                const file = input.files?.[0];
+                if (file) await uploadImage(file);
+                input.value = "";
+              }}
+            />
+          </label>
+          <p className="pb-hint">
+            {canUploadPhoto
+              ? "Choose a photo from your computer. It will be added here automatically."
+              : "Choose an existing photo below. Uploading new photos requires media upload permission."}
+          </p>
           {input("url", "Image URL")}
           <Button data-admin-action="view" onClick={openMedia}>
             Choose from media library
@@ -829,119 +878,130 @@ function Properties({
           </select>
         </Field>
       )}
-      <div className="pb-property-heading">
-        {device.charAt(0).toUpperCase() + device.slice(1)} appearance
-      </div>
-      {device !== "desktop" && (
-        <p className="pb-hint">Empty values inherit desktop settings.</p>
-      )}
-      {hasText && (
+      {!contentOnly && (
         <>
-          <div className="pb-field-grid">
-            {numeric("fontSize", "Font size (px)", 10, 100, 16)}
-            {numeric("lineHeight", "Line height", 1, 3, 1.6, 0.1)}
+          <div className="pb-property-heading">
+            {device.charAt(0).toUpperCase() + device.slice(1)} appearance
           </div>
-          {select(
-            "fontWeight",
-            "Font weight",
-            ["400", "500", "600", "700", "800"],
-            true,
+          {device !== "desktop" && (
+            <p className="pb-hint">Empty values inherit desktop settings.</p>
           )}
-          {numeric("letterSpacing", "Letter spacing (px)", -2, 10, 0, 0.5)}
+          {hasText && (
+            <>
+              <div className="pb-field-grid">
+                {numeric("fontSize", "Font size (px)", 10, 100, 16)}
+                {numeric("lineHeight", "Line height", 1, 3, 1.6, 0.1)}
+              </div>
+              {select(
+                "fontWeight",
+                "Font weight",
+                ["400", "500", "600", "700", "800"],
+                true,
+              )}
+              {numeric("letterSpacing", "Letter spacing (px)", -2, 10, 0, 0.5)}
+            </>
+          )}
+          {select("textAlign", "Alignment", ["left", "center", "right"], true)}
+          <div className="pb-field-grid">
+            <Field label="Text color">
+              <input
+                type="color"
+                value={style.color || "#072A6C"}
+                onChange={(e) => setStyle("color", e.target.value)}
+              />
+            </Field>
+            <Field label="Background">
+              <input
+                type="color"
+                value={
+                  style.backgroundColor &&
+                  style.backgroundColor !== "transparent"
+                    ? style.backgroundColor
+                    : "#ffffff"
+                }
+                onChange={(e) => setStyle("backgroundColor", e.target.value)}
+              />
+            </Field>
+          </div>
+          <div className="pb-property-heading">Dimensions & spacing</div>
+          {["width", "height", "minHeight", "maxWidth"].map((key) => (
+            <Field
+              key={key}
+              label={
+                (
+                  {
+                    width: "Width",
+                    height: "Height",
+                    minHeight: "Minimum height",
+                    maxWidth: "Maximum width",
+                  } as any
+                )[key]
+              }
+            >
+              <input
+                value={(style as any)[key] || ""}
+                placeholder="auto · px · % · rem"
+                onChange={(e) => setStyle(key, e.target.value || undefined)}
+              />
+            </Field>
+          ))}
+          <div className="pb-field-grid">
+            {numeric("padding", "Padding (px)", 0, 160, 0)}
+            {numeric("margin", "Margin (px)", 0, 100, 0)}
+            {numeric("gap", "Gap (px)", 0, 100, 16)}
+            {numeric("borderRadius", "Radius (px)", 0, 100, 0)}
+            {numeric("borderWidth", "Border (px)", 0, 12, 0)}
+            <Field label="Border color">
+              <input
+                type="color"
+                value={style.borderColor || "#e7e9ee"}
+                onChange={(e) => setStyle("borderColor", e.target.value)}
+              />
+            </Field>
+          </div>
+          {["columns", "grid", "card-grid"].includes(node.type) && (
+            <>
+              {numeric("columns", "Columns", 1, 6, 2)}
+              {select(
+                "proportions",
+                "Column proportions",
+                ["equal", "wide-left", "wide-right"],
+                true,
+              )}
+              {select(
+                "alignItems",
+                "Vertical alignment",
+                ["stretch", "start", "center", "end"],
+                true,
+              )}
+            </>
+          )}
+          {device !== "desktop" && (
+            <Button
+              data-admin-action="edit"
+              onClick={() =>
+                change((n) => ({
+                  ...n,
+                  responsive: { ...n.responsive, [device]: {} },
+                }))
+              }
+            >
+              Reset {device} overrides
+            </Button>
+          )}
         </>
-      )}
-      {select("textAlign", "Alignment", ["left", "center", "right"], true)}
-      <div className="pb-field-grid">
-        <Field label="Text color">
-          <input
-            type="color"
-            value={style.color || "#072A6C"}
-            onChange={(e) => setStyle("color", e.target.value)}
-          />
-        </Field>
-        <Field label="Background">
-          <input
-            type="color"
-            value={
-              style.backgroundColor && style.backgroundColor !== "transparent"
-                ? style.backgroundColor
-                : "#ffffff"
-            }
-            onChange={(e) => setStyle("backgroundColor", e.target.value)}
-          />
-        </Field>
-      </div>
-      <div className="pb-property-heading">Dimensions & spacing</div>
-      {["width", "height", "minHeight", "maxWidth"].map((key) => (
-        <Field
-          key={key}
-          label={
-            (
-              {
-                width: "Width",
-                height: "Height",
-                minHeight: "Minimum height",
-                maxWidth: "Maximum width",
-              } as any
-            )[key]
-          }
-        >
-          <input
-            value={(style as any)[key] || ""}
-            placeholder="auto · px · % · rem"
-            onChange={(e) => setStyle(key, e.target.value || undefined)}
-          />
-        </Field>
-      ))}
-      <div className="pb-field-grid">
-        {numeric("padding", "Padding (px)", 0, 160, 0)}
-        {numeric("margin", "Margin (px)", 0, 100, 0)}
-        {numeric("gap", "Gap (px)", 0, 100, 16)}
-        {numeric("borderRadius", "Radius (px)", 0, 100, 0)}
-        {numeric("borderWidth", "Border (px)", 0, 12, 0)}
-        <Field label="Border color">
-          <input
-            type="color"
-            value={style.borderColor || "#e7e9ee"}
-            onChange={(e) => setStyle("borderColor", e.target.value)}
-          />
-        </Field>
-      </div>
-      {["columns", "grid", "card-grid"].includes(node.type) && (
-        <>
-          {numeric("columns", "Columns", 1, 6, 2)}
-          {select(
-            "proportions",
-            "Column proportions",
-            ["equal", "wide-left", "wide-right"],
-            true,
-          )}
-          {select(
-            "alignItems",
-            "Vertical alignment",
-            ["stretch", "start", "center", "end"],
-            true,
-          )}
-        </>
-      )}
-      {device !== "desktop" && (
-        <Button
-          data-admin-action="edit"
-          onClick={() =>
-            change((n) => ({
-              ...n,
-              responsive: { ...n.responsive, [device]: {} },
-            }))
-          }
-        >
-          Reset {device} overrides
-        </Button>
       )}
     </fieldset>
   );
 }
 
-export default function PageBuilder() {
+export default function PageBuilder({
+  initialPageId = "",
+  onReturnToPages,
+}: {
+  initialPageId?: string;
+  onReturnToPages?: () => void;
+}) {
   const { user } = useAdminAccess();
   const can = (module: string, action = "view") =>
     !!user &&
@@ -965,6 +1025,9 @@ export default function PageBuilder() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [modal, setModal] = useState("");
+  const [editorMode, setEditorMode] = useState<"content" | "layout">(
+    initialPageId ? "content" : "layout",
+  );
   const [newTitle, setNewTitle] = useState("");
   const [menus, setMenus] = useState<any[]>([]);
   const [links, setLinks] = useState<any[]>([]);
@@ -976,6 +1039,7 @@ export default function PageBuilder() {
     useState<BuilderDocument | null>(null);
   const [dragging, setDragging] = useState("");
   const clipboard = useRef<BuilderNode | null>(null);
+  const mediaTarget = useRef("");
   const dirty = React.useMemo(
     () => !!doc && !documentsEqual(doc, active?.document),
     [doc, active?.document],
@@ -1074,7 +1138,11 @@ export default function PageBuilder() {
     setDoc(structuredClone(row.document));
     setReload((v) => v + 1);
     setNotice("Changes confirmed by the server");
+    window.dispatchEvent(new Event("builder-document-saved"));
   };
+  useEffect(() => {
+    if (initialPageId) void open(initialPageId);
+  }, [initialPageId]);
   const save = async () => {
     if (!active || !doc) throw new Error("No page is open");
     const row = await builderApi<BuilderRecord>(`/${active.id}`, "PUT", {
@@ -1111,6 +1179,7 @@ export default function PageBuilder() {
         `${action.charAt(0).toUpperCase() + action.slice(1)} confirmed by the server`,
       );
       window.dispatchEvent(new Event("builder-published"));
+      window.dispatchEvent(new Event("builder-document-saved"));
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -1228,7 +1297,8 @@ export default function PageBuilder() {
     if (active) window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
   });
-  const showMedia = async (mediaPageNumber = 1) => {
+  const showMedia = async (mediaPageNumber = 1, nodeId = selected) => {
+    mediaTarget.current = nodeId;
     setModal("media");
     setMediaPage(mediaPageNumber);
     try {
@@ -1255,16 +1325,23 @@ export default function PageBuilder() {
       setError(e.message);
     }
   };
-  const chooseMedia = (asset: Media) => {
-    if (!doc || !selected) return;
-    const node = findNode(doc.nodes, selected);
+  const chooseMedia = (
+    asset: Media,
+    nodeId = mediaTarget.current || selected,
+  ) => {
+    if (!doc || !nodeId) return;
+    const node = findNode(doc.nodes, nodeId);
     if (!node) return;
     if (
       (node.type === "download" && asset.mime !== "application/pdf") ||
       (node.type !== "download" && !asset.mime.startsWith("image/"))
     )
-      return;
-    editNode(selected, (n) => ({
+      throw new Error(
+        node.type === "download"
+          ? "Choose a PDF document for this download."
+          : "Choose an image for this component.",
+      );
+    editNode(nodeId, (n) => ({
       ...n,
       props:
         n.type === "gallery"
@@ -1277,9 +1354,34 @@ export default function PageBuilder() {
             }
           : n.type === "download"
             ? { ...n.props, href: asset.url }
-            : { ...n.props, url: asset.url, alt: asset.alt },
+            : {
+                ...n.props,
+                url: asset.url,
+                alt: asset.alt || n.props.alt || "",
+              },
     }));
     setModal("");
+  };
+  const uploadFile = async (file: File, nodeId: string) => {
+    if (!editable || !can("gallery", "create")) return;
+    setBusy(true);
+    setError("");
+    const form = new FormData();
+    form.append("file", file);
+    try {
+      const asset = await builderApi<Media>("/media", "POST", form);
+      setMedia((m) => [asset, ...m]);
+      chooseMedia(asset, nodeId);
+      setNotice(
+        asset.mime === "application/pdf"
+          ? "Document added. Save your draft or update the live page."
+          : "Photo added. Save your draft or update the live page.",
+      );
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
   };
   const renderChildren = (
     nodes: BuilderNode[],
@@ -1296,6 +1398,9 @@ export default function PageBuilder() {
             node={node}
             selected={selected === node.id}
             select={setSelected}
+            chooseImage={(id) => {
+              void showMedia(1, id);
+            }}
             disabled={!editable}
             resize={(id, dimension, value) =>
               editNode(id, (n) =>
@@ -1327,6 +1432,41 @@ export default function PageBuilder() {
       )}
     </>
   );
+  const contentFields = (nodes: BuilderNode[]): React.ReactNode =>
+    nodes.map((node) => (
+      <React.Fragment key={node.id}>
+        {!containers.has(node.type) &&
+          !["spacer", "divider"].includes(node.type) && (
+            <section className="pb-content-card" data-node-id={node.id}>
+              <h3>
+                {library.find((item) => item[0] === node.type)?.[1] ||
+                  node.type}
+              </h3>
+              <Properties
+                node={node}
+                device="desktop"
+                contentOnly
+                change={(fn) => editNode(node.id, fn)}
+                media={media}
+                openMedia={() => {
+                  setSelected(node.id);
+                  void showMedia(1, node.id);
+                }}
+                uploadImage={(file) => uploadFile(file, node.id)}
+                canUploadPhoto={can("gallery", "create")}
+                links={links}
+                disabled={!editable}
+              />
+            </section>
+          )}
+        {contentFields(node.children)}
+      </React.Fragment>
+    ));
+  const returnToPages = () => {
+    setActive(null);
+    setDoc(null);
+    onReturnToPages?.();
+  };
   const selectedNode = doc ? findNode(doc.nodes, selected) : undefined;
   return (
     <div className="pb-app" data-admin-module="pages">
@@ -1527,9 +1667,7 @@ export default function PageBuilder() {
           <div className="pb-editor-heading">
             <Button
               data-admin-action="view"
-              onClick={() =>
-                dirty ? setModal("leave") : (setActive(null), setDoc(null))
-              }
+              onClick={() => (dirty ? setModal("leave") : returnToPages())}
             >
               <ArrowLeft size={16} />
               All pages
@@ -1552,6 +1690,22 @@ export default function PageBuilder() {
             </Button>
           </div>
           <div className="pb-toolbar">
+            <div className="pb-mode-controls" aria-label="Page editing mode">
+              <Button
+                data-admin-action="view"
+                aria-pressed={editorMode === "content"}
+                onClick={() => setEditorMode("content")}
+              >
+                Page content
+              </Button>
+              <Button
+                data-admin-action="view"
+                aria-pressed={editorMode === "layout"}
+                onClick={() => setEditorMode("layout")}
+              >
+                Layout & components
+              </Button>
+            </div>
             <div className="pb-toolbar-group">
               <button
                 title="Undo (Ctrl+Z)"
@@ -1639,203 +1793,241 @@ export default function PageBuilder() {
               {active.liveSlug ? "Update live page" : "Publish"}
             </Button>
           </div>
-          <DndContext
-            sensors={sensors}
-            collisionDetection={(args) => {
-              const hits = pointerWithin(args);
-              return hits.length ? hits : rectIntersection(args);
-            }}
-            onDragStart={(event) =>
-              setDragging(event.active.data.current?.label || "Component")
-            }
-            onDragCancel={() => setDragging("")}
-            onDragEnd={(event) => {
-              setDragging("");
-              const data = event.active.data.current,
-                target = event.over?.data.current;
-              if (!target || !data || !editable) return;
-              if (data.nodeId) move(data.nodeId, target.parent, target.index);
-              else {
-                const definition = library.find(
-                  (d) =>
-                    d[0] === data.type &&
-                    (d.length > 3 ? d[3] : undefined) === data.columns,
-                );
-                if (definition) add(definition, target.parent, target.index);
-              }
-            }}
-          >
-            <div className="pb-editor-layout">
-              <aside className="pb-library">
-                <div className="pb-panel-title">
-                  <h3>Components</h3>
-                  <span>Drag or add</span>
-                </div>
-                <label className="pb-search">
-                  <Search size={15} />
-                  <input
-                    type="search"
-                    placeholder="Find a component…"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                  />
-                </label>
-                {["Basic content", "Layout", "Advanced content"].map(
-                  (group) => (
-                    <div className="pb-library-group" key={group}>
-                      <h4>{group}</h4>
-                      {library
-                        .filter(
-                          (d) =>
-                            d[2] === group &&
-                            d[1].toLowerCase().includes(query.toLowerCase()),
-                        )
-                        .map((definition, i) => (
-                          <LibraryItem
-                            key={definition[1]}
-                            definition={definition}
-                            add={() => add(definition)}
-                            disabled={!editable}
-                          />
-                        ))}
-                    </div>
-                  ),
-                )}
-              </aside>
-              <div className="pb-canvas-area">
-                <div className="pb-canvas-caption">
-                  <span>
-                    {device === "desktop"
-                      ? "Desktop · flexible"
-                      : device === "tablet"
-                        ? "Tablet · 768 px"
-                        : "Mobile · 390 px"}
-                  </span>
-                  <span>{doc.nodes.length} top-level components</span>
-                </div>
-                {selectedNode && (
-                  <div className="pb-selection-actions">
-                    <span>{selectedNode.type}</span>
-                    <button
-                      title="Duplicate component"
-                      aria-label="Duplicate component"
-                      data-admin-action="edit"
-                      disabled={!editable}
-                      onClick={duplicate}
-                    >
-                      <Copy size={15} />
-                    </button>
-                    <button
-                      title="Copy component"
-                      aria-label="Copy component"
-                      data-admin-action="view"
-                      onClick={() => {
-                        clipboard.current = structuredClone(selectedNode);
-                        setNotice("Component copied");
-                      }}
-                    >
-                      Copy
-                    </button>
-                    <button
-                      title="Paste component"
-                      data-admin-action="edit"
-                      disabled={!editable || !clipboard.current}
-                      onClick={paste}
-                    >
-                      Paste
-                    </button>
-                    <button
-                      aria-label="Move component up"
-                      data-admin-action="edit"
-                      disabled={!editable}
-                      onClick={() => {
-                        const at = locate(doc.nodes, selected)!;
-                        move(selected, at.parent, Math.max(0, at.index - 1));
-                      }}
-                    >
-                      <ArrowUp size={15} />
-                    </button>
-                    <button
-                      aria-label="Move component down"
-                      data-admin-action="edit"
-                      disabled={!editable}
-                      onClick={() => {
-                        const at = locate(doc.nodes, selected)!;
-                        move(selected, at.parent, at.index + 2);
-                      }}
-                    >
-                      <ArrowDown size={15} />
-                    </button>
-                    <button
-                      aria-label="Delete component"
-                      data-admin-action="edit"
-                      disabled={!editable}
-                      onClick={remove}
-                    >
-                      <Trash2 size={15} />
-                    </button>
-                  </div>
-                )}
-                <div
-                  className="pb-canvas-viewport"
-                  style={{
-                    maxWidth:
-                      device === "mobile"
-                        ? 390
-                        : device === "tablet"
-                          ? 768
-                          : "100%",
-                  }}
-                >
-                  <div className="pb-canvas-sitebar">
-                    <img src="/logo.png" alt="Chalapathi University" />
-                    <span>Page content</span>
-                  </div>
-                  <div
-                    className="pb-renderer pb-canvas"
-                    data-device={device}
-                    onClick={() => setSelected("")}
-                  >
-                    {renderChildren(doc.nodes)}
-                  </div>
-                </div>
-                <p className="pb-canvas-note">
-                  The public page uses your existing university header and
-                  footer.
+          {editorMode === "content" ? (
+            <div className="pb-content-editor">
+              <div className="pb-content-intro">
+                <h2>Edit page content & photos</h2>
+                <p>
+                  Fill the fields below, then save your draft or update the live
+                  page. Use Layout & components to add sections or change the
+                  design.
                 </p>
               </div>
-              <aside className="pb-inspector">
-                {selectedNode ? (
-                  <Properties
-                    node={selectedNode}
-                    device={device}
-                    change={(fn) => editNode(selected, fn)}
-                    media={media}
-                    openMedia={() => showMedia()}
-                    links={links}
-                    disabled={!editable}
-                  />
-                ) : (
-                  <div className="pb-inspector-empty">
-                    <Settings size={27} />
-                    <h3>Make it yours</h3>
-                    <p>
-                      Select a component on the canvas to edit its content,
-                      style and responsive layout.
-                    </p>
-                  </div>
+              {contentFields(doc.nodes)}
+              {!doc.nodes.length && (
+                <p className="pb-empty">
+                  This page is empty. Add content below or open Layout &
+                  components.
+                </p>
+              )}
+              <div className="pb-small-actions">
+                {(["heading", "paragraph", "image", "gallery"] as const).map(
+                  (type) => (
+                    <Button
+                      key={type}
+                      disabled={!editable}
+                      data-admin-action="edit"
+                      onClick={() =>
+                        add(library.find((item) => item[0] === type)!)
+                      }
+                    >
+                      Add {type === "image" ? "photo" : type}
+                    </Button>
+                  ),
                 )}
-              </aside>
+              </div>
             </div>
-            <DragOverlay>
-              {dragging ? (
-                <div className="pb-drag-overlay">
-                  <GripVertical size={16} />
-                  {dragging}
+          ) : (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={(args) => {
+                const hits = pointerWithin(args);
+                return hits.length ? hits : rectIntersection(args);
+              }}
+              onDragStart={(event) =>
+                setDragging(event.active.data.current?.label || "Component")
+              }
+              onDragCancel={() => setDragging("")}
+              onDragEnd={(event) => {
+                setDragging("");
+                const data = event.active.data.current,
+                  target = event.over?.data.current;
+                if (!target || !data || !editable) return;
+                if (data.nodeId) move(data.nodeId, target.parent, target.index);
+                else {
+                  const definition = library.find(
+                    (d) =>
+                      d[0] === data.type &&
+                      (d.length > 3 ? d[3] : undefined) === data.columns,
+                  );
+                  if (definition) add(definition, target.parent, target.index);
+                }
+              }}
+            >
+              <div className="pb-editor-layout">
+                <aside className="pb-library">
+                  <div className="pb-panel-title">
+                    <h3>Components</h3>
+                    <span>Drag or add</span>
+                  </div>
+                  <label className="pb-search">
+                    <Search size={15} />
+                    <input
+                      type="search"
+                      placeholder="Find a component…"
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                    />
+                  </label>
+                  {["Basic content", "Layout", "Advanced content"].map(
+                    (group) => (
+                      <div className="pb-library-group" key={group}>
+                        <h4>{group}</h4>
+                        {library
+                          .filter(
+                            (d) =>
+                              d[2] === group &&
+                              d[1].toLowerCase().includes(query.toLowerCase()),
+                          )
+                          .map((definition, i) => (
+                            <LibraryItem
+                              key={definition[1]}
+                              definition={definition}
+                              add={() => add(definition)}
+                              disabled={!editable}
+                            />
+                          ))}
+                      </div>
+                    ),
+                  )}
+                </aside>
+                <div className="pb-canvas-area">
+                  <div className="pb-canvas-caption">
+                    <span>
+                      {device === "desktop"
+                        ? "Desktop · flexible"
+                        : device === "tablet"
+                          ? "Tablet · 768 px"
+                          : "Mobile · 390 px"}
+                    </span>
+                    <span>{doc.nodes.length} top-level components</span>
+                  </div>
+                  {selectedNode && (
+                    <div className="pb-selection-actions">
+                      <span>{selectedNode.type}</span>
+                      <button
+                        title="Duplicate component"
+                        aria-label="Duplicate component"
+                        data-admin-action="edit"
+                        disabled={!editable}
+                        onClick={duplicate}
+                      >
+                        <Copy size={15} />
+                      </button>
+                      <button
+                        title="Copy component"
+                        aria-label="Copy component"
+                        data-admin-action="view"
+                        onClick={() => {
+                          clipboard.current = structuredClone(selectedNode);
+                          setNotice("Component copied");
+                        }}
+                      >
+                        Copy
+                      </button>
+                      <button
+                        title="Paste component"
+                        data-admin-action="edit"
+                        disabled={!editable || !clipboard.current}
+                        onClick={paste}
+                      >
+                        Paste
+                      </button>
+                      <button
+                        aria-label="Move component up"
+                        data-admin-action="edit"
+                        disabled={!editable}
+                        onClick={() => {
+                          const at = locate(doc.nodes, selected)!;
+                          move(selected, at.parent, Math.max(0, at.index - 1));
+                        }}
+                      >
+                        <ArrowUp size={15} />
+                      </button>
+                      <button
+                        aria-label="Move component down"
+                        data-admin-action="edit"
+                        disabled={!editable}
+                        onClick={() => {
+                          const at = locate(doc.nodes, selected)!;
+                          move(selected, at.parent, at.index + 2);
+                        }}
+                      >
+                        <ArrowDown size={15} />
+                      </button>
+                      <button
+                        aria-label="Delete component"
+                        data-admin-action="edit"
+                        disabled={!editable}
+                        onClick={remove}
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  )}
+                  <div
+                    className="pb-canvas-viewport"
+                    style={{
+                      maxWidth:
+                        device === "mobile"
+                          ? 390
+                          : device === "tablet"
+                            ? 768
+                            : "100%",
+                    }}
+                  >
+                    <div className="pb-canvas-sitebar">
+                      <img src="/logo.png" alt="Chalapathi University" />
+                      <span>Page content</span>
+                    </div>
+                    <div
+                      className="pb-renderer pb-canvas"
+                      data-device={device}
+                      onClick={() => setSelected("")}
+                    >
+                      {renderChildren(doc.nodes)}
+                    </div>
+                  </div>
+                  <p className="pb-canvas-note">
+                    The public page uses your existing university header and
+                    footer.
+                  </p>
                 </div>
-              ) : null}
-            </DragOverlay>
-          </DndContext>
+                <aside className="pb-inspector">
+                  {selectedNode ? (
+                    <Properties
+                      node={selectedNode}
+                      device={device}
+                      change={(fn) => editNode(selected, fn)}
+                      media={media}
+                      openMedia={() => showMedia()}
+                      uploadImage={(file) => uploadFile(file, selected)}
+                      canUploadPhoto={can("gallery", "create")}
+                      links={links}
+                      disabled={!editable}
+                    />
+                  ) : (
+                    <div className="pb-inspector-empty">
+                      <Settings size={27} />
+                      <h3>Make it yours</h3>
+                      <p>
+                        Select a component on the canvas to edit its content,
+                        style and responsive layout.
+                      </p>
+                    </div>
+                  )}
+                </aside>
+              </div>
+              <DragOverlay>
+                {dragging ? (
+                  <div className="pb-drag-overlay">
+                    <GripVertical size={16} />
+                    {dragging}
+                  </div>
+                ) : null}
+              </DragOverlay>
+            </DndContext>
+          )}
           <div className="pb-editor-footer">
             <span>
               {formatIST(active.updatedAt)} · Version {active.version}
@@ -2159,7 +2351,7 @@ export default function PageBuilder() {
                 }
                 onClick={() =>
                   modal === "leave"
-                    ? (setModal(""), setActive(null), setDoc(null))
+                    ? (setModal(""), returnToPages())
                     : execute(modal)
                 }
               >
@@ -2214,38 +2406,33 @@ export default function PageBuilder() {
         >
           <div className="pb-media">
             <p>
-              Files are stored in the university’s existing server uploads
-              volume.
+              Upload a file or choose one below. It will be added to the
+              selected component automatically.
             </p>
             {can("gallery", "create") && (
               <label className="admin-button admin-button-primary pb-upload">
                 <UploadCloud size={17} />
-                {busy ? "Uploading…" : "Upload image or PDF"}
+                {busy
+                  ? "Uploading…"
+                  : findNode(doc?.nodes || [], mediaTarget.current)?.type ===
+                      "download"
+                    ? "Upload PDF"
+                    : "Upload photo"}
                 <input
                   type="file"
-                  accept="image/png,image/jpeg,image/webp,image/gif,application/pdf"
+                  accept={
+                    findNode(doc?.nodes || [], mediaTarget.current)?.type ===
+                    "download"
+                      ? "application/pdf"
+                      : "image/png,image/jpeg,image/webp,image/gif"
+                  }
                   disabled={busy}
                   onChange={async (e) => {
-                    const file = e.target.files?.[0];
+                    const input = e.currentTarget;
+                    const file = input.files?.[0];
                     if (!file) return;
-                    setBusy(true);
-                    setError("");
-                    const form = new FormData();
-                    form.append("file", file);
-                    try {
-                      const asset = await builderApi<Media>(
-                        "/media",
-                        "POST",
-                        form,
-                      );
-                      setMedia((m) => [asset, ...m]);
-                      setNotice("Upload confirmed by the server");
-                    } catch (e: any) {
-                      setError(e.message);
-                    } finally {
-                      setBusy(false);
-                      e.target.value = "";
-                    }
+                    await uploadFile(file, mediaTarget.current || selected);
+                    input.value = "";
                   }}
                 />
               </label>
@@ -2254,26 +2441,39 @@ export default function PageBuilder() {
               Maximum 10 MB. Images are optimized and validated on the server.
             </p>
             <div className="pb-media-grid">
-              {media.map((asset) => (
-                <button
-                  key={asset.id}
-                  disabled={!editable}
-                  data-admin-action="edit"
-                  onClick={() => chooseMedia(asset)}
-                >
-                  {asset.mime.startsWith("image/") ? (
-                    <img src={asset.url} alt={asset.alt} />
-                  ) : (
-                    <FileText size={40} />
-                  )}
-                  <strong>{asset.originalName}</strong>
-                  <span>
-                    {asset.width
-                      ? `${asset.width} × ${asset.height}`
-                      : "PDF document"}
-                  </span>
-                </button>
-              ))}
+              {media
+                .filter((asset) =>
+                  findNode(doc?.nodes || [], mediaTarget.current)?.type ===
+                  "download"
+                    ? asset.mime === "application/pdf"
+                    : asset.mime.startsWith("image/"),
+                )
+                .map((asset) => (
+                  <button
+                    key={asset.id}
+                    disabled={!editable}
+                    data-admin-action="edit"
+                    onClick={() => {
+                      try {
+                        chooseMedia(asset);
+                      } catch (e: any) {
+                        setError(e.message);
+                      }
+                    }}
+                  >
+                    {asset.mime.startsWith("image/") ? (
+                      <img src={asset.url} alt={asset.alt} />
+                    ) : (
+                      <FileText size={40} />
+                    )}
+                    <strong>{asset.originalName}</strong>
+                    <span>
+                      {asset.width
+                        ? `${asset.width} × ${asset.height}`
+                        : "PDF document"}
+                    </span>
+                  </button>
+                ))}
             </div>
             {!media.length && (
               <div className="pb-empty">

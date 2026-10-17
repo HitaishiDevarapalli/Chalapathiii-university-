@@ -356,6 +356,40 @@ router.get(
   ),
 );
 router.get(
+  "/section-pages",
+  run(async (req, res) => {
+    const page = Math.max(1, Math.min(100000, Number(req.query.page) || 1));
+    const where = { page: { status: { not: "archived" } } };
+    const [rows, total] = await prisma.$transaction([
+      prisma.builderDocument.findMany({
+        where,
+        select: {
+          pageId: true,
+          draftJson: true,
+          page: { select: { status: true } },
+        },
+        orderBy: { pageId: "asc" },
+        skip: (page - 1) * 20,
+        take: 20,
+      }),
+      prisma.builderDocument.count({ where }),
+    ]);
+    return res.json({
+      page,
+      total,
+      items: rows.map((row) => {
+        const doc = JSON.parse(row.draftJson) as BuilderDocument;
+        return {
+          id: row.pageId,
+          title: doc.title,
+          placement: doc.placement,
+          status: row.page.status,
+        };
+      }),
+    });
+  }),
+);
+router.get(
   "/",
   run(async (req, res) => {
     const page = Math.max(1, Math.min(100000, Number(req.query.page) || 1));

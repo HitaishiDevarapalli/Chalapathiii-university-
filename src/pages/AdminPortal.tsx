@@ -89,7 +89,8 @@ const PageBuilder = React.lazy(() => import("../pageBuilder/PageBuilder"));
 import { PagesCMS } from "../components/admin/PagesCMS";
 import { CertificationsCMS } from "../components/admin/CertificationsCMS";
 import { PopupCMS } from "../components/admin/PopupCMS";
-import { AdminSidebar, AdminOverview, workspaceLabels } from "../components/admin/AdminWorkspace";
+import { AdminOverview, workspaceLabels } from "../components/admin/AdminWorkspace";
+import { SectionAwareSidebar as AdminSidebar } from "../pageBuilder/SectionAwareSidebar";
 import { AdminLoginSteps } from "../components/admin/AdminLoginSteps";
 import { SecurityCMS } from "../components/admin/SecurityCMS";
 import { AdminAccessContext, AdminActionGuard, AdminIdentity, canAccess, canViewTab, securityRequest } from "../security/adminAccess";
@@ -198,6 +199,8 @@ export default function AdminPortal() {
     "research" | "directories" | "campus-life" | "placements" | "news" | "events" | "news-events" | 
     "contact" | "links" | "gallery" | "footer" | "settings" | "popup" | "security"
   >("dashboard");
+  const [sectionPageId, setSectionPageId] = useState("");
+  const [sectionPageOpenVersion, setSectionPageOpenVersion] = useState(0);
   const can = (module: string, action = "view") => canAccess(adminIdentity, module, action);
   React.useEffect(() => {
     if (!adminIdentity) return;
@@ -1875,14 +1878,16 @@ export default function AdminPortal() {
   const orderedNavItems = [
     ...navItems.filter(item => item.id === "dashboard" || item.id === "pages" || item.id === "page-builder").map(item => ({ ...item, section: undefined })),
     ...navItems.filter(item => item.id !== "dashboard" && item.id !== "pages" && item.id !== "page-builder").map(item => ({ ...item, section: item.id === "homepage" ? "Website content" : item.id === "popup" ? "Tools & settings" : undefined })),
-  ].filter(item => canViewTab(adminIdentity, item.id)).map(item => ({ ...item,
+  ].map(item => ({ ...item,
     subItems: item.id === "news-events" ? item.subItems?.filter(sub => can(sub.id)) : item.subItems }));
   const navigateWorkspace = (id: string) => setActiveTab(id as typeof activeTab);
-  const searchResults = orderedNavItems.flatMap(item => [
+  const searchResults = orderedNavItems.filter(item => canViewTab(adminIdentity, item.id)).flatMap(item => [
     { key: item.id, label: workspaceLabels[item.id] || item.label, group: "Workspace", action: () => navigateWorkspace(item.id) },
     ...(item.subItems || []).map(sub => ({ key: item.id + sub.id, label: sub.label, group: workspaceLabels[item.id], action: sub.onClick })),
   ]).filter(item => (item.label + " " + item.group).toLowerCase().includes(workspaceSearch.trim().toLowerCase())).slice(0, 8);
   const sidebarProps = {
+    selectedPageId: activeTab === "page-builder" ? sectionPageId : "",
+    onOpenPage: (id: string) => { setSectionPageId(id); if (id) { setSectionPageOpenVersion(v => v + 1); setActiveTab("page-builder"); } },
     items: orderedNavItems, activeTab, expanded: isSectionExpanded,
     onToggle: toggleNavSection, onNavigate: navigateWorkspace, onLogout: handleLogout,
     onReset: resetToDefaults, logo: siteSettings?.logoUrl || "/logo.png?v=3",
@@ -1939,7 +1944,7 @@ export default function AdminPortal() {
         <main className="admin-workspace" id="admin-workspace" key={activeTab}>
           {!canViewTab(adminIdentity, activeTab) ? <div className="admin-panel security-empty"><ShieldCheck size={28} /><h2>No modules have been assigned</h2><p>Ask a Super Administrator to grant the permissions required for your work.</p></div> :
           <AdminActionGuard module={activeTab === "news-events" ? newsEventsModuleTab : activeTab === "page-builder" ? "pages" : activeTab}>
-          {activeTab === "page-builder" && <React.Suspense fallback={<div role="status" className="admin-panel pb-empty">Loading Page Builder…</div>}><PageBuilder /></React.Suspense>}
+          {activeTab === "page-builder" && <React.Suspense fallback={<div role="status" className="admin-panel pb-empty">Loading Page Builder…</div>}><PageBuilder key={sectionPageId ? `${sectionPageId}:${sectionPageOpenVersion}` : "builder"} initialPageId={sectionPageId} onReturnToPages={() => setSectionPageId("")} /></React.Suspense>}
           {activeTab === "security" && <SecurityCMS />}
           {/* ════════════════════════════════════════════════════ */}
           {/* TAB 1: DASHBOARD OVERVIEW                            */}

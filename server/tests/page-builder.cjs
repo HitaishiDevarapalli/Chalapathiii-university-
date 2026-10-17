@@ -194,6 +194,7 @@ const { PGLiteSocketServer } = require("@electric-sql/pglite-socket");
     assert.equal((await visitor.get("")).status, 401);
     assert.equal((await visitor.get("/menus")).status, 401);
     assert.equal((await visitor.get("/media")).status, 401);
+    assert.equal((await visitor.get("/section-pages")).status, 401);
     assert.equal((await visitor.post("", { document })).status, 401);
     assert.equal((await viewer.post("", { document })).status, 403);
     assert.equal(
@@ -207,6 +208,21 @@ const { PGLiteSocketServer } = require("@electric-sql/pglite-socket");
     assert.equal(created.status, 201, JSON.stringify(created.body));
     let current = created.body;
     const id = current.id;
+    const sectionIndex = await viewer.get("/section-pages");
+    assert.equal(sectionIndex.status, 200);
+    assert.deepEqual(
+      sectionIndex.body.items.find((page) => page.id === id),
+      {
+        id,
+        title: document.title,
+        placement: document.placement,
+        status: "draft",
+      },
+    );
+    assert.ok(
+      !JSON.stringify(sectionIndex.body).includes("Original heading"),
+      "Section index returns summaries without private component content",
+    );
     assert.equal(
       (await editor.get("/" + id)).body.document.nodes[1].children[1].props
         .href,
@@ -595,6 +611,63 @@ const { PGLiteSocketServer } = require("@electric-sql/pglite-socket");
     pass("database-backed edit budgets reject excessive operations");
     if (process.env.BROWSER_TEST === "1")
       await require("./page-builder-browser.cjs")(base);
+    const sectionUser = await prisma.adminUser.findUnique({
+      where: { username: "builder-viewer" },
+    });
+    await prisma.adminUserPermission.deleteMany({
+      where: { userId: sectionUser.id },
+    });
+    assert.equal(
+      (await viewer.get("/section-pages")).status,
+      403,
+      "Section index requires pages.view",
+    );
+    const indexed = Array.from({ length: 21 }, (_, index) => ({
+      id: crypto.randomUUID(),
+      slug: `/pages/section-pagination-${index}`,
+      title: `Section pagination ${index}`,
+    }));
+    await prisma.$transaction([
+      prisma.cmsPage.createMany({
+        data: indexed.map((page) => ({
+          ...page,
+          name: page.title,
+          type: "visual",
+          status: "draft",
+        })),
+      }),
+      prisma.builderDocument.createMany({
+        data: indexed.map((page) => ({
+          pageId: page.id,
+          slug: page.slug,
+          createdBy: sectionUser.id,
+          updatedBy: sectionUser.id,
+          draftJson: JSON.stringify({
+            ...document,
+            title: page.title,
+            slug: page.slug,
+          }),
+        })),
+      }),
+    ]);
+    const summaries = [];
+    let sectionPage = 1,
+      sectionTotal = Infinity;
+    while (summaries.length < sectionTotal) {
+      const result = await admin.get(`/section-pages?page=${sectionPage++}`);
+      assert.equal(result.status, 200);
+      assert.ok(result.body.items.length <= 20);
+      summaries.push(...result.body.items);
+      sectionTotal = result.body.total;
+    }
+    assert.equal(new Set(summaries.map((page) => page.id)).size, sectionTotal);
+    assert.ok(
+      indexed.every((page) => summaries.some((item) => item.id === page.id)),
+    );
+    assert.ok(summaries.every((page) => page.status !== "archived"));
+    pass(
+      "protected section summaries include saved drafts, omit component data, and paginate without duplicates",
+    );
     console.log(
       "PASS: visual page builder integration suite completed against isolated PostgreSQL.",
     );
