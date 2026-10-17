@@ -8,6 +8,8 @@ web_dir=/var/www/chalapathi
 cd "$app_dir"
 target="$(git rev-parse "${1:-origin/feature/visual-page-builder}")"
 test -f "$script_dir/resolve-vps-media-merge.py"
+test -f "$script_dir/pg-backup.cjs"
+export MEDIA_STORAGE_BACKUP_HELPER="$script_dir/pg-backup.cjs"
 test -f "$web_dir/index.html"
 test -z "$(git diff --name-only --diff-filter=U)"
 if git rev-parse --verify MERGE_HEAD >/dev/null 2>&1; then
@@ -69,10 +71,8 @@ if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32)
   throw new Error('Keep/configure the existing strong SESSION_SECRET before deploying. No source was changed.');
 if (Buffer.from(process.env.ADMIN_TOTP_ENCRYPTION_KEY || '', 'base64').length !== 32)
   throw new Error('Keep/configure the existing Authenticator encryption key before deploying. Do not rotate enrolled users\' key.');
-const result = require('child_process').spawnSync('pg_dump', ['--format=custom', '--file', path.join(process.env.MEDIA_STORAGE_BACKUP_DIR, 'database.dump')], {
-  env: { ...process.env, PGDATABASE: process.env.DATABASE_URL }, stdio: ['ignore', 'ignore', 'inherit']
-});
-if (result.error || result.status !== 0) throw new Error('Database backup failed; stopped before merge.');
+require(process.env.MEDIA_STORAGE_BACKUP_HELPER).backupDatabase(process.env.DATABASE_URL,
+  path.join(process.env.MEDIA_STORAGE_BACKUP_DIR, 'database.dump'));
 NODE
 cd "$app_dir"
 echo "Backup: $backup_dir"

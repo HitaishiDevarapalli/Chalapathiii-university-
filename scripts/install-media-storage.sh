@@ -8,6 +8,8 @@ web_dir=/var/www/chalapathi
 patch_file="$bundle_dir/media-storage.patch"
 payload_dir="$bundle_dir/payload"
 test -f "$patch_file"
+test -f "$bundle_dir/pg-backup.cjs"
+export MEDIA_STORAGE_BACKUP_HELPER="$bundle_dir/pg-backup.cjs"
 test -d "$payload_dir"
 test -f "$web_dir/index.html"
 test -f "$app_dir/server/ecosystem.config.js"
@@ -49,13 +51,10 @@ export MEDIA_STORAGE_BACKUP_DIR="$backup_dir"
 cd "$app_dir/server"
 node <<'NODE'
 require('dotenv').config({ quiet: true });
-const { spawnSync } = require('child_process');
 const path = require('path');
 if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is missing.');
-const result = spawnSync('pg_dump', ['--format=custom', '--file', path.join(process.env.MEDIA_STORAGE_BACKUP_DIR, 'database.dump')], {
-  env: { ...process.env, PGDATABASE: process.env.DATABASE_URL }, stdio: ['ignore', 'ignore', 'inherit'],
-});
-if (result.error || result.status !== 0) throw new Error('Database backup failed; stopped before changes.');
+require(process.env.MEDIA_STORAGE_BACKUP_HELPER).backupDatabase(process.env.DATABASE_URL,
+  path.join(process.env.MEDIA_STORAGE_BACKUP_DIR, 'database.dump'));
 NODE
 cd "$app_dir"
 git apply --numstat "$patch_file" | cut -f3 > "$backup_dir/source-list.txt"

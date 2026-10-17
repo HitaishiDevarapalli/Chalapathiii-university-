@@ -38,6 +38,8 @@ If the VPS has its own rebased builder commit, the context-based release patch c
 
 This procedure does not reset the VPS branch, drop stashes, rotate keys, change authentication policies through operator commands, install packages, or remove uploaded files. A recovery backup and the previous live frontend entry point are kept under `/root/media-storage-merge-backup.*`.
 
+Download `scripts/pg-backup.cjs` beside the two recovery scripts. Both installers use it to translate the configured PostgreSQL URL into explicit host, port, database and database-user settings. The password is supplied through a temporary private passfile and removed after the backup. Prisma-only URL parameters are excluded from the backup connection; SSL settings are preserved. Backup failures stop the update before the Git merge or deployment.
+
 ## Verification
 
 Build the frontend, then run `cd server` and `npm run test:media`. This uses isolated embedded PostgreSQL, temporary uploads and temporary accounts. It verifies folder hierarchy and sibling-name uniqueness, upload decoding and size/type rejection, unique URLs, public image serving, stable references after moves/renames, search/type filtering before pagination, persistence, session/CSRF/action permissions, and real browser storage/photo-field/page-builder selection flows. Browser screenshots are saved in `work/media-storage-qa/`.
