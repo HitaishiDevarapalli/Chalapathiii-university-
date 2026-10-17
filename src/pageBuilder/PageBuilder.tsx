@@ -53,6 +53,7 @@ import {
   makeNode,
   mapNode,
   removeNode,
+  documentsEqual,
 } from "./model";
 import { BuilderRenderer, NodeContent, nodeStyle } from "./Renderer";
 
@@ -61,11 +62,15 @@ function Modal({
   children,
   close,
   wide = false,
+  error,
+  dismissError,
 }: {
   title: string;
   children: React.ReactNode;
   close: () => void;
   wide?: boolean;
+  error?: string;
+  dismissError?: () => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const closeRef = useRef(close);
@@ -95,9 +100,9 @@ function Modal({
         }
       }
     };
-    document.addEventListener("keydown", key);
+    document.addEventListener("keydown", key, true);
     return () => {
-      document.removeEventListener("keydown", key);
+      document.removeEventListener("keydown", key, true);
       previous?.focus();
     };
   }, []);
@@ -115,6 +120,17 @@ function Modal({
         role="dialog"
         aria-modal="true"
         aria-label={title}
+        onKeyDown={(e) => {
+          e.stopPropagation();
+          if (
+            (e.ctrlKey || e.metaKey) &&
+            ["z", "y", "s", "d"].includes(e.key.toLowerCase()) &&
+            !(e.target as HTMLElement).closest(
+              "input, textarea, select, [contenteditable]",
+            )
+          )
+            e.preventDefault();
+        }}
       >
         <header>
           <h2>{title}</h2>
@@ -122,6 +138,14 @@ function Modal({
             <X size={20} />
           </button>
         </header>
+        {error && (
+          <div className="pb-feedback pb-error pb-dialog-feedback" role="alert">
+            {error}
+            <button aria-label="Dismiss dialog error" onClick={dismissError}>
+              <X size={16} />
+            </button>
+          </div>
+        )}
         {children}
       </div>
     </div>
@@ -952,8 +976,10 @@ export default function PageBuilder() {
     useState<BuilderDocument | null>(null);
   const [dragging, setDragging] = useState("");
   const clipboard = useRef<BuilderNode | null>(null);
-  const dirty =
-    !!doc && JSON.stringify(doc) !== JSON.stringify(active?.document);
+  const dirty = React.useMemo(
+    () => !!doc && !documentsEqual(doc, active?.document),
+    [doc, active?.document],
+  );
   const editable =
     can("pages", "edit") && !busy && active?.status !== "archived";
   const sensors = useSensors(
@@ -1020,7 +1046,7 @@ export default function PageBuilder() {
     };
   }, [dirty]);
   const change = (next: BuilderDocument) => {
-    if (!doc) return;
+    if (!doc || documentsEqual(doc, next)) return;
     setPast((p) => [...p.slice(-79), doc]);
     setFuture([]);
     setDoc(next);
@@ -1032,7 +1058,7 @@ export default function PageBuilder() {
     try {
       const row = await builderApi<BuilderRecord>(`/${id}`);
       setActive(row);
-      setDoc(row.document);
+      setDoc(structuredClone(row.document));
       setPast([]);
       setFuture([]);
       setSelected("");
@@ -1045,7 +1071,7 @@ export default function PageBuilder() {
   };
   const apply = (row: BuilderRecord) => {
     setActive(row);
-    setDoc(row.document);
+    setDoc(structuredClone(row.document));
     setReload((v) => v + 1);
     setNotice("Changes confirmed by the server");
   };
@@ -1135,6 +1161,7 @@ export default function PageBuilder() {
   };
   const undo = () => {
     if (doc && past.length && editable) {
+      setNotice("");
       setFuture((f) => [doc, ...f]);
       setDoc(past[past.length - 1]);
       setPast((p) => p.slice(0, -1));
@@ -1142,6 +1169,7 @@ export default function PageBuilder() {
   };
   const redo = () => {
     if (doc && future.length && editable) {
+      setNotice("");
       setPast((p) => [...p, doc]);
       setDoc(future[0]);
       setFuture((f) => f.slice(1));
@@ -1170,6 +1198,7 @@ export default function PageBuilder() {
   };
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
+      if (modal || busy) return;
       if (
         (e.target as HTMLElement).closest(
           "input, textarea, select, [contenteditable]",
@@ -1213,6 +1242,8 @@ export default function PageBuilder() {
   };
   const history = async (revisionPageNumber = 1) => {
     if (!active) return;
+    setNotice("");
+    setError("");
     setModal("revisions");
     setRevisionPage(revisionPageNumber);
     setRevisionPreview(null);
@@ -1299,7 +1330,7 @@ export default function PageBuilder() {
   const selectedNode = doc ? findNode(doc.nodes, selected) : undefined;
   return (
     <div className="pb-app" data-admin-module="pages">
-      {error && (
+      {error && !modal && (
         <div className="pb-feedback pb-error" role="alert">
           {error}
           <button aria-label="Dismiss error" onClick={() => setError("")}>
@@ -1307,7 +1338,7 @@ export default function PageBuilder() {
           </button>
         </div>
       )}
-      {notice && (
+      {notice && !modal && (
         <div className="pb-feedback pb-success" role="status">
           <CheckCircle2 size={16} />
           {notice}
@@ -1850,7 +1881,12 @@ export default function PageBuilder() {
         </>
       )}
       {modal === "create" && (
-        <Modal title="Create a new page" close={() => setModal("")}>
+        <Modal
+          error={error}
+          dismissError={() => setError("")}
+          title="Create a new page"
+          close={() => setModal("")}
+        >
           <form
             onSubmit={async (e) => {
               e.preventDefault();
@@ -1894,7 +1930,12 @@ export default function PageBuilder() {
         </Modal>
       )}
       {modal === "settings" && doc && (
-        <Modal title="Page settings & placement" close={() => setModal("")}>
+        <Modal
+          error={error}
+          dismissError={() => setError("")}
+          title="Page settings & placement"
+          close={() => setModal("")}
+        >
           <div className="pb-settings">
             <Field label="Page title">
               <input
@@ -2058,15 +2099,29 @@ export default function PageBuilder() {
             >
               Done
             </Button>
+            <Button
+              primary
+              data-admin-action="publish"
+              disabled={!can("pages", "publish") || busy}
+              onClick={() => setModal("publish")}
+            >
+              {active?.status === "published"
+                ? "Save & update live page"
+                : "Save & publish"}
+            </Button>
             <p className="pb-hint">
-              Settings are saved with your draft and take effect after
-              publication.
+              Done closes settings. Save & publish applies these settings to the
+              website after confirmation.
+              {doc.placement.kind === "navigation" &&
+                ` The link will appear under ${doc.placement.parent === "Main Menu" ? "the main navigation" : doc.placement.parent} as “${doc.placement.label || doc.title}”.`}
             </p>
           </div>
         </Modal>
       )}
       {["publish", "unpublish", "archive", "leave"].includes(modal) && (
         <Modal
+          error={error}
+          dismissError={() => setError("")}
           title={
             modal === "publish"
               ? "Publish this page?"
@@ -2122,6 +2177,8 @@ export default function PageBuilder() {
       )}
       {modal === "preview" && doc && (
         <Modal
+          error={error}
+          dismissError={() => setError("")}
           title="Draft preview · visible only to authorized administrators"
           wide
           close={() => setModal("")}
@@ -2148,7 +2205,13 @@ export default function PageBuilder() {
         </Modal>
       )}
       {modal === "media" && (
-        <Modal title="Media library" wide close={() => setModal("")}>
+        <Modal
+          error={error}
+          dismissError={() => setError("")}
+          title="Media library"
+          wide
+          close={() => setModal("")}
+        >
           <div className="pb-media">
             <p>
               Files are stored in the university’s existing server uploads
@@ -2238,12 +2301,66 @@ export default function PageBuilder() {
         </Modal>
       )}
       {modal === "revisions" && (
-        <Modal title="Revision history" wide close={() => setModal("")}>
+        <Modal
+          error={error}
+          dismissError={() => setError("")}
+          title="Revision history"
+          wide
+          close={() => setModal("")}
+        >
           <div className="pb-revisions">
             {dirty && (
-              <p className="pb-feedback pb-error">
-                Save or discard your current edits before restoring a revision.
-              </p>
+              <div
+                className="pb-feedback pb-error pb-revision-warning"
+                role="status"
+              >
+                <p>
+                  Save or discard your current edits before restoring a
+                  revision.
+                </p>
+                <div className="pb-small-actions">
+                  <Button
+                    data-admin-action="edit"
+                    disabled={busy || !can("pages", "edit")}
+                    onClick={async () => {
+                      setBusy(true);
+                      setError("");
+                      try {
+                        await save();
+                        await history(revisionPage);
+                      } catch (e: any) {
+                        setError(e.message);
+                      } finally {
+                        setBusy(false);
+                      }
+                    }}
+                  >
+                    Save draft
+                  </Button>
+                  <Button
+                    data-admin-action="edit"
+                    disabled={busy || !active}
+                    onClick={() => {
+                      if (
+                        active &&
+                        window.confirm(
+                          "Discard your unsaved changes and return to the last saved draft?",
+                        )
+                      ) {
+                        setDoc(structuredClone(active.document));
+                        setPast([]);
+                        setFuture([]);
+                        setSelected("");
+                        setRevisionPreview(null);
+                        setError("");
+                        setNotice("");
+                      }
+                    }}
+                  >
+                    Discard unsaved changes
+                  </Button>
+                </div>
+              </div>
             )}
             {revisions.map((r) => (
               <div className="pb-revision" key={r.id}>

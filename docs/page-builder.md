@@ -2,6 +2,10 @@
 
 The builder is an additive extension of Content Studio. Open **Admin → Page Builder**. Existing Website Pages and all other CMS modules remain available.
 
+Placement changes take effect only after publication. In Page Settings, choose the destination (for example **About Us**), leave automatic placement enabled, then use **Save & publish** (or **Save & update live page**) and confirm. **Done** closes settings without publishing. The new link belongs to the selected parent menu; choosing About Us does not add it under News & Events.
+
+Revision dialogs keep feedback inside the dialog and isolate editor shortcuts. Saved-state comparison ignores JSON object key order while preserving real text, placement and component-order edits. Genuine unsaved edits can be saved or explicitly discarded inside revision history before restoring a revision.
+
 ## Implemented behavior
 
 - Server-created drafts and stable component identifiers; library insertion, nested drag-and-drop, move controls, copy/paste, duplication/deletion, undo/redo, width/height resizing, and precise property controls.
@@ -73,6 +77,7 @@ npm test
 npm run test:security
 npm run test:page-builder
 npm run test:page-builder:browser
+node tests/page-builder-client-state.cjs
 ```
 
 The builder suites use real Express routes, Prisma, sessions and isolated embedded PostgreSQL. They never access the live database. Browser tests use the installed Chrome (`CHROME_PATH` can override its path). Build the frontend before browser tests. The suite covers drag-and-drop, properties, tables, media, resizing, undo/redo, saved reload, device layouts, preview, publishing, navigation, SEO, draft/live separation, republish, revisions, unpublish, mobile overflow, authentication, CSRF, permission bypass attempts, malicious schemas/uploads, unique URLs, concurrent updates and restart persistence. Screenshots and its browser report are written under `work/page-builder-qa/`.

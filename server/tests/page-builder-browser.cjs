@@ -273,7 +273,8 @@ module.exports = async function builderBrowserTest(base) {
     assert.ok(await preview.$(".pb-public .pb-type-image img"));
     await preview.close();
     await page.click('[aria-label="Close dialog"]');
-    await click("Publish");
+    await click("Page settings");
+    await click("Save & publish");
     await click("Confirm publication");
     await page.waitForFunction(() =>
       document.querySelector(".pb-status-published"),
@@ -346,8 +347,102 @@ module.exports = async function builderBrowserTest(base) {
     );
     await click("Revision history");
     await page.waitForSelector(".pb-revision");
+    assert.equal(
+      await page.$(".pb-revision-warning"),
+      null,
+      "Publishing leaves a clean saved draft",
+    );
+    assert.equal(
+      await page.$(".pb-app > .pb-success"),
+      null,
+      "Background success banner is hidden while the modal is open",
+    );
+    await page.keyboard.down("Control");
+    await page.keyboard.press("KeyZ");
+    await page.keyboard.up("Control");
+    await page.keyboard.press("Delete");
+    assert.equal(
+      await page.$(".pb-revision-warning"),
+      null,
+      "Modal keyboard shortcuts cannot change the background draft",
+    );
+    assert.equal(
+      await page.$eval(".pb-canvas .pb-type-heading", (el) =>
+        el.textContent.includes("Edited draft heading"),
+      ),
+      true,
+    );
+    assert.ok(
+      await page.$$eval(".pb-revision button", (buttons) =>
+        buttons.some(
+          (b) => b.textContent.trim() === "Restore draft" && !b.disabled,
+        ),
+      ),
+      "Saved revision restoration is enabled",
+    );
     await click("Preview");
     await page.waitForSelector(".pb-revisions .pb-preview");
+    await page.screenshot({
+      path: path.join(out, "revision-history-clean.png"),
+      fullPage: true,
+    });
+    await page.keyboard.press("Escape");
+    await page.waitForFunction(() => !document.querySelector(".pb-modal"));
+
+    // A real edit remains protected, with recovery actions inside the dialog.
+    await page.click('[aria-label="Undo"]');
+    assert.equal(
+      await page.$(".pb-app > .pb-success"),
+      null,
+      "Undo clears stale publication feedback",
+    );
+    await page.click('[aria-label="Redo"]');
+    await saved();
+    await page.click(".pb-canvas .pb-type-heading");
+    await fill("Text content", "Unsaved revision-history edit");
+    await click("Revision history");
+    await page.waitForSelector(".pb-revision-warning");
+    await click("Save draft");
+    await page.waitForFunction(
+      () => !document.querySelector(".pb-revision-warning"),
+    );
+    await page.waitForSelector(".pb-revision");
+    await page.click('[aria-label="Close dialog"]');
+    await page.click(".pb-canvas .pb-type-heading");
+    await fill("Text content", "Discard this edit");
+    await click("Revision history");
+    await page.waitForSelector(".pb-revision-warning");
+    await click("Discard unsaved changes");
+    await page.waitForFunction(
+      () => !document.querySelector(".pb-revision-warning"),
+    );
+    assert.equal(
+      await page.$eval(".pb-canvas .pb-type-heading", (el) =>
+        el.textContent.includes("Unsaved revision-history edit"),
+      ),
+      true,
+    );
+    await page.click('[aria-label="Close dialog"]');
+
+    // Failed saves stay visible inside the dialog without losing the draft.
+    await click("Page settings");
+    await fill("URL slug", "/invalid-url", ".pb-settings");
+    await click("Done");
+    await click("Revision history");
+    await click("Save draft");
+    await page.waitForSelector('.pb-modal .pb-dialog-feedback[role="alert"]');
+    assert.ok(
+      await page.$eval(".pb-dialog-feedback", (el) => {
+        const a = el.getBoundingClientRect(),
+          b = el.closest(".pb-modal").getBoundingClientRect();
+        return a.left >= b.left && a.right <= b.right;
+      }),
+      "Dialog errors stay within the dialog",
+    );
+    await click("Discard unsaved changes");
+    await page.waitForFunction(
+      () => !document.querySelector(".pb-revision-warning"),
+    );
     await page.click('[aria-label="Close dialog"]');
     await click("Unpublish");
     await click("Confirm unpublish");
@@ -405,6 +500,8 @@ module.exports = async function builderBrowserTest(base) {
             "draft/live separation",
             "republish",
             "revision preview",
+            "saved-state and revision dialog recovery",
+            "modal keyboard isolation and notification layering",
             "unpublish",
             "mobile editor",
             "reload persistence",

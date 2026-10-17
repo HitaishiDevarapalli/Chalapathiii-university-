@@ -55,7 +55,14 @@
   margin-bottom: 14px;
   font-size: 13px;
   position: relative;
-  z-index: 101;
+  z-index: auto;
+}
+.pb-dialog-feedback {
+  margin: 16px 24px 0;
+}
+.pb-revision-warning {
+  align-items: flex-start;
+  flex-direction: column;
 }
 .pb-feedback button {
   margin-left: auto;

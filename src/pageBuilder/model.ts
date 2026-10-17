@@ -3,6 +3,22 @@ import type {
   BuilderNode,
 } from "../../server/src/pageBuilder/schema";
 export type { BuilderDocument, BuilderNode };
+
+// JSON object property order is not an edit; array order remains significant.
+export function documentsEqual(left: unknown, right: unknown): boolean {
+  const canonical = (value: unknown): unknown => {
+    if (Array.isArray(value)) return value.map(canonical);
+    if (value && typeof value === "object")
+      return Object.fromEntries(
+        Object.entries(value)
+          .filter(([, entry]) => entry !== undefined)
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([key, entry]) => [key, canonical(entry)]),
+      );
+    return value;
+  };
+  return JSON.stringify(canonical(left)) === JSON.stringify(canonical(right));
+}
 export type BuilderRecord = {
   id: string;
   version: number;
