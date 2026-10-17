@@ -90,6 +90,8 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
     const { action, page, slug, id } = req.body || {};
 
     if (action === "savePage" && page && page.slug) {
+      const existing = await prisma.cmsPage.findUnique({ where: { slug: page.slug } });
+      if (page.type === "visual" || existing?.type === "visual" || page.slug.startsWith("/pages/")) return res.status(409).json({ error: "Use Page Builder to manage this page" });
       const dataToStore = {
         sections: page.sections || [],
         customData: page.customData || {},
@@ -135,6 +137,8 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
     }
 
     if (action === "deletePage") {
+      const target = slug ? await prisma.cmsPage.findUnique({ where: { slug } }) : id ? await prisma.cmsPage.findUnique({ where: { id } }) : null;
+      if (target?.type === "visual") return res.status(409).json({ error: "Use Page Builder to archive this page" });
       if (slug) {
         await prisma.cmsPage.delete({ where: { slug } });
       } else if (id) {
@@ -151,6 +155,7 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
       if (Array.isArray(pages)) {
         for (const p of pages) {
           if (!p.slug) continue;
+          if (p.type === "visual" || p.slug.startsWith("/pages/") || (await prisma.cmsPage.findUnique({ where: { slug: p.slug } }))?.type === "visual") continue;
           const dataToStore = {
             sections: p.sections || [],
             customData: p.customData || {},

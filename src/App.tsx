@@ -4,6 +4,8 @@ import React, { useEffect, useState, useMemo } from "react";
 import { BrowserRouter, Routes, Route, useLocation, Link, useNavigate } from "react-router-dom";
 import { X, RefreshCw, CheckCircle2, Megaphone, Bell, Calendar, GraduationCap, FileText, Award, BookOpen, User, Phone, Mail, MapPin, Landmark, MessageSquare, ArrowRight, Send, ShieldCheck, ChevronDown, ChevronUp } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import DraftPreview from "./pageBuilder/DraftPreview";
+import { PublicBuilderPage } from "./pageBuilder/Renderer";
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
 import Home from "./pages/Home";
@@ -372,6 +374,8 @@ function AppContent() {
             <Route path="/sitemap" element={<DynamicPage />} />
             
             {/* Admin Portal Route */}
+            <Route path="/admin/page-preview/:id" element={<DraftPreview />} />
+            <Route path="/pages/*" element={<PublicBuilderPage />} />
             <Route path="/admin" element={<AdminPortal />} />
 
             {/* Dynamic CMS Page Wildcard Catch-All Route */}

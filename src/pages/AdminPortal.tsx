@@ -85,6 +85,7 @@ import { AnnouncementsCMS } from "../components/admin/AnnouncementsCMS";
 import FooterCMS from "../components/admin/FooterCMS";
 import LinksCMS from "../components/admin/LinksCMS";
 import { SettingsCMS } from "../components/admin/SettingsCMS";
+const PageBuilder = React.lazy(() => import("../pageBuilder/PageBuilder"));
 import { PagesCMS } from "../components/admin/PagesCMS";
 import { CertificationsCMS } from "../components/admin/CertificationsCMS";
 import { PopupCMS } from "../components/admin/PopupCMS";
@@ -193,7 +194,7 @@ export default function AdminPortal() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    "dashboard" | "pages" | "homepage" | "about" | "academics" | "certifications" | "admissions" | 
+    "dashboard" | "pages" | "page-builder" | "homepage" | "about" | "academics" | "certifications" | "admissions" |
     "research" | "directories" | "campus-life" | "placements" | "news" | "events" | "news-events" | 
     "contact" | "links" | "gallery" | "footer" | "settings" | "popup" | "security"
   >("dashboard");
@@ -1780,7 +1781,7 @@ export default function AdminPortal() {
   }
 
   interface AdminNavItem {
-    id: "dashboard" | "pages" | "homepage" | "about" | "academics" | "certifications" | "admissions" | "research" | "directories" | "campus-life" | "placements" | "news" | "events" | "news-events" | "contact" | "links" | "gallery" | "footer" | "settings" | "popup" | "security";
+    id: "dashboard" | "pages" | "page-builder" | "homepage" | "about" | "academics" | "certifications" | "admissions" | "research" | "directories" | "campus-life" | "placements" | "news" | "events" | "news-events" | "contact" | "links" | "gallery" | "footer" | "settings" | "popup" | "security";
     label: string;
     icon: any;
     badge?: string;
@@ -1862,6 +1863,7 @@ export default function AdminPortal() {
     // 2. EXTRA OPTIONS (Remaining options organized below)
     // ══════════════════════════════════════════════════════
     { id: "dashboard", label: "Dashboard Overview", icon: LayoutDashboard, section: "EXTRA OPTIONS", badge: `${enquiries.length}` },
+    { id: "page-builder", label: "Page Builder", icon: Layers },
     { id: "pages", label: "Pages & Page Builder", icon: Layers, badge: `${cmsPages.length}` },
     { id: "popup", label: "Popup Modal Manager", icon: MessageSquare, badge: "Custom" },
     { id: "gallery", label: "Gallery & Media", icon: ImageIcon },
@@ -1871,8 +1873,8 @@ export default function AdminPortal() {
     { id: "security", label: "Authorization & Security", icon: ShieldCheck },
   ];
   const orderedNavItems = [
-    ...navItems.filter(item => item.id === "dashboard" || item.id === "pages").map(item => ({ ...item, section: undefined })),
-    ...navItems.filter(item => item.id !== "dashboard" && item.id !== "pages").map(item => ({ ...item, section: item.id === "homepage" ? "Website content" : item.id === "popup" ? "Tools & settings" : undefined })),
+    ...navItems.filter(item => item.id === "dashboard" || item.id === "pages" || item.id === "page-builder").map(item => ({ ...item, section: undefined })),
+    ...navItems.filter(item => item.id !== "dashboard" && item.id !== "pages" && item.id !== "page-builder").map(item => ({ ...item, section: item.id === "homepage" ? "Website content" : item.id === "popup" ? "Tools & settings" : undefined })),
   ].filter(item => canViewTab(adminIdentity, item.id)).map(item => ({ ...item,
     subItems: item.id === "news-events" ? item.subItems?.filter(sub => can(sub.id)) : item.subItems }));
   const navigateWorkspace = (id: string) => setActiveTab(id as typeof activeTab);
@@ -1936,7 +1938,8 @@ export default function AdminPortal() {
         {/* Main Workspace */}
         <main className="admin-workspace" id="admin-workspace" key={activeTab}>
           {!canViewTab(adminIdentity, activeTab) ? <div className="admin-panel security-empty"><ShieldCheck size={28} /><h2>No modules have been assigned</h2><p>Ask a Super Administrator to grant the permissions required for your work.</p></div> :
-          <AdminActionGuard module={activeTab === "news-events" ? newsEventsModuleTab : activeTab}>
+          <AdminActionGuard module={activeTab === "news-events" ? newsEventsModuleTab : activeTab === "page-builder" ? "pages" : activeTab}>
+          {activeTab === "page-builder" && <React.Suspense fallback={<div role="status" className="admin-panel pb-empty">Loading Page Builder…</div>}><PageBuilder /></React.Suspense>}
           {activeTab === "security" && <SecurityCMS />}
           {/* ════════════════════════════════════════════════════ */}
           {/* TAB 1: DASHBOARD OVERVIEW                            */}

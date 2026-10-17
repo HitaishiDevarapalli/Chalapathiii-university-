@@ -1,3 +1,5 @@
+import { useBuilderPlacements } from "../../pageBuilder/Renderer";
+import builderMenus from "../../../server/src/pageBuilder/menus.json";
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
@@ -151,11 +153,11 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
     { label: "Chalapathi Advantage", to: "/about/advantage" }
   ];
 
-  const dynamicMenuPages = (cmsPages || []).filter(page => page.status === "published" && page.showInNav && page.slug);
+  const { navigation: builderNavigation } = useBuilderPlacements();
+  const dynamicMenuPages = [...(cmsPages || []).filter(p => (p.type as string) !== "visual"), ...builderNavigation].filter(page => page.status === "published" && page.showInNav && page.slug);
   const dynamicTopLinks = dynamicMenuPages.filter(page => !page.parentNav || page.parentNav === "Main Menu").sort((a,b) => a.displayOrder - b.displayOrder);
   const navLinks = [
-    "About Us", "Academics", "Admissions", "Research", "Faculty",
-    "Campus Life", "Placements", "News & Events", "Contact Us", ...dynamicTopLinks.map(p => p.navLabel || p.name),
+    ...builderMenus.filter(m => m.id !== "Main Menu").map(m => m.id), ...dynamicTopLinks.map(p => p.navLabel || p.name),
   ];
 
   const navHrefs: Record<string, string> = {

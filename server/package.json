@@ -13,7 +13,9 @@
     "prisma:seed": "ts-node prisma/seed.ts",
     "seed": "npm run prisma:seed",
     "setup": "npm install && npx prisma generate && npx prisma migrate dev --name init && npm run prisma:seed",
-    "test": "npm run build && node tests/persistence.cjs"
+    "test": "npm run build && node tests/persistence.cjs",
+    "test:page-builder": "npm run build && node tests/page-builder.cjs",
+    "test:page-builder:browser": "npm run build && node tests/page-builder-browser-runner.cjs"
   },
   "dependencies": {
     "@prisma/client": "^5.10.0",
@@ -28,7 +30,8 @@
     "otpauth": "^9.5.2",
     "qrcode": "^1.5.4",
     "uuid": "^11.1.1",
-    "zod": "^4.6.7"
+    "zod": "^4.6.7",
+    "sharp": "^0.35.5"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.9",

@@ -14,7 +14,7 @@ export interface WorkspaceNavItem {
 }
 
 export const workspaceLabels: Record<string, string> = {
-  dashboard: "Overview", pages: "Website Pages", homepage: "Homepage", about: "About Us",
+  "page-builder": "Page Builder", dashboard: "Overview", pages: "Website Pages", homepage: "Homepage", about: "About Us",
   academics: "Academics", certifications: "Certifications", admissions: "Admissions",
   research: "Research & Innovation", directories: "Faculty & Directories", "campus-life": "Campus Life",
   placements: "Placements", "news-events": "News & Events", news: "News", events: "Events",

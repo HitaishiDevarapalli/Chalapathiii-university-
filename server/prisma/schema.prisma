@@ -467,6 +467,9 @@ model CmsPage {
   updatedAt        DateTime @updatedAt @map("updated_at")
 
   versions CmsPageVersion[]
+  builder BuilderDocument?
+  builderNavigation BuilderNavigation?
+  builderRedirects BuilderRedirect[]
 
   @@map("cms_pages")
 }
@@ -485,6 +488,60 @@ model CmsPageVersion {
   page CmsPage @relation(fields: [pageSlug], references: [slug], onDelete: Cascade)
 
   @@map("cms_page_versions")
+}
+
+// Additive visual-builder state. CmsPage remains the public snapshot and identity.
+model BuilderDocument {
+  pageId String @id
+  slug String @unique
+  version Int @default(1)
+  schemaVersion Int @default(1)
+  draftJson String
+  createdBy Int
+  updatedBy Int
+  publishedAt DateTime?
+  archivedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  page CmsPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  @@index([updatedAt])
+  @@map("builder_documents")
+}
+
+model BuilderNavigation {
+  id String @id @default(uuid())
+  pageId String @unique
+  label String
+  parentKey String
+  position Int @default(0)
+  visible Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  page CmsPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  @@index([parentKey, position])
+  @@map("builder_navigation")
+}
+
+model BuilderRedirect {
+  slug String @id
+  pageId String
+  page CmsPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  @@map("builder_redirects")
+}
+
+model BuilderMedia {
+  id String @id @default(uuid())
+  originalName String
+  filename String @unique
+  mime String
+  size Int
+  width Int?
+  height Int?
+  alt String @default("")
+  uploadedBy Int
+  createdAt DateTime @default(now())
+  @@index([createdAt])
+  @@map("builder_media")
 }
 
 // ─────────────────────────────────────────────────────────────

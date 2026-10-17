@@ -5,6 +5,16 @@ import { authenticatedUser } from "../middleware/auth";
 import { permitted } from "../security/core";
 
 const router = Router();
+// Visual documents have their own validated, version-checked publication workflow.
+router.use(async (req, res, next) => {
+  try {
+    if (["GET", "HEAD", "OPTIONS"].includes(req.method)) return next();
+    const key = decodeURIComponent(req.path.split("/").filter(Boolean)[0] || "");
+    const existing = key ? await prisma.cmsPage.findFirst({ where: { OR: [{ id: key }, { slug: key }] } }) : null;
+    if (existing?.type === "visual" || req.body?.type === "visual" || String(req.body?.slug || "").startsWith("/pages/")) return res.status(409).json({ error: "Use Page Builder to manage visual pages" });
+    next();
+  } catch { res.status(503).json({ error: "Page validation unavailable" }); }
+});
 
 function safeJsonParse<T = any>(val: string | null | undefined, fallback: T): T {
   if (!val) return fallback;

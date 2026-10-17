@@ -1,0 +1,16 @@
+[
+  { "id": "Main Menu", "label": "Main navigation", "path": "/" },
+  { "id": "About Us", "label": "About Us", "path": "/about" },
+  { "id": "Academics", "label": "Academics", "path": "/academics" },
+  { "id": "Admissions", "label": "Admissions", "path": "/admissions" },
+  { "id": "Research", "label": "Research", "path": "/research" },
+  {
+    "id": "Faculty",
+    "label": "Faculty",
+    "path": "/management/faculty/computing"
+  },
+  { "id": "Campus Life", "label": "Campus Life", "path": "/campus-life" },
+  { "id": "Placements", "label": "Placements", "path": "/placements" },
+  { "id": "News & Events", "label": "News & Events", "path": "/news" },
+  { "id": "Contact Us", "label": "Contact Us", "path": "/contact" }
+]

@@ -39,7 +39,8 @@ const publicCreates = new Set(["enquiries", "applications", "event-registrations
 
 export function adminApiGuard(req: Request, res: Response, next: NextFunction) {
   const [resource, ...rest] = req.path.replace(/^\//, "").split("/");
-  if (["auth", "security", "health"].includes(resource)) return next();
+  // The builder applies session, CSRF and action-specific pages.* checks in its router.
+  if (["auth", "security", "health", "page-builder"].includes(resource)) return next();
   const read = ["GET", "HEAD", "OPTIONS"].includes(req.method);
   const root = rest.filter(Boolean).length === 0;
   if (publicCreates.has(resource) && root && req.method === "POST" && !req.session?.adminId) {

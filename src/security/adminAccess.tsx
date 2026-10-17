@@ -9,6 +9,7 @@ export function canAccess(user: AdminIdentity | null, module: string, action = "
   return user.role === "superadmin" || user.role === "admin" || user.credentialMode === "legacy" || user.permissions?.includes(module + "." + action);
 }
 export function canViewTab(user: AdminIdentity | null, tab: string) {
+  if (tab === "page-builder") return !!user && (user.role === "superadmin" || user.permissions.includes("pages.view"));
   const grouped: Record<string, string[]> = { "news-events": ["news", "events", "announcements"], admissions: ["admissions", "enquiries", "applications"],
     security: ["security", "users", "roles", "google", "mfa", "audit", "sessions"] };
   return (grouped[tab] || [tab]).some(module => canAccess(user, module));

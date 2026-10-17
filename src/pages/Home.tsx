@@ -1,5 +1,6 @@
 "use client";
 
+import { BuilderHomepageSlot } from "../pageBuilder/Renderer";
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
@@ -1810,6 +1811,7 @@ export default function Home() {
           </div>
         )}
       </AnimatePresence>
+      <BuilderHomepageSlot />
     </div>
   );
 }

@@ -32,6 +32,7 @@ import homepageSectionsRoutes from "./routes/homepageSections";
 import configRoutes from "./routes/config";
 import uploadRoutes from "./routes/upload";
 import cmsRoutes from "./routes/cms";
+import pageBuilderRoutes from "./routes/pageBuilder";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -97,6 +98,7 @@ app.use("/api/homepage-sections", homepageSectionsRoutes);
 app.use("/api/config", configRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/cms", cmsRoutes);
+app.use("/api/page-builder", pageBuilderRoutes);
 
 app.use((error: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error("Request rejected");
