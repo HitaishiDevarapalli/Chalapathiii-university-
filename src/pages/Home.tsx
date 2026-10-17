@@ -409,21 +409,6 @@ export default function Home() {
           aria-label="University announcements"
           className="relative z-20 flex h-11 w-full items-center overflow-hidden bg-[#D71920] text-white shadow-sm"
         >
-          <style>{`
-            @keyframes announcement-marquee {
-              from { transform: translateX(0); }
-              to { transform: translateX(-50%); }
-            }
-            .announcement-marquee-track {
-              animation: announcement-marquee 28s linear infinite;
-            }
-            .announcement-marquee-track:hover {
-              animation-play-state: paused;
-            }
-            @media (prefers-reduced-motion: reduce) {
-              .announcement-marquee-track { animation: none; }
-            }
-          `}</style>
           <div className="announcement-marquee-track flex w-max items-center font-[var(--font-poppins)] text-sm font-bold md:text-base">
             {[0, 1].map((copy) => (
               <div
