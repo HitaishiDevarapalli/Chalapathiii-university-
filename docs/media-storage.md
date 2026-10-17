@@ -32,6 +32,12 @@ This feature needs a coordinated API, database and frontend deployment; a fronte
 
 Before exposing the new frontend, confirm the new authenticated `/api/media` and `/api/media/folders` endpoints work. To roll back, restore the compatible previous frontend/API release while retaining the additive tables and all uploaded files. Do not drop the folder column or delete uploaded files as a routine rollback.
 
+### VPS branch ahead locally and behind GitHub
+
+If the VPS has its own rebased builder commit, the context-based release patch can reject its source variant. Use `scripts/deploy-media-storage-vps.sh` together with `scripts/resolve-vps-media-merge.py`, extracted from the incoming Git ref into a separate directory. The updater verifies the known local tab hotfix and generated lock/build changes, backs up PostgreSQL and the current release, creates a backup branch, and retains local edits in a stash. It merges the feature branch while keeping the VPS commit in history. Where Git sees two copies of the original builder feature, the resolver uses the original feature source as the three-way base and recognizes the previous VPS resolver's equivalent portal expressions. Unknown overlapping customizations stop the update and abort the merge before services are changed. All source builds must succeed before the migration, API restart and frontend publication. The temporary stash is retained because its tab fix is already present in the incoming source, and its old lock/build files are preserved as recovery material.
+
+This procedure does not reset the VPS branch, drop stashes, rotate keys, change authentication policies through operator commands, install packages, or remove uploaded files. A recovery backup and the previous live frontend entry point are kept under `/root/media-storage-merge-backup.*`.
+
 ## Verification
 
 Build the frontend, then run `cd server` and `npm run test:media`. This uses isolated embedded PostgreSQL, temporary uploads and temporary accounts. It verifies folder hierarchy and sibling-name uniqueness, upload decoding and size/type rejection, unique URLs, public image serving, stable references after moves/renames, search/type filtering before pagination, persistence, session/CSRF/action permissions, and real browser storage/photo-field/page-builder selection flows. Browser screenshots are saved in `work/media-storage-qa/`.
