@@ -1,24 +1,36 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Exit immediately if a command exits with a non-zero status
-set -e
+set -Eeuo pipefail
+
+REPO_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+cd "$REPO_DIR"
 
 echo "===================================="
 echo " Starting Deployment Process..."
 echo "===================================="
 
-echo "[1/4] Pulling latest code from GitHub..."
-git reset --hard HEAD
-git pull origin main
+echo "[1/5] Syncing the deployment checkout with GitHub..."
+if [[ -n "$(git status --porcelain)" ]]; then
+  echo "Deployment stopped: the VPS checkout has uncommitted changes."
+  echo "Commit or stash those changes, then run this script again."
+  exit 1
+fi
 
-echo "[2/4] Installing & Building Frontend..."
+git fetch origin main
+if ! git pull --rebase origin main; then
+  echo "Deployment stopped because Git could not rebase the VPS commits onto origin/main."
+  echo "Resolve the conflicts, or run 'git rebase --abort' to return to the previous state."
+  exit 1
+fi
+
+echo "[2/5] Installing & Building Frontend..."
 npm install
 npm run build
 sudo mkdir -p /var/www/chalapathi
 sudo rm -rf /var/www/chalapathi/*
 sudo cp -r dist/* /var/www/chalapathi/
 
-echo "[3/4] Installing & Setting up Backend..."
+echo "[3/5] Installing & Setting up Backend..."
 cd server
 npm install --ignore-scripts
 npx prisma generate

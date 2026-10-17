@@ -154,6 +154,17 @@ svg {
   animation: marquee 25s linear infinite;
 }
 
+@keyframes announcement-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.announcement-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: announcement-marquee 18s linear infinite;
+  will-change: transform;
+}
+
 /* GLOBAL FONT SIZE OVERRIDES (Enhance readability on all screens) */
 
 /* Base element sizes */

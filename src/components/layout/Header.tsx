@@ -215,7 +215,10 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
 
   const visibleNavLinks = navLinks.filter(name => !isPageHidden(name, navHrefs[name]));
   const childPagesFor = (parent: string) => dynamicMenuPages.filter(page => page.parentNav === parent).sort((a,b) => a.displayOrder - b.displayOrder).map(page => ({ label: page.navLabel || page.name, to: page.slug }));
-  const cmsChildrenFor = (parent: string) => childPagesFor(parent).filter(item => !isPageHidden(item.label, item.to));
+  const cmsChildrenFor = (parent: string) => {
+    if (parent === "Research") return [];
+    return childPagesFor(parent).filter(item => !isPageHidden(item.label, item.to));
+  };
   const visibleAboutItems = [...aboutItems, ...childPagesFor("About Us")].filter(item => !isPageHidden(item.label, item.to));
   const visibleAcademicsItems = [...academicsItems, ...childPagesFor("Academics")].filter(item => !isPageHidden(item.label, item.to));
   const visibleFacultyItems = [...facultyItems, ...childPagesFor("Faculty")].filter(item => !isPageHidden(item.label, item.to));
