@@ -102,7 +102,7 @@ failed() {
   if [ "$api_restarted" = 1 ]; then
     tar -xzf "$backup_dir/source-api.tar.gz" -C "$app_dir"
     pm2 restart chalapathi-api --update-env || true
-    cp "$backup_dir/index.html" "$web_dir/index.html.rollback"
+    install -m 0644 "$backup_dir/index.html" "$web_dir/index.html.rollback"
     mv "$web_dir/index.html.rollback" "$web_dir/index.html"
     echo "Previous API release and frontend entry point restored. Uploaded files and additive tables retained."
   else
@@ -133,7 +133,11 @@ cd server
 node scripts/index-existing-media.cjs
 mkdir -p "$web_dir/assets"
 cp -a "$app_dir/dist/assets/." "$web_dir/assets/"
-cp "$app_dir/dist/index.html" "$web_dir/index.html.new"
+# Keep backups private while allowing the Nginx worker to read public assets.
+chmod 0755 "$web_dir" "$web_dir/assets"
+find "$web_dir/assets" -type d -exec chmod 0755 {} +
+find "$web_dir/assets" -type f -exec chmod 0644 {} +
+install -m 0644 "$app_dir/dist/index.html" "$web_dir/index.html.new"
 mv "$web_dir/index.html.new" "$web_dir/index.html"
 trap - ERR
 printf '\nMedia Storage deployed. Reload /admin with Ctrl+Shift+R.\nVPS commit and local-edit stash preserved. Backup: %s\n' "$backup_dir"

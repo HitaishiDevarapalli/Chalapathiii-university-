@@ -40,6 +40,10 @@ This procedure does not reset the VPS branch, drop stashes, rotate keys, change 
 
 Download `scripts/pg-backup.cjs` beside the two recovery scripts. Both installers use it to translate the configured PostgreSQL URL into explicit host, port, database and database-user settings. The password is supplied through a temporary private passfile and removed after the backup. Prisma-only URL parameters are excluded from the backup connection; SSL settings are preserved. Backup failures stop the update before the Git merge or deployment.
 
+### Nginx returns 403 after publishing
+
+The deployment keeps backups private with `umask 077`. Public assets require separate permissions: `0755` for the web root and asset directories, `0644` for asset files and `index.html`. Both installers set these explicitly before replacing the live entry point; rollback also restores a readable entry point. Apply these modes only to `/var/www/chalapathi/index.html`, `/var/www/chalapathi` and its `assets` tree. Environment files, backups and uploaded-file storage are outside this permission repair.
+
 ## Verification
 
 Build the frontend, then run `cd server` and `npm run test:media`. This uses isolated embedded PostgreSQL, temporary uploads and temporary accounts. It verifies folder hierarchy and sibling-name uniqueness, upload decoding and size/type rejection, unique URLs, public image serving, stable references after moves/renames, search/type filtering before pagination, persistence, session/CSRF/action permissions, and real browser storage/photo-field/page-builder selection flows. Browser screenshots are saved in `work/media-storage-qa/`.
