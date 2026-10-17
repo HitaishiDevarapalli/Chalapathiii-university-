@@ -120,6 +120,7 @@ function AnimatedCounter({ value, duration = 2500 }: { value: string; duration?:
 export default function Home() {
   const {
     programs,
+    announcements,
     successStories,
     placementsContent,
     news,
@@ -403,6 +404,46 @@ export default function Home() {
         url="https://chalapathiuniversity.edu.in/"
         keywords="Chalapathi University, ChalapathiUniversity, Chalapathi university, Chalapathi clg, Chalapathi college, Chalapathi University official website, Chalapathi University Andhra Pradesh, Chalapathi University admissions, Chalapathi University Guntur, best university in Andhra Pradesh, colleges in Guntur"
       />
+      {announcements?.some((announcement) => announcement.title?.trim()) && (
+        <section
+          aria-label="University announcements"
+          className="relative z-20 flex h-11 w-full items-center overflow-hidden bg-[#D71920] text-white shadow-sm"
+        >
+          <style>{`
+            @keyframes announcement-marquee {
+              from { transform: translateX(0); }
+              to { transform: translateX(-50%); }
+            }
+            .announcement-marquee-track {
+              animation: announcement-marquee 28s linear infinite;
+            }
+            .announcement-marquee-track:hover {
+              animation-play-state: paused;
+            }
+            @media (prefers-reduced-motion: reduce) {
+              .announcement-marquee-track { animation: none; }
+            }
+          `}</style>
+          <div className="announcement-marquee-track flex w-max items-center font-[var(--font-poppins)] text-sm font-bold md:text-base">
+            {[0, 1].map((copy) => (
+              <div
+                key={copy}
+                aria-hidden={copy === 1}
+                className="flex shrink-0 items-center"
+              >
+                {announcements
+                  .filter((announcement) => announcement.title?.trim())
+                  .map((announcement, index) => (
+                    <span key={`${announcement.id || announcement.title}-${index}`} className="whitespace-nowrap px-5">
+                      {announcement.title.trim()}
+                      <span className="mx-4 text-white/70" aria-hidden="true">•</span>
+                    </span>
+                  ))}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
       {/* ═══ HERO SECTION (Responsive height for mobile & desktop) ═══ */}
       <section
         className="relative w-full overflow-hidden bg-white select-none h-[220px] min-[375px]:h-[240px] min-[420px]:h-[270px] min-[520px]:h-[340px] sm:h-[440px] md:h-[580px] lg:h-[720px]"
