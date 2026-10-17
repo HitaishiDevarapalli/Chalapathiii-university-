@@ -89,6 +89,16 @@ For application rollback, first unpublish any newly managed pages using the auth
 
 ## Files
 
+### VPS stash-conflict recovery
+
+If applying existing VPS edits conflicts in the six integration files, `scripts/resolve-page-builder-vps.py` reads the saved VPS side from Git's stage 3 and reapplies only the builder integration. It validates every required source anchor before writing anything, rejects unexpected conflicts, backs up both the conflicted files and saved VPS versions, marks the verified files resolved, and retains the stash. It does not install dependencies, migrate data or restart a service. Run without arguments for a dry run, or with `--apply` after fetching the script from this feature branch. Four isolated Git-index tests cover recovery, backups, idempotence and failure without mutation; the generated TypeScript and backend API integration also passed validation.
+
+```sh
+python3 scripts/resolve-page-builder-vps.py
+python3 scripts/resolve-page-builder-vps.py --apply
+python3 -m unittest discover -s scripts/tests -p test_page_builder_vps_resolver.py -v
+```
+
 New implementation: `src/pageBuilder/{PageBuilder,Renderer,DraftPreview}.tsx`, `model.ts`, `builder.css`; `server/src/pageBuilder/{schema.ts,menus.json}`; `server/src/routes/pageBuilder.ts`; the additive migration; API/browser tests and their runner; this document and the inspection plan.
 
 Integration changes: portal navigation/permission mapping, existing public header/homepage/router, page model relations, protected legacy page/CMS writes, and the existing icon wrapper. Dependencies: `@dnd-kit/core` in the frontend and `sharp` in the backend. Other pre-existing uncommitted security/deployment edits are intentionally excluded from the feature commit.
