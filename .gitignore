@@ -58,6 +58,8 @@ __pycache__/
 *.py[cod]
 /work/media-storage-qa/
 /work/page-builder-qa/
+/work/research-build/
+/work/research-qa/
 /output/media-storage-update/
 /output/pdf/
 

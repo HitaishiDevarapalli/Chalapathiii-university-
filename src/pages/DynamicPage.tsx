@@ -599,7 +599,8 @@ const getPageContent = (path: string, programs: any[], newsPageConfig?: any) => 
       category: "Research",
       desc: "Driving patent submissions, research sponsorships, and scientific breakthroughs.",
       body: <ResearchView path={cleanPath} />,
-      hideHeader: true
+      hideHeader: true,
+      isFullBleed: true
     };
   }
 

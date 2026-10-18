@@ -1,87 +1,73 @@
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { Wrench, ArrowLeft } from "lucide-react";
-import { 
-  DEFAULT_RESEARCH_DATA, 
-  ResearchCMSData 
-} from "../admin/ResearchCMS";
+import React from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import { ResearchItem, researchSectionForItem, safeResearchLink } from "../../data/researchData";
+import { usePublishedResearch } from "../../services/researchPublishing";
+import "../../styles/research.css";
 
-interface ResearchViewProps {
-  path?: string;
-}
-
-export const ResearchView: React.FC<ResearchViewProps> = () => {
-  const [data, setData] = useState<ResearchCMSData>(() => {
-    try {
-      const saved = localStorage.getItem("chalapathi_research_cms_data");
-      if (saved) return JSON.parse(saved);
-    } catch (e) {}
-    return DEFAULT_RESEARCH_DATA;
-  });
-
-  useEffect(() => {
-    const handleSync = () => {
-      try {
-        const saved = localStorage.getItem("chalapathi_research_cms_data");
-        if (saved) setData(JSON.parse(saved));
-      } catch (e) {}
-    };
-
-    window.addEventListener("chalapathi_cms_updated", handleSync);
-    window.addEventListener("storage", handleSync);
-    return () => {
-      window.removeEventListener("chalapathi_cms_updated", handleSync);
-      window.removeEventListener("storage", handleSync);
-    };
-  }, []);
-
-  const visibleItems = (data.items || []).filter((item) => !item.hidden);
-
-  return (
-    <div className="min-h-[72vh] flex flex-col items-center justify-center px-4 py-20 text-center font-[var(--font-poppins)] bg-white select-none">
-      {/* Icon */}
-      <div className="text-amber-500 mb-4 animate-bounce">
-        <Wrench size={48} strokeWidth={2} />
+interface ResearchViewProps { path?: string; }
+function DocumentRow({ item }: { item: ResearchItem }) {
+  const href = safeResearchLink(item.link);
+  return <div className="research-document">
+    <span className="research-arrow" aria-hidden="true" />
+    <div className="research-document-content">
+      <div className="research-document-title">
+        {href ? <a href={href} target={href.startsWith("http") ? "_blank" : undefined} rel={href.startsWith("http") ? "noopener noreferrer" : undefined}>{item.title}</a> : <span>{item.title}</span>}
+        {item.badge && <span className="research-badge">{item.badge}</span>}
       </div>
-
-      {/* Main Title */}
-      <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#072A6C] tracking-tight uppercase">
-        Under Construction
-      </h1>
-
-      {/* Subtitle */}
-      <p className="text-sm sm:text-base text-gray-500 font-medium mt-3 max-w-md">
-        This page is currently under construction.
-      </p>
-
-      {/* Back to Home Link */}
-      <Link
-        to="/"
-        className="mt-8 inline-flex items-center gap-2 text-xs font-bold text-[#072A6C] hover:text-amber-600 transition-colors"
-      >
-        <ArrowLeft size={14} />
-        <span>Back to Home</span>
-      </Link>
-
-      {/* Published Items (if admin adds items) */}
-      {visibleItems.length > 0 && (
-        <div className="max-w-4xl w-full mx-auto mt-14 pt-8 border-t border-gray-100 text-left">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {visibleItems.map((item) => (
-              <div key={item.id} className="p-4 border-b border-gray-100 space-y-1">
-                <span className="text-[10px] font-black uppercase text-[#072A6C]">{item.category}</span>
-                <h4 className="text-sm font-bold text-gray-900">{item.title}</h4>
-                {item.description && <p className="text-xs text-gray-500">{item.description}</p>}
-                {item.link && (
-                  <a href={item.link} className="text-xs font-bold text-[#072A6C] hover:underline inline-block mt-1">
-                    {item.linkText || "Learn More"} &rarr;
-                  </a>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {item.description && <p>{item.description}</p>}
     </div>
-  );
+  </div>;
+}
+export const ResearchView: React.FC<ResearchViewProps> = ({ path }) => {
+  const { data, loading, error } = usePublishedResearch();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const sections = data.sections.filter(section => !section.hidden);
+  const legacySection = path?.endsWith("/projects") ? "sponsored" : path?.endsWith("/publications") ? "academic" : path?.endsWith("/patents") ? "innovation" : "updates";
+  const current = sections.find(section => section.id === (searchParams.get("section") || legacySection)) || sections[0];
+  const items = data.items.filter(item => !item.hidden && researchSectionForItem(item) === current?.id);
+  if (data.hidden || data.isUnderConstruction) return <div className="research-notice research-page">
+    <h1>{data.hidden ? "Research information is temporarily unavailable" : data.pageTitle}</h1>
+    <p>{data.underConstructionMessage}</p><Link to="/">Back to Home</Link>
+  </div>;
+  return <main className="research-page">
+    <header className="research-heading"><div className="research-heading-inner">
+      <div className="research-breadcrumb"><Link to="/">Home</Link><span aria-hidden="true">/</span><span>Research</span></div>
+      <p className="research-eyebrow">CHALAPATHI UNIVERSITY</p>
+      <h1>{data.pageTitle}</h1><p className="research-subtitle">{data.pageSubtitle}</p>
+    </div></header>
+    <div className="research-layout">
+      <aside className="research-sidebar">
+        <div className="research-nav-heading">Explore Research</div>
+        <nav aria-label="Research sections">
+          {sections.map(section => <button key={section.id} type="button" aria-current={current?.id === section.id ? "page" : undefined}
+            onClick={() => setSearchParams({ section: section.id }, { preventScrollReset: true })}>
+            <span>{section.title}</span><span className="research-nav-chevron" aria-hidden="true">›</span>
+          </button>)}
+        </nav>
+        {(data.contactEmail || data.contactPhone) && <div className="research-help"><span>Research enquiries</span>
+          {data.contactEmail && <a href={`mailto:${data.contactEmail}`}>{data.contactEmail}</a>}
+          {data.contactPhone && <a href={`tel:${data.contactPhone.replace(/[^+\d]/g, "")}`}>{data.contactPhone}</a>}
+        </div>}
+      </aside>
+      <section className="research-content" aria-labelledby="research-section-title" aria-busy={loading}>
+        <div className="research-section-heading"><div><p className="research-eyebrow">RESEARCH & DISCOVERY</p><h2 id="research-section-title">{current?.title || "Research"}</h2></div><span className="research-heading-rule" /></div>
+        {loading ? <p role="status">Loading research content…</p> : error ? <p role="alert" className="research-status">{error}</p> : <>
+          {current?.description && <p className="research-section-description">{current.description}</p>}
+          <div key={current?.id} className="research-documents">
+            {items.filter(item => !item.parentId).map(item => item.type === "accordion" ? <div key={item.id} className="research-accordion-row">
+              <span className="research-arrow" aria-hidden="true" /><details className="research-accordion" open>
+                <summary>{item.title}{item.badge && <span className="research-badge">{item.badge}</span>}<span className="research-accordion-chevron" aria-hidden="true" /></summary>
+                <div className="research-accordion-body">
+                  {item.description && <p>{item.description}</p>}
+                  {items.filter(child => child.parentId === item.id).map(child => <DocumentRow key={child.id} item={child} />)}
+                </div>
+              </details>
+            </div> : <DocumentRow key={item.id} item={item} />)}
+          </div>
+          {items.filter(item => !item.parentId).length === 0 && <div className="research-empty"><span className="research-empty-rule" /><h3>{current?.title || "Research information"}</h3><p>Information and documents for this section will be published here.</p></div>}
+          {items.some(item => !item.link && item.type !== "accordion") && <p className="research-document-note">Documents become available as they are published by the university.</p>}
+        </>}
+      </section>
+    </div>
+  </main>;
 };

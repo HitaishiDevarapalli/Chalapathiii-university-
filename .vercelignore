@@ -7,3 +7,5 @@ build
 dev.db
 *.zip
 *.tar.gz
+work/research-build
+work/research-qa
