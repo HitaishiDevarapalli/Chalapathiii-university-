@@ -46,6 +46,10 @@ Research content is saved through the existing authenticated `PUT /api/config/re
 
 This update adds a pinned Zod frontend dependency and research content validation to the existing API. Update both frontend and backend source on the VPS, install the frontend lockfile dependencies, build both, restart the existing `chalapathi-api` process and publish the frontend assets using the existing VPS deployment procedure.
 
+The VPS login shell can default to Node 20 even when the API uses Node 22. Before installing dependencies, load the existing NVM installation with `source /root/.nvm/nvm.sh`, run `nvm use 22`, and check `node --version`. The API supports Node 22 or 24; the frontend Prisma dependency requires Node 22.12+ when using Node 22. Use the `server/` Prisma 5 tooling for API generation. Run `node tests/native-password.cjs` from `server/` before restarting the API, and explicitly select the active Node interpreter with `pm2 restart chalapathi-api --interpreter "$(command -v node)" --update-env`.
+
+The frontend lockfile includes the complete optional bundled WASM dependency tree so `npm ci --include=dev` works with the VPS's npm 10.8.2. Installation plans are checked in a fresh directory for Linux x64 as well as against the existing frontend and backend dependencies. A lockfile mismatch stops deployment before any service restart or frontend publication; pull the corrected lockfile instead of changing dependency versions on the VPS.
+
 From the project root:
 
 ```powershell
