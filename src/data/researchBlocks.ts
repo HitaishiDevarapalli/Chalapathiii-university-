@@ -2,6 +2,7 @@ import { ResearchCMSData, ResearchItem, researchSectionForItem } from "./researc
 export { safeResearchUrl, researchBlockSchema, researchContentSchema } from "../../server/src/research/schema";
 export type { ResearchBlock, ResearchBullet, ResearchBlockType } from "../../server/src/research/schema";
 import type { ResearchBlock, ResearchBlockType } from "../../server/src/research/schema";
+import { RESEARCH_MAX_BLOCK_DEPTH } from "../../server/src/research/schema";
 
 export const RESEARCH_COMPONENTS: { type: ResearchBlockType; label: string; hint: string; symbol: string }[] = [
   { type: "heading", label: "Heading", hint: "Section and subheadings", symbol: "H" },
@@ -50,4 +51,20 @@ export function copyResearchBlock(block: ResearchBlock): ResearchBlock {
 }
 export function countResearchBlocks(blocks: ResearchBlock[]): number {
   return blocks.reduce((count, block) => count + 1 + countResearchBlocks(block.children || []), 0);
+}
+
+/** Check the whole subtree before moving it, including moves into a deeper group. */
+export function researchPlacementFits(blocks: ResearchBlock[], source: ResearchBlock, targetId = "", inside = true): boolean {
+  if (targetId === source.id || findResearchBlock(source.children || [], targetId)) return false;
+  const depthOf = (list: ResearchBlock[], depth: number): number | undefined => {
+    for (const block of list) {
+      if (block.id === targetId) return depth;
+      const found = depthOf(block.children || [], depth + 1);
+      if (found !== undefined) return found;
+    }
+  };
+  const heightOf = (block: ResearchBlock): number => Math.max(0, ...(block.children || []).map(child => 1 + heightOf(child)));
+  const targetDepth = targetId ? depthOf(blocks, 0) : -1;
+  if (targetDepth === undefined || (inside && targetId && findResearchBlock(blocks, targetId)?.type !== "accordion")) return false;
+  return (targetId ? targetDepth + (inside ? 1 : 0) : 0) + heightOf(source) <= RESEARCH_MAX_BLOCK_DEPTH;
 }

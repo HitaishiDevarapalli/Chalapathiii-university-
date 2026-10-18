@@ -1,10 +1,11 @@
 import React, { useRef, useState } from "react";
 import { ArrowDown, ArrowUp, Copy, Eye, EyeOff, GripVertical, Trash2 } from "lucide-react";
-import { RESEARCH_COMPONENTS, ResearchBlock, ResearchBlockType, ResearchBullet, copyResearchBlock, findResearchBlock, makeResearchBlock, removeResearchBlock, updateResearchBlock } from "../../data/researchBlocks";
+import { RESEARCH_COMPONENTS, ResearchBlock, ResearchBlockType, ResearchBullet, copyResearchBlock, findResearchBlock, makeResearchBlock, removeResearchBlock, researchPlacementFits, updateResearchBlock } from "../../data/researchBlocks";
 import { ResearchBlockContent, ResearchBlocks } from "../research/ResearchBlocks";
 import { MediaAsset, MediaPicker, uploadMedia } from "./MediaStorage";
 import { useAdminAccess } from "../../security/adminAccess";
 import { ResearchImageProperties } from "./ResearchImageProperties";
+import { ResearchNumberField } from "./ResearchNumberField";
 import "../../styles/research-editor.css";
 
 type BlocksUpdate = ResearchBlock[] | ((previous: ResearchBlock[]) => ResearchBlock[]);
@@ -70,6 +71,7 @@ export function ResearchComponentEditor({ blocks, onChange, onPublish, disabled,
   const [preview, setPreview] = useState(false), [phone, setPhone] = useState(false);
   const [picker, setPicker] = useState<{ kind: "image" | "pdf"; select: (asset: MediaAsset) => void } | null>(null);
   const [uploads, setUploads] = useState(0);
+  const [placementError, setPlacementError] = useState("");
   const resizeSession = useRef<{ id: string; x: number; y: number; width: number; height: number; container: number; fixed: boolean } | null>(null);
   const selected = findResearchBlock(blocks, selectedId) || blocks[0];
   const groups = allGroups(blocks);
@@ -82,14 +84,19 @@ export function ResearchComponentEditor({ blocks, onChange, onPublish, disabled,
   };
   const add = (type: ResearchBlockType) => {
     const added = makeResearchBlock(type);
-    onChange(previous => { const parent = findResearchBlock(previous, insertParentId); return parent?.type === "accordion"
+    if (disabled) return;
+    setPlacementError("");
+    const parentId = groups.some(group => group.block.id === insertParentId && group.depth < 8) ? insertParentId : "";
+    onChange(previous => { const parent = findResearchBlock(previous, parentId); return parent?.type === "accordion"
       ? updateResearchBlock(previous, parent.id, { children: [...(parent.children || []), added] }) : [...previous, added]; });
     setSelectedId(added.id); setPreview(false);
   };
   const remove = (id: string) => { onChange(previous => removeResearchBlock(previous, id)); if (insertParentId === id) setInsertParentId(""); };
   const moveToGroup = (parentId: string) => {
-    if (!selected) return; const id = selected.id;
-    onChange(previous => { const source = findResearchBlock(previous, id); if (!source || parentId === id || findResearchBlock(source.children || [], parentId)) return previous;
+    if (!selected || disabled) return; const id = selected.id;
+    if (!researchPlacementFits(blocks, selected, parentId)) { setPlacementError("This move would exceed eight nested groups."); return; }
+    setPlacementError("");
+    onChange(previous => { const source = findResearchBlock(previous, id); if (!source || !researchPlacementFits(previous, source, parentId)) return previous;
       const remaining = removeResearchBlock(previous, id); const parent = findResearchBlock(remaining, parentId);
       return parent ? updateResearchBlock(remaining, parentId, { children: [...(parent.children || []), source] }) : [...remaining, source]; });
   };
@@ -117,8 +124,12 @@ export function ResearchComponentEditor({ blocks, onChange, onPublish, disabled,
   const cardList = (list: ResearchBlock[], depth = 0): React.ReactNode => list.map((block, index) => <div key={block.id} className={`research-editor-card${selected?.id === block.id ? " is-selected" : ""}${block.hidden ? " is-hidden" : ""}`} data-component-id={block.id}
     onDragOver={event => event.preventDefault()} onDrop={event => {
       event.preventDefault(); event.stopPropagation(); const id = event.dataTransfer.getData("text/research-component");
-      if (!id || id === block.id) return;
-      onChange(previous => { const source = findResearchBlock(previous, id); return !source || findResearchBlock(source.children || [], block.id) ? previous : insertRelative(removeResearchBlock(previous, id), block.id, source); });
+      if (!id || id === block.id || disabled) return;
+      const source = findResearchBlock(blocks, id);
+      if (!source) return;
+      if (!researchPlacementFits(blocks, source, block.id, false)) { setPlacementError("A group cannot move inside itself or exceed eight nested groups."); return; }
+      setPlacementError("");
+      onChange(previous => { const current = findResearchBlock(previous, id); return !current || !researchPlacementFits(previous, current, block.id, false) ? previous : insertRelative(removeResearchBlock(previous, id), block.id, current); });
     }}>
     <div className="research-editor-card-toolbar" onClick={event => event.stopPropagation()}>
       <button type="button" className="secondary research-drag-handle" draggable disabled={disabled} data-admin-action="edit" title="Drag to reorder component" onDragStart={event => { event.dataTransfer.setData("text/research-component", block.id); event.dataTransfer.effectAllowed = "move"; }}><GripVertical size={14} /></button>
@@ -132,7 +143,7 @@ export function ResearchComponentEditor({ blocks, onChange, onPublish, disabled,
       </div>
     </div>
     <div className="research-editor-card-preview" onClick={event => { event.stopPropagation(); setSelectedId(block.id); }}>
-      {block.type === "accordion" ? <div className="research-editor-group"><strong>{block.text}</strong>{depth < 8 && cardList(block.children || [], depth + 1)}<button type="button" className="secondary" data-admin-action="view" onClick={event => { event.stopPropagation(); setSelectedId(block.id); setInsertParentId(block.id); }}>Add inside this group</button></div> : <ResearchBlockContent block={block} editing showHidden resizeHandle={block.type === "image" && selected?.id === block.id && block.imageUrl ? resizeHandle(block) : undefined} />}
+      {block.type === "accordion" ? <div className="research-editor-group"><strong>{block.text}</strong>{depth < 8 && cardList(block.children || [], depth + 1)}<button type="button" className="secondary" data-admin-action="view" disabled={depth >= 8 || disabled} onClick={event => { event.stopPropagation(); setSelectedId(block.id); setInsertParentId(block.id); }}>Add inside this group</button></div> : <ResearchBlockContent block={block} editing showHidden resizeHandle={block.type === "image" && selected?.id === block.id && block.imageUrl ? resizeHandle(block) : undefined} />}
     </div>
   </div>);
   const selectedLabel = RESEARCH_COMPONENTS.find(item => item.type === selected?.type)?.label;
@@ -141,8 +152,9 @@ export function ResearchComponentEditor({ blocks, onChange, onPublish, disabled,
       <button type="button" className="secondary" data-admin-action="view" onClick={() => setPreview(!preview)}>{preview ? "Edit components" : "Preview"}</button>
       <button type="button" data-admin-action="publish" disabled={disabled || uploads > 0} onClick={onPublish}>{uploads > 0 ? "Uploading…" : "Save & publish content"}</button>
     </div></div>
+    {placementError && <p role="alert" className="research-editor-error">{placementError}</p>}
     <div className="research-editor-workspace">
-      <aside className="research-component-library"><h4>Components</h4><label>Add to<select value={findResearchBlock(blocks, insertParentId) ? insertParentId : ""} onChange={event => setInsertParentId(event.target.value)}><option value="">End of section</option>{groups.filter(group => group.depth < 7).map(({ block }) => <option key={block.id} value={block.id}>Inside: {block.text}</option>)}</select></label>
+      <aside className="research-component-library"><h4>Components</h4><label>Add to<select value={groups.some(group => group.block.id === insertParentId && group.depth < 8) ? insertParentId : ""} onChange={event => setInsertParentId(event.target.value)}><option value="">End of section</option>{groups.filter(group => group.depth < 8).map(({ block }) => <option key={block.id} value={block.id}>Inside: {block.text}</option>)}</select></label>
         {RESEARCH_COMPONENTS.map(item => <button key={item.type} type="button" className="research-library-button" data-admin-action="create" data-component-type={item.type} disabled={disabled} title={item.hint} onClick={() => add(item.type)}><span aria-hidden="true">{item.symbol}</span><span>{item.label}</span></button>)}
       </aside>
       <div className={`research-component-canvas${phone ? " is-phone" : ""}`}>
@@ -171,9 +183,9 @@ export function ResearchComponentEditor({ blocks, onChange, onPublish, disabled,
             <ResearchImageProperties block={selected} blocks={blocks} onChange={patch} onPlace={placeImage} />
             <DestinationFields value={selected} optional onChange={patch} onBrowse={chooseMedia} onBusy={uploadBusy} />
           </>}
-          {selected.type === "accordion" && <button type="button" className="secondary" data-admin-action="view" onClick={() => setInsertParentId(selected.id)}>Add components inside this group</button>}
-          {selected.type === "spacer" && <label>Height (pixels)<input type="number" min={8} max={160} value={selected.space || 32} onChange={event => patch({ space: Math.max(8, Math.min(160, Number(event.target.value) || 8)) })} /></label>}
-          <label>Move component to<select value="" onChange={event => { if (event.target.value) moveToGroup(event.target.value === "root" ? "" : event.target.value); }}><option value="">Choose destination…</option><option value="root">End of section</option>{groups.filter(({ block, depth }) => depth < 7 && block.id !== selected.id && !findResearchBlock(selected.children || [], block.id)).map(({ block }) => <option key={block.id} value={block.id}>Inside: {block.text}</option>)}</select></label>
+          {selected.type === "accordion" && <button type="button" className="secondary" data-admin-action="view" disabled={!groups.some(group => group.block.id === selected.id && group.depth < 8)} onClick={() => setInsertParentId(selected.id)}>Add components inside this group</button>}
+          {selected.type === "spacer" && <ResearchNumberField label="Height (pixels)" value={selected.space || 32} min={8} max={160} onChange={space => patch({ space })} />}
+          <label>Move component to<select value="" onChange={event => { if (event.target.value) moveToGroup(event.target.value === "root" ? "" : event.target.value); }}><option value="">Choose destination…</option><option value="root">End of section</option>{groups.filter(({ block }) => researchPlacementFits(blocks, selected, block.id)).map(({ block }) => <option key={block.id} value={block.id}>Inside: {block.text}</option>)}</select></label>
           <label className="research-editor-check"><input type="checkbox" checked={!!selected.hidden} onChange={event => patch({ hidden: event.target.checked })} />Hide component</label>
         </div> : <p>Select or add a component to edit its properties.</p>}
       </aside>}

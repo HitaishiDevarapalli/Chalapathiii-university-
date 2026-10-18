@@ -28,3 +28,11 @@ a.research-action:hover { background: #d4af37; color: #072a6c; border-color: #d4
 .research-component-accordion > .research-accordion-body > .research-block-content > .research-block:first-child { margin-top: 0; }
 @media (max-width: 600px) { h2.research-block-heading { font-size: 25px; } h3.research-block-heading { font-size: 21px; } .research-action { padding: 11px 17px; } }
 @media (max-width: 600px) { .research-figure[data-image-placement^=wrap-] { float: none; clear: both; width: 100% !important; margin-inline: 0; } .research-image-frame[data-fixed-height] { height: min(var(--research-image-height), 90vw); } }
+.research-component-canvas.is-phone { container: research-phone / inline-size; }
+@container research-phone (max-width: 600px) {
+  h2.research-block-heading { font-size: 25px; }
+  h3.research-block-heading { font-size: 21px; }
+  .research-action { padding: 11px 17px; }
+  .research-figure[data-image-placement^=wrap-] { float: none; clear: both; width: 100% !important; margin-inline: 0; }
+  .research-image-frame[data-fixed-height] { height: min(var(--research-image-height), 90cqw); }
+}

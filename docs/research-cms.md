@@ -16,7 +16,9 @@ Available components:
 - **Expandable group:** headings and other components inside a collapsible section.
 - **Divider** and **Space:** control content separation and vertical spacing.
 
-**Preview** displays the current draft content using the public renderer, including hidden-content behavior; **Phone** switches to a narrow preview. Use **Save & publish content** or the research editor's **Publish changes** when ready. Component edits stay in the current editor until published. Switching research options retains edits. Leaving/reloading with unsaved edits prompts before discarding them. A failed publication retains your edits and leaves the previous public content in place.
+**Preview** displays the current draft content using the public renderer, including hidden-content behavior; **Phone** applies the mobile photo stacking and heading sizes inside the preview even on a desktop. Use **Save & publish content** or the research editor's **Publish changes** when ready. Component edits stay in the current editor until published. Switching research options retains edits. Leaving/reloading with unsaved edits prompts before discarding them. A failed publication retains your edits and leaves the previous public content in place.
+
+Space heights support exact typed values or a slider, from 8–160 pixels. Number fields apply their limits when you finish typing. Expandable content supports eight nested groups; move destinations account for all children in a group, and dragging a group inside itself is prevented.
 
 Unsaved edits are also kept as a browser recovery draft. After switching admin tabs or reopening the editor, use **Restore draft** to recover them, or **Discard draft** to continue with published content. Recovery drafts are never shown to public visitors. The main workspace **Publish changes** button publishes the active research editor when Research & Innovation is selected.
 
@@ -55,4 +57,4 @@ npm run build
 node tests/research.cjs
 ```
 
-The integration test uses isolated PostgreSQL, temporary uploads/accounts, a real Express server and independent admin/visitor browser sessions. It verifies legacy content, all requested component types, direct PDF/image uploads, reuse from Media Storage, destination validation, ordering, duplication, visibility, nested groups, publication failures, permissions, responsive layouts and sidebar deletion/empty states. Screenshots are saved under `work/research-qa/`. It never uses production data.
+The integration test uses isolated PostgreSQL, temporary uploads/accounts, a real Express server and independent admin/visitor browser sessions. It verifies all eight component types, heading sizes, multiline text, individual bullet controls, working navigation, button styles, direct PDF/image uploads, reuse from Media Storage, failed upload recovery, destination validation, exact spacing, drag-and-drop, duplication/removal/visibility for every type, nested group moves and depth limits, publication failures, permissions, responsive layouts and sidebar deletion/empty states. Screenshots are saved under `work/research-qa/`. It never uses production data.

@@ -1,12 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { ResearchBlock, findResearchBlock } from "../../data/researchBlocks";
-
-function ImageNumber({ label, value, min, max, onChange }: { label: string; value: number; min: number; max: number; onChange: (value: number) => void }) {
-  const [draft, setDraft] = useState(String(value));
-  useEffect(() => setDraft(String(value)), [value]);
-  const commit = () => { const number = draft.trim() ? Number(draft) : value; const next = Math.max(min, Math.min(max, Number.isFinite(number) ? Math.round(number) : value)); setDraft(String(next)); onChange(next); };
-  return <label>{label}<div className="research-image-number"><input type="number" min={min} max={max} value={draft} onChange={event => setDraft(event.target.value)} onBlur={commit} onKeyDown={event => { if (event.key === "Enter") { event.preventDefault(); event.currentTarget.blur(); } }} /><input type="range" min={min} max={max} value={value} aria-label={`${label} slider`} onChange={event => onChange(Number(event.target.value))} /></div></label>;
-}
+import { ResearchNumberField as ImageNumber } from "./ResearchNumberField";
 function flatten(blocks: ResearchBlock[]): ResearchBlock[] { return blocks.flatMap(block => [block, ...flatten(block.children || [])]); }
 export function ResearchImageProperties({ block, blocks, onChange, onPlace }: { block: ResearchBlock; blocks: ResearchBlock[]; onChange: (patch: Partial<ResearchBlock>) => void; onPlace: (targetId: string, after: boolean) => void }) {
   const positions = flatten(blocks).filter(item => item.id !== block.id && !findResearchBlock(block.children || [], item.id));

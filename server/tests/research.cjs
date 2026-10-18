@@ -165,6 +165,12 @@ const { PGLiteSocketServer } = require('@electric-sql/pglite-socket');
     metrics = await photoMetrics(); assert.equal(metrics.float, 'none'); assert(Math.abs(metrics.width - metrics.contentWidth) < 2);
     assert.equal(await visitor.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true);
     await visitor.setViewport({ width: 1440, height: 1000 });
+    await click(admin, 'Preview', '.research-component-editor'); await click(admin, 'Phone', '.research-component-editor');
+    assert.equal(await admin.$eval('.research-component-canvas .research-figure', el => getComputedStyle(el).float), 'none', 'phone preview stacks wrapped photos on desktop');
+    assert.equal(await admin.$eval('.research-component-canvas h3', el => getComputedStyle(el).fontSize), '21px', 'phone preview uses mobile heading sizes');
+    await click(admin, 'Desktop', '.research-component-editor');
+    assert.equal(await admin.$eval('.research-component-canvas .research-figure', el => getComputedStyle(el).float), 'right', 'desktop preview restores photo wrapping');
+    await click(admin, 'Edit components', '.research-component-editor');
     await setField('Photo layout', 'block'); await setField('Position in section', 'before:' + groupId);
     await setField('Width units', 'px'); await setField('Width (px)', '320'); await setField('Alignment', 'center'); await checkImageProportions(false); await setField('Height (px)', '180');
     await publish(); section = (await read()).sections.find(s => s.id === sectionId);
@@ -237,6 +243,131 @@ const { PGLiteSocketServer } = require('@electric-sql/pglite-socket');
     assert.equal((await read()).sections.find(s => s.id === sectionId).blocks[0].text, 'Recovered draft heading');
     assert.equal(await admin.evaluate(() => localStorage.getItem('chalapathi_research_editor_draft')), null);
     console.log('PASS: browser drafts survive switching admin tabs and the workspace Publish button saves research content');
+
+    // Exercise every component and its controls through the editor, then read it as a visitor.
+    const setChecked = async (label, checked, scope = '.research-component-properties') => {
+      const handle = await admin.waitForFunction(({ label, scope }) => [...document.querySelectorAll(scope + ' label')].find(el => el.textContent.trim() === label)?.querySelector('input[type=checkbox]'), {}, { label, scope });
+      if (await handle.asElement().evaluate(el => el.checked) !== checked) await handle.asElement().click(); await handle.dispose();
+    };
+    const selectedId = () => admin.$eval('.research-editor-card.is-selected', el => el.dataset.componentId);
+    const selectComponent = id => admin.click(`[data-component-id="${id}"] > .research-editor-card-toolbar .research-component-name`);
+    const selectRoot = () => setField('Add to', '', '.research-component-library');
+    const dropBefore = (id, target) => admin.$eval(`[data-component-id="${target}"]`, (el, source) => {
+      const transfer = new DataTransfer(); transfer.setData('text/research-component', source);
+      el.dispatchEvent(new DragEvent('drop', { dataTransfer: transfer, bubbles: true, cancelable: true }));
+    }, id);
+    await createSection('Component Checks'); const auditSectionId = (await read()).sections.at(-1).id;
+    const auditRead = async () => (await read()).sections.find(s => s.id === auditSectionId);
+    await addBlock('heading'); const auditHeading = await selectedId(); await setField('Heading text', 'All research components');
+    for (const level of ['h2', 'h4', 'h3']) {
+      await setField('Heading size', level);
+      assert.equal(await admin.$eval(`[data-component-id="${auditHeading}"] .research-block-heading`, el => el.tagName.toLowerCase()), level);
+    }
+    await addBlock('text'); const auditText = await selectedId(); await setField('Paragraph text', 'First paragraph line.\nSecond paragraph line.');
+    await addBlock('bullets'); const auditBullets = await selectedId();
+    await setField('Bullet text', 'Plain bullet', '[data-bullet-index="0"]'); await setField('Description (optional)', 'Plain bullet description', '[data-bullet-index="0"]');
+    await setField('Badge (optional)', 'UPDATE', '[data-bullet-index="0"]');
+    await click(admin, 'Add bullet point', '.research-component-properties'); await setField('Bullet text', 'Hidden bullet', '[data-bullet-index="1"]'); await setChecked('Hide this bullet', true, '[data-bullet-index="1"]');
+    await click(admin, 'Add bullet point', '.research-component-properties'); await setField('Bullet text', 'Linked bullet', '[data-bullet-index="2"]');
+    await setField('Click action', 'url', '[data-bullet-index="2"]'); await setField('Destination URL', '/research?section=' + sectionId, '[data-bullet-index="2"]');
+    await admin.click('[aria-label="Move bullet 3 up"]');
+    await addBlock('button'); const auditButton = await selectedId(); await setField('Button label', 'Open research resources');
+    await setField('Destination URL', '/research?section=' + sectionId); await setField('Button style', 'outline'); await setChecked('Open in a new tab', false);
+    await addBlock('image'); const auditImage = await selectedId();
+    await (await admin.$('.research-component-properties input[type=file]')).uploadFile(pdfPath);
+    await admin.waitForFunction(() => document.querySelector('.research-component-properties [role=alert]')?.textContent.includes('JPG'));
+    assert.equal(await prisma.builderMedia.count(), 2, 'a rejected image file is not stored');
+    await admin.setRequestInterception(true);
+    const rejectUpload = request => request.url().endsWith('/api/media') && request.method() === 'POST'
+      ? request.respond({ status: 500, contentType: 'application/json', body: '{"error":"Fixture upload failure"}' }) : request.continue();
+    admin.on('request', rejectUpload);
+    await (await admin.$('.research-component-properties input[type=file]')).uploadFile(imagePath);
+    await admin.waitForFunction(() => document.querySelector('.research-component-properties [role=alert]')?.textContent.includes('Fixture upload failure'));
+    await ready(); assert.equal(await admin.$eval('.research-admin-top button', el => el.disabled), false, 'failed uploads release the publish lock');
+    await admin.setRequestInterception(false); admin.off('request', rejectUpload);
+    await click(admin, 'Media Storage', '.research-component-properties'); await admin.waitForSelector('.media-picker-dialog .media-thumbnail'); await admin.click('.media-picker-dialog .media-thumbnail');
+    await admin.waitForFunction(() => !document.querySelector('.media-picker-dialog'));
+    await setField('Click action', 'url'); await setField('Destination URL', '/research?section=' + sectionId); await setChecked('Open in a new tab', true);
+    await addBlock('divider'); const auditDivider = await selectedId();
+    await addBlock('spacer'); const auditSpacer = await selectedId(); await setField('Height (pixels)', '80'); await admin.keyboard.press('Tab');
+    assert.equal(await admin.$eval(`[data-component-id="${auditSpacer}"] .research-editor-card-preview > div`, el => el.getBoundingClientRect().height), 80, 'typing 80 keeps exactly 80 pixels');
+    await publish();
+    await visitor.goto(base + '/research?section=' + auditSectionId); await visitor.waitForSelector('.research-content .research-action-outline');
+    assert.equal(await visitor.$eval('.research-block-text', el => el.textContent), 'First paragraph line.\nSecond paragraph line.');
+    assert.deepEqual(await visitor.$$eval('.research-document-title', els => els.map(el => el.textContent)), ['Plain bulletUPDATE', 'Linked bullet']);
+    assert.equal(await visitor.$('.research-document:first-child .research-document-title a'), null, 'plain bullet has no empty link');
+    assert.equal(await visitor.$eval('.research-content-divider', el => el.tagName), 'HR');
+    assert.equal(await visitor.$eval('.research-block-spacer > div', el => el.getBoundingClientRect().height), 80);
+    assert.equal(await visitor.$eval('.research-figure a', el => el.target), '_blank');
+    assert.equal(await visitor.$eval('.research-action-outline', el => el.target), '');
+    await visitor.click('.research-action-outline'); await visitor.waitForFunction(id => new URL(location.href).searchParams.get('section') === id, {}, sectionId);
+    await visitor.goto(base + '/research?section=' + auditSectionId); await visitor.waitForSelector('.research-bullet-list a');
+    await visitor.click('.research-bullet-list a'); await visitor.waitForFunction(id => new URL(location.href).searchParams.get('section') === id, {}, sectionId);
+    await selectComponent(auditBullets); await click(admin, 'Remove bullet', '[data-bullet-index="2"]');
+    await setChecked('Hide this bullet', true, '[data-bullet-index="0"]'); await publish();
+    await visitor.goto(base + '/research?section=' + auditSectionId); await visitor.waitForSelector('.research-bullet-list a');
+    assert.deepEqual(await visitor.$$eval('.research-document-title', els => els.map(el => el.textContent)), ['Linked bullet']);
+    await setChecked('Hide this bullet', false, '[data-bullet-index="0"]');
+    await selectComponent(auditSpacer); await setField('Height (pixels)', '999'); await admin.keyboard.press('Tab');
+    assert.equal(await admin.$eval('.research-component-properties input[type=number]', el => el.value), '160');
+    await setField('Height (pixels)', '8'); await admin.keyboard.press('Tab'); await publish();
+    assert.equal((await auditRead()).blocks.find(b => b.id === auditSpacer).space, 8);
+
+    // Group moves preserve children, prevent cycles and respect the same depth limit as the API.
+    await selectRoot(); await addBlock('accordion'); const sourceGroup = await selectedId(); await setField('Heading text', 'Movable group');
+    await click(admin, 'Add components inside this group', '.research-component-properties'); await addBlock('text'); const sourceChild = await selectedId(); await setField('Paragraph text', 'Preserved nested paragraph');
+    await selectRoot(); const layers = [];
+    for (let depth = 0; depth < 8; depth++) {
+      await addBlock('accordion'); layers.push(await selectedId()); await setField('Heading text', 'Nested layer ' + depth);
+      await click(admin, 'Add components inside this group', '.research-component-properties');
+    }
+    await addBlock('text'); const deepestText = await selectedId(); await setField('Paragraph text', 'Eight groups deep'); await publish();
+    await selectComponent(sourceGroup);
+    assert.equal(await admin.$$eval('.research-component-properties select option', (els, id) => els.some(el => el.value === id), layers[7]), false, 'destination excludes groups too deep for the whole subtree');
+    const beforeDrop = await admin.$$eval('[data-component-id]', els => els.map(el => el.dataset.componentId));
+    await dropBefore(sourceGroup, deepestText);
+    await admin.waitForFunction(() => document.querySelector('.research-component-editor > [role=alert]')?.textContent.includes('eight'));
+    assert.deepEqual(await admin.$$eval('[data-component-id]', els => els.map(el => el.dataset.componentId)), beforeDrop);
+    await dropBefore(sourceGroup, sourceChild);
+    assert.deepEqual(await admin.$$eval('[data-component-id]', els => els.map(el => el.dataset.componentId)), beforeDrop, 'dragging a group into its child cannot delete it');
+    await setField('Move component to', layers[6]); await publish();
+    assert.equal((await auditRead()).blocks.some(b => b.id === sourceGroup), false);
+    await selectComponent(sourceGroup); await setField('Move component to', 'root'); await publish();
+    assert.equal((await auditRead()).blocks.at(-1).children[0].text, 'Preserved nested paragraph');
+    await selectComponent(auditDivider); await setField('Move component to', sourceGroup); await publish();
+    assert.equal((await auditRead()).blocks.find(b => b.id === sourceGroup).children.at(-1).id, auditDivider);
+    await setField('Move component to', 'root'); await dropBefore(auditSpacer, auditHeading); await publish();
+    assert.equal((await auditRead()).blocks[0].id, auditSpacer, 'drag-and-drop changes persisted content order');
+    await admin.click(`[data-component-id="${layers[0]}"] > .research-editor-card-toolbar [aria-label="Duplicate component"]`);
+    const groupCopy = await selectedId(); await publish();
+    const gatherIds = block => [block.id, ...(block.children || []).flatMap(gatherIds)];
+    const copiedSection = await auditRead(), originalIds = gatherIds(copiedSection.blocks.find(b => b.id === layers[0])), copyIds = gatherIds(copiedSection.blocks.find(b => b.id === groupCopy));
+    assert.equal(originalIds.length, 9); assert.equal(copyIds.length, 9); assert.equal(new Set([...originalIds, ...copyIds]).size, 18);
+    await admin.click(`[data-component-id="${groupCopy}"] > .research-editor-card-toolbar [aria-label="Remove component"]`);
+    for (const id of [auditHeading, auditText, auditBullets, auditButton, auditImage, auditDivider, auditSpacer]) {
+      await admin.click(`[data-component-id="${id}"] > .research-editor-card-toolbar [aria-label="Duplicate component"]`);
+      const copyId = await selectedId(); assert.notEqual(copyId, id);
+      await admin.click(`[data-component-id="${copyId}"] > .research-editor-card-toolbar [aria-label="Remove component"]`);
+      await admin.click(`[data-component-id="${id}"] > .research-editor-card-toolbar [aria-label="Hide component"]`);
+    }
+    await publish(); await visitor.goto(base + '/research?section=' + auditSectionId); await visitor.waitForSelector('.research-component-accordion');
+    for (const id of [auditHeading, auditText, auditBullets, auditButton, auditImage, auditDivider, auditSpacer]) {
+      assert.equal(await visitor.$(`[data-block-id="${id}"]`), null);
+      await admin.click(`[data-component-id="${id}"] > .research-editor-card-toolbar [aria-label="Show component"]`);
+    }
+    await publish(); await visitor.reload(); await visitor.waitForSelector('.research-content-divider');
+    assert.equal(await visitor.$eval('.research-block-spacer > div', el => el.getBoundingClientRect().height), 8);
+    const invalidImageAction = await read(); invalidImageAction.sections.find(s => s.id === auditSectionId).blocks.find(b => b.type === 'image').href = '';
+    assert.equal((await api(admin, '/api/config/researchContent', 'PUT', invalidImageAction)).status, 400);
+    const tooDeep = await read(); let branch = tooDeep.sections.find(s => s.id === auditSectionId).blocks.find(b => b.id === layers[0]);
+    for (let index = 0; index < 7; index++) branch = branch.children[0];
+    branch.children = [{ id: crypto.randomUUID(), type: 'accordion', text: 'Too deep', children: [{ id: crypto.randomUUID(), type: 'text', text: 'Invalid ninth level' }] }];
+    assert.equal((await api(admin, '/api/config/researchContent', 'PUT', tooDeep)).status, 400);
+    await visitor.setViewport({ width: 390, height: 844 }); await visitor.screenshot({ path: path.join(output, 'research-all-components-mobile.png'), fullPage: true });
+    assert.equal(await visitor.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true);
+    await visitor.setViewport({ width: 1440, height: 1000 });
+    await visitor.screenshot({ path: path.join(output, 'research-all-components-desktop.png'), fullPage: true });
+    console.log('PASS: all eight component types, heading sizes, multiline text, bullet editing/hiding/reordering/removal, working links, button styles, linked images, exact spacer input, divider, failed uploads, nested moves/cycles/depth, all-type duplication/removal/visibility and phone preview');
 
     const readerContext = await browser.createBrowserContext(), reader = await readerContext.newPage(); await login(reader, 'research-viewer');
     assert.equal((await api(reader, '/api/config/researchContent', 'PUT', await read())).status, 403);

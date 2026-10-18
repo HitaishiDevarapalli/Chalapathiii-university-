@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const researchBlockTypes = ["heading", "text", "bullets", "button", "image", "accordion", "divider", "spacer"] as const;
+export const RESEARCH_MAX_BLOCK_DEPTH = 8;
 export type ResearchBlockType = typeof researchBlockTypes[number];
 export interface ResearchBullet {
   id: string; text: string; description?: string; badge?: string; hidden?: boolean;
@@ -49,8 +50,10 @@ export const researchBlockSchema: z.ZodType<ResearchBlock> = z.lazy(() => z.obje
 }).superRefine((block, context) => {
   if (["heading", "text", "button", "accordion"].includes(block.type) && !block.text?.trim()) context.addIssue({ code: "custom", path: ["text"], message: "Enter the component text." });
   if (block.type === "bullets" && !block.bullets?.length) context.addIssue({ code: "custom", path: ["bullets"], message: "Add at least one bullet point." });
-  if (block.type === "button" && !block.href) context.addIssue({ code: "custom", path: ["href"], message: "Connect the button to a link or PDF." });
+  if (block.type === "button" && (!block.href || block.targetKind === "none")) context.addIssue({ code: "custom", path: ["href"], message: "Connect the button to a link or PDF." });
   if (block.type === "image" && !block.imageUrl) context.addIssue({ code: "custom", path: ["imageUrl"], message: "Upload an image or choose one from Media Storage." });
+  if (block.type === "image" && block.targetKind && block.targetKind !== "none" && !block.href) context.addIssue({ code: "custom", path: ["href"], message: "Add the image link or upload a PDF, or choose No link." });
+  if (block.type !== "accordion" && block.children?.length) context.addIssue({ code: "custom", path: ["children"], message: "Only expandable groups can contain other components." });
   if (block.width === "custom" && (block.imageWidth === undefined || (block.imageWidthUnit !== "px" && block.imageWidth > 100) || (block.imageWidthUnit === "px" && block.imageWidth < 40))) context.addIssue({ code: "custom", path: ["imageWidth"], message: "Image width must be 10–100% or 40–2400 pixels." });
   if (block.imageHeightMode === "fixed" && block.imageHeight === undefined) context.addIssue({ code: "custom", path: ["imageHeight"], message: "Enter the custom image height." });
 }));
@@ -73,7 +76,8 @@ export const researchContentSchema = z.object({
     sectionIds.add(section.id); titles.add(title);
     const ids = new Set<string>();
     const visit = (blocks: ResearchBlock[], depth: number) => {
-      if (depth > 8) { context.addIssue({ code: "custom", message: "Use no more than eight nested groups." }); return; }
+      if (!blocks.length) return;
+      if (depth > RESEARCH_MAX_BLOCK_DEPTH) { context.addIssue({ code: "custom", message: "Use no more than eight nested groups." }); return; }
       for (const block of blocks) {
         if (ids.has(block.id)) context.addIssue({ code: "custom", message: "Duplicate component ID." });
         ids.add(block.id);
