@@ -8,6 +8,7 @@
 .research-admin button { display: inline-flex; justify-content: center; align-items: center; gap: 7px; border: 1px solid #072a6c; border-radius: 7px; padding: 9px 13px; font-size: 12px; font-weight: 700; background: #072a6c; color: white; cursor: pointer; }
 .research-admin button:hover { filter: brightness(.94); }
 .research-admin button.secondary { background: white; color: #244466; border-color: #d9e1ed; }
+.research-admin button.research-admin-danger { color: #a53131; border-color: #e7c4c4; }
 .research-admin button:disabled { opacity: .5; cursor: default; }
 .research-admin a { font-size: 12px; font-weight: 700; text-underline-offset: 4px; }
 .research-admin a:hover { text-decoration: underline; }

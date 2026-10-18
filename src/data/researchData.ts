@@ -56,7 +56,7 @@ export function normalizeResearchData(value: Partial<ResearchCMSData> | null): R
   const migrated = value.schemaVersion !== 2;
   return { ...DEFAULT_RESEARCH_DATA, ...value, schemaVersion: 2,
     isUnderConstruction: migrated ? false : !!value.isUnderConstruction,
-    sections: Array.isArray(value.sections) && value.sections.length ? value.sections : structuredClone(RESEARCH_SECTIONS),
+    sections: Array.isArray(value.sections) ? value.sections : structuredClone(RESEARCH_SECTIONS),
     items: Array.isArray(value.items) && (!migrated || value.items.length) ? value.items : structuredClone(DEFAULT_RESEARCH_DATA.items),
   };
 }

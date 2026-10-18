@@ -35,8 +35,8 @@ export const ResearchView: React.FC<ResearchViewProps> = ({ path }) => {
       <p className="research-eyebrow">CHALAPATHI UNIVERSITY</p>
       <h1>{data.pageTitle}</h1><p className="research-subtitle">{data.pageSubtitle}</p>
     </div></header>
-    <div className="research-layout">
-      <aside className="research-sidebar">
+    <div className={`research-layout${sections.length ? "" : " research-layout--empty"}`}>
+      {sections.length > 0 && <aside className="research-sidebar">
         <div className="research-nav-heading">Explore Research</div>
         <nav aria-label="Research sections">
           {sections.map(section => <button key={section.id} type="button" aria-current={current?.id === section.id ? "page" : undefined}
@@ -44,7 +44,7 @@ export const ResearchView: React.FC<ResearchViewProps> = ({ path }) => {
             <span>{section.title}</span><span className="research-nav-chevron" aria-hidden="true">›</span>
           </button>)}
         </nav>
-      </aside>
+      </aside>}
       <section className="research-content" aria-labelledby="research-section-title" aria-busy={loading}>
         <div className="research-section-heading"><div><p className="research-eyebrow">RESEARCH & DISCOVERY</p><h2 id="research-section-title">{current?.title || "Research"}</h2></div><span className="research-heading-rule" /></div>
         {loading ? <p role="status">Loading research content…</p> : error ? <p role="alert" className="research-status">{error}</p> : <>
@@ -60,7 +60,7 @@ export const ResearchView: React.FC<ResearchViewProps> = ({ path }) => {
               </details>
             </div> : <DocumentRow key={item.id} item={item} />)}
           </div>
-          {items.filter(item => !item.parentId).length === 0 && <div className="research-empty"><span className="research-empty-rule" /><h3>{current?.title || "Research information"}</h3><p>Information and documents for this section will be published here.</p></div>}
+          {items.filter(item => !item.parentId).length === 0 && <div className="research-empty"><span className="research-empty-rule" /><h3>{current?.title || "Research information"}</h3><p>{current ? "Information and documents for this section will be published here." : "No research sections are currently published."}</p></div>}
           {items.some(item => !item.link && item.type !== "accordion") && <p className="research-document-note">Documents become available as they are published by the university.</p>}
         </>}
       </section>

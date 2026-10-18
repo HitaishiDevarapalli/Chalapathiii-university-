@@ -6,6 +6,8 @@ The page uses the university's existing navy (`#072A6C`) and gold (`#D4AF37`). T
 
 Select a sidebar section in the editor to change its title, introduction, visibility or order. Use **Publish changes** to save page settings and ordering. Add or edit a research item to publish text, a document link, an optional badge, or an expandable document group. Documents can be assigned to a group in the same section. Use **Choose document from Media Storage** to select an uploaded file, or enter a website path or HTTP(S) URL. Item save, hide/show and delete operations publish immediately; deleting a group also deletes its child entries after confirmation.
 
+Use **Add sidebar option** to create a named section with an optional introduction and visibility setting. **Create & publish option** saves it to the server and selects it so you can add content. Select an existing section and use **Delete sidebar option** to remove it after confirmation. Deleting an option removes its research entries and groups; the uploaded files themselves stay in Media Storage. Creation and deletion publish immediately. You can delete every option and add new ones later; deleted defaults do not return after a reload.
+
 The reference supplies document titles, but no PDFs or destination URLs. Those entries display as text until their real documents are attached through admin. Other sidebar sections have honest empty states until university content is added.
 
 Published data is saved to PostgreSQL through the existing authenticated `PUT /api/config/researchContent` endpoint. Public visitors read the same config without browser-local drafts. Open public pages refresh on focus and every 15 seconds while visible. Failed saves retain the editor's changes and show an error. The existing session, CSRF and research edit/publish permission checks protect publication. No database migration or new server route is required.
@@ -15,7 +17,7 @@ Legacy browser-local items load into admin when no research config has been publ
 Verification from the project root:
 
 ```powershell
-npm run build -- --outDir work/research-build
+npm run build
 cd server
 npm run build
 node tests/research.cjs

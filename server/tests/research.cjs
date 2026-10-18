@@ -20,8 +20,8 @@ const { PGLiteSocketServer } = require('@electric-sql/pglite-socket');
   const prisma = require('../dist/prisma').default;
   const app = require('../dist/index').default;
   const express = require('express');
-  app.use(express.static(path.resolve('../work/research-build')));
-  app.get('*', (_req, res) => res.sendFile(path.resolve('../work/research-build/index.html')));
+  app.use(express.static(path.resolve('../dist')));
+  app.get('*', (_req, res) => res.sendFile(path.resolve('../dist/index.html')));
   const server = app.listen(0, '127.0.0.1'); await new Promise(resolve => server.once('listening', resolve));
   const base = `http://127.0.0.1:${server.address().port}`;
   let browser;
@@ -95,6 +95,85 @@ const { PGLiteSocketServer } = require('@electric-sql/pglite-socket');
     assert.equal(await visitor.$eval('.research-documents', el => el.textContent.includes('Research server sync verification')), false);
     console.log('PASS: add, media picker and hide persist for a separate visitor browser');
 
+    const readPublished = async () => (await fetch(base + '/api/config/researchContent?raw=true')).json();
+    const waitSaved = () => admin.waitForFunction(() => !document.querySelector('.research-admin-fields').disabled && !document.querySelector('.research-admin-error'));
+    const replaceInput = async (selector, value) => {
+      await admin.focus(selector); await admin.keyboard.down('Control'); await admin.keyboard.press('KeyA'); await admin.keyboard.up('Control');
+      await admin.keyboard.press('Backspace'); await admin.type(selector, value);
+    };
+    const createSection = async title => {
+      await click(admin, 'Add sidebar option', '.research-admin');
+      await admin.waitForSelector('.research-section-dialog[open]');
+      await admin.type('.research-section-dialog input', title);
+      await admin.type('.research-section-dialog textarea', 'Explore our research centres and their resources.');
+      await click(admin, 'Create & publish option', '.research-section-dialog');
+      await admin.waitForFunction(() => !document.querySelector('.research-section-dialog'));
+      await waitSaved();
+    };
+    await click(admin, 'Add sidebar option', '.research-admin');
+    await admin.waitForSelector('.research-section-dialog[open]');
+    await admin.type('.research-section-dialog input', '  research UPDATES  ');
+    await click(admin, 'Create & publish option', '.research-section-dialog');
+    await admin.waitForFunction(() => document.querySelector('.research-section-dialog [role=alert]')?.textContent.includes('unique'));
+    assert.equal((await readPublished()).sections.length, 12, 'duplicate option names cannot publish');
+    await click(admin, 'Cancel', '.research-section-dialog');
+    await createSection('Research Centres');
+    let config = await readPublished();
+    const custom = config.sections.find(s => s.title === 'Research Centres');
+    assert(custom); assert.equal(config.sections.length, 13);
+    assert.equal(await admin.$eval('.research-admin-tabs [aria-pressed=true]', el => el.textContent), custom.title);
+    await visitor.goto(base + '/research?section=' + custom.id);
+    await visitor.waitForFunction(() => document.querySelector('#research-section-title')?.textContent === 'Research Centres');
+    assert.equal(await visitor.$eval('.research-section-description', el => el.textContent), custom.description);
+    await admin.reload(); await click(admin, 'Research & Innovation', '.admin-sidebar'); await waitSaved();
+    await click(admin, 'Research Centres', '.research-admin-tabs');
+    await click(admin, 'Add item', '.research-admin'); await admin.waitForSelector('.research-admin-dialog[open]');
+    await admin.type('.research-admin-dialog input', 'Research Centre resource');
+    await click(admin, 'Save & publish item', '.research-admin-dialog');
+    await admin.waitForFunction(() => !document.querySelector('.research-admin-dialog')); await waitSaved();
+    assert((await readPublished()).items.some(item => item.title === 'Research Centre resource' && item.sectionId === custom.id));
+    await replaceInput('.research-admin-tabs + .research-admin-grid input', 'Research Centres & Resources');
+    await click(admin, 'Move section up', '.research-admin');
+    await click(admin, 'Publish changes', '.research-admin'); await waitSaved();
+    config = await readPublished();
+    assert.equal(config.sections[11].id, custom.id); assert.equal(config.sections[11].title, 'Research Centres & Resources');
+    await admin.click('.research-admin-section-actions input[type=checkbox]');
+    await click(admin, 'Publish changes', '.research-admin'); await waitSaved();
+    await visitor.reload(); await visitor.waitForFunction(() => document.querySelector('.research-content')?.getAttribute('aria-busy') === 'false');
+    assert.equal(await visitor.$$eval('.research-sidebar nav button', (els, id) => els.some(el => el.textContent.includes('Research Centres & Resources')), custom.id), false);
+    await admin.click('.research-admin-section-actions input[type=checkbox]');
+    await click(admin, 'Publish changes', '.research-admin'); await waitSaved();
+    await visitor.reload(); await visitor.waitForFunction(() => document.querySelector('#research-section-title')?.textContent === 'Research Centres & Resources');
+    assert(await visitor.$eval('.research-documents', el => el.textContent.includes('Research Centre resource')));
+    console.log('PASS: custom sidebar options add, reload, hold content, rename, reorder and hide/show for a separate visitor');
+
+    await click(admin, 'Research Updates', '.research-admin-tabs');
+    admin.once('dialog', dialog => { assert(dialog.message().includes('15 content entries')); void dialog.dismiss(); });
+    await click(admin, 'Delete sidebar option', '.research-admin');
+    assert.equal((await readPublished()).sections.length, 13, 'cancel keeps the option');
+
+    // A failed server save must leave the selected section and its entries intact.
+    await admin.setRequestInterception(true);
+    const rejectPublish = request => request.url().includes('/api/config/researchContent') && request.method() === 'PUT'
+      ? request.respond({ status: 500, contentType: 'application/json', body: JSON.stringify({ error: 'Fixture publication failure' }) }) : request.continue();
+    admin.on('request', rejectPublish);
+    admin.once('dialog', dialog => void dialog.accept());
+    await click(admin, 'Delete sidebar option', '.research-admin');
+    await admin.waitForFunction(() => document.querySelector('.research-admin-error')?.textContent.includes('Fixture publication failure'));
+    assert.equal((await readPublished()).sections.length, 13);
+    assert.equal(await admin.$eval('.research-admin-tabs [aria-pressed=true]', el => el.textContent), 'Research Updates');
+    await admin.setRequestInterception(false); admin.off('request', rejectPublish);
+    admin.once('dialog', dialog => void dialog.accept());
+    await click(admin, 'Delete sidebar option', '.research-admin'); await waitSaved();
+    config = await readPublished();
+    assert.equal(config.sections.some(s => s.id === 'updates'), false);
+    assert.equal(config.items.some(item => item.sectionId === 'updates' || item.parentId === 'pre-phd-syllabus'), false);
+    assert(config.items.some(item => item.title === 'Research Centre resource'), 'other options keep their entries');
+    await visitor.goto(base + '/research?section=updates');
+    await visitor.waitForFunction(() => document.querySelector('.research-content')?.getAttribute('aria-busy') === 'false');
+    assert.equal(await visitor.$eval('#research-section-title', el => el.textContent), 'Overview', 'deleted deep links select the next visible option');
+    console.log('PASS: delete cancellation, failed publication, associated-entry removal and deleted deep links');
+
     await visitor.setViewport({ width: 390, height: 844 });
     await visitor.screenshot({ path: path.join(output, 'research-mobile.png'), fullPage: true });
     assert.equal(await visitor.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true);
@@ -103,6 +182,25 @@ const { PGLiteSocketServer } = require('@electric-sql/pglite-socket');
     assert.equal(await admin.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true);
     await admin.setViewport({ width: 1440, height: 1000 });
     await admin.screenshot({ path: path.join(output, 'research-admin-desktop.png'), fullPage: true });
+
+    // Deleting the final option must persist an empty menu instead of restoring defaults.
+    let remaining = (await readPublished()).sections.length;
+    while (remaining > 0) {
+      admin.once('dialog', dialog => void dialog.accept());
+      await click(admin, 'Delete sidebar option', '.research-admin'); await waitSaved();
+      remaining -= 1;
+      assert.equal((await readPublished()).sections.length, remaining);
+    }
+    await admin.reload(); await click(admin, 'Research & Innovation', '.admin-sidebar'); await waitSaved();
+    assert.equal(await admin.$$eval('.research-admin-tabs button', els => els.length), 0);
+    await visitor.reload(); await visitor.waitForFunction(() => document.querySelector('.research-content')?.getAttribute('aria-busy') === 'false');
+    assert.equal(await visitor.$('.research-sidebar'), null);
+    assert.match(await visitor.$eval('.research-empty', el => el.textContent), /No research sections are currently published/);
+    assert.deepEqual((await readPublished()).items, []);
+    await createSection('New Research Menu');
+    assert.equal((await readPublished()).sections.length, 1);
+    await visitor.reload(); await visitor.waitForFunction(() => document.querySelector('#research-section-title')?.textContent === 'New Research Menu');
+    console.log('PASS: deleting every option persists across reloads; admin can create a fresh menu afterward');
     assert.deepEqual(errors, []);
     console.log('PASS: desktop and mobile layouts fit; no browser runtime errors');
     console.log('Research verification completed. Screenshots: ' + output);
