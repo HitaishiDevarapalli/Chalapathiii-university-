@@ -44,10 +44,6 @@ export const ResearchView: React.FC<ResearchViewProps> = ({ path }) => {
             <span>{section.title}</span><span className="research-nav-chevron" aria-hidden="true">›</span>
           </button>)}
         </nav>
-        {(data.contactEmail || data.contactPhone) && <div className="research-help"><span>Research enquiries</span>
-          {data.contactEmail && <a href={`mailto:${data.contactEmail}`}>{data.contactEmail}</a>}
-          {data.contactPhone && <a href={`tel:${data.contactPhone.replace(/[^+\d]/g, "")}`}>{data.contactPhone}</a>}
-        </div>}
       </aside>
       <section className="research-content" aria-labelledby="research-section-title" aria-busy={loading}>
         <div className="research-section-heading"><div><p className="research-eyebrow">RESEARCH & DISCOVERY</p><h2 id="research-section-title">{current?.title || "Research"}</h2></div><span className="research-heading-rule" /></div>
