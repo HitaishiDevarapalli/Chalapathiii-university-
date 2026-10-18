@@ -144,7 +144,14 @@ export function handler(fn: (req: any, res: any) => Promise<any>) {
   return (req: any, res: any, next: any) => Promise.resolve(fn(req, res)).catch(error => {
     if (error?.status) return res.status(error.status).json({ error: error.message });
     if (error?.name === "ZodError") return res.status(400).json({ error: "Invalid request fields", fields: error.issues.map((i: any) => ({ field: i.path.join("."), message: i.message })) });
-    if (error?.code === "P2002") return res.status(409).json({ error: "That username, email or role is already registered" });
+    if (error?.code === "P2002") {
+      const field = JSON.stringify(error.meta?.target || "").toLowerCase();
+      const message = field.includes("username") ? "That username is already registered. Choose a unique username."
+        : field.includes("email") ? "That email is already registered."
+        : field.includes("name") ? "That role name already exists. Assign the existing role to any number of users."
+        : "That username, email or role name is already registered.";
+      return res.status(409).json({ error: message });
+    }
     return res.status(503).json({ error: "Security service unavailable. Please retry." });
   });
 }

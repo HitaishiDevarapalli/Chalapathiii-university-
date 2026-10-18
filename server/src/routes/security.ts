@@ -34,6 +34,16 @@ async function assignedRole(req: any, roleId?: string | null) {
   if (!role) fail("Role not found");
   grantable(req, role.permissions.map(p => p.permissionKey)); return role;
 }
+async function uniqueAccountIdentity(input: { username?: string; email?: string }, exceptId?: number) {
+  const otherUser = exceptId === undefined ? {} : { id: { not: exceptId } };
+  const [username, email, google] = await Promise.all([
+    input.username ? prisma.adminUser.findFirst({ where: { ...otherUser, username: { equals: input.username, mode: "insensitive" } }, select: { id: true } }) : null,
+    input.email ? prisma.adminUser.findFirst({ where: { ...otherUser, email: { equals: input.email, mode: "insensitive" } }, select: { id: true } }) : null,
+    input.email ? prisma.authorizedGoogleAccount.findFirst({ where: { email: { equals: input.email, mode: "insensitive" }, ...(exceptId === undefined ? {} : { userId: { not: exceptId } }) }, select: { id: true } }) : null,
+  ]);
+  if (username) fail("That username is already registered. Choose a unique username.", 409);
+  if (email || google) fail("That email is already registered.", 409);
+}
 function pager(req: any) { return { page: Math.max(1, Math.min(100000, Number(req.query.page) || 1)), size: Math.max(1, Math.min(100, Number(req.query.size) || 20)) }; }
 function searchText(req: any) { return String(req.query.search || "").trim().slice(0, 120); }
 async function privilegedLock(tx: any) { await tx.$executeRawUnsafe("SELECT pg_advisory_xact_lock(724150)"); }
@@ -82,6 +92,7 @@ router.post("/users", requirePermission("users.create"), handler(async (req, res
   fresh(req); const input = userInput.parse(req.body); const settings = await policy();
   if (input.superAdmin && req.adminUser.role !== "superadmin") fail("Only Super Administrators may provision Super Administrators.", 403);
   if (req.adminUser.role !== "superadmin" && (input.requireGoogle === false || input.requireTotp === false)) fail("Only Super Administrators may change authentication requirements.", 403);
+  await uniqueAccountIdentity(input);
   await assignedRole(req, input.roleId); grantable(req, (input.permissions || []).filter(p => p.allowed).map(p => p.key));
   const temporaryPassword = token() + "aA1!";
   const user = await prisma.$transaction(async tx => {
@@ -105,6 +116,7 @@ router.patch("/users/:id", requirePermission("users.edit"), handler(async (req, 
   const settings = await policy();
   if (target.credentialMode === "legacy" && "transitionCompletedAt" in settings && settings.transitionCompletedAt && input.status === "Active") fail("Reset and securely reprovision this obsolete account before reactivation.");
   if (input.email !== undefined && input.email !== target.email && !permitted(req.adminUser, "google.manage")) fail("Google account management permission is required to change the account's email.", 403);
+  await uniqueAccountIdentity(input, target.id);
   await assignedRole(req, input.roleId); grantable(req, (input.permissions || []).filter(p => p.allowed).map(p => p.key));
   const data: any = { ...input, securityVersion: { increment: 1 } }; delete data.superAdmin; delete data.permissions;
   if (input.superAdmin !== undefined) data.role = input.superAdmin ? "superadmin" : "admin";
@@ -133,6 +145,25 @@ router.post("/users/:id/reset-password", requirePermission("users.manage"), hand
     await audit(req, "password_reset", true, "Temporary password issued; first-login change required; sessions revoked", undefined, String(target.id), tx);
   });
   res.json({ temporaryPassword });
+}));
+router.delete("/users/:id", requirePermission("users.delete"), handler(async (req, res) => {
+  fresh(req); const target = await targetUser(req, Number(req.params.id));
+  if (target.id === req.adminUser.id) fail("You cannot delete your own signed-in account. Ask another authorized administrator.", 403);
+  await prisma.$transaction(async tx => {
+    await privilegedLock(tx);
+    const current = await tx.adminUser.findUnique({ where: { id: target.id } });
+    if (!current) fail("Account not found", 404);
+    if (current.role === "superadmin" && req.adminUser.role !== "superadmin") fail("Only a Super Administrator can manage this account.", 403);
+    await preserveSuper(tx, current, { status: "Disabled" });
+    await revokeSessions(current.id, tx);
+    await tx.adminOAuthState.deleteMany({ where: { userId: current.id } });
+    await tx.adminRecoveryCode.deleteMany({ where: { userId: current.id } });
+    await tx.userAuthenticator.deleteMany({ where: { userId: current.id } });
+    await tx.authorizedGoogleAccount.deleteMany({ where: { userId: current.id } });
+    await tx.adminUser.delete({ where: { id: current.id } });
+    await audit(req, "account_deleted", true, "Staff account and Google authorizations deleted; credentials removed and sessions revoked; audit history retained", undefined, String(current.id), tx);
+  });
+  res.json({ success: true });
 }));
 router.post("/users/:id/revoke-sessions", requirePermission("sessions.manage"), handler(async (req, res) => {
   fresh(req); const target = await targetUser(req, Number(req.params.id));
@@ -216,6 +247,26 @@ router.patch("/google/:id", requirePermission("google.manage"), handler(async (r
     await tx.authorizedGoogleAccount.update({ where: { id: account.id }, data: { ...input, modifiedBy: req.adminUser.id } });
     await tx.adminUser.update({ where: { id: target.id }, data: { securityVersion: { increment: 1 } } }); await revokeSessions(target.id, tx);
     await audit(req, input.status === "Revoked" ? "google_account_removed" : "google_account_changed", true, "Google account authorization changed; historical records preserved", undefined, account.id, tx);
+  });
+  res.json({ success: true });
+}));
+router.delete("/google/:id", requirePermission("google.delete"), handler(async (req, res) => {
+  fresh(req);
+  await prisma.$transaction(async tx => {
+    await privilegedLock(tx);
+    const account = await tx.authorizedGoogleAccount.findUnique({ where: { id: req.params.id }, include: { user: true } });
+    if (!account) fail("Google account not found", 404);
+    if (account.userId === req.adminUser.id) fail("Ask another authorized administrator to remove your own Google access.", 403);
+    if (account.user.role === "superadmin" && req.adminUser.role !== "superadmin") fail("Only a Super Administrator can manage this account.", 403);
+    if (account.user.role === "superadmin" && account.user.status === "Active" && account.user.requireGoogle) {
+      const otherIdentity = await tx.authorizedGoogleAccount.count({ where: { userId: account.userId, id: { not: account.id }, status: "Active", verifiedAt: { not: null } } });
+      if (!otherIdentity && await tx.adminUser.count({ where: { role: "superadmin", status: "Active", id: { not: account.userId } } }) === 0) fail("Keep a verified Google identity for the last active Super Administrator.");
+    }
+    await tx.authorizedGoogleAccount.delete({ where: { id: account.id } });
+    await tx.adminOAuthState.deleteMany({ where: { userId: account.userId } });
+    await tx.adminUser.update({ where: { id: account.userId }, data: { securityVersion: { increment: 1 } } });
+    await revokeSessions(account.userId, tx);
+    await audit(req, "google_account_deleted", true, "Google sign-in authorization deleted; staff account retained and sessions revoked", undefined, account.id, tx);
   });
   res.json({ success: true });
 }));

@@ -194,6 +194,76 @@ module.exports = async function ({ app, base, adminPassword, google }) {
     await googleLogin(oauthPage, 'browser-google@gmail.com');
     await text(oauthPage, 'Set up Google Authenticator');
 
+    const clickRow = async (identity, label) => {
+      const button = await admin.waitForFunction(({ identity, label }) => {
+        const row = [...document.querySelectorAll('.security-table-wrap tbody tr')].find(row => row.querySelector('td strong')?.textContent === identity);
+        return row && [...row.querySelectorAll('button')].find(el => el.textContent.trim() === label && !el.disabled);
+      }, {}, { identity, label });
+      await button.asElement().click(); await button.dispose();
+    };
+    const searchFor = async value => {
+      const field = await admin.$('.security-search input'); await field.focus(); await admin.keyboard.down('Control'); await admin.keyboard.press('KeyA'); await admin.keyboard.up('Control'); await admin.keyboard.press('Backspace'); await field.type(value);
+      await admin.waitForFunction(() => !document.querySelector('.security-loading'));
+    };
+    const waitTable = () => admin.waitForFunction(() => !document.querySelector('.security-loading') && document.querySelector('.security-table-wrap'));
+    const saveStaff = async (name, roleId) => {
+      await click(admin, 'Create user'); await admin.type('.security-modal input[pattern]', name); await admin.type('.security-modal input[type=email]', name + '@gmail.com'); await admin.select('.security-modal select', roleId);
+      await click(admin, 'Save account'); await admin.waitForSelector('.security-temporary-password'); await click(admin, 'I have securely saved it'); await waitTable();
+    };
+    await click(admin, 'Roles & Permissions'); await click(admin, 'Create custom role');
+    await admin.type('.security-modal input', 'Shared Research Team');
+    await click(admin, 'Select all permissions');
+    assert.equal(await admin.$$eval('.security-permission-table input:checked', els => els.length), core.PERMISSIONS.length);
+    await click(admin, 'Clear permissions'); assert.equal(await admin.$$eval('.security-permission-table input:checked', els => els.length), 0);
+    await admin.click('[aria-label="Allow all Research permissions"]');
+    assert.equal(await admin.$$eval('.security-permission-table input:checked', els => els.length), 7);
+    await click(admin, 'Save role'); await admin.waitForFunction(() => !document.querySelector('.security-modal'));
+    const roleList = await api(admin, 'security/roles'); const sharedRole = roleList.body.items.find(role => role.name === 'Shared Research Team'); assert(sharedRole);
+    await click(admin, 'User Management'); await saveStaff('shared-role-first', sharedRole.id); await saveStaff('shared-role-second', sharedRole.id);
+    assert.equal((await api(admin, 'security/roles')).body.items.find(role => role.id === sharedRole.id)._count.users, 2);
+    await clickRow('shared-role-second', 'Edit');
+    await click(admin, 'Allow all available');
+    assert.equal(await admin.$$eval('.security-permission-table select', els => els.filter(el => el.value === 'allow').length), core.PERMISSIONS.length);
+    await click(admin, 'Deny all'); assert.equal(await admin.$$eval('.security-permission-table select', els => els.filter(el => el.value === 'deny').length), core.PERMISSIONS.length);
+    await click(admin, 'Inherit all from role');
+    assert.equal(await admin.$$eval('.security-permission-table select', els => els.filter(el => el.value === 'inherit').length), core.PERMISSIONS.length);
+    await click(admin, 'Save account'); await admin.waitForFunction(() => !document.querySelector('.security-modal')); await waitTable();
+    await click(admin, 'Create user'); await admin.type('.security-modal input[pattern]', 'shared-role-second'); await admin.type('.security-modal input[type=email]', 'unique-duplicate@gmail.com'); await click(admin, 'Save account');
+    await admin.waitForFunction(() => document.querySelector('.security-modal [role=alert]')?.textContent.includes('unique username'));
+    await click(admin, 'Cancel');
+    await clickRow('shared-role-first', 'Delete user'); await text(admin, 'Delete user: shared-role-first'); await click(admin, 'Cancel');
+    assert.equal((await api(admin, 'security/users?search=shared-role-first')).body.total, 1);
+    await clickRow('shared-role-first', 'Delete user'); await click(admin, 'Confirm change'); await admin.waitForFunction(() => !document.querySelector('.security-modal')); await waitTable();
+    assert.equal((await api(admin, 'security/users?search=shared-role-first')).body.total, 0);
+    assert.equal((await api(admin, 'security/roles')).body.items.find(role => role.id === sharedRole.id)._count.users, 1);
+    await searchFor('browser-staff'); await admin.waitForFunction(() => document.querySelector('.security-pagination')?.textContent.includes('1 records'));
+    await clickRow('browser-staff', 'Delete user'); await click(admin, 'Confirm change'); await admin.waitForFunction(() => !document.querySelector('.security-modal')); await waitTable();
+    assert.equal((await api(staff, 'auth/me')).status, 401, 'a logged-in browser loses access after its account is deleted');
+    await click(admin, 'Administrative Google Accounts'); await searchFor('browser-google@gmail.com');
+    await admin.waitForFunction(() => document.querySelector('.security-pagination')?.textContent.includes('1 records'));
+    await clickRow('browser-google@gmail.com', 'Delete Gmail access'); await click(admin, 'Cancel');
+    assert.equal((await api(admin, 'security/google?search=browser-google@gmail.com')).body.total, 1);
+    await clickRow('browser-google@gmail.com', 'Delete Gmail access'); await click(admin, 'Confirm change'); await admin.waitForFunction(() => !document.querySelector('.security-modal')); await waitTable();
+    assert.equal((await api(admin, 'security/google?search=browser-google@gmail.com')).body.total, 0);
+    assert.equal((await api(admin, 'security/users?search=browser-google')).body.total, 1, 'deleting Gmail keeps the staff account');
+    assert.equal((await api(oauthPage, 'auth/totp/enroll', 'POST', {})).status, 401, 'removing Gmail invalidates pending enrollment sessions too');
+
+    // The last row on the last page may be deleted without leaving the user on an empty page.
+    for (let index = 0; index < 21; index++) {
+      const created = await api(admin, 'security/users', 'POST', { username: 'page-delete-' + index, email: 'page-delete-' + index + '@gmail.com', roleId: sharedRole.id, requireGoogle: false, requireTotp: false }); assert.equal(created.status, 201);
+    }
+    await click(admin, 'User Management'); await searchFor('page-delete-');
+    await admin.waitForFunction(() => document.querySelector('.security-pagination')?.textContent.includes('21 records'));
+    await click(admin, 'Next'); await admin.waitForFunction(() => document.querySelector('.security-pagination')?.textContent.includes('Page 2 of 2') && document.querySelectorAll('.security-table-wrap tbody tr').length === 1);
+    const lastUser = await admin.$eval('.security-table-wrap tbody tr td strong', el => el.textContent);
+    await clickRow(lastUser, 'Delete user'); await click(admin, 'Confirm change');
+    await admin.waitForFunction(() => document.querySelector('.security-pagination')?.textContent.includes('Page 1 of 1') && document.querySelectorAll('.security-table-wrap tbody tr').length === 20);
+    await searchFor('existing-admin'); await admin.waitForFunction(() => document.querySelector('.security-pagination')?.textContent.includes('1 records'));
+    assert.equal(await admin.$eval('.security-table-wrap button.security-delete-button', el => el.disabled), true, 'your current account is protected in the UI');
+    await searchFor('shared-role-'); await admin.waitForFunction(() => document.querySelector('.security-pagination')?.textContent.includes('1 records'));
+    await admin.screenshot({ path: path.join(artifacts, 'staff-management-desktop.png'), fullPage: true });
+    console.log('PASS: browser role reuse, bulk/module/individual permission controls, duplicate usernames, user/Gmail deletion with cancellation, signed-in and pending session revocation, shared-role retention and pagination after deletion');
+
     await click(admin, 'Login Activity & Audit Logs');
     await text(admin, 'Date & time · IST');
     await text(admin, 'IST');

@@ -33,7 +33,6 @@ model AdminUser {
   authenticator      UserAuthenticator?
   recoveryCodes      AdminRecoveryCode[]
   sessions           AdminAuthSession[]
-  events             AdminSecurityEvent[]
 
   @@map("admin_users")
 }
@@ -143,6 +142,7 @@ model AdminAuthSession {
 
 model AdminSecurityEvent {
   id          String     @id @default(uuid())
+  // Historical identity snapshot; retained unchanged after a staff account is deleted.
   userId      Int?
   username    String?
   email       String?
@@ -156,7 +156,6 @@ model AdminSecurityEvent {
   target      String?
   description String
   sessionId   String?
-  user        AdminUser? @relation(fields: [userId], references: [id])
 
   @@index([createdAt, id])
   @@index([userId, createdAt])
