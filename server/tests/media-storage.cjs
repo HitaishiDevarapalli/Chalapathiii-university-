@@ -57,6 +57,80 @@ module.exports = async ({ base, admin, viewer, visitor, prisma, directory, db })
   assert.equal((await send('/folders/' + child.body.id, 'DELETE')).status, 200);
   assert.equal((await send('?folder=unfiled')).body.items.some(row => row.id === duplicate.body.id), true);
   assert.equal((await admin.get('/media')).body.some(row => row.id === asset.body.id), true, 'builder and storage share one catalog');
+  const removable = await send('', 'POST', form(campus.body.id, png, 'image/png', 'delete-test.png'));
+  const removeId = removable.body.id, removePath = path.join(directory, removable.body.filename);
+  assert.equal((await send('/' + removeId, 'DELETE', undefined, visitor)).status, 401);
+  assert.equal((await send('/' + removeId, 'DELETE', undefined, viewer)).status, 403);
+  assert.equal((await send('/' + removeId, 'DELETE', undefined, admin, false)).status, 403);
+  assert(await prisma.builderMedia.findUnique({ where: { id: removeId } }));
+  assert(fs.existsSync(removePath), 'denied deletion preserves disk and database');
+
+  const fsp = require('node:fs/promises');
+  const rename = fsp.rename;
+  try {
+    fsp.rename = async (source, destination) => {
+      if (source === removePath) throw Object.assign(new Error('Fixture storage denied'), { code: 'EACCES' });
+      return rename(source, destination);
+    };
+    assert.equal((await send('/' + removeId, 'DELETE')).status, 500);
+  } finally { fsp.rename = rename; }
+  assert(await prisma.builderMedia.findUnique({ where: { id: removeId } }), 'storage failure rolls back database deletion');
+  assert(fs.existsSync(removePath));
+  assert.equal(await prisma.adminSecurityEvent.count({ where: { event: 'media_deleted', target: removeId } }), 0, 'failed deletion has no success audit');
+
+  // Abort a real database transaction after the callback has staged the file.
+  const transaction = prisma.$transaction.bind(prisma);
+  try {
+    prisma.$transaction = (input, ...options) => typeof input !== 'function' ? transaction(input, ...options) : transaction(async tx => {
+      await input(tx);
+      assert.equal(fs.existsSync(removePath), false, 'failure is injected after the file moves');
+      throw new Error('Fixture transaction failed before commit');
+    }, ...options);
+    assert.equal((await send('/' + removeId, 'DELETE')).status, 500);
+  } finally { prisma.$transaction = transaction; }
+  assert(await prisma.builderMedia.findUnique({ where: { id: removeId } }), 'transaction failure restores the database row');
+  assert(fs.existsSync(removePath), 'transaction failure restores the original public file');
+  assert.equal((await fetch(base + removable.body.url)).status, 200);
+  assert.equal(fs.readdirSync(directory).some(name => name.startsWith('.media-delete-')), false, 'failed deletions leave no staged files');
+
+  assert.equal((await send('/' + removeId, 'DELETE')).status, 200);
+  assert.equal(await prisma.builderMedia.findUnique({ where: { id: removeId } }), null, 'permanent delete removes the database row');
+  assert.equal(fs.existsSync(removePath), false, 'permanent delete removes the stored file');
+  assert.equal((await fetch(base + removable.body.url)).status, 404);
+  assert.equal((await send('')).body.items.some(row => row.id === removeId), false);
+  assert.equal((await admin.get('/media')).body.some(row => row.id === removeId), false, 'builder catalog also drops the deleted record');
+  assert.equal(await prisma.adminSecurityEvent.count({ where: { event: 'media_deleted', target: removeId } }), 1);
+  assert.equal((await send('/' + removeId, 'DELETE')).status, 404, 'repeated deletion is explicit');
+
+  const stale = await prisma.builderMedia.create({ data: { filename: 'already-missing.webp', originalName: 'Missing file', mime: 'image/webp', size: 1, uploadedBy: 1 } });
+  assert.equal((await send('/' + stale.id, 'DELETE')).status, 200, 'missing files do not prevent database cleanup');
+  assert.equal(await prisma.builderMedia.findUnique({ where: { id: stale.id } }), null);
+  const invalid = await prisma.builderMedia.create({ data: { filename: '../outside.webp', originalName: 'Invalid path', mime: 'image/webp', size: 1, uploadedBy: 1 } });
+  assert.equal((await send('/' + invalid.id, 'DELETE')).status, 409, 'stored paths cannot escape uploads');
+  assert(await prisma.builderMedia.findUnique({ where: { id: invalid.id } }));
+  await prisma.builderMedia.delete({ where: { id: invalid.id } });
+  const nonFile = await prisma.builderMedia.create({ data: { filename: 'directory.webp', originalName: 'Directory', mime: 'image/webp', size: 1, uploadedBy: 1 } });
+  fs.mkdirSync(path.join(directory, nonFile.filename));
+  assert.equal((await send('/' + nonFile.id, 'DELETE')).status, 409);
+  assert(fs.statSync(path.join(directory, nonFile.filename)).isDirectory());
+  await prisma.builderMedia.delete({ where: { id: nonFile.id } }); fs.rmdirSync(path.join(directory, nonFile.filename));
+
+  const cleanup = await send('', 'POST', form(null, png, 'image/png', 'cleanup-test.png'));
+  const unlink = fsp.unlink;
+  try {
+    fsp.unlink = async file => {
+      if (path.basename(file) === 'asset' && path.basename(path.dirname(file)).startsWith('.media-delete-'))
+        throw Object.assign(new Error('Fixture cleanup denied'), { code: 'EACCES' });
+      return unlink(file);
+    };
+    const response = await send('/' + cleanup.body.id, 'DELETE');
+    assert.equal(response.status, 200); assert.match(response.body.warning, /cleanup failed/);
+    assert.equal(await prisma.builderMedia.findUnique({ where: { id: cleanup.body.id } }), null);
+    assert.equal((await fetch(base + cleanup.body.url)).status, 404);
+    const staged = fs.readdirSync(directory).find(name => name.startsWith('.media-delete-'));
+    assert(staged); assert.equal((await fetch(base + '/uploads/' + staged + '/asset')).status, 404, 'staged bytes are private');
+    await unlink(path.join(directory, staged, 'asset')); fs.rmdirSync(path.join(directory, staged));
+  } finally { fsp.unlink = unlink; }
   for (let i = 0; i < 45; i++) await prisma.builderMedia.create({ data: { filename: `fixture-${i}.webp`, originalName: `pagination-${i}.webp`, mime: 'image/webp', size: 100, uploadedBy: 1 } });
   const first = await send('?search=pagination&page=1'), second = await send('?search=pagination&page=2');
   assert.equal(first.body.items.length, 40); assert.equal(second.body.items.length, 5);
@@ -76,7 +150,7 @@ module.exports = async ({ base, admin, viewer, visitor, prisma, directory, db })
   assert.equal((await send('?folder=unfiled&search=historical-campus')).body.items[0].url, '/uploads/historical-campus.png');
   assert.deepEqual(fs.readFileSync(path.join(directory, 'historical-campus.png')), png, 'indexing preserves original bytes and URLs');
   assert.equal((await send('?folder=' + campus.body.id)).body.items.some(row => row.id === asset.body.id), true, 'catalog persists after a new database connection');
-  console.log('PASS: Media Storage API: nested folders, durable uploads, unique URLs, folder moves/renames, search/type filters, pagination, image validation, CSRF, permissions and idempotent indexing of historical uploads.');
+  console.log('PASS: Media Storage API: folder and file CRUD, permanent database/disk deletion, audit, storage/commit failure recovery, path validation, permissions/CSRF, pagination and historical indexing.');
   if (process.env.MEDIA_BROWSER === '1') {
     const uploadPath = path.join(directory, 'browser-college.png'); fs.writeFileSync(uploadPath, png);
     await require('./media-storage-browser.cjs')({ base, uploadPath });

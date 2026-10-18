@@ -37,6 +37,8 @@ const { PGLiteSocketServer } = require("@electric-sql/pglite-socket");
   const app = require("../dist/index").default;
   const express = require("express");
   app.use(express.static(path.resolve("../dist")));
+  // Production proxies /uploads to the API, without the frontend SPA fallback.
+  app.use("/uploads", (_req, res) => res.sendStatus(404));
   app.get("*", (_req, res) => res.sendFile(path.resolve("../dist/index.html")));
   let server;
   let base;

@@ -78,7 +78,7 @@ app.use(
 
 app.use("/api", adminApiGuard);
 app.use("/uploads", express.static(uploadsDirectory, {
-  maxAge: "30d", immutable: true,
+  maxAge: "30d", immutable: true, dotfiles: "ignore",
   setHeaders: res => { res.setHeader("X-Content-Type-Options", "nosniff"); }
 }));
 

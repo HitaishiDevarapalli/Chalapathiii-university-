@@ -110,6 +110,47 @@ router.patch("/:id", requirePermission("gallery.edit"), run(async (req, res) => 
   await audit(req, "media_updated", true, "Media details or folder updated; public URL preserved", undefined, asset.id);
   return res.json(mediaView(asset));
 }));
+router.delete("/:id", requirePermission("gallery.delete"), run(async (req, res) => {
+  let staged: { original: string; directory: string; file: string } | undefined;
+  try {
+    await prisma.$transaction(async tx => {
+      // Deleting first locks the row: concurrent requests cannot remove the same file.
+      const asset = await tx.builderMedia.delete({ where: { id: req.params.id } });
+      if (asset.filename.startsWith(".") || /[/\\]/.test(asset.filename) || path.basename(asset.filename) !== asset.filename)
+        fail(409, "This file has an invalid storage path. Contact the administrator.");
+      const original = path.join(uploadsDirectory, asset.filename);
+      const stat = await fs.lstat(original).catch((error: NodeJS.ErrnoException) => {
+        if (error.code !== "ENOENT") throw error;
+        return null;
+      });
+      if (stat && !stat.isFile()) fail(409, "The stored asset is not a regular file. Contact the administrator.");
+      await audit(req, "media_deleted", true, "Media record permanently deleted and stored file removed", undefined, asset.id, tx);
+      if (stat) {
+        // Dot directories are not publicly served or imported by the media indexer.
+        const directory = await fs.mkdtemp(path.join(uploadsDirectory, ".media-delete-"));
+        const file = path.join(directory, "asset");
+        try { await fs.rename(original, file); }
+        catch (error) { await fs.rmdir(directory).catch(() => {}); throw error; }
+        staged = { original, directory, file };
+      }
+    });
+  } catch (error) {
+    // Restore the original URL if the database transaction could not commit.
+    if (staged) {
+      await fs.rename(staged.file, staged.original);
+      await fs.rmdir(staged.directory).catch(() => {});
+    }
+    throw error;
+  }
+  if (staged) {
+    try { await fs.unlink(staged.file); await fs.rmdir(staged.directory); }
+    catch (error) {
+      console.error("Media deletion committed; private file cleanup failed", req.params.id, error);
+      return res.json({ success: true, warning: "The database record and public file were removed. Private storage cleanup failed; contact the server administrator." });
+    }
+  }
+  return res.json({ success: true });
+}));
 router.use((error: any, _req: Request, res: Response, _next: NextFunction) => {
   const relationConflict = ["P2003", "P2014"].includes(error.code);
   const status = error.code === "P2002" ? 409 : error.code === "P2025" ? 404 : relationConflict ? 409 : error.code === "LIMIT_FILE_SIZE" ? 413 : error instanceof multer.MulterError ? 400 : error.status || 500;

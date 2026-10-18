@@ -1,0 +1,200 @@
+diff --git a/server/src/index.ts b/server/src/index.ts
+index 5f62a50..fce06b6 100644
+--- a/server/src/index.ts
++++ b/server/src/index.ts
+@@ -78,7 +78,7 @@ app.use(
+ 
+ app.use("/api", adminApiGuard);
+ app.use("/uploads", express.static(uploadsDirectory, {
+-  maxAge: "30d", immutable: true,
++  maxAge: "30d", immutable: true, dotfiles: "ignore",
+   setHeaders: res => { res.setHeader("X-Content-Type-Options", "nosniff"); }
+ }));
+ 
+diff --git a/server/src/routes/media.ts b/server/src/routes/media.ts
+index 414767f..5915bfb 100644
+--- a/server/src/routes/media.ts
++++ b/server/src/routes/media.ts
+@@ -110,6 +110,47 @@ router.patch("/:id", requirePermission("gallery.edit"), run(async (req, res) =>
+   await audit(req, "media_updated", true, "Media details or folder updated; public URL preserved", undefined, asset.id);
+   return res.json(mediaView(asset));
+ }));
++router.delete("/:id", requirePermission("gallery.delete"), run(async (req, res) => {
++  let staged: { original: string; directory: string; file: string } | undefined;
++  try {
++    await prisma.$transaction(async tx => {
++      // Deleting first locks the row: concurrent requests cannot remove the same file.
++      const asset = await tx.builderMedia.delete({ where: { id: req.params.id } });
++      if (asset.filename.startsWith(".") || /[/\\]/.test(asset.filename) || path.basename(asset.filename) !== asset.filename)
++        fail(409, "This file has an invalid storage path. Contact the administrator.");
++      const original = path.join(uploadsDirectory, asset.filename);
++      const stat = await fs.lstat(original).catch((error: NodeJS.ErrnoException) => {
++        if (error.code !== "ENOENT") throw error;
++        return null;
++      });
++      if (stat && !stat.isFile()) fail(409, "The stored asset is not a regular file. Contact the administrator.");
++      await audit(req, "media_deleted", true, "Media record permanently deleted and stored file removed", undefined, asset.id, tx);
++      if (stat) {
++        // Dot directories are not publicly served or imported by the media indexer.
++        const directory = await fs.mkdtemp(path.join(uploadsDirectory, ".media-delete-"));
++        const file = path.join(directory, "asset");
++        try { await fs.rename(original, file); }
++        catch (error) { await fs.rmdir(directory).catch(() => {}); throw error; }
++        staged = { original, directory, file };
++      }
++    });
++  } catch (error) {
++    // Restore the original URL if the database transaction could not commit.
++    if (staged) {
++      await fs.rename(staged.file, staged.original);
++      await fs.rmdir(staged.directory).catch(() => {});
++    }
++    throw error;
++  }
++  if (staged) {
++    try { await fs.unlink(staged.file); await fs.rmdir(staged.directory); }
++    catch (error) {
++      console.error("Media deletion committed; private file cleanup failed", req.params.id, error);
++      return res.json({ success: true, warning: "The database record and public file were removed. Private storage cleanup failed; contact the server administrator." });
++    }
++  }
++  return res.json({ success: true });
++}));
+ router.use((error: any, _req: Request, res: Response, _next: NextFunction) => {
+   const relationConflict = ["P2003", "P2014"].includes(error.code);
+   const status = error.code === "P2002" ? 409 : error.code === "P2025" ? 404 : relationConflict ? 409 : error.code === "LIMIT_FILE_SIZE" ? 413 : error instanceof multer.MulterError ? 400 : error.status || 500;
+diff --git a/src/components/admin/MediaStorage.tsx b/src/components/admin/MediaStorage.tsx
+index d5e4d25..2887b52 100644
+--- a/src/components/admin/MediaStorage.tsx
++++ b/src/components/admin/MediaStorage.tsx
+@@ -1,6 +1,6 @@
+ import React, { useEffect, useRef, useState } from "react";
+ import { createPortal } from "react-dom";
+-import { Check, ChevronRight, Copy, ExternalLink, FileText, Folder, FolderPlus, HardDrive, Image as ImageIcon, Search, UploadCloud, X } from "lucide-react";
++import { Check, ChevronRight, Copy, ExternalLink, FileText, Folder, FolderPlus, HardDrive, Image as ImageIcon, Pencil, Search, Trash2, UploadCloud, X } from "lucide-react";
+ import { useAdminAccess } from "../../security/adminAccess";
+ import "../../styles/media-storage.css";
+ 
+@@ -38,9 +38,11 @@ export function MediaBrowser({ onSelect, type = "all" }: { onSelect?: (asset: Me
+   const [newFolder, setNewFolder] = useState(false); const [folderName, setFolderName] = useState("");
+   const [renaming, setRenaming] = useState(false);
+   const [detail, setDetail] = useState<MediaAsset | null>(null);
++  const [deleting, setDeleting] = useState<MediaAsset | null>(null);
+   const [copied, setCopied] = useState(""); const [dragging, setDragging] = useState(false);
+   const input = useRef<HTMLInputElement>(null); const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+   const root = useRef<HTMLDivElement>(null);
++  const detailPanel = useRef<HTMLElement>(null);
+   const selectedFolder = folders.find(item => item.id === folder);
+   const isFolder = folder !== "all" && folder !== "unfiled";
+   const folderPath = (id: string | null): MediaFolder[] => {
+@@ -49,6 +51,7 @@ export function MediaBrowser({ onSelect, type = "all" }: { onSelect?: (asset: Me
+     return path;
+   };
+   const refresh = () => setVersion(value => value + 1);
++  useEffect(() => { if (detail) detailPanel.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }, [detail?.id]);
+   useEffect(() => () => { if (copyTimer.current) clearTimeout(copyTimer.current); }, []);
+   useEffect(() => {
+     let active = true;
+@@ -92,6 +95,20 @@ export function MediaBrowser({ onSelect, type = "all" }: { onSelect?: (asset: Me
+       copyTimer.current = setTimeout(() => setCopied(""), 2000);
+     } catch { setDetail(asset); setNotice("Select and copy the unique link in File details."); }
+   };
++  const deleteAsset = async () => {
++    if (!deleting || busy || !can("gallery", "delete")) return;
++    setBusy(true); setError(""); setNotice("");
++    try {
++      const result = await mediaRequest<{ success: boolean; warning?: string }>("/" + deleting.id, "DELETE");
++      if (detail?.id === deleting.id) setDetail(null);
++      setAssets(items => items.filter(item => item.id !== deleting.id));
++      setTotal(value => Math.max(0, value - 1));
++      setPage(value => Math.min(value, Math.max(1, Math.ceil((total - 1) / 40))));
++      setDeleting(null); setNotice(result.warning || "File permanently deleted from the database and storage."); refresh();
++    } catch (err: any) { setError(err.message); }
++    finally { setBusy(false); }
++  };
++  const requestDelete = (asset: MediaAsset) => { setError(""); setDeleting(asset); };
+   const tree = (parentId: string | null, depth = 0): React.ReactNode => folders.filter(item => item.parentId === parentId).map(item =>
+     <React.Fragment key={item.id}><button type="button" data-admin-action="view" aria-current={folder === item.id ? "location" : undefined}
+       style={{ paddingLeft: 14 + depth * 15 }} onClick={() => openFolder(item.id)} title={folderPath(item.id).map(row => row.name).join(" / ")}>
+@@ -125,7 +142,7 @@ export function MediaBrowser({ onSelect, type = "all" }: { onSelect?: (asset: Me
+         {newFolder && <form className="media-folder-form" onSubmit={async event => { event.preventDefault();
+           if (await operation(() => renaming ? mediaRequest("/folders/" + folder, "PATCH", { name: folderName }) : mediaRequest("/folders", "POST", { name: folderName, parentId: isFolder ? folder : null }), renaming ? "Folder renamed." : "Folder created.")) { setNewFolder(false); setFolderName(""); }
+         }}><label>{renaming ? "Folder name" : `New folder in ${selectedFolder?.name || "Media Storage"}`}<input autoFocus required maxLength={200} value={folderName} onChange={event => setFolderName(event.target.value)} /></label>
+-          <button type="submit" className="admin-button admin-button-primary" disabled={busy}>{renaming ? "Save name" : "Create folder"}</button><button type="button" className="media-text-button" onClick={() => setNewFolder(false)}>Cancel</button></form>}
++          <button type="submit" data-admin-action={renaming ? "edit" : "create"} className="admin-button admin-button-primary" disabled={busy}>{renaming ? "Save name" : "Create folder"}</button><button type="button" className="media-text-button" data-admin-action="view" onClick={() => setNewFolder(false)}>Cancel</button></form>}
+         <div className="media-filters" data-admin-filter><label><Search size={17} /><input type="search" aria-label="Search Media Storage" placeholder="Search file names or descriptions…" value={search} onChange={event => { setSearch(event.target.value); setPage(1); }} /></label>
+           {type === "all" && <select aria-label="Media file type" value={filter} onChange={event => { setFilter(event.target.value as MediaType); setPage(1); }}><option value="all">All file types</option><option value="image">Photos</option><option value="pdf">PDF documents</option></select>}
+           <span>{total} {total === 1 ? "file" : "files"}</span></div>
+@@ -135,28 +152,60 @@ export function MediaBrowser({ onSelect, type = "all" }: { onSelect?: (asset: Me
+             {asset.mime.startsWith("image/") ? <img src={asset.url} alt={asset.alt || asset.originalName} loading="lazy" /> : <FileText size={44} />}{onSelect && <span>Use {asset.mime.startsWith("image/") ? "photo" : "document"}</span>}</button>
+           <div className="media-card-info"><strong title={asset.originalName}>{asset.originalName}</strong><small>{asset.width ? `${asset.width} × ${asset.height} · ` : "PDF · "}{sizeLabel(asset.size)}</small>
+             <div><button type="button" className="media-text-button" data-admin-action="view" aria-label={"Copy link for " + asset.originalName} onClick={() => void copyLink(asset)}>{copied === asset.id ? <Check size={14} /> : <Copy size={14} />}{copied === asset.id ? "Copied" : "Copy link"}</button>
+-              <button type="button" className="media-text-button" data-admin-action="view" onClick={() => setDetail(asset)}>Details</button></div></div>
++              <button type="button" className="media-text-button" data-admin-action="view" onClick={() => setDetail(asset)}>Details</button></div>
++            <div className="media-card-mutations">{can("gallery", "edit") && <button type="button" className="media-text-button" data-admin-action="edit" disabled={busy} aria-label={"Edit " + asset.originalName} onClick={() => setDetail(asset)}><Pencil size={14} />Edit</button>}
++              {can("gallery", "delete") && <button type="button" className="media-text-button media-danger" data-admin-action="delete" disabled={busy} aria-label={"Delete " + asset.originalName} onClick={() => requestDelete(asset)}><Trash2 size={14} />Delete</button>}</div></div>
+         </article>)}</div> : <div className="media-empty"><ImageIcon size={36} /><h3>{search ? "No matching files" : "No files here yet"}</h3><p>{search ? "Try a different name or folder." : "Upload college photos here, then choose them from any page editor."}</p></div>}
+         {!loading && total > 40 && <div className="media-pagination"><button type="button" data-admin-action="view" disabled={page <= 1} onClick={() => setPage(value => value - 1)}>Previous</button><span>Page {page} of {Math.ceil(total / 40)}</span><button type="button" data-admin-action="view" disabled={page * 40 >= total} onClick={() => setPage(value => value + 1)}>Next</button></div>}
+-        {detail && <section className="media-detail" aria-label="File details"><div className="media-detail-heading"><h3>File details</h3><button type="button" data-admin-action="view" aria-label="Close file details" onClick={() => setDetail(null)}><X size={18} /></button></div>
++        {detail && <section ref={detailPanel} className="media-detail" aria-label="File details"><div className="media-detail-heading"><h3>File details</h3><button type="button" data-admin-action="view" aria-label="Close file details" onClick={() => setDetail(null)}><X size={18} /></button></div>
+           <label>Unique link<input readOnly aria-label="Unique media link" value={new URL(detail.url, location.origin).href} onFocus={event => event.target.select()} /></label>
+           <div className="media-actions"><button type="button" className="admin-button admin-button-secondary" data-admin-action="view" onClick={() => void copyLink(detail)}><Copy size={15} />Copy link</button><a href={detail.url} target="_blank" rel="noopener noreferrer"><ExternalLink size={15} />Open file</a>{onSelect && <button type="button" className="admin-button admin-button-primary" data-admin-action="view" onClick={() => onSelect(detail)}>Use this file</button>}</div>
+           {can("gallery", "edit") && <form onSubmit={async event => { event.preventDefault(); if (await operation(() => mediaRequest("/" + detail.id, "PATCH", { originalName: detail.originalName, alt: detail.alt, folderId: detail.folderId || null }), "File details saved. Its link is unchanged.")) setDetail(null); }}>
+             <label>File name<input required maxLength={200} value={detail.originalName} onChange={event => setDetail({ ...detail, originalName: event.target.value })} /></label><label>Alternative text<input maxLength={500} value={detail.alt} onChange={event => setDetail({ ...detail, alt: event.target.value })} /></label>
+             <label>Folder<select aria-label="Move file to folder" value={detail.folderId || ""} onChange={event => setDetail({ ...detail, folderId: event.target.value || null })}><option value="">Unfiled</option>{folders.map(row => <option key={row.id} value={row.id}>{folderPath(row.id).map(item => item.name).join(" / ")}</option>)}</select></label>
+-            <button type="submit" className="admin-button admin-button-primary" disabled={busy}>Save file details</button></form>}
++            <button type="submit" data-admin-action="edit" className="admin-button admin-button-primary" disabled={busy}>Save file details</button></form>}
++          {can("gallery", "delete") && <button type="button" className="media-text-button media-danger" data-admin-action="delete" disabled={busy} onClick={() => requestDelete(detail)}><Trash2 size={15} />Delete file permanently</button>}
+           <p>Added {new Date(detail.createdAt).toLocaleDateString("en-IN")}. Folder and name changes keep the same public link.</p>
+         </section>}
+       </section></div>{dragging && <div className="media-drop-overlay"><UploadCloud size={40} /><strong>Drop files to upload</strong><span>{selectedFolder?.name || "Unfiled"}</span></div>}
++    {deleting && <MediaDeleteDialog asset={deleting} busy={busy} error={error} onCancel={() => setDeleting(null)} onConfirm={() => void deleteAsset()} />}
+   </div>;
+ }
+ 
++function MediaDeleteDialog({ asset, busy, error, onCancel, onConfirm }: { asset: MediaAsset; busy: boolean; error: string; onCancel: () => void; onConfirm: () => void }) {
++  const dialog = useRef<HTMLDivElement>(null);
++  const callbacks = useRef({ busy, onCancel }); callbacks.current = { busy, onCancel };
++  useEffect(() => {
++    const previous = document.activeElement as HTMLElement | null;
++    const overflow = document.body.style.overflow; document.body.style.overflow = "hidden";
++    dialog.current?.querySelector<HTMLButtonElement>("button")?.focus();
++    const key = (event: KeyboardEvent) => {
++      if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); if (!callbacks.current.busy) callbacks.current.onCancel(); }
++      if (event.key !== "Tab") return;
++      const buttons = Array.from(dialog.current?.querySelectorAll<HTMLButtonElement>("button:not(:disabled)") || []);
++      const first = buttons[0], last = buttons[buttons.length - 1];
++      if (!first) { event.preventDefault(); return; }
++      if (event.shiftKey && (document.activeElement === first || !dialog.current?.contains(document.activeElement))) { event.preventDefault(); last.focus(); }
++      else if (!event.shiftKey && (document.activeElement === last || !dialog.current?.contains(document.activeElement))) { event.preventDefault(); first.focus(); }
++    };
++    document.addEventListener("keydown", key, true);
++    return () => { document.removeEventListener("keydown", key, true); document.body.style.overflow = overflow; if (previous?.isConnected) previous.focus(); };
++  }, []);
++  return createPortal(<div className="media-picker-backdrop"><div ref={dialog} className="media-delete-dialog" role="alertdialog" aria-modal="true" aria-labelledby="media-delete-title" aria-describedby="media-delete-description" aria-busy={busy}>
++    <h2 id="media-delete-title">Permanently delete this file?</h2><strong>{asset.originalName}</strong>
++    <p id="media-delete-description">This removes the database record and stored file. Any website pages using its link will lose this image or download. This cannot be undone.</p>
++    {error && <p className="media-error" role="alert">{error}</p>}
++    <div className="media-actions"><button type="button" disabled={busy} onClick={onCancel}>Cancel</button><button type="button" className="media-delete-confirm" disabled={busy} onClick={onConfirm}>{busy ? "Deleting…" : "Delete permanently"}</button></div>
++  </div></div>, document.body);
++}
++
+ export function MediaPicker({ onSelect, onClose, type = "image" }: { onSelect: (asset: MediaAsset) => void; onClose: () => void; type?: MediaType }) {
+   const dialog = useRef<HTMLDivElement>(null); const closeRef = useRef(onClose); closeRef.current = onClose;
+   useEffect(() => {
+     const previous = document.activeElement as HTMLElement | null; const overflow = document.body.style.overflow;
+     document.body.style.overflow = "hidden"; dialog.current?.focus();
+     const key = (event: KeyboardEvent) => {
++      if (document.querySelector(".media-delete-dialog")) return;
+       if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); closeRef.current(); }
+       if (event.key !== "Tab") return;
+       const focusable = Array.from(dialog.current?.querySelectorAll<HTMLElement>('button:not(:disabled), input:not([hidden]):not(:disabled), select:not(:disabled), a[href]') || []).filter(el => el.getClientRects().length);
+diff --git a/src/styles/media-storage.css b/src/styles/media-storage.css
+index 55fb499..656c2fb 100644
+--- a/src/styles/media-storage.css
++++ b/src/styles/media-storage.css
+@@ -2,3 +2,4 @@
+ @media(max-width:850px){.media-layout{grid-template-columns:170px minmax(0,1fr)}.media-main{padding:15px}.media-heading{align-items:flex-start;flex-direction:column}.media-detail form{grid-template-columns:1fr}.media-picker-dialog .media-heading{gap:8px}.media-picker-dialog>.media-storage{padding:12px}}
+ @media(max-width:580px){.media-layout{grid-template-columns:1fr}.media-folders{border-right:0;border-bottom:1px solid #dfe5ed;max-height:190px;padding:10px}.media-folders p,.media-folders>strong{display:none}.media-folders button{min-height:35px}.media-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.media-thumbnail{height:120px}.media-card-info{padding:9px}.media-card-info>div{flex-wrap:wrap}.media-picker-backdrop{padding:8px}.media-picker-dialog{max-height:96vh}.media-picker-header{padding:12px}.media-picker-header h2{font-size:16px}.media-actions .admin-button{font-size:11px;padding:9px 11px}.media-child-folders{grid-template-columns:1fr 1fr}.media-child-folders button{padding:9px;font-size:12px}.media-filters>label{min-width:100%}.media-heading h1{font-size:27px}}
+ .media-picker-dialog{--admin-blue:#134ca0;font-family:Lato,"Segoe UI",sans-serif;line-height:1.5}.media-storage .admin-button{cursor:pointer}
++.media-storage .media-danger{color:#b42332}.media-card-info .media-card-mutations{justify-content:flex-end;flex-wrap:wrap;border-top:1px solid #e1e7f0;padding-top:7px;gap:16px}.media-detail>.media-danger{margin-top:18px}.media-delete-dialog{width:460px;max-width:100%;max-height:90vh;overflow:auto;background:#fff;color:#20395c;border-radius:14px;padding:26px;box-shadow:0 20px 90px #06152d55;font-family:Lato,"Segoe UI",sans-serif;line-height:1.6}.media-delete-dialog h2{font-size:21px;line-height:1.3;margin:0 0 14px}.media-delete-dialog>strong{display:block;overflow-wrap:anywhere;font-size:14px}.media-delete-dialog p{font-size:14px;margin:14px 0 22px}.media-delete-dialog .media-actions{justify-content:flex-end;gap:10px}.media-delete-dialog button{border:1px solid #dbe2ed;border-radius:8px;padding:9px 14px;background:#fff;color:#20395c;font-size:13px;font-weight:600;cursor:pointer}.media-delete-dialog .media-delete-confirm{background:#b42332;border-color:#b42332;color:#fff}.media-delete-dialog button:disabled{opacity:.5;cursor:default}.media-delete-dialog button:focus-visible{outline:2px solid #2b76db;outline-offset:3px}
