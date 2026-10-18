@@ -10,7 +10,12 @@ export interface ResearchBlock {
   id: string; type: ResearchBlockType; hidden?: boolean;
   text?: string; level?: "h2" | "h3" | "h4"; bullets?: ResearchBullet[];
   href?: string; targetKind?: "none" | "url" | "pdf"; newTab?: boolean; mediaId?: string;
-  imageUrl?: string; alt?: string; caption?: string; width?: "full" | "medium" | "small";
+  imageUrl?: string; alt?: string; caption?: string; width?: "full" | "medium" | "small" | "custom";
+  imageWidth?: number; imageWidthUnit?: "%" | "px";
+  imageHeightMode?: "auto" | "fixed"; imageHeight?: number;
+  imageFit?: "cover" | "contain"; imageFocusX?: number; imageFocusY?: number;
+  imagePlacement?: "block" | "wrap-left" | "wrap-right";
+  imageSpaceBefore?: number; imageSpaceAfter?: number; imageTextGap?: number;
   align?: "left" | "center" | "right"; variant?: "primary" | "outline";
   children?: ResearchBlock[]; space?: number;
 }
@@ -34,13 +39,20 @@ export const researchBlockSchema: z.ZodType<ResearchBlock> = z.lazy(() => z.obje
   id: z.string().min(1).max(200), type: z.enum(researchBlockTypes), hidden: z.boolean().optional(),
   text: text.optional(), level: z.enum(["h2", "h3", "h4"]).optional(), bullets: z.array(bulletSchema).optional(), ...destination,
   imageUrl: url.optional(), alt: z.string().max(2000).optional(), caption: text.optional(),
-  width: z.enum(["full", "medium", "small"]).optional(), align: z.enum(["left", "center", "right"]).optional(),
+  width: z.enum(["full", "medium", "small", "custom"]).optional(), align: z.enum(["left", "center", "right"]).optional(),
+  imageWidth: z.number().int().min(10).max(2400).optional(), imageWidthUnit: z.enum(["%", "px"]).optional(),
+  imageHeightMode: z.enum(["auto", "fixed"]).optional(), imageHeight: z.number().int().min(40).max(2000).optional(),
+  imageFit: z.enum(["cover", "contain"]).optional(), imageFocusX: z.number().min(0).max(100).optional(), imageFocusY: z.number().min(0).max(100).optional(),
+  imagePlacement: z.enum(["block", "wrap-left", "wrap-right"]).optional(),
+  imageSpaceBefore: z.number().int().min(0).max(160).optional(), imageSpaceAfter: z.number().int().min(0).max(160).optional(), imageTextGap: z.number().int().min(8).max(80).optional(),
   variant: z.enum(["primary", "outline"]).optional(), children: z.array(researchBlockSchema).optional(), space: z.number().int().min(8).max(160).optional(),
 }).superRefine((block, context) => {
   if (["heading", "text", "button", "accordion"].includes(block.type) && !block.text?.trim()) context.addIssue({ code: "custom", path: ["text"], message: "Enter the component text." });
   if (block.type === "bullets" && !block.bullets?.length) context.addIssue({ code: "custom", path: ["bullets"], message: "Add at least one bullet point." });
   if (block.type === "button" && !block.href) context.addIssue({ code: "custom", path: ["href"], message: "Connect the button to a link or PDF." });
   if (block.type === "image" && !block.imageUrl) context.addIssue({ code: "custom", path: ["imageUrl"], message: "Upload an image or choose one from Media Storage." });
+  if (block.width === "custom" && (block.imageWidth === undefined || (block.imageWidthUnit !== "px" && block.imageWidth > 100) || (block.imageWidthUnit === "px" && block.imageWidth < 40))) context.addIssue({ code: "custom", path: ["imageWidth"], message: "Image width must be 10–100% or 40–2400 pixels." });
+  if (block.imageHeightMode === "fixed" && block.imageHeight === undefined) context.addIssue({ code: "custom", path: ["imageHeight"], message: "Enter the custom image height." });
 }));
 
 export const researchContentSchema = z.object({

@@ -12,7 +12,7 @@ Available components:
 - **Text:** multiline paragraphs.
 - **Bullet list:** add, remove and reorder individual points. Each bullet supports a description, badge, visibility and click action: no link, a website URL, or an uploaded PDF.
 - **Button:** label, navy/outline style, website or PDF destination, and optional new-tab behavior.
-- **Image:** direct upload or Media Storage selection, alt text, caption, size, alignment and optional click destination.
+- **Image:** direct upload or Media Storage selection, alt text, caption, custom size, placement and optional click destination.
 - **Expandable group:** headings and other components inside a collapsible section.
 - **Divider** and **Space:** control content separation and vertical spacing.
 
@@ -25,6 +25,14 @@ Unsaved edits are also kept as a browser recovery draft. After switching admin t
 For a bullet or button, set **Click action → PDF document**, then use **Upload PDF** or **Media Storage**. Images have **Upload image** and **Media Storage** controls. An upload is stored once in the shared catalog; other components can reuse the same file. Uploads accept PDF, JPG, PNG, WebP and GIF, up to the existing 10 MB limit. Image uploads are optimized to WebP by the server. Files use permanent `/uploads/...` URLs and PostgreSQL metadata. Publishing is disabled while a file is uploading.
 
 Uploading uses the existing `gallery.create` permission. Research readers can browse existing media; publication requires the existing research edit/publish permissions. Deleting a component or sidebar option does not delete files from Media Storage. Missing destinations and invalid/executable URLs are rejected before publication and independently on the server.
+
+## Photo size and placement
+
+Select an image card to open its photo controls. Choose Full width, Medium, Small or **Custom width**. Custom widths support either a percentage of the content area (10–100%) or a pixel width (40–2400 px); the photo always fits within its container. Use the number fields or sliders, or drag the corner handle in the editing canvas. Arrow keys on the handle adjust width in 5% steps.
+
+**Keep original photo proportions** keeps the height automatic. Turn it off for a custom frame height (40–2000 px). **Fill frame** crops the edges without stretching, with left/right and top/bottom crop-focus controls. **Show entire photo** fits the whole image inside the frame without cropping or stretching.
+
+**Photo layout** places the image on its own row or on the left/right beside following text. An image on its own row can align left, centre or right. Wrapped images have an adjustable gap beside text and stack above the following content at phone widths. **Position in section** places the image immediately before or after a named heading, bullet list, button or other component; the existing card drag handle and move-to-group controls are also available. Separate Space above/below sliders control vertical spacing. **Reset photo layout** restores the full-width, original-proportions layout. All settings are saved with the image component and use the same renderer in preview and on the public page.
 
 ## Existing content and persistence
 

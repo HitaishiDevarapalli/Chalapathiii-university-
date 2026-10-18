@@ -17,7 +17,7 @@
 .research-admin .research-component-name { background: transparent; color: #1a3b66; border: 0; padding: 2px; font-size: 10px; text-align: left; }
 .research-admin .research-drag-handle { cursor: grab; padding: 5px; }
 .research-editor-card-toolbar .research-editor-actions button { padding: 5px; }
-.research-editor-card-preview { padding: 15px; min-height: 45px; cursor: pointer; min-width: 0; }
+.research-editor-card-preview { padding: 15px; min-height: 45px; cursor: pointer; min-width: 0; display: flow-root; }
 .research-editor-card-preview .research-document-title { font-size: 14px; }
 .research-editor-card-preview .research-document { gap: 10px; padding: 6px 0; }
 .research-editor-card-preview .research-figure { pointer-events: none; }
@@ -28,6 +28,13 @@
 .research-component-properties label { font-size: 11px; }
 .research-component-properties :is(input:not([type=checkbox]), select, textarea) { padding: 8px; font-size: 12px; }
 .research-component-properties .research-editor-check { flex-direction: row; align-items: center; font-weight: 500; }
+.research-image-properties { border-block: 1px solid #dce3ed; margin-block: 14px; padding-block: 14px; }
+.research-image-properties h5 { font-size: 11px; font-weight: 800; color: #072a6c; margin: 0 0 12px; }
+.research-image-properties h5:not(:first-child) { margin-top: 20px; }
+.research-image-number { display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: 10px; align-items: center; }
+.research-image-number input[type=range] { padding: 0; accent-color: #072a6c; border: 0; background: transparent; }
+.research-admin .research-image-tip { font-size: 11px; line-height: 1.7; color: #65748a; margin: 10px 0; }
+.research-admin .research-image-resize-handle { position: absolute; right: -6px; bottom: -6px; padding: 0; width: 25px; height: 25px; border: 2px solid white; border-radius: 4px; background: #072a6c; color: white; font-size: 18px; cursor: nwse-resize; touch-action: none; pointer-events: auto; z-index: 2; }
 .research-bullet-editor { border: 1px solid #dce3ed; border-radius: 6px; margin-bottom: 12px; padding: 10px; }
 .research-bullet-editor > summary { font-size: 12px; font-weight: 800; cursor: pointer; padding-bottom: 10px; }
 .research-destination { background: #f6f8fc; border-radius: 5px; padding: 10px; margin-bottom: 12px; }

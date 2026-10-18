@@ -5,7 +5,7 @@ import "../../styles/research-blocks.css";
 export function ResearchBlocks({ blocks, editing = false, showHidden = false }: { blocks: ResearchBlock[]; editing?: boolean; showHidden?: boolean }) {
   return <div className="research-block-content">{blocks.filter(block => showHidden || !block.hidden).map(block => <div className={`research-block research-block-${block.type}`} key={block.id} data-block-id={block.id}><ResearchBlockContent block={block} editing={editing} showHidden={showHidden} /></div>)}</div>;
 }
-export function ResearchBlockContent({ block, editing = false, showHidden = false }: { block: ResearchBlock; editing?: boolean; showHidden?: boolean }) {
+export function ResearchBlockContent({ block, editing = false, showHidden = false, resizeHandle }: { block: ResearchBlock; editing?: boolean; showHidden?: boolean; resizeHandle?: React.ReactNode }) {
   const href = block.targetKind === "none" ? undefined : safeResearchUrl(block.href);
   const linkProps = { href, target: block.newTab ? "_blank" : undefined, rel: block.newTab ? "noopener noreferrer" : undefined,
     onClick: editing ? (event: React.MouseEvent) => event.preventDefault() : undefined };
@@ -25,9 +25,12 @@ export function ResearchBlockContent({ block, editing = false, showHidden = fals
       : editing ? <span className={`research-action research-action-${block.variant || "primary"}`}>{block.text || "Button"}</span> : null;
     case "image": {
       const src = safeResearchUrl(block.imageUrl);
-      const image = src ? <img src={src} alt={block.alt || ""} loading="lazy" decoding="async" /> : editing ? <div className="research-image-placeholder">Upload an image or choose one from Media Storage</div> : null;
-      return <figure className={`research-figure research-image-${block.width || "full"} research-align-${block.align || "left"}`}>
-        {href ? <a {...linkProps}>{image}</a> : image}{block.caption && <figcaption>{block.caption}</figcaption>}
+      const fixed = block.imageHeightMode === "fixed";
+      const image = src ? <img src={src} alt={block.alt || ""} loading="lazy" decoding="async" style={{ objectFit: block.imageFit || "cover", objectPosition: `${block.imageFocusX ?? 50}% ${block.imageFocusY ?? 50}%` }} /> : editing ? <div className="research-image-placeholder">Upload an image or choose one from Media Storage</div> : null;
+      const frame = <div className="research-image-frame" data-fixed-height={fixed || undefined} style={fixed ? { "--research-image-height": `${block.imageHeight || 280}px` } as React.CSSProperties : undefined}>{href ? <a {...linkProps}>{image}</a> : image}{resizeHandle}</div>;
+      return <figure className={`research-figure research-image-${block.width || "full"} research-align-${block.align || "left"}`} data-image-placement={block.imagePlacement || "block"}
+        style={{ ...(block.width === "custom" ? { width: `${block.imageWidth || 70}${block.imageWidthUnit || "%"}` } : {}), marginTop: block.imageSpaceBefore ?? 16, marginBottom: block.imageSpaceAfter ?? 16, "--research-image-text-gap": `${block.imageTextGap ?? 24}px` } as React.CSSProperties}>
+        {frame}{block.caption && <figcaption>{block.caption}</figcaption>}
       </figure>;
     }
     case "accordion": return <details className="research-accordion research-component-accordion" open><summary>{block.text}<span className="research-accordion-chevron" aria-hidden="true" /></summary><div className="research-accordion-body"><ResearchBlocks blocks={block.children || []} editing={editing} showHidden={showHidden} />{editing && !block.children?.length && <p className="research-empty-group">Add components inside this group using the component library.</p>}</div></details>;

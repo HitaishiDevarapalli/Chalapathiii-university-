@@ -1,0 +1,33 @@
+import React, { useEffect, useState } from "react";
+import { ResearchBlock, findResearchBlock } from "../../data/researchBlocks";
+
+function ImageNumber({ label, value, min, max, onChange }: { label: string; value: number; min: number; max: number; onChange: (value: number) => void }) {
+  const [draft, setDraft] = useState(String(value));
+  useEffect(() => setDraft(String(value)), [value]);
+  const commit = () => { const number = draft.trim() ? Number(draft) : value; const next = Math.max(min, Math.min(max, Number.isFinite(number) ? Math.round(number) : value)); setDraft(String(next)); onChange(next); };
+  return <label>{label}<div className="research-image-number"><input type="number" min={min} max={max} value={draft} onChange={event => setDraft(event.target.value)} onBlur={commit} onKeyDown={event => { if (event.key === "Enter") { event.preventDefault(); event.currentTarget.blur(); } }} /><input type="range" min={min} max={max} value={value} aria-label={`${label} slider`} onChange={event => onChange(Number(event.target.value))} /></div></label>;
+}
+function flatten(blocks: ResearchBlock[]): ResearchBlock[] { return blocks.flatMap(block => [block, ...flatten(block.children || [])]); }
+export function ResearchImageProperties({ block, blocks, onChange, onPlace }: { block: ResearchBlock; blocks: ResearchBlock[]; onChange: (patch: Partial<ResearchBlock>) => void; onPlace: (targetId: string, after: boolean) => void }) {
+  const positions = flatten(blocks).filter(item => item.id !== block.id && !findResearchBlock(block.children || [], item.id));
+  const placement = block.imagePlacement || "block";
+  const widthUnit = block.imageWidthUnit || "%";
+  return <div className="research-image-properties">
+    <h5>Size & proportions</h5>
+    <label>Image width<select value={block.width || "full"} onChange={event => onChange({ width: event.target.value as ResearchBlock["width"], ...(event.target.value === "custom" && !block.imageWidth ? { imageWidth: 70, imageWidthUnit: "%" as const } : {}) })}><option value="full">Full width</option><option value="medium">Medium (620 px)</option><option value="small">Small (360 px)</option><option value="custom">Custom width</option></select></label>
+    {block.width === "custom" && <><label>Width units<select value={widthUnit} onChange={event => onChange({ imageWidthUnit: event.target.value as "%" | "px", imageWidth: event.target.value === "px" ? 480 : 70 })}><option value="%">Percent of content area (%)</option><option value="px">Pixels (px)</option></select></label><ImageNumber label={widthUnit === "%" ? "Width (%)" : "Width (px)"} value={block.imageWidth || 70} min={widthUnit === "%" ? 10 : 40} max={widthUnit === "%" ? 100 : 2400} onChange={value => onChange({ imageWidth: value })} /></>}
+    <label className="research-editor-check"><input type="checkbox" checked={block.imageHeightMode !== "fixed"} onChange={event => onChange({ imageHeightMode: event.target.checked ? "auto" : "fixed", ...(!event.target.checked && !block.imageHeight ? { imageHeight: 280 } : {}) })} />Keep original photo proportions</label>
+    {block.imageHeightMode === "fixed" && <><ImageNumber label="Height (px)" value={block.imageHeight || 280} min={40} max={2000} onChange={value => onChange({ imageHeight: value })} /><label>Fit inside frame<select value={block.imageFit || "cover"} onChange={event => onChange({ imageFit: event.target.value as "cover" | "contain" })}><option value="cover">Fill frame (crop edges)</option><option value="contain">Show entire photo (no cropping)</option></select></label>
+      {block.imageFit !== "contain" && <><ImageNumber label="Crop focus left / right (%)" value={block.imageFocusX ?? 50} min={0} max={100} onChange={value => onChange({ imageFocusX: value })} /><ImageNumber label="Crop focus top / bottom (%)" value={block.imageFocusY ?? 50} min={0} max={100} onChange={value => onChange({ imageFocusY: value })} /></>}
+    </>}
+    <h5>Placement</h5>
+    <label>Photo layout<select value={placement} onChange={event => onChange({ imagePlacement: event.target.value as ResearchBlock["imagePlacement"], ...(event.target.value !== "block" && block.width !== "custom" ? { width: "custom" as const, imageWidth: 45, imageWidthUnit: "%" as const } : {}) })}><option value="block">Image on its own row</option><option value="wrap-left">Image left, following text on right</option><option value="wrap-right">Image right, following text on left</option></select></label>
+    {placement === "block" ? <label>Alignment<select value={block.align || "left"} onChange={event => onChange({ align: event.target.value as ResearchBlock["align"] })}><option value="left">Left</option><option value="center">Centre</option><option value="right">Right</option></select></label> : <ImageNumber label="Gap beside text (px)" value={block.imageTextGap ?? 24} min={8} max={80} onChange={value => onChange({ imageTextGap: value })} />}
+    <label>Position in section<select value="" onChange={event => { const [position, ...id] = event.target.value.split(":"); if (id.length) onPlace(id.join(":"), position === "after"); }}><option value="">Place before or after a component…</option>{positions.map(item => { const title = (item.text || item.bullets?.[0]?.text || item.caption || item.type).slice(0, 60); return <React.Fragment key={item.id}><option value={`before:${item.id}`}>Before: {title}</option><option value={`after:${item.id}`}>After: {title}</option></React.Fragment>; })}</select></label>
+    <p className="research-image-tip">Drag the image card to change its order. Drag its corner handle to resize. Left/right photo layouts let following content flow alongside the image; photos stack above that content on phones.</p>
+    <h5>Spacing</h5>
+    <ImageNumber label="Space above (px)" value={block.imageSpaceBefore ?? 16} min={0} max={160} onChange={value => onChange({ imageSpaceBefore: value })} />
+    <ImageNumber label="Space below (px)" value={block.imageSpaceAfter ?? 16} min={0} max={160} onChange={value => onChange({ imageSpaceAfter: value })} />
+    <button type="button" className="secondary" data-admin-action="edit" onClick={() => onChange({ width: "full", imageWidth: undefined, imageWidthUnit: undefined, imageHeightMode: "auto", imageHeight: undefined, imagePlacement: "block", align: "left", imageSpaceBefore: undefined, imageSpaceAfter: undefined, imageTextGap: undefined, imageFit: "cover", imageFocusX: 50, imageFocusY: 50 })}>Reset photo layout</button>
+  </div>;
+}

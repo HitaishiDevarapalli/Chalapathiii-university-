@@ -4,6 +4,7 @@ import { RESEARCH_COMPONENTS, ResearchBlock, ResearchBlockType, ResearchBullet, 
 import { ResearchBlockContent, ResearchBlocks } from "../research/ResearchBlocks";
 import { MediaAsset, MediaPicker, uploadMedia } from "./MediaStorage";
 import { useAdminAccess } from "../../security/adminAccess";
+import { ResearchImageProperties } from "./ResearchImageProperties";
 import "../../styles/research-editor.css";
 
 type BlocksUpdate = ResearchBlock[] | ((previous: ResearchBlock[]) => ResearchBlock[]);
@@ -69,6 +70,7 @@ export function ResearchComponentEditor({ blocks, onChange, onPublish, disabled,
   const [preview, setPreview] = useState(false), [phone, setPhone] = useState(false);
   const [picker, setPicker] = useState<{ kind: "image" | "pdf"; select: (asset: MediaAsset) => void } | null>(null);
   const [uploads, setUploads] = useState(0);
+  const resizeSession = useRef<{ id: string; x: number; y: number; width: number; height: number; container: number; fixed: boolean } | null>(null);
   const selected = findResearchBlock(blocks, selectedId) || blocks[0];
   const groups = allGroups(blocks);
   const chooseMedia = (kind: "image" | "pdf", select: (asset: MediaAsset) => void) => setPicker({ kind, select });
@@ -91,6 +93,27 @@ export function ResearchComponentEditor({ blocks, onChange, onPublish, disabled,
       const remaining = removeResearchBlock(previous, id); const parent = findResearchBlock(remaining, parentId);
       return parent ? updateResearchBlock(remaining, parentId, { children: [...(parent.children || []), source] }) : [...remaining, source]; });
   };
+  const placeImage = (targetId: string, after: boolean) => {
+    if (!selected) return; const id = selected.id;
+    onChange(previous => { const image = findResearchBlock(previous, id); return image && id !== targetId && findResearchBlock(previous, targetId)
+      ? insertRelative(removeResearchBlock(previous, id), targetId, image, after) : previous; });
+  };
+  const resizeHandle = (block: ResearchBlock) => <button type="button" className="research-image-resize-handle" data-admin-action="edit" aria-label="Resize photo" title="Drag to resize; arrow keys adjust width" disabled={disabled}
+    onClick={event => event.stopPropagation()}
+    onPointerDown={event => {
+      event.preventDefault(); event.stopPropagation(); const figure = event.currentTarget.closest("figure"), area = event.currentTarget.closest(".research-editor-card-preview");
+      if (!figure || !area) return; const rect = figure.getBoundingClientRect(), padding = getComputedStyle(area);
+      resizeSession.current = { id: block.id, x: event.clientX, y: event.clientY, width: rect.width, height: figure.querySelector(".research-image-frame")?.getBoundingClientRect().height || rect.height, container: area.clientWidth - parseFloat(padding.paddingLeft) - parseFloat(padding.paddingRight), fixed: block.imageHeightMode === "fixed" };
+      event.currentTarget.setPointerCapture(event.pointerId);
+    }}
+    onPointerMove={event => { const session = resizeSession.current; if (!session) return; const width = Math.max(10, Math.min(100, Math.round((session.width + event.clientX - session.x) / session.container * 100)));
+      onChange(previous => updateResearchBlock(previous, session.id, { width: "custom", imageWidthUnit: "%", imageWidth: width, ...(session.fixed ? { imageHeight: Math.max(40, Math.min(2000, Math.round(session.height + event.clientY - session.y))) } : {}) }));
+    }}
+    onPointerUp={event => { resizeSession.current = null; if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); }}
+    onPointerCancel={() => { resizeSession.current = null; }}
+    onKeyDown={event => { if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return; event.preventDefault(); const width = block.width === "custom" && block.imageWidthUnit !== "px" ? block.imageWidth || 70 : 70;
+      onChange(previous => updateResearchBlock(previous, block.id, { width: "custom", imageWidthUnit: "%", imageWidth: Math.max(10, Math.min(100, width + (event.key === "ArrowRight" ? 5 : -5))) }));
+    }}>↘</button>;
   const cardList = (list: ResearchBlock[], depth = 0): React.ReactNode => list.map((block, index) => <div key={block.id} className={`research-editor-card${selected?.id === block.id ? " is-selected" : ""}${block.hidden ? " is-hidden" : ""}`} data-component-id={block.id}
     onDragOver={event => event.preventDefault()} onDrop={event => {
       event.preventDefault(); event.stopPropagation(); const id = event.dataTransfer.getData("text/research-component");
@@ -109,7 +132,7 @@ export function ResearchComponentEditor({ blocks, onChange, onPublish, disabled,
       </div>
     </div>
     <div className="research-editor-card-preview" onClick={event => { event.stopPropagation(); setSelectedId(block.id); }}>
-      {block.type === "accordion" ? <div className="research-editor-group"><strong>{block.text}</strong>{depth < 8 && cardList(block.children || [], depth + 1)}<button type="button" className="secondary" data-admin-action="view" onClick={event => { event.stopPropagation(); setSelectedId(block.id); setInsertParentId(block.id); }}>Add inside this group</button></div> : <ResearchBlockContent block={block} editing showHidden />}
+      {block.type === "accordion" ? <div className="research-editor-group"><strong>{block.text}</strong>{depth < 8 && cardList(block.children || [], depth + 1)}<button type="button" className="secondary" data-admin-action="view" onClick={event => { event.stopPropagation(); setSelectedId(block.id); setInsertParentId(block.id); }}>Add inside this group</button></div> : <ResearchBlockContent block={block} editing showHidden resizeHandle={block.type === "image" && selected?.id === block.id && block.imageUrl ? resizeHandle(block) : undefined} />}
     </div>
   </div>);
   const selectedLabel = RESEARCH_COMPONENTS.find(item => item.type === selected?.type)?.label;
@@ -145,8 +168,7 @@ export function ResearchComponentEditor({ blocks, onChange, onPublish, disabled,
           {selected.type === "button" && <><DestinationFields value={selected} onChange={patch} onBrowse={chooseMedia} onBusy={uploadBusy} /><label>Button style<select value={selected.variant || "primary"} onChange={event => patch({ variant: event.target.value as ResearchBlock["variant"] })}><option value="primary">Navy</option><option value="outline">Outline</option></select></label></>}
           {selected.type === "image" && <><MediaField kind="image" value={selected.imageUrl} onSelect={asset => patch({ imageUrl: asset.url, mediaId: asset.id, alt: asset.alt || asset.originalName })} onBrowse={chooseMedia} onBusy={uploadBusy} />
             <label>Image description (alt text)<input value={selected.alt || ""} onChange={event => patch({ alt: event.target.value })} /></label><label>Caption<textarea rows={2} value={selected.caption || ""} onChange={event => patch({ caption: event.target.value })} /></label>
-            <label>Image width<select value={selected.width || "full"} onChange={event => patch({ width: event.target.value as ResearchBlock["width"] })}><option value="full">Full width</option><option value="medium">Medium</option><option value="small">Small</option></select></label>
-            <label>Alignment<select value={selected.align || "left"} onChange={event => patch({ align: event.target.value as ResearchBlock["align"] })}><option value="left">Left</option><option value="center">Centre</option><option value="right">Right</option></select></label>
+            <ResearchImageProperties block={selected} blocks={blocks} onChange={patch} onPlace={placeImage} />
             <DestinationFields value={selected} optional onChange={patch} onBrowse={chooseMedia} onBusy={uploadBusy} />
           </>}
           {selected.type === "accordion" && <button type="button" className="secondary" data-admin-action="view" onClick={() => setInsertParentId(selected.id)}>Add components inside this group</button>}

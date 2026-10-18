@@ -119,6 +119,60 @@ const { PGLiteSocketServer } = require('@electric-sql/pglite-socket');
     await visitor.screenshot({ path: path.join(output, 'research-components-desktop.png'), fullPage: true });
     console.log('PASS: headings, text, linked bullets, directly uploaded PDF, reused PDF button, uploaded image and nested groups publish to a clean visitor');
 
+    const imageId = section.blocks[5].id, textId = section.blocks[1].id, groupId = section.blocks[6].id;
+    const checkImageProportions = async checked => {
+      const checkbox = await admin.waitForFunction(() => [...document.querySelectorAll('.research-image-properties label')].find(el => el.textContent.includes('Keep original photo proportions'))?.querySelector('input'));
+      if (await checkbox.asElement().evaluate(el => el.checked) !== checked) await checkbox.asElement().click(); await checkbox.dispose();
+    };
+    const photoMetrics = () => visitor.$eval('.research-figure', figure => {
+      const image = figure.querySelector('img'), rect = figure.getBoundingClientRect(), content = figure.closest('.research-block-content').getBoundingClientRect();
+      const frame = figure.querySelector('.research-image-frame').getBoundingClientRect();
+      return { width: rect.width, right: rect.right, left: rect.left, contentWidth: content.width, contentRight: content.right, frameHeight: frame.height,
+        fit: getComputedStyle(image).objectFit, focus: getComputedStyle(image).objectPosition, float: getComputedStyle(figure).float, imageRatio: image.getBoundingClientRect().width / image.getBoundingClientRect().height };
+    });
+    const reloadPhoto = async () => { await visitor.reload(); await visitor.waitForSelector('.research-figure img'); await visitor.waitForFunction(() => { const image = document.querySelector('.research-figure img'); return image?.complete && image.naturalWidth > 0; }); };
+    await admin.click(`[data-component-id="${imageId}"] .research-component-name`);
+    await setField('Image width', 'custom'); await setField('Width (%)', '50');
+    await checkImageProportions(false); await setField('Height (px)', '200'); await setField('Fit inside frame', 'cover');
+    await setField('Crop focus left / right (%)', '80'); await setField('Crop focus top / bottom (%)', '20');
+    await setField('Space above (px)', '12'); await setField('Space below (px)', '18'); await setField('Alignment', 'right');
+    await publish(); await reloadPhoto();
+    let metrics = await photoMetrics();
+    assert(Math.abs(metrics.width - metrics.contentWidth / 2) < 2); assert.equal(metrics.frameHeight, 200);
+    assert(Math.abs(metrics.right - metrics.contentRight) < 2); assert.equal(metrics.fit, 'cover'); assert.equal(metrics.focus, '80% 20%');
+    await setField('Fit inside frame', 'contain'); await setField('Width units', 'px'); await setField('Width (px)', '320'); await setField('Alignment', 'center');
+    await publish(); await reloadPhoto(); metrics = await photoMetrics(); assert.equal(metrics.width, 320); assert.equal(metrics.fit, 'contain');
+    await checkImageProportions(true); await publish(); await reloadPhoto(); metrics = await photoMetrics(); assert(Math.abs(metrics.imageRatio - 1000 / 420) < .02);
+
+    // The real pointer handle resizes the selected photo without distorting its proportions.
+    await setField('Width units', '%'); await setField('Width (%)', '60');
+    const handle = await admin.$('[aria-label="Resize photo"]'); await handle.scrollIntoView(); const box = await handle.boundingBox();
+    await admin.mouse.move(box.x + box.width / 2, box.y + box.height / 2); await admin.mouse.down(); await admin.mouse.move(box.x + box.width / 2 + 35, box.y + box.height / 2, { steps: 5 }); await admin.mouse.up();
+    const resized = Number(await admin.$eval('.research-image-number input[type=number]', el => el.value)); assert(resized > 60 && resized <= 100);
+    await admin.focus('[aria-label="Resize photo"]'); await admin.keyboard.press('ArrowLeft');
+    await admin.waitForFunction(expected => Number(document.querySelector('.research-image-number input[type=number]')?.value) === expected, {}, resized - 5);
+    assert.equal(Number(await admin.$eval('.research-image-number input[type=number]', el => el.value)), resized - 5);
+
+    await setField('Photo layout', 'wrap-left'); await setField('Width (%)', '40'); await setField('Gap beside text (px)', '24');
+    await setField('Position in section', 'before:' + textId); await publish(); await reloadPhoto();
+    metrics = await photoMetrics(); assert.equal(metrics.float, 'left');
+    const firstTextPosition = await visitor.$eval('.research-block-text', paragraph => { const walker = document.createTreeWalker(paragraph, NodeFilter.SHOW_TEXT); let text; while ((text = walker.nextNode()) && !text.textContent.trim()) {} const range = document.createRange(); range.setStart(text, 0); range.setEnd(text, Math.min(10, text.textContent.length)); return range.getBoundingClientRect().left; });
+    assert(firstTextPosition >= metrics.right + 20, 'following text actually flows beside the image');
+    const positioned = (await read()).sections.find(s => s.id === sectionId).blocks; assert.equal(positioned[1].id, imageId); assert.equal(positioned[2].id, textId);
+    await visitor.screenshot({ path: path.join(output, 'research-photo-placement.png'), fullPage: true });
+    await setField('Photo layout', 'wrap-right'); await publish(); await reloadPhoto(); assert.equal((await photoMetrics()).float, 'right');
+    await visitor.setViewport({ width: 390, height: 844 });
+    metrics = await photoMetrics(); assert.equal(metrics.float, 'none'); assert(Math.abs(metrics.width - metrics.contentWidth) < 2);
+    assert.equal(await visitor.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true);
+    await visitor.setViewport({ width: 1440, height: 1000 });
+    await setField('Photo layout', 'block'); await setField('Position in section', 'before:' + groupId);
+    await setField('Width units', 'px'); await setField('Width (px)', '320'); await setField('Alignment', 'center'); await checkImageProportions(false); await setField('Height (px)', '180');
+    await publish(); section = (await read()).sections.find(s => s.id === sectionId);
+    assert.equal(section.blocks[5].id, imageId); assert.equal(section.blocks[5].imageWidth, 320); assert.equal(section.blocks[5].imageHeight, 180);
+    await admin.$eval('.research-component-properties', el => { el.scrollTop = 0; });
+    await admin.screenshot({ path: path.join(output, 'research-photo-controls.png'), fullPage: true });
+    console.log('PASS: exact photo width/height, percent/pixel sizing, alignment, crop/contain, original proportions, pointer/keyboard resizing, text wrapping, before/after placement and phone stacking');
+
     // Reload confirms the component model is durable and the same media can be chosen again.
     await admin.reload(); await click(admin, 'Research & Innovation', '.admin-sidebar'); await ready(); await click(admin, 'Research Resources', '.research-admin-tabs');
     const rootCards = '.research-component-canvas > .research-editor-card';
@@ -152,6 +206,9 @@ const { PGLiteSocketServer } = require('@electric-sql/pglite-socket');
     malicious.sections.find(s => s.id === sectionId).blocks.push({ id: crypto.randomUUID(), type: 'button', text: 'Unsafe', href: 'javascript:alert(1)' });
     assert.equal((await api(admin, '/api/config/researchContent', 'PUT', malicious)).status, 400);
     assert.deepEqual(await read(), valid, 'invalid component URLs cannot change published content');
+    const badSize = structuredClone(valid); const invalidPhoto = badSize.sections.find(s => s.id === sectionId).blocks.find(b => b.type === 'image');
+    invalidPhoto.width = 'custom'; invalidPhoto.imageWidthUnit = '%'; invalidPhoto.imageWidth = 200;
+    assert.equal((await api(admin, '/api/config/researchContent', 'PUT', badSize)).status, 400, 'server rejects invalid photo dimensions');
     await addBlock('button'); await setField('Button label', 'Needs a destination');
     await click(admin, 'Publish changes', '.research-admin-top');
     await admin.waitForFunction(() => document.querySelector('.research-admin-error')?.textContent.includes('Connect the button'));
