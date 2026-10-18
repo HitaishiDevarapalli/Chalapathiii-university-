@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import prisma from "../prisma";
+import { researchContentSchema } from "../research/schema";
 
 import { requireAuth } from "../middleware/auth";
 import { SESSION_PREFIX } from "../sessionStore";
@@ -194,6 +195,10 @@ router.put("/:key", async (req: Request, res: Response) => {
     if (reserved(key)) return res.sendStatus(404);
     const body = req.body;
 
+    if (key === "researchContent") {
+      const checked = researchContentSchema.safeParse(body);
+      if (!checked.success) return res.status(400).json({ error: checked.error.issues[0]?.message || "Invalid research content." });
+    }
     const stringified = safeJsonStringify(body, "{}");
 
     const config = await prisma.siteConfig.upsert({

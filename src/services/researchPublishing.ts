@@ -1,12 +1,23 @@
 import { useEffect, useState } from "react";
 import { normalizeResearchData, ResearchCMSData } from "../data/researchData";
 import { safeGetItem, safeSetItem } from "../lib/safeStorage";
+import { researchContentSchema } from "../data/researchBlocks";
 const STORAGE_KEY = "chalapathi_research_cms_data";
+const EDITOR_DRAFT_KEY = "chalapathi_research_editor_draft";
 const ENDPOINT = "/api/config/researchContent";
 export function readResearchDraft(): ResearchCMSData {
   try { return normalizeResearchData(JSON.parse(safeGetItem(STORAGE_KEY) || "null")); }
   catch { return normalizeResearchData(null); }
 }
+export function readResearchEditorDraft(): ResearchCMSData | null {
+  try { const value = JSON.parse(safeGetItem(EDITOR_DRAFT_KEY) || "null"); return value && Array.isArray(value.sections) && Array.isArray(value.items) ? normalizeResearchData(value) : null; }
+  catch { return null; }
+}
+export function storeResearchEditorDraft(data: ResearchCMSData) {
+  // Browser-only recovery; never notify public CMS subscribers about unpublished edits.
+  try { localStorage.setItem(EDITOR_DRAFT_KEY, JSON.stringify(data)); } catch { /* The editor retains its in-memory changes. */ }
+}
+export function clearResearchEditorDraft() { try { localStorage.removeItem(EDITOR_DRAFT_KEY); } catch { /* Storage can be unavailable. */ } }
 export async function readPublishedResearch(): Promise<ResearchCMSData | null> {
   const response = await fetch(`${ENDPOINT}?raw=true`, { credentials: "same-origin", cache: "no-store" });
   if (response.status === 404) return null;
@@ -17,6 +28,8 @@ export async function readPublishedResearch(): Promise<ResearchCMSData | null> {
 }
 export async function publishResearch(data: ResearchCMSData): Promise<ResearchCMSData> {
   const saved = normalizeResearchData(data);
+  const checked = researchContentSchema.safeParse(saved);
+  if (!checked.success) throw new Error(checked.error.issues[0]?.message || "Check the research components before publishing.");
   const response = await fetch(ENDPOINT, { method: "PUT", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify(saved) });
   const result = await response.json().catch(() => null);
   if (!response.ok) throw new Error(result?.error || "Research could not be published. Sign in and try again.");

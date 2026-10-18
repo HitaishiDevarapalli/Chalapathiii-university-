@@ -1,4 +1,5 @@
-export interface ResearchSection { id: string; title: string; description: string; hidden?: boolean; }
+import type { ResearchBlock } from "./researchBlocks";
+export interface ResearchSection { id: string; title: string; description: string; hidden?: boolean; blocks?: ResearchBlock[]; }
 export interface ResearchItem {
   id: string; title: string; category: string; sectionId?: string; description: string;
   badge?: string; link?: string; linkText?: string; hidden?: boolean;

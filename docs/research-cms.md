@@ -1,26 +1,50 @@
-# Research page
+# Research & Innovation component editor
 
-Open **Admin → Research & Innovation** to manage the public `/research` page.
+Open **Admin → Research & Innovation**, select a sidebar option, and use **Build this section**. You can create as many sidebar options as you need with **Add sidebar option**; rename, reorder, hide or delete any existing option.
 
-The page uses the university's existing navy (`#072A6C`) and gold (`#D4AF37`). The twelve sidebar sections, research update titles and Pre Ph.D. syllabus group follow the supplied reference. On mobile, the section navigation scrolls horizontally.
+## Build content
 
-Select a sidebar section in the editor to change its title, introduction, visibility or order. Use **Publish changes** to save page settings and ordering. Add or edit a research item to publish text, a document link, an optional badge, or an expandable document group. Documents can be assigned to a group in the same section. Use **Choose document from Media Storage** to select an uploaded file, or enter a website path or HTTP(S) URL. Item save, hide/show and delete operations publish immediately; deleting a group also deletes its child entries after confirmation.
+Select a component from the library. Edit it in the properties panel. Components can be arranged in any order using their drag handle or up/down buttons, duplicated, hidden or removed. Choose **Add to → Inside: …** or **Add components inside this group** to place components inside an expandable group. Use **Move component to** to move existing content between a group and the main section.
 
-Use **Add sidebar option** to create a named section with an optional introduction and visibility setting. **Create & publish option** saves it to the server and selects it so you can add content. Select an existing section and use **Delete sidebar option** to remove it after confirmation. Deleting an option removes its research entries and groups; the uploaded files themselves stay in Media Storage. Creation and deletion publish immediately. You can delete every option and add new ones later; deleted defaults do not return after a reload.
+Available components:
 
-The reference supplies document titles, but no PDFs or destination URLs. Those entries display as text until their real documents are attached through admin. Other sidebar sections have honest empty states until university content is added.
+- **Heading:** three heading sizes.
+- **Text:** multiline paragraphs.
+- **Bullet list:** add, remove and reorder individual points. Each bullet supports a description, badge, visibility and click action: no link, a website URL, or an uploaded PDF.
+- **Button:** label, navy/outline style, website or PDF destination, and optional new-tab behavior.
+- **Image:** direct upload or Media Storage selection, alt text, caption, size, alignment and optional click destination.
+- **Expandable group:** headings and other components inside a collapsible section.
+- **Divider** and **Space:** control content separation and vertical spacing.
 
-Published data is saved to PostgreSQL through the existing authenticated `PUT /api/config/researchContent` endpoint. Public visitors read the same config without browser-local drafts. Open public pages refresh on focus and every 15 seconds while visible. Failed saves retain the editor's changes and show an error. The existing session, CSRF and research edit/publish permission checks protect publication. No database migration or new server route is required.
+**Preview** displays the current draft content using the public renderer, including hidden-content behavior; **Phone** switches to a narrow preview. Use **Save & publish content** or the research editor's **Publish changes** when ready. Component edits stay in the current editor until published. Switching research options retains edits. Leaving/reloading with unsaved edits prompts before discarding them. A failed publication retains your edits and leaves the previous public content in place.
 
-Legacy browser-local items load into admin when no research config has been published yet. Publish once to make those items available to other devices. The previous placeholder upgrades to live content while preserving saved entries. Maintenance and page visibility remain configurable. Existing `/research/projects`, `/research/publications` and `/research/patents` routes select their corresponding sections.
+Unsaved edits are also kept as a browser recovery draft. After switching admin tabs or reopening the editor, use **Restore draft** to recover them, or **Discard draft** to continue with published content. Recovery drafts are never shown to public visitors. The main workspace **Publish changes** button publishes the active research editor when Research & Innovation is selected.
 
-Verification from the project root:
+## PDFs and images
+
+For a bullet or button, set **Click action → PDF document**, then use **Upload PDF** or **Media Storage**. Images have **Upload image** and **Media Storage** controls. An upload is stored once in the shared catalog; other components can reuse the same file. Uploads accept PDF, JPG, PNG, WebP and GIF, up to the existing 10 MB limit. Image uploads are optimized to WebP by the server. Files use permanent `/uploads/...` URLs and PostgreSQL metadata. Publishing is disabled while a file is uploading.
+
+Uploading uses the existing `gallery.create` permission. Research readers can browse existing media; publication requires the existing research edit/publish permissions. Deleting a component or sidebar option does not delete files from Media Storage. Missing destinations and invalid/executable URLs are rejected before publication and independently on the server.
+
+## Existing content and persistence
+
+Legacy update entries, badges, hidden entries and Pre Ph.D. syllabus groups load as editable components automatically. Nothing needs to be re-entered. Editing a section saves its component array; the public page uses that array while unchanged sections continue reading their legacy entries. Deleted/empty sections do not restore defaults after reload.
+
+Research content is saved through the existing authenticated `PUT /api/config/researchContent` endpoint. Public visitors read the same database content and refresh on focus or every 15 seconds while visible. No database migration is required. Existing research subroutes continue selecting their corresponding sections. The navy (`#072A6C`) and gold (`#D4AF37`) university palette is used throughout.
+
+## Build and verification
+
+This update adds a pinned Zod frontend dependency and research content validation to the existing API. Update both frontend and backend source on the VPS, install the frontend lockfile dependencies, build both, restart the existing `chalapathi-api` process and publish the frontend assets using the existing VPS deployment procedure.
+
+From the project root:
 
 ```powershell
-npm run build
+npm ci
+npx tsc --noEmit
+npx vite build
 cd server
 npm run build
 node tests/research.cjs
 ```
 
-The test starts an isolated PostgreSQL database and Express server and uses a headless Chrome browser. It never uses production accounts or data. Screenshots are saved under `work/research-qa/`.
+The integration test uses isolated PostgreSQL, temporary uploads/accounts, a real Express server and independent admin/visitor browser sessions. It verifies legacy content, all requested component types, direct PDF/image uploads, reuse from Media Storage, destination validation, ordering, duplication, visibility, nested groups, publication failures, permissions, responsive layouts and sidebar deletion/empty states. Screenshots are saved under `work/research-qa/`. It never uses production data.

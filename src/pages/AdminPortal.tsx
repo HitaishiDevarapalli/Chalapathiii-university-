@@ -243,10 +243,12 @@ export default function AdminPortal() {
   const [syncJsonInput, setSyncJsonInput] = useState("");
   const syncFileInputRef = React.useRef<HTMLInputElement>(null);
   const [isSyncingDb, setIsSyncingDb] = useState(false);
+  const researchPublishRef = React.useRef<(() => Promise<boolean>) | null>(null);
 
   const handlePushAllToDatabase = async () => {
     setIsSyncingDb(true);
     try {
+      if (activeTab === "research") { await researchPublishRef.current?.(); return; }
       const ok = await syncCmsWithBackend();
       if (ok) {
         notifySave("✓ All website content successfully synchronized to PostgreSQL database!");
@@ -11619,7 +11621,7 @@ export default function AdminPortal() {
           {/* TAB 4: RESEARCH & INNOVATION CMS                     */}
           {/* ════════════════════════════════════════════════════ */}
           {activeTab === "research" && (
-            <ResearchCMS notifySave={notifySave} />
+            <ResearchCMS notifySave={notifySave} onPublishReady={handler => { researchPublishRef.current = handler; }} />
           )}
 
           {/* ════════════════════════════════════════════════════ */}

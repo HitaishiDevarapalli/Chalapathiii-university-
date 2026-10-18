@@ -1,0 +1,21 @@
+.research-block-content { min-width: 0; }
+.research-block { margin: 16px 0; min-width: 0; }
+.research-block:first-child { margin-top: 0; }
+.research-block-bullets + .research-block-bullets { margin-top: -5px; }
+.research-block-heading { color: #072a6c; font-weight: 800; line-height: 1.35; overflow-wrap: anywhere; }
+h2.research-block-heading { font-size: 28px; } h3.research-block-heading { font-size: 23px; } h4.research-block-heading { font-size: 19px; }
+.research-block-text { white-space: pre-line; overflow-wrap: anywhere; line-height: 1.8; font-size: 15px; color: #334866; }
+.research-bullet-list { padding: 0; margin: 0; list-style: none; }
+.research-action { display: inline-flex; align-items: center; justify-content: center; max-width: 100%; padding: 12px 22px; border: 1px solid #072a6c; border-radius: 5px; font-size: 14px; line-height: 1.5; font-weight: 800; overflow-wrap: anywhere; text-align: center; text-decoration: none; }
+.research-action-primary { background: #072a6c; color: white; }
+.research-action-outline { background: transparent; color: #072a6c; }
+a.research-action:hover { background: #d4af37; color: #072a6c; border-color: #d4af37; }
+.research-figure { margin-block: 0; } .research-figure img { width: 100%; height: auto; display: block; border-radius: 5px; }
+.research-image-full { width: 100%; } .research-image-medium { width: min(100%, 620px); } .research-image-small { width: min(100%, 360px); }
+.research-align-center { margin-inline: auto; } .research-align-right { margin-left: auto; }
+.research-figure figcaption { font-size: 13px; margin-top: 10px; color: #65748a; text-align: center; }
+.research-image-placeholder { border: 1px dashed #9faec4; background: #edf1f7; padding: 40px 20px; text-align: center; color: #65748a; font-size: 13px; }
+.research-content-divider { border: 0; border-top: 1px solid #d7dfeb; margin: 26px 0; }
+.research-preview-hidden { opacity: .5; } .research-empty-group { color: #65748a; font-size: 13px; }
+.research-component-accordion > .research-accordion-body > .research-block-content > .research-block:first-child { margin-top: 0; }
+@media (max-width: 600px) { h2.research-block-heading { font-size: 25px; } h3.research-block-heading { font-size: 21px; } .research-action { padding: 11px 17px; } }
