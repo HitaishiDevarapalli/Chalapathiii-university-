@@ -3,6 +3,7 @@ export { safeResearchUrl, researchBlockSchema, researchContentSchema } from "../
 export type { ResearchBlock, ResearchBullet, ResearchBlockType } from "../../server/src/research/schema";
 import type { ResearchBlock, ResearchBlockType } from "../../server/src/research/schema";
 import { RESEARCH_MAX_BLOCK_DEPTH } from "../../server/src/research/schema";
+import { createResearchTable } from "./researchTable";
 
 export const RESEARCH_COMPONENTS: { type: ResearchBlockType; label: string; hint: string; symbol: string }[] = [
   { type: "heading", label: "Heading", hint: "Section and subheadings", symbol: "H" },
@@ -10,6 +11,7 @@ export const RESEARCH_COMPONENTS: { type: ResearchBlockType; label: string; hint
   { type: "bullets", label: "Bullet list", hint: "Text, links and PDF downloads", symbol: "☷" },
   { type: "button", label: "Button", hint: "Link or PDF action", symbol: "↗" },
   { type: "image", label: "Image", hint: "Upload or choose media", symbol: "▧" },
+  { type: "table", label: "Table", hint: "Rows, columns and merged cells", symbol: "▦" },
   { type: "accordion", label: "Expandable group", hint: "Components inside a group", symbol: "⌄" },
   { type: "divider", label: "Divider", hint: "Separate content sections", symbol: "—" },
   { type: "spacer", label: "Space", hint: "Adjust vertical spacing", symbol: "↕" },
@@ -21,6 +23,7 @@ export function makeResearchBlock(type: ResearchBlockType): ResearchBlock {
   if (type === "bullets") return { ...block, bullets: [{ id: crypto.randomUUID(), text: "New bullet point", targetKind: "none" }] };
   if (type === "button") return { ...block, text: "View document", targetKind: "url", href: "", newTab: true, variant: "primary" };
   if (type === "image") return { ...block, imageUrl: "", alt: "", width: "full", align: "left" };
+  if (type === "table") return { ...block, table: createResearchTable() };
   if (type === "accordion") return { ...block, text: "Expandable heading", children: [] };
   if (type === "spacer") return { ...block, space: 32 };
   return block;

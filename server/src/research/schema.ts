@@ -1,6 +1,8 @@
 import { z } from "zod";
+import { researchTableSchema, ResearchTable } from "./table";
+export type { ResearchTable, ResearchTableCell } from "./table";
 
-export const researchBlockTypes = ["heading", "text", "bullets", "button", "image", "accordion", "divider", "spacer"] as const;
+export const researchBlockTypes = ["heading", "text", "bullets", "button", "image", "table", "accordion", "divider", "spacer"] as const;
 export const RESEARCH_MAX_BLOCK_DEPTH = 8;
 export type ResearchBlockType = typeof researchBlockTypes[number];
 export interface ResearchBullet {
@@ -19,6 +21,7 @@ export interface ResearchBlock {
   imageSpaceBefore?: number; imageSpaceAfter?: number; imageTextGap?: number;
   align?: "left" | "center" | "right"; variant?: "primary" | "outline";
   children?: ResearchBlock[]; space?: number;
+  table?: ResearchTable;
 }
 export function safeResearchUrl(value?: string): string | undefined {
   const url = value?.trim();
@@ -47,11 +50,13 @@ export const researchBlockSchema: z.ZodType<ResearchBlock> = z.lazy(() => z.obje
   imagePlacement: z.enum(["block", "wrap-left", "wrap-right"]).optional(),
   imageSpaceBefore: z.number().int().min(0).max(160).optional(), imageSpaceAfter: z.number().int().min(0).max(160).optional(), imageTextGap: z.number().int().min(8).max(80).optional(),
   variant: z.enum(["primary", "outline"]).optional(), children: z.array(researchBlockSchema).optional(), space: z.number().int().min(8).max(160).optional(),
+  table: researchTableSchema.optional(),
 }).superRefine((block, context) => {
   if (["heading", "text", "button", "accordion"].includes(block.type) && !block.text?.trim()) context.addIssue({ code: "custom", path: ["text"], message: "Enter the component text." });
   if (block.type === "bullets" && !block.bullets?.length) context.addIssue({ code: "custom", path: ["bullets"], message: "Add at least one bullet point." });
   if (block.type === "button" && (!block.href || block.targetKind === "none")) context.addIssue({ code: "custom", path: ["href"], message: "Connect the button to a link or PDF." });
   if (block.type === "image" && !block.imageUrl) context.addIssue({ code: "custom", path: ["imageUrl"], message: "Upload an image or choose one from Media Storage." });
+  if (block.type === "table" && !block.table) context.addIssue({ code: "custom", path: ["table"], message: "Add the table rows and columns." });
   if (block.type === "image" && block.targetKind && block.targetKind !== "none" && !block.href) context.addIssue({ code: "custom", path: ["href"], message: "Add the image link or upload a PDF, or choose No link." });
   if (block.type !== "accordion" && block.children?.length) context.addIssue({ code: "custom", path: ["children"], message: "Only expandable groups can contain other components." });
   if (block.width === "custom" && (block.imageWidth === undefined || (block.imageWidthUnit !== "px" && block.imageWidth > 100) || (block.imageWidthUnit === "px" && block.imageWidth < 40))) context.addIssue({ code: "custom", path: ["imageWidth"], message: "Image width must be 10–100% or 40–2400 pixels." });

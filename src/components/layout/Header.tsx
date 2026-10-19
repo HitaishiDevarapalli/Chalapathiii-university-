@@ -13,6 +13,7 @@ import {
 import { useData } from "../../context/DataContext";
 import { searchIndex, SearchItem } from "../../data/searchIndex";
 import { GlobalSearchModal } from "../common/GlobalSearchModal";
+import SyllabusRegulationsMenu from "./SyllabusRegulationsMenu";
 
 const SearchIconMap: Record<string, React.ComponentType<any>> = {
   GraduationCap, Code, Laptop, Cpu, Brain, Database, ShieldAlert, Radio, 
@@ -163,6 +164,7 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
   const navHrefs: Record<string, string> = {
     "About Us": "/about",
     "Academics": "/academics",
+    "Syllabus & Regulations": "/academics/documents/btech/syllabus",
     "Admissions": "/admissions",
     "Research": "/research",
     "Faculty": "/management/faculty/computing",
@@ -375,8 +377,11 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
           </Link>
 
           {/* Center nav */}
-          <nav className="hidden min-[1024px]:flex items-center justify-center gap-0.5 min-[1280px]:gap-1 min-[1440px]:gap-1.5 h-full flex-1 mx-auto">
+          <nav className="hidden min-[1440px]:flex items-center justify-center gap-0.5 min-[1280px]:gap-1 min-[1440px]:gap-1 h-full flex-1 mx-auto">
             {visibleNavLinks.map((name) => {
+              if (name === "Syllabus & Regulations") {
+                return <SyllabusRegulationsMenu key={name} />;
+              }
               if (name === "About Us") {
                 return (
                   <div
@@ -387,7 +392,7 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
                   >
                     <button
                       type="button"
-                      className="px-1.5 min-[1280px]:px-2 min-[1440px]:px-2.5 py-2 text-[12.5px] min-[1280px]:text-[13.5px] min-[1440px]:text-[14.5px] font-[600] text-[#072A6C] hover:text-[#D4AF37] transition-colors whitespace-nowrap font-[var(--font-poppins)] inline-flex items-center gap-0.5 cursor-pointer outline-none"
+                      className="px-1.5 min-[1280px]:px-2 min-[1440px]:px-2 py-2 text-[12.5px] min-[1280px]:text-[13.5px] min-[1440px]:text-[14.5px] font-[600] text-[#072A6C] hover:text-[#D4AF37] transition-colors whitespace-nowrap font-[var(--font-poppins)] inline-flex items-center gap-0.5 cursor-pointer outline-none"
                     >
                       {name} <ChevronDown size={13} className={`transition-transform duration-200 ${aboutOpen ? "rotate-180" : ""}`} />
                     </button>
@@ -422,7 +427,7 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
                   >
                     <button
                       type="button"
-                      className="px-1.5 min-[1280px]:px-2 min-[1440px]:px-2.5 py-2 text-[12.5px] min-[1280px]:text-[13.5px] min-[1440px]:text-[14.5px] font-[600] text-[#072A6C] hover:text-[#D4AF37] transition-colors whitespace-nowrap font-[var(--font-poppins)] inline-flex items-center gap-0.5 cursor-pointer outline-none"
+                      className="px-1.5 min-[1280px]:px-2 min-[1440px]:px-2 py-2 text-[12.5px] min-[1280px]:text-[13.5px] min-[1440px]:text-[14.5px] font-[600] text-[#072A6C] hover:text-[#D4AF37] transition-colors whitespace-nowrap font-[var(--font-poppins)] inline-flex items-center gap-0.5 cursor-pointer outline-none"
                     >
                       {name} <ChevronDown size={13} className={`transition-transform duration-200 ${academicsOpen ? "rotate-180" : ""}`} />
                     </button>
@@ -593,7 +598,7 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
                   >
                     <button
                       type="button"
-                      className="px-1.5 min-[1280px]:px-2 min-[1440px]:px-2.5 py-2 text-[12.5px] min-[1280px]:text-[13.5px] min-[1440px]:text-[14.5px] font-[600] text-[#072A6C] hover:text-[#D4AF37] transition-colors whitespace-nowrap font-[var(--font-poppins)] inline-flex items-center gap-0.5 cursor-pointer outline-none"
+                      className="px-1.5 min-[1280px]:px-2 min-[1440px]:px-2 py-2 text-[12.5px] min-[1280px]:text-[13.5px] min-[1440px]:text-[14.5px] font-[600] text-[#072A6C] hover:text-[#D4AF37] transition-colors whitespace-nowrap font-[var(--font-poppins)] inline-flex items-center gap-0.5 cursor-pointer outline-none"
                     >
                       {name} <ChevronDown size={13} className={`transition-transform duration-200 ${facultyOpen ? "rotate-180" : ""}`} />
                     </button>
@@ -625,7 +630,7 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
                   >
                     <button
                       type="button"
-                      className="px-1.5 min-[1280px]:px-2 min-[1440px]:px-2.5 py-2 text-[12.5px] min-[1280px]:text-[13.5px] min-[1440px]:text-[14.5px] font-[600] text-[#072A6C] hover:text-[#D4AF37] transition-colors whitespace-nowrap font-[var(--font-poppins)] inline-flex items-center gap-0.5 cursor-pointer outline-none"
+                      className="px-1.5 min-[1280px]:px-2 min-[1440px]:px-2 py-2 text-[12.5px] min-[1280px]:text-[13.5px] min-[1440px]:text-[14.5px] font-[600] text-[#072A6C] hover:text-[#D4AF37] transition-colors whitespace-nowrap font-[var(--font-poppins)] inline-flex items-center gap-0.5 cursor-pointer outline-none"
                     >
                       {name} <ChevronDown size={13} className={`transition-transform duration-200 ${campusLifeOpen ? "rotate-180" : ""}`} />
                     </button>
@@ -669,7 +674,7 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
                   >
                     <button
                       type="button"
-                      className="px-1.5 min-[1280px]:px-2 min-[1440px]:px-2.5 py-2 text-[12.5px] min-[1280px]:text-[13.5px] min-[1440px]:text-[14.5px] font-[600] text-[#072A6C] hover:text-[#D4AF37] transition-colors whitespace-nowrap font-[var(--font-poppins)] inline-flex items-center gap-0.5 cursor-pointer outline-none"
+                      className="px-1.5 min-[1280px]:px-2 min-[1440px]:px-2 py-2 text-[12.5px] min-[1280px]:text-[13.5px] min-[1440px]:text-[14.5px] font-[600] text-[#072A6C] hover:text-[#D4AF37] transition-colors whitespace-nowrap font-[var(--font-poppins)] inline-flex items-center gap-0.5 cursor-pointer outline-none"
                     >
                       {name} <ChevronDown size={13} className={`transition-transform duration-200 ${newsEventsOpen ? "rotate-180" : ""}`} />
                     </button>
@@ -694,7 +699,7 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
               const cmsChildren = cmsChildrenFor(name);
               if (cmsChildren.length) return (
                 <div key={name} className="relative h-full flex items-center group" onMouseEnter={() => setMobileCmsParentOpen(name)} onMouseLeave={() => setMobileCmsParentOpen(null)}>
-                  <Link to={navHrefs[name] || `/${name.toLowerCase().replace(/\s+/g, "-")}`} className="px-1.5 min-[1280px]:px-2 min-[1440px]:px-2.5 py-2 text-[12.5px] min-[1280px]:text-[13.5px] min-[1440px]:text-[14.5px] font-[600] text-[#072A6C] hover:text-[#D4AF37] transition-colors whitespace-nowrap font-[var(--font-poppins)] inline-flex items-center gap-1">{name}<ChevronDown size={12}/></Link>
+                  <Link to={navHrefs[name] || `/${name.toLowerCase().replace(/\s+/g, "-")}`} className="px-1.5 min-[1280px]:px-2 min-[1440px]:px-2 py-2 text-[12.5px] min-[1280px]:text-[13.5px] min-[1440px]:text-[14.5px] font-[600] text-[#072A6C] hover:text-[#D4AF37] transition-colors whitespace-nowrap font-[var(--font-poppins)] inline-flex items-center gap-1">{name}<ChevronDown size={12}/></Link>
                   <div className="absolute left-0 top-full hidden min-w-48 rounded-xl border border-gray-200 bg-white py-2 shadow-xl group-hover:flex group-focus-within:flex flex-col z-50">{cmsChildren.map(item => <Link key={item.to} to={item.to} className="px-4 py-2 text-xs text-gray-700 hover:bg-slate-50 hover:text-[#D4AF37]">{item.label}</Link>)}</div>
                 </div>
               );
@@ -702,7 +707,7 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
                 <Link
                   key={name}
                   to={navHrefs[name]}
-                  className="px-1.5 min-[1280px]:px-2 min-[1440px]:px-2.5 py-2 text-[12.5px] min-[1280px]:text-[13.5px] min-[1440px]:text-[14.5px] font-[600] text-[#072A6C] hover:text-[#D4AF37] transition-colors whitespace-nowrap font-[var(--font-poppins)]"
+                  className="px-1.5 min-[1280px]:px-2 min-[1440px]:px-2 py-2 text-[12.5px] min-[1280px]:text-[13.5px] min-[1440px]:text-[14.5px] font-[600] text-[#072A6C] hover:text-[#D4AF37] transition-colors whitespace-nowrap font-[var(--font-poppins)]"
                 >
                   {name}
                 </Link>
@@ -711,7 +716,7 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
           </nav>
 
           {/* Right CTA */}
-          <div className="hidden min-[1024px]:flex items-center gap-2 min-[1280px]:gap-3 shrink-0 z-10 bg-white">
+          <div className="hidden min-[1440px]:flex items-center gap-2 min-[1280px]:gap-3 shrink-0 z-10 bg-white">
             <Link
               to="/admissions/apply"
               className="h-9 min-[1280px]:h-10 px-3.5 min-[1280px]:px-4 text-xs min-[1280px]:text-xs min-[1440px]:text-sm bg-[#D4AF37] hover:bg-[#C9A84C] text-white font-bold rounded-[10px] min-[1280px]:rounded-[12px] inline-flex items-center justify-center transition-colors shadow-sm font-[var(--font-poppins)] whitespace-nowrap"
@@ -721,7 +726,7 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
           </div>
 
           {/* Mobile menu trigger */}
-          <div className="flex min-[1024px]:hidden items-center gap-1">
+          <div className="flex min-[1440px]:hidden items-center gap-1">
             <button 
               onClick={() => setMobileOpen(!mobileOpen)} 
               className="p-2 text-[#222222] hover:text-[#D4AF37] transition-colors cursor-pointer outline-none"
@@ -809,8 +814,11 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
 
       {/* Mobile drawer */}
       {mobileOpen && (
-        <div className="fixed inset-x-0 bottom-0 top-[78px] sm:top-[88px] md:top-[98px] z-50 bg-white flex flex-col p-6 overflow-y-auto min-[1024px]:hidden shadow-2xl border-t border-gray-100">
+        <div className="fixed inset-x-0 bottom-0 top-[78px] sm:top-[88px] md:top-[98px] min-[1280px]:top-[105px] z-50 bg-white flex flex-col p-6 overflow-y-auto min-[1440px]:hidden shadow-2xl border-t border-gray-100">
           {visibleNavLinks.map((name) => {
+            if (name === "Syllabus & Regulations") {
+              return <SyllabusRegulationsMenu key={name} mobile onNavigate={() => setMobileOpen(false)} />;
+            }
             if (name === "About Us") {
               return (
                 <div key={name} className="flex flex-col border-b border-gray-100 py-3">

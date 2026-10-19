@@ -6,6 +6,9 @@
     "node": ">=22 <25"
   },
   "scripts": {
+    "test:research-tables:browser": "npm run build && node tests/research-table-browser.cjs",
+    "test:research-tables": "npm run build && node tests/research-table.cjs",
+    "test:academic-documents": "npm run build && node tests/academic-documents.cjs",
     "test:media": "npm run build && node tests/media-storage-runner.cjs",
     "dev": "tsx watch src/index.ts",
     "build": "tsc",

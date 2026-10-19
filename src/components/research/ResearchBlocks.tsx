@@ -1,6 +1,7 @@
 import React from "react";
 import { ResearchBlock, safeResearchUrl } from "../../data/researchBlocks";
 import "../../styles/research-blocks.css";
+import { ResearchTable } from "./ResearchTable";
 
 export function ResearchBlocks({ blocks, editing = false, showHidden = false }: { blocks: ResearchBlock[]; editing?: boolean; showHidden?: boolean }) {
   return <div className="research-block-content">{blocks.filter(block => showHidden || !block.hidden).map(block => <div className={`research-block research-block-${block.type}`} key={block.id} data-block-id={block.id}><ResearchBlockContent block={block} editing={editing} showHidden={showHidden} /></div>)}</div>;
@@ -12,6 +13,7 @@ export function ResearchBlockContent({ block, editing = false, showHidden = fals
   switch (block.type) {
     case "heading": { const Tag = block.level || "h3"; return <Tag className="research-block-heading">{block.text}</Tag>; }
     case "text": return <p className="research-block-text">{block.text}</p>;
+    case "table": return block.table ? <ResearchTable table={block.table} /> : null;
     case "bullets": return <ul className="research-bullet-list">{(block.bullets || []).filter(bullet => showHidden || !bullet.hidden).map(bullet => {
       const url = bullet.targetKind === "none" ? undefined : safeResearchUrl(bullet.href);
       return <li className={`research-document${bullet.hidden ? " research-preview-hidden" : ""}`} key={bullet.id}>

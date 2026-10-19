@@ -6,6 +6,7 @@ import { MediaAsset, MediaPicker, uploadMedia } from "./MediaStorage";
 import { useAdminAccess } from "../../security/adminAccess";
 import { ResearchImageProperties } from "./ResearchImageProperties";
 import { ResearchNumberField } from "./ResearchNumberField";
+import { ResearchTableEditor } from "./ResearchTableEditor";
 import "../../styles/research-editor.css";
 
 type BlocksUpdate = ResearchBlock[] | ((previous: ResearchBlock[]) => ResearchBlock[]);
@@ -72,8 +73,10 @@ export function ResearchComponentEditor({ blocks, onChange, onPublish, disabled,
   const [picker, setPicker] = useState<{ kind: "image" | "pdf"; select: (asset: MediaAsset) => void } | null>(null);
   const [uploads, setUploads] = useState(0);
   const [placementError, setPlacementError] = useState("");
+  const [tableEditorId, setTableEditorId] = useState("");
   const resizeSession = useRef<{ id: string; x: number; y: number; width: number; height: number; container: number; fixed: boolean } | null>(null);
   const selected = findResearchBlock(blocks, selectedId) || blocks[0];
+  const tableBeingEdited = findResearchBlock(blocks, tableEditorId);
   const groups = allGroups(blocks);
   const chooseMedia = (kind: "image" | "pdf", select: (asset: MediaAsset) => void) => setPicker({ kind, select });
   const uploadBusy = (busy: boolean) => { setUploads(count => count + (busy ? 1 : -1)); onUploadBusy(busy); };
@@ -90,6 +93,7 @@ export function ResearchComponentEditor({ blocks, onChange, onPublish, disabled,
     onChange(previous => { const parent = findResearchBlock(previous, parentId); return parent?.type === "accordion"
       ? updateResearchBlock(previous, parent.id, { children: [...(parent.children || []), added] }) : [...previous, added]; });
     setSelectedId(added.id); setPreview(false);
+    if (type === "table") setTableEditorId(added.id);
   };
   const remove = (id: string) => { onChange(previous => removeResearchBlock(previous, id)); if (insertParentId === id) setInsertParentId(""); };
   const moveToGroup = (parentId: string) => {
@@ -183,6 +187,7 @@ export function ResearchComponentEditor({ blocks, onChange, onPublish, disabled,
             <ResearchImageProperties block={selected} blocks={blocks} onChange={patch} onPlace={placeImage} />
             <DestinationFields value={selected} optional onChange={patch} onBrowse={chooseMedia} onBusy={uploadBusy} />
           </>}
+          {selected.type === "table" && <><p className="research-image-tip">Build tables with grouped cells, custom widths, colours and spreadsheet paste.</p><button type="button" data-admin-action="edit" disabled={disabled} onClick={() => setTableEditorId(selected.id)}>Edit table</button><p className="research-image-tip">{selected.table?.rows.length || 0} rows × {selected.table?.columnWidths.length || 0} columns</p></>}
           {selected.type === "accordion" && <button type="button" className="secondary" data-admin-action="view" disabled={!groups.some(group => group.block.id === selected.id && group.depth < 8)} onClick={() => setInsertParentId(selected.id)}>Add components inside this group</button>}
           {selected.type === "spacer" && <ResearchNumberField label="Height (pixels)" value={selected.space || 32} min={8} max={160} onChange={space => patch({ space })} />}
           <label>Move component to<select value="" onChange={event => { if (event.target.value) moveToGroup(event.target.value === "root" ? "" : event.target.value); }}><option value="">Choose destination…</option><option value="root">End of section</option>{groups.filter(({ block }) => researchPlacementFits(blocks, selected, block.id)).map(({ block }) => <option key={block.id} value={block.id}>Inside: {block.text}</option>)}</select></label>
@@ -191,5 +196,6 @@ export function ResearchComponentEditor({ blocks, onChange, onPublish, disabled,
       </aside>}
     </div>
     {picker && <MediaPicker type={picker.kind} onSelect={asset => { picker.select(asset); setPicker(null); }} onClose={() => setPicker(null)} />}
+    {tableBeingEdited?.table && <ResearchTableEditor key={tableBeingEdited.id} value={tableBeingEdited.table} onChange={table => onChange(previous => updateResearchBlock(previous, tableEditorId, { table }))} onClose={() => setTableEditorId("")} />}
   </section>;
 }

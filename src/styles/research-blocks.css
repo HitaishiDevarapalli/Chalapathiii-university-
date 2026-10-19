@@ -1,6 +1,19 @@
 .research-block-content { min-width: 0; display: flow-root; }
 .research-block { margin: 16px 0; min-width: 0; }
 .research-block:first-child { margin-top: 0; }
+.research-block-table { clear: both; }
+.research-table-container { min-width: 0; max-width: 100%; }
+.research-table-hint { display: none; margin: 0 0 10px; font-size: 12px; color: #65748a; }
+@media (max-width: 700px) { .research-table-hint { display: block; } }
+.research-table-scroll { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; }
+.research-table-scroll:focus-visible { outline: 2px solid #072a6c; outline-offset: 3px; }
+.research-data-table { width: 100%; border-collapse: collapse; table-layout: fixed; line-height: 1.7; color: #333; background: white; }
+.research-data-table caption { caption-side: top; text-align: left; font-size: 18px; font-weight: 700; color: #072a6c; padding: 0 0 22px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.research-data-table :is(th, td) { border: 1px solid var(--rt-border); padding: var(--rt-padding); white-space: pre-wrap; overflow-wrap: anywhere; text-align: left; vertical-align: top; }
+.research-data-table thead th { background: var(--rt-header-bg); color: var(--rt-header-color); font-weight: 700; }
+.research-data-table.rt-striped tbody tr:nth-child(even) { background: #f7f9fc; }
+.research-data-table.rt-borders-horizontal :is(th, td) { border-inline: 0; }
+.research-data-table.rt-borders-none :is(th, td) { border: 0; }
 .research-block-bullets + .research-block-bullets { margin-top: -5px; }
 .research-block-heading { color: #072a6c; font-weight: 800; line-height: 1.35; overflow-wrap: anywhere; }
 h2.research-block-heading { font-size: 28px; } h3.research-block-heading { font-size: 23px; } h4.research-block-heading { font-size: 19px; }

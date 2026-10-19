@@ -2,6 +2,7 @@
   { "id": "Main Menu", "label": "Main navigation", "path": "/" },
   { "id": "About Us", "label": "About Us", "path": "/about" },
   { "id": "Academics", "label": "Academics", "path": "/academics" },
+  { "id": "Syllabus & Regulations", "label": "Syllabus & Regulations", "path": "/academics/documents/btech/syllabus" },
   { "id": "Admissions", "label": "Admissions", "path": "/admissions" },
   { "id": "Research", "label": "Research", "path": "/research" },
   {

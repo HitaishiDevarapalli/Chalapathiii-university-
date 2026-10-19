@@ -94,6 +94,8 @@ import { SectionAwareSidebar as AdminSidebar } from "../pageBuilder/SectionAware
 import { AdminLoginSteps } from "../components/admin/AdminLoginSteps";
 import { SecurityCMS } from "../components/admin/SecurityCMS";
 import { AdminAccessContext, AdminActionGuard, AdminIdentity, canAccess, canViewTab, securityRequest } from "../security/adminAccess";
+import AcademicDocumentsCMS from "../components/admin/AcademicDocumentsCMS";
+import type { AcademicDegree, AcademicDocumentCategory } from "../services/academicDocuments";
 import { AcademicsCMS } from "../components/admin/AcademicsCMS";
 
 import { 
@@ -202,10 +204,11 @@ export default function AdminPortal() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    "dashboard" | "pages" | "page-builder" | "homepage" | "about" | "academics" | "certifications" | "admissions" |
+    "dashboard" | "pages" | "page-builder" | "homepage" | "about" | "academics" | "academic-documents" | "certifications" | "admissions" |
     "research" | "directories" | "campus-life" | "placements" | "news" | "events" | "news-events" | 
     "contact" | "links" | "gallery" | "media-storage" | "footer" | "settings" | "popup" | "security"
   >("dashboard");
+  const [academicDocumentsSection, setAcademicDocumentsSection] = useState<{ degree: AcademicDegree; category: AcademicDocumentCategory }>({ degree: "btech", category: "syllabus" });
   const [sectionPageId, setSectionPageId] = useState("");
   const [sectionPageOpenVersion, setSectionPageOpenVersion] = useState(0);
   const can = (module: string, action = "view") => canAccess(adminIdentity, module, action);
@@ -1794,7 +1797,7 @@ export default function AdminPortal() {
   }
 
   interface AdminNavItem {
-    id: "dashboard" | "pages" | "page-builder" | "homepage" | "about" | "academics" | "certifications" | "admissions" | "research" | "directories" | "campus-life" | "placements" | "news" | "events" | "news-events" | "contact" | "links" | "gallery" | "media-storage" | "footer" | "settings" | "popup" | "security";
+    id: "dashboard" | "pages" | "page-builder" | "homepage" | "about" | "academics" | "academic-documents" | "certifications" | "admissions" | "research" | "directories" | "campus-life" | "placements" | "news" | "events" | "news-events" | "contact" | "links" | "gallery" | "media-storage" | "footer" | "settings" | "popup" | "security";
     label: string;
     icon: any;
     badge?: string;
@@ -1835,6 +1838,17 @@ export default function AdminPortal() {
         { id: "advantage", label: "4. Chalapathi Advantage", onClick: () => { setActiveTab("about"); setActiveAboutSubTab("advantage"); }, isActive: activeTab === "about" && activeAboutSubTab === "advantage" },
         { id: "homepage", label: "5. Homepage About & Journey", onClick: () => { setActiveTab("about"); setActiveAboutSubTab("homepage"); }, isActive: activeTab === "about" && activeAboutSubTab === "homepage" },
       ]
+    },
+    {
+      id: "academic-documents",
+      label: "Syllabus & Regulations",
+      icon: FileText,
+      subItems: (["btech", "mtech"] as const).flatMap(degree => (["syllabus", "regulations"] as const).map(category => ({
+        id: `${degree}-${category}`,
+        label: `${degree === "btech" ? "BTech" : "MTech"} — ${category === "syllabus" ? "Syllabus" : "Regulations"}`,
+        onClick: () => { setAcademicDocumentsSection({ degree, category }); setActiveTab("academic-documents"); },
+        isActive: activeTab === "academic-documents" && academicDocumentsSection.degree === degree && academicDocumentsSection.category === category,
+      }))),
     },
     {
       id: "academics",
@@ -1954,7 +1968,8 @@ export default function AdminPortal() {
         {/* Main Workspace */}
         <main className="admin-workspace" id="admin-workspace" key={activeTab}>
           {!canViewTab(adminIdentity, activeTab) ? <div className="admin-panel security-empty"><ShieldCheck size={28} /><h2>No modules have been assigned</h2><p>Ask a Super Administrator to grant the permissions required for your work.</p></div> :
-          <AdminActionGuard module={activeTab === "news-events" ? newsEventsModuleTab : activeTab === "page-builder" ? "pages" : activeTab}>
+          <AdminActionGuard module={activeTab === "academic-documents" ? "academics" : activeTab === "news-events" ? newsEventsModuleTab : activeTab === "page-builder" ? "pages" : activeTab}>
+          {activeTab === "academic-documents" && <AcademicDocumentsCMS initialDegree={academicDocumentsSection.degree} initialCategory={academicDocumentsSection.category} />}
           {activeTab === "page-builder" && <React.Suspense fallback={<div role="status" className="admin-panel pb-empty">Loading Page Builder…</div>}><PageBuilder key={sectionPageId ? `${sectionPageId}:${sectionPageOpenVersion}` : "builder"} initialPageId={sectionPageId} onReturnToPages={() => setSectionPageId("")} /></React.Suspense>}
           {activeTab === "security" && <SecurityCMS />}
           {activeTab === "media-storage" && <MediaBrowser />}

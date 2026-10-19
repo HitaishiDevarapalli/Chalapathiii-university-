@@ -34,6 +34,7 @@ import uploadRoutes from "./routes/upload";
 import cmsRoutes from "./routes/cms";
 import pageBuilderRoutes from "./routes/pageBuilder";
 import mediaRoutes from "./routes/media";
+import academicDocumentsRoutes from "./routes/academicDocuments";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -104,6 +105,7 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api/cms", cmsRoutes);
 app.use("/api/page-builder", pageBuilderRoutes);
 app.use("/api/media", mediaRoutes);
+app.use("/api/academic-documents", academicDocumentsRoutes);
 
 app.use((error: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error("Request rejected");

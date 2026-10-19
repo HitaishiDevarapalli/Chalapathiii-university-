@@ -10,6 +10,7 @@ import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
 import Home from "./pages/Home";
 import DynamicPage from "./pages/DynamicPage";
+import AcademicDocuments from "./pages/AcademicDocuments";
 import Genesis from "./pages/Genesis";
 import Events from "./pages/Events";
 import News from "./pages/News";
@@ -301,6 +302,7 @@ function AppContent() {
             <Route path="/academics/degrees" element={<DynamicPage />} />
             <Route path="/academics/electives" element={<DynamicPage />} />
             <Route path="/academics/rules" element={<DynamicPage />} />
+            <Route path="/academics/documents/:degree/:category" element={<AcademicDocuments />} />
             <Route path="/academics/teaching" element={<DynamicPage />} />
             <Route path="/academics/bos" element={<DynamicPage />} />
             <Route path="/academics/*" element={<DynamicPage />} />

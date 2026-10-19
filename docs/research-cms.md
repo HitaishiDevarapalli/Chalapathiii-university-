@@ -13,6 +13,7 @@ Available components:
 - **Bullet list:** add, remove and reorder individual points. Each bullet supports a description, badge, visibility and click action: no link, a website URL, or an uploaded PDF.
 - **Button:** label, navy/outline style, website or PDF destination, and optional new-tab behavior.
 - **Image:** direct upload or Media Storage selection, alt text, caption, custom size, placement and optional click destination.
+- **Table:** editable rows and columns, merged cells, formatting, widths and spreadsheet/CSV import.
 - **Expandable group:** headings and other components inside a collapsible section.
 - **Divider** and **Space:** control content separation and vertical spacing.
 
@@ -27,6 +28,24 @@ Unsaved edits are also kept as a browser recovery draft. After switching admin t
 For a bullet or button, set **Click action → PDF document**, then use **Upload PDF** or **Media Storage**. Images have **Upload image** and **Media Storage** controls. An upload is stored once in the shared catalog; other components can reuse the same file. Uploads accept PDF, JPG, PNG, WebP and GIF, up to the existing 10 MB limit. Image uploads are optimized to WebP by the server. Files use permanent `/uploads/...` URLs and PostgreSQL metadata. Publishing is disabled while a file is uploading.
 
 Uploading uses the existing `gallery.create` permission. Research readers can browse existing media; publication requires the existing research edit/publish permissions. Deleting a component or sidebar option does not delete files from Media Storage. Missing destinations and invalid/executable URLs are rejected before publication and independently on the server.
+
+## Flexible tables
+
+In **Admin → Research & Innovation**, select the sidebar section you want to edit, then choose **Table** from Components. The table builder opens automatically. Select an existing table and click **Edit table** to reopen it.
+
+- Use **Programme eligibility template** to start with School, Ph.D. Programme and Minimum Eligibility columns, including the school cells merged vertically like the reference. The eligibility entries are placeholders; enter the approved criteria before publishing.
+- Click a cell, then edit **Cell text**. Enter adds a line break. Double-click a cell, or press Enter on it, to focus its text field. Arrow keys move between cells.
+- Shift-click or drag across cells to select a rectangle, then choose **Merge selected cells**. **Split merged cells** separates them again. When merging, existing text is joined with line breaks. Splitting keeps that joined text in the first cell; Undo restores the original cells and their separate text.
+- On a phone, use **Select through row** and **Select through column** to extend the selection without a keyboard.
+- Insert, delete or move rows and columns. Insertions through a merged cell expand its span. Deleting its first row or column keeps its text in the remaining merged cell. Split cells first if a move would break their span. At least one row and one column must remain.
+- Set column widths as percentages. Other columns adjust to keep the total at 100%. Choose up to five header rows; merges remain within the header or within the body.
+- Apply bold, italic, underline, text alignment, vertical alignment and text/background colours to selected cells. **Clear cell formatting** keeps the text and merges while restoring inherited formatting.
+- Adjust the caption, header/background colours, borders, alternate row shading, font size, cell padding and minimum table width. Wide tables scroll horizontally within the public page on a phone.
+- Use **Paste spreadsheet / CSV** to import copied Excel/Google Sheets cells or quoted CSV. Multiline cells are supported. Import and the eligibility template replace the current contents; **Undo / Redo** let you recover the previous table while the builder remains open.
+
+Tables support up to **200 rows × 20 columns**. Choose **Done**, review the table in the research canvas, then **Publish changes**. Closing the builder retains your research draft; it does not publish. Table data, merges and formatting use the existing server publishing flow and survive reloads.
+
+Run `npm run test:research-tables` from `server/` for structure and import tests. After building the frontend and backend, `node tests/research-table-browser.cjs` verifies the full editor and public page against isolated test data. Screenshots are under `work/research-qa/tables/`.
 
 ## Photo size and placement
 

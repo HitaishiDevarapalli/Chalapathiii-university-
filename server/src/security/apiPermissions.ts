@@ -33,7 +33,7 @@ export const isPublicConfig = (key: string) => !!configModule(key) && !["enquiri
 export const visibleConfig = (req: Request, key: string) => !isInternalConfig(key) && (isPublicConfig(key) || !!req.adminUser && permitted(req.adminUser, `${configModule(key) || "settings"}.view`));
 const modules: Record<string, string> = { news: "news", events: "events", announcements: "announcements", "hero-slides": "homepage",
   enquiries: "enquiries", applications: "applications", faculty: "directories", placements: "placements", "event-registrations": "events",
-  contacts: "contact", programs: "academics", certifications: "certifications", pages: "pages", "homepage-sections": "homepage", upload: "gallery" };
+  contacts: "contact", programs: "academics", "academic-documents": "academics", certifications: "certifications", pages: "pages", "homepage-sections": "homepage", upload: "gallery" };
 const privateReads = new Set(["enquiries", "applications", "event-registrations"]);
 const publicCreates = new Set(["enquiries", "applications", "event-registrations"]);
 
