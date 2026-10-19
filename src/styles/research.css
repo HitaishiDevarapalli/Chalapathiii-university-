@@ -18,7 +18,7 @@
 .research-nav-chevron { font-size: 22px; opacity: .65; }
 .research-mobile-section { display: none; }
 .research-content { min-width: 0; padding: 7px 0 25px; }
-.research-section-heading { display: flex; gap: 20px; align-items: end; margin-bottom: 15px; }
+.research-section-heading { display: flex; gap: 20px; align-items: end; margin-bottom: 15px; scroll-margin-top: 150px; }
 .research-section-heading h2 { font-weight: 800; font-size: 26px; line-height: 1.25; margin: 0; color: var(--research-blue); }
 .research-heading-rule { flex: 1; height: 1px; background: #d9dee7; margin-bottom: 6px; }
 .research-section-description { color: #687487; font-size: 14px; margin: 0 0 22px; white-space: pre-line; }

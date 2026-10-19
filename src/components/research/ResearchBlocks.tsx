@@ -1,7 +1,17 @@
 import React from "react";
+import { Link, useInRouterContext } from "react-router-dom";
 import { ResearchBlock, safeResearchUrl } from "../../data/researchBlocks";
 import "../../styles/research-blocks.css";
 import { ResearchTable } from "./ResearchTable";
+
+function ResearchLink({ href, native = false, ...props }: Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, "href"> & { href: string; native?: boolean }) {
+  const inRouter = useInRouterContext();
+  const file = /\.[a-z0-9]{1,8}(?:[?#]|$)/i.test(href) || /^\/(?:uploads|assets|api|research\/downloads)(?:\/|$)/i.test(href);
+  if (inRouter && !native && !file && href.startsWith("/") && (!props.target || props.target === "_self") && !props.download) {
+    return <Link {...props} to={href} preventScrollReset />;
+  }
+  return <a {...props} href={href} />;
+}
 
 export function ResearchBlocks({ blocks, editing = false, showHidden = false }: { blocks: ResearchBlock[]; editing?: boolean; showHidden?: boolean }) {
   return <div className="research-block-content">{blocks.filter(block => showHidden || !block.hidden).map(block => <div className={`research-block research-block-${block.type}`} key={block.id} data-block-id={block.id}><ResearchBlockContent block={block} editing={editing} showHidden={showHidden} /></div>)}</div>;
@@ -18,18 +28,18 @@ export function ResearchBlockContent({ block, editing = false, showHidden = fals
       const url = bullet.targetKind === "none" ? undefined : safeResearchUrl(bullet.href);
       return <li className={`research-document${bullet.hidden ? " research-preview-hidden" : ""}`} key={bullet.id}>
         <span className="research-arrow" aria-hidden="true" /><div className="research-document-content"><div className="research-document-title">
-          {url ? <a href={url} target={bullet.newTab ? "_blank" : undefined} rel={bullet.newTab ? "noopener noreferrer" : undefined} onClick={editing ? event => event.preventDefault() : undefined}>{bullet.text}</a> : <span>{bullet.text}</span>}
+          {url ? <ResearchLink href={url} native={editing || bullet.targetKind === "pdf"} target={bullet.newTab ? "_blank" : undefined} rel={bullet.newTab ? "noopener noreferrer" : undefined} onClick={editing ? event => event.preventDefault() : undefined}>{bullet.text}</ResearchLink> : <span>{bullet.text}</span>}
           {bullet.badge && <span className="research-badge">{bullet.badge}</span>}
         </div>{bullet.description && <p>{bullet.description}</p>}</div>
       </li>;
     })}</ul>;
-    case "button": return href ? <a {...linkProps} className={`research-action research-action-${block.variant || "primary"}`}>{block.text}</a>
+    case "button": return href ? <ResearchLink {...linkProps} href={href} native={editing || block.targetKind === "pdf"} className={`research-action research-action-${block.variant || "primary"}`}>{block.text}</ResearchLink>
       : editing ? <span className={`research-action research-action-${block.variant || "primary"}`}>{block.text || "Button"}</span> : null;
     case "image": {
       const src = safeResearchUrl(block.imageUrl);
       const fixed = block.imageHeightMode === "fixed";
       const image = src ? <img src={src} alt={block.alt || ""} loading="lazy" decoding="async" style={{ objectFit: block.imageFit || "cover", objectPosition: `${block.imageFocusX ?? 50}% ${block.imageFocusY ?? 50}%` }} /> : editing ? <div className="research-image-placeholder">Upload an image or choose one from Media Storage</div> : null;
-      const frame = <div className="research-image-frame" data-fixed-height={fixed || undefined} style={fixed ? { "--research-image-height": `${block.imageHeight || 280}px` } as React.CSSProperties : undefined}>{href ? <a {...linkProps}>{image}</a> : image}{resizeHandle}</div>;
+      const frame = <div className="research-image-frame" data-fixed-height={fixed || undefined} style={fixed ? { "--research-image-height": `${block.imageHeight || 280}px` } as React.CSSProperties : undefined}>{href ? <ResearchLink {...linkProps} href={href} native={editing || block.targetKind === "pdf"}>{image}</ResearchLink> : image}{resizeHandle}</div>;
       return <figure className={`research-figure research-image-${block.width || "full"} research-align-${block.align || "left"}`} data-image-placement={block.imagePlacement || "block"}
         style={{ ...(block.width === "custom" ? { width: `${block.imageWidth || 70}${block.imageWidthUnit || "%"}` } : {}), marginTop: block.imageSpaceBefore ?? 16, marginBottom: block.imageSpaceAfter ?? 16, "--research-image-text-gap": `${block.imageTextGap ?? 24}px` } as React.CSSProperties}>
         {frame}{block.caption && <figcaption>{block.caption}</figcaption>}

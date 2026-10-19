@@ -6,6 +6,7 @@
     "node": ">=22 <25"
   },
   "scripts": {
+    "test:research-navigation": "node tests/research-navigation-browser.cjs",
     "test:research-content": "npm run build && node tests/research-content.cjs",
     "test:research-tables:browser": "npm run build && node tests/research-table-browser.cjs",
     "test:research-tables": "npm run build && node tests/research-table.cjs",

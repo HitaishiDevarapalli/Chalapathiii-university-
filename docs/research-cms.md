@@ -6,9 +6,19 @@ The content supplied in `cu-research-page (1).zip` is built into the existing Re
 
 New installations and the exact original, untouched placeholder content load this page automatically. Previously customised or deliberately emptied content remains intact. For an existing customised page, open **Admin → Research & Innovation → Load supplied research content → Use supplied content in editor**, review it, then **Publish changes**. This replaces the editor draft only until publication. All imported text, tables, buttons and FAQs use the usual editor and server publishing flow.
 
+Research buttons, bullets and linked images use client navigation for internal website pages. Switching a research section updates the selected content and brings its heading into view without reloading the document or restarting the site's intro/popup. PDF downloads, email/external links and explicit new-tab links keep their normal browser behavior. Editor preview links remain inactive.
+
+Run `npm run test:research-navigation` from `server/` after the frontend build for the browser regression test. It intercepts every request and does not need a database or a running web server.
+
 Run `npm run test:research-content` from `server/` after the frontend build for the supplied-content API/browser integration check. It uses an isolated temporary database; it does not change production content.
 
 Dates, fees, eligibility and policy wording are transcribed from the supplied files. The source's Approved Supervisors table has two empty entries; names, departments and research areas must be completed by the University in admin. No supervisor details or phone number have been invented. Email buttons use validated `mailto:` links. Browser layout follows the existing university website rather than embedding a separate HTML page.
+
+### Nginx research route
+
+Nginx's `try_files $uri $uri/ /index.html` resolves the physical research download directory before the React fallback. A directory without an index returns 403 at `/research/`. The Vite build now emits `dist/research/index.html` with the same contents as `dist/index.html`. Publish the entire `dist/research/` directory alongside `dist/assets/`; keep the PDFs and this app entry together. This also supports query-string section links without enabling directory listing or changing the API/security configuration.
+
+To repair an already published release immediately, run `install -m 644 /var/www/chalapathi/index.html /var/www/chalapathi/research/index.html` on the VPS. This copies the existing release's app entry; no rebuild or Nginx restart is needed.
 
 Open **Admin → Research & Innovation**, select a sidebar option, and use **Build this section**. You can create as many sidebar options as you need with **Add sidebar option**; rename, reorder, hide or delete any existing option.
 
