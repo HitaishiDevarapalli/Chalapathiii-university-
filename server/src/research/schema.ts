@@ -25,10 +25,10 @@ export interface ResearchBlock {
 }
 export function safeResearchUrl(value?: string): string | undefined {
   const url = value?.trim();
-  return url && (/^https?:\/\/[^\s\\]+$/i.test(url) || /^\/(?!\/)[^\s\\]*$/.test(url)) && !/[\x00-\x1f\x7f]/.test(url) ? url : undefined;
+  return url && (/^https?:\/\/[^\s\\]+$/i.test(url) || /^\/(?!\/)[^\s\\]*$/.test(url) || /^mailto:[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}(?:\?subject=[a-z0-9%._~!()*'-]*)?$/i.test(url)) && !/[\x00-\x1f\x7f]/.test(url) ? url : undefined;
 }
 const text = z.string().max(200000);
-const url = z.string().max(4096).refine(value => !value || !!safeResearchUrl(value), "Use an HTTP(S) URL or a website path starting with /.");
+const url = z.string().max(4096).refine(value => !value || !!safeResearchUrl(value), "Use an HTTP(S) URL, email link or a website path starting with /.");
 const destination = {
   href: url.optional(), targetKind: z.enum(["none", "url", "pdf"]).optional(),
   newTab: z.boolean().optional(), mediaId: z.string().max(200).optional(),

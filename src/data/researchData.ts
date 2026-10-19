@@ -1,4 +1,5 @@
 import type { ResearchBlock } from "./researchBlocks";
+import suppliedResearchContent from "./researchContent2026.json";
 export interface ResearchSection { id: string; title: string; description: string; hidden?: boolean; blocks?: ResearchBlock[]; }
 export interface ResearchItem {
   id: string; title: string; category: string; sectionId?: string; description: string;
@@ -11,7 +12,7 @@ export interface ResearchCMSData {
   contactEmail: string; contactPhone: string; hidden?: boolean;
   sections: ResearchSection[]; items: ResearchItem[];
 }
-export const RESEARCH_SECTIONS: ResearchSection[] = [
+const LEGACY_RESEARCH_SECTIONS: ResearchSection[] = [
   { id: "updates", title: "Research Updates", description: "Notifications, admissions and resources for research scholars." },
   { id: "overview", title: "Overview", description: "Explore research, academic inquiry and innovation at Chalapathi University." },
   { id: "academic", title: "Academic Research", description: "" },
@@ -35,11 +36,11 @@ const updateTitles = [
   "Research Notification for 2024–25 admitted batch (05–01–2026)",
   "Research Notification for 2025–26 admitted batch (05–01–2026)",
 ];
-export const DEFAULT_RESEARCH_DATA: ResearchCMSData = {
+const LEGACY_RESEARCH_DATA: ResearchCMSData = {
   schemaVersion: 2, pageTitle: "Research & Innovation", pageSubtitle: "Advancing knowledge. Inspiring discovery.",
   isUnderConstruction: false, underConstructionMessage: "Research information is being updated. Please check back soon.",
   contactEmail: "research@chalapathi.ac.in", contactPhone: "+91 95055 05566", hidden: false,
-  sections: RESEARCH_SECTIONS,
+  sections: LEGACY_RESEARCH_SECTIONS,
   items: [
     ...updateTitles.map((title, i): ResearchItem => ({ id: `research-update-${i + 1}`, title, sectionId: "updates", category: "General", description: "", badge: i === 0 ? "NEW" : "", type: "document" })),
     { id: "pre-phd-syllabus", title: "Pre Ph.D. Syllabus with effect from Academic Year 2025–26", sectionId: "updates", category: "Doctoral Program (Ph.D.)", type: "accordion", description: "The following two subjects are mandatory for scholars of all the departments." },
@@ -47,6 +48,12 @@ export const DEFAULT_RESEARCH_DATA: ResearchCMSData = {
     { id: "publication-ethics", title: "Research and Publication Ethics", sectionId: "updates", category: "Doctoral Program (Ph.D.)", parentId: "pre-phd-syllabus", description: "" },
   ],
 };
+/** Supplied university content, represented as editable CMS components. */
+export const DEFAULT_RESEARCH_DATA = suppliedResearchContent as ResearchCMSData;
+export const RESEARCH_SECTIONS = DEFAULT_RESEARCH_DATA.sections;
+const canonical = (value: unknown): string => JSON.stringify(value, (_key, item) =>
+  item && typeof item === "object" && !Array.isArray(item)
+    ? Object.fromEntries(Object.entries(item).sort(([a], [b]) => a.localeCompare(b))) : item);
 export function researchSectionForItem(item: ResearchItem): string {
   if (item.sectionId) return item.sectionId;
   return ({ "Thrust Area": "areas", "Sponsored Project": "sponsored", "Publication & Paper": "academic", "Patent & IP": "innovation", "Laboratory & Facility": "facilities", "Doctoral Program (Ph.D.)": "academic", "Research Fellowship": "academic" } as Record<string, string>)[item.category] || "updates";
@@ -54,6 +61,8 @@ export function researchSectionForItem(item: ResearchItem): string {
 // Preserve existing entries while upgrading the old placeholder to the new layout.
 export function normalizeResearchData(value: Partial<ResearchCMSData> | null): ResearchCMSData {
   if (!value || typeof value !== "object") return structuredClone(DEFAULT_RESEARCH_DATA);
+  // Upgrade only the exact original placeholder; never replace edited/deleted content.
+  if (value.pageSubtitle === LEGACY_RESEARCH_DATA.pageSubtitle && canonical(value) === canonical(LEGACY_RESEARCH_DATA)) return structuredClone(DEFAULT_RESEARCH_DATA);
   const migrated = value.schemaVersion !== 2;
   return { ...DEFAULT_RESEARCH_DATA, ...value, schemaVersion: 2,
     isUnderConstruction: migrated ? false : !!value.isUnderConstruction,

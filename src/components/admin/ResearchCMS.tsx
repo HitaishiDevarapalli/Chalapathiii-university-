@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Plus, Trash2, Save, X, ArrowUp, ArrowDown } from "lucide-react";
-import { ResearchCMSData, ResearchSection, researchSectionForItem } from "../../data/researchData";
+import { DEFAULT_RESEARCH_DATA, ResearchCMSData, ResearchSection, researchSectionForItem } from "../../data/researchData";
 import { countResearchBlocks, ResearchBlock, researchBlocksForSection } from "../../data/researchBlocks";
 import { publishResearch, readPublishedResearch, readResearchDraft, readResearchEditorDraft, storeResearchEditorDraft, clearResearchEditorDraft } from "../../services/researchPublishing";
 import { ResearchComponentEditor } from "./ResearchComponentEditor";
@@ -17,6 +17,7 @@ export const ResearchCMS: React.FC<ResearchCMSProps> = ({ notifySave, onPublishR
   const [uploads, setUploads] = useState(0);
   const [recoverableDraft, setRecoverableDraft] = useState(readResearchEditorDraft);
   const [newSection, setNewSection] = useState<Pick<ResearchSection, "title" | "description" | "hidden"> | null>(null);
+  const [showSuppliedContent, setShowSuppliedContent] = useState(false);
   const sectionDialog = useRef<HTMLDialogElement>(null);
   useEffect(() => { if (newSection && !sectionDialog.current?.open) sectionDialog.current?.showModal(); }, [newSection]);
   useEffect(() => {
@@ -83,6 +84,9 @@ export const ResearchCMS: React.FC<ResearchCMSProps> = ({ notifySave, onPublishR
     {dirty && <p className="research-editor-unsaved" role="status">Unsaved changes — publish when your content is ready.</p>}
     {recoverableDraft && !dirty && ready && <div className="research-admin-draft"><p>Unsaved research edits are available from this browser.</p><div className="research-admin-actions"><button type="button" className="secondary" data-admin-action="edit" onClick={() => { setData(recoverableDraft); setDirty(true); setError(""); }}>Restore draft</button><button type="button" className="secondary" data-admin-action="edit" onClick={() => { clearResearchEditorDraft(); setRecoverableDraft(null); }}>Discard draft</button></div></div>}
     <fieldset disabled={!ready || loading || saving} className="research-admin-fields">
+      <section className="research-admin-card"><div className="research-admin-section-title"><div><h3>University research content · 2026–27</h3><p>The supplied research page includes 18 editable sections, eligibility tables, FAQs and six PDF documents.</p></div><button type="button" className="secondary" data-admin-action="edit" disabled={uploads > 0} onClick={() => setShowSuppliedContent(value => !value)}>{showSuppliedContent ? "Close content details" : "Load supplied research content"}</button></div>
+        {showSuppliedContent && <div className="research-admin-draft"><p>Load the supplied page into this editor to replace the current draft. Review all sections, then use Publish changes to save them to the website.</p><p>{DEFAULT_RESEARCH_DATA.sections.map(item => item.title).join(" · ")}</p><div className="research-admin-actions"><button type="button" data-admin-action="edit" disabled={uploads > 0} onClick={() => { editData(structuredClone(DEFAULT_RESEARCH_DATA)); setSectionId("overview"); setShowSuppliedContent(false); }}>Use supplied content in editor</button><button type="button" className="secondary" onClick={() => setShowSuppliedContent(false)}>Cancel</button></div></div>}
+      </section>
       <section className="research-admin-card"><h3>Page settings</h3><div className="research-admin-grid">
         <label>Page title<input value={data.pageTitle} onChange={e => editData({ pageTitle: e.target.value })} /></label>
         <label>Subtitle<input value={data.pageSubtitle} onChange={e => editData({ pageSubtitle: e.target.value })} /></label>

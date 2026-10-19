@@ -1,0 +1,2020 @@
+{
+  "schemaVersion": 2,
+  "pageTitle": "Research & Innovation",
+  "pageSubtitle": "Full-time and part-time doctoral programmes across Engineering, Computing Sciences, Sciences & Humanities and Business & Management – guided by experienced supervisors and dedicated research laboratories.",
+  "isUnderConstruction": false,
+  "underConstructionMessage": "Research information is being updated. Please check back soon.",
+  "contactEmail": "research@chalapathiuniversity.edu.in",
+  "contactPhone": "",
+  "hidden": false,
+  "sections": [
+    {
+      "id": "overview",
+      "title": "Overview of Research",
+      "description": "",
+      "blocks": [
+        {
+          "id": "cu-2026-133",
+          "type": "heading",
+          "text": "Ph.D. Admissions 2026–27",
+          "level": "h3"
+        },
+        {
+          "id": "cu-2026-134",
+          "type": "text",
+          "text": "Full-time and part-time doctoral programmes across Engineering, Computing Sciences, Sciences & Humanities and Business & Management – guided by experienced supervisors and dedicated research laboratories."
+        },
+        {
+          "id": "cu-2026-135",
+          "type": "bullets",
+          "bullets": [
+            {
+              "id": "cu-stat-0",
+              "text": "25 — Ph.D. faculty to guide research",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-stat-1",
+              "text": "8 — Departments offering the Ph.D.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-stat-2",
+              "text": "4 — Schools of study",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-stat-3",
+              "text": "FT & PT — Full-time and part-time Ph.D.",
+              "targetKind": "none"
+            }
+          ]
+        },
+        {
+          "id": "cu-2026-136",
+          "type": "text",
+          "text": "Admissions open for Ph.D. Programmes 2026-27 (Full Time & Part Time) — Last date for receiving hard copy of application: 25/10/2026"
+        },
+        {
+          "id": "cu-2026-137",
+          "type": "button",
+          "text": "Download Application",
+          "href": "/research?section=apply",
+          "targetKind": "url",
+          "newTab": false,
+          "variant": "primary"
+        },
+        {
+          "id": "cu-2026-138",
+          "type": "button",
+          "text": "Check Eligibility",
+          "href": "/research?section=eligibility",
+          "targetKind": "url",
+          "newTab": false,
+          "variant": "primary"
+        },
+        {
+          "id": "cu-2026-139",
+          "type": "button",
+          "text": "View Notification →",
+          "href": "/research?section=notification",
+          "targetKind": "url",
+          "newTab": false,
+          "variant": "primary"
+        },
+        {
+          "id": "cu-2026-1",
+          "type": "text",
+          "text": "Chalapathi University was established as a Brownfield University under Ordinance No. 8 of 2026 of the Government of Andhra Pradesh, in terms of the Andhra Pradesh Private Universities (Establishment and Regulation) Act, 2016, by transforming Chalapathi Institute of Technology into a university. Sponsored by Chalapathi Educational Society, Guntur, the University builds on the Society's long record in technical, pharmaceutical and general higher education in the region."
+        },
+        {
+          "id": "cu-2026-2",
+          "type": "text",
+          "text": "Research is central to the University's mission. Its doctoral programmes follow the UGC (Minimum Standards and Procedure for Award of Ph.D. Degree) Regulations and the National Education Policy 2020, and are backed by experienced research supervisors, dedicated research laboratories and a structured review system that guides every scholar from admission to the award of the degree."
+        },
+        {
+          "id": "cu-2026-3",
+          "type": "heading",
+          "text": "Schools and Doctoral Programmes",
+          "level": "h3"
+        },
+        {
+          "id": "cu-2026-4",
+          "type": "heading",
+          "text": "School of Engineering",
+          "level": "h4"
+        },
+        {
+          "id": "cu-2026-5",
+          "type": "text",
+          "text": "Ph.D. in four engineering disciplines."
+        },
+        {
+          "id": "cu-2026-6",
+          "type": "text",
+          "text": "Civil · ECE · EEE · Mechanical"
+        },
+        {
+          "id": "cu-2026-7",
+          "type": "heading",
+          "text": "School of Computing Sciences",
+          "level": "h4"
+        },
+        {
+          "id": "cu-2026-8",
+          "type": "text",
+          "text": "Ph.D. in Computer Science & Engineering and allied branches."
+        },
+        {
+          "id": "cu-2026-9",
+          "type": "text",
+          "text": "CSE & Allied"
+        },
+        {
+          "id": "cu-2026-10",
+          "type": "heading",
+          "text": "School of Sciences and Humanities",
+          "level": "h4"
+        },
+        {
+          "id": "cu-2026-11",
+          "type": "text",
+          "text": "Ph.D. in the respective subject."
+        },
+        {
+          "id": "cu-2026-12",
+          "type": "text",
+          "text": "Mathematics · Physics · Chemistry · English"
+        },
+        {
+          "id": "cu-2026-13",
+          "type": "heading",
+          "text": "School of Business and Management",
+          "level": "h4"
+        },
+        {
+          "id": "cu-2026-14",
+          "type": "text",
+          "text": "Ph.D. in Management."
+        },
+        {
+          "id": "cu-2026-15",
+          "type": "text",
+          "text": "Management"
+        },
+        {
+          "id": "cu-2026-16",
+          "type": "button",
+          "text": "Overview of Research 2026-27 (PDF)",
+          "href": "/research/downloads/CU_Overview_of_Research_2026-27.pdf",
+          "targetKind": "pdf",
+          "newTab": true,
+          "variant": "primary"
+        }
+      ]
+    },
+    {
+      "id": "vision",
+      "title": "Vision, Mission & Objectives",
+      "description": "",
+      "blocks": [
+        {
+          "id": "cu-2026-17",
+          "type": "text",
+          "text": "Vision\nTo be a research-driven university recognised for high-quality, ethical and interdisciplinary research that creates new knowledge, drives innovation and contributes to the technological, economic and social development of Andhra Pradesh and the nation."
+        },
+        {
+          "id": "cu-2026-18",
+          "type": "heading",
+          "text": "Mission",
+          "level": "h3"
+        },
+        {
+          "id": "cu-2026-19",
+          "type": "bullets",
+          "bullets": [
+            {
+              "id": "cu-bullet-19-0",
+              "text": "M1\nResearch culture: To build a vibrant research culture across all Schools, led by 25 Ph.D.-qualified faculty who mentor scholars through every stage of their doctoral work.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-19-1",
+              "text": "M2\nQuality doctoral education: To offer full-time and part-time Ph.D. programmes of national standard, in line with the UGC Ph.D. Regulations and the National Education Policy 2020.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-19-2",
+              "text": "M3\nInfrastructure and centres: To develop and use advanced research facilities, including the SAP University Alliances Lab, the Robotics Research Laboratory and specialised departmental Centres for Research Activities.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-19-3",
+              "text": "M4\nInterdisciplinary and collaborative work: To encourage research across disciplines and partnerships with industry and recognised research organisations, including through co-supervision.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-19-4",
+              "text": "M5\nIntegrity and impact: To uphold the highest standards of research ethics and academic integrity, and to promote publication in reputed indexed journals and open access to research outputs.",
+              "targetKind": "none"
+            }
+          ]
+        },
+        {
+          "id": "cu-2026-20",
+          "type": "heading",
+          "text": "Objectives",
+          "level": "h3"
+        },
+        {
+          "id": "cu-2026-21",
+          "type": "bullets",
+          "bullets": [
+            {
+              "id": "cu-bullet-21-0",
+              "text": "1. To admit capable scholars through a transparent, merit-based process using CU-RAT and interviews, with due recognition of NET/JRF/SLET/GATE/APRCET qualifications.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-21-1",
+              "text": "2. To provide strong research foundations through doctoral coursework in Research Methodology, Research & Publication Ethics and discipline-specific subjects, including NPTEL/SWAYAM options.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-21-2",
+              "text": "3. To ensure timely, quality progress through six-monthly Research Review Meetings, Research Review Committees and Doctoral Research Committees with external subject experts.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-21-3",
+              "text": "4. To promote high-quality publications in Scopus and Web of Science indexed journals and reputed conferences, carrying the Chalapathi University affiliation.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-21-4",
+              "text": "5. To make full use of research facilities: the SAP University Alliances Lab for ERP, analytics and digital transformation; the Robotics Research Laboratory for robotics, automation and intelligent systems; and departmental Centres for Research Activities in every School.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-21-5",
+              "text": "6. To uphold academic integrity through plagiarism checks (similarity index of 20% or less) and adherence to the UGC Academic Integrity Regulations, 2018.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-21-6",
+              "text": "7. To maintain rigorous, independent evaluation of theses by experts from IITs, NITs, IIITs, Central, State and private universities, and make every thesis openly available on Shodhganga.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-21-7",
+              "text": "8. To support and include scholars through stipends for full-time scholars, flexible full-time/part-time registration, and provisions for women scholars and persons with disabilities.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-21-8",
+              "text": "9. To address regional and national needs by focusing research on problems relevant to society, industry and the development of Andhra Pradesh.",
+              "targetKind": "none"
+            }
+          ]
+        },
+        {
+          "id": "cu-2026-22",
+          "type": "button",
+          "text": "Vision, Mission & Objectives (PDF)",
+          "href": "/research/downloads/CU_Research_Vision_Mission_Objectives.pdf",
+          "targetKind": "pdf",
+          "newTab": true,
+          "variant": "primary"
+        }
+      ]
+    },
+    {
+      "id": "facilities",
+      "title": "Research Facilities",
+      "description": "",
+      "blocks": [
+        {
+          "id": "cu-2026-23",
+          "type": "text",
+          "text": "The University supports research through specialised laboratories and centres that give scholars hands-on access to industry-standard tools and modern experimental facilities."
+        },
+        {
+          "id": "cu-2026-24",
+          "type": "heading",
+          "text": "SAP University Alliances Lab",
+          "level": "h4"
+        },
+        {
+          "id": "cu-2026-25",
+          "type": "text",
+          "text": "Through the SAP University Alliances programme, scholars and faculty work with SAP enterprise software and learning resources. The lab supports research in enterprise resource planning, business processes, data analytics and digital transformation, linking Computing Sciences with Business and Management."
+        },
+        {
+          "id": "cu-2026-26",
+          "type": "text",
+          "text": "ERP · Business Processes · Data Analytics · Digital Transformation"
+        },
+        {
+          "id": "cu-2026-27",
+          "type": "heading",
+          "text": "Robotics Research Laboratory",
+          "level": "h4"
+        },
+        {
+          "id": "cu-2026-28",
+          "type": "text",
+          "text": "A platform for interdisciplinary work in robotics, automation, embedded and control systems, sensors and intelligent machines, bringing together scholars from Mechanical, Electrical, Electronics and Computer Science Engineering."
+        },
+        {
+          "id": "cu-2026-29",
+          "type": "text",
+          "text": "Robotics · Automation · Embedded & Control · Intelligent Machines"
+        },
+        {
+          "id": "cu-2026-30",
+          "type": "heading",
+          "text": "Centres for Research Activities",
+          "level": "h4"
+        },
+        {
+          "id": "cu-2026-31",
+          "type": "text",
+          "text": "Each participating school maintains research laboratories and specialised centres in its disciplines. These centres host doctoral work, faculty projects, seminars and research review meetings, and encourage collaboration across departments and with recognised research organisations."
+        },
+        {
+          "id": "cu-2026-32",
+          "type": "text",
+          "text": "Every School"
+        }
+      ]
+    },
+    {
+      "id": "supervision",
+      "title": "Research Supervision",
+      "description": "",
+      "blocks": [
+        {
+          "id": "cu-2026-33",
+          "type": "text",
+          "text": "The University has 25 Ph.D.-qualified faculty members who guide scholars across its schools."
+        },
+        {
+          "id": "cu-2026-34",
+          "type": "bullets",
+          "bullets": [
+            {
+              "id": "cu-bullet-34-0",
+              "text": "Each scholar works under a supervisor from the University's approved panel, whose written consent is required before registration is finalised.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-34-1",
+              "text": "A suitable Research Supervisor is allocated considering the scholar's proposed research area, the specialization of available supervisors, supervisory capacity and research facilities.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-34-2",
+              "text": "For interdisciplinary topics, a co-supervisor may be appointed from within the University or from a recognised research organisation approved by the University.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-34-3",
+              "text": "Applicants indicate their order of preference of supervisors in the application form. Supervisors are allotted based on vacant slots and the merit of the candidate, subject to University rules.",
+              "targetKind": "none"
+            }
+          ]
+        },
+        {
+          "id": "cu-2026-35",
+          "type": "heading",
+          "text": "Approved Supervisors",
+          "level": "h3"
+        },
+        {
+          "id": "cu-2026-36",
+          "type": "table",
+          "table": {
+            "rows": [
+              [
+                {
+                  "text": "S.No."
+                },
+                {
+                  "text": "Name of the Supervisor"
+                },
+                {
+                  "text": "Department"
+                },
+                {
+                  "text": "Area of Research"
+                }
+              ],
+              [
+                {
+                  "text": "1"
+                },
+                {
+                  "text": ""
+                },
+                {
+                  "text": ""
+                },
+                {
+                  "text": ""
+                }
+              ],
+              [
+                {
+                  "text": "2"
+                },
+                {
+                  "text": ""
+                },
+                {
+                  "text": ""
+                },
+                {
+                  "text": ""
+                }
+              ]
+            ],
+            "columnWidths": [
+              25.0,
+              25.0,
+              25.0,
+              25.0
+            ],
+            "headerRows": 1,
+            "headerBackground": "#f9eeee",
+            "headerColor": "#222222",
+            "borderColor": "#e2e2e2",
+            "borders": "grid",
+            "fontSize": 15,
+            "padding": 12,
+            "minWidth": 640
+          }
+        }
+      ]
+    },
+    {
+      "id": "quality",
+      "title": "Research Quality & Integrity",
+      "description": "",
+      "blocks": [
+        {
+          "id": "cu-2026-37",
+          "type": "heading",
+          "text": "Structured oversight",
+          "level": "h4"
+        },
+        {
+          "id": "cu-2026-38",
+          "type": "text",
+          "text": "Research Review Committees and Doctoral Research Committees, each with external subject experts, monitor every scholar's progress."
+        },
+        {
+          "id": "cu-2026-39",
+          "type": "heading",
+          "text": "Academic integrity",
+          "level": "h4"
+        },
+        {
+          "id": "cu-2026-40",
+          "type": "text",
+          "text": "Plagiarism is checked with approved software and handled under the UGC (Promotion of Academic Integrity and Prevention of Plagiarism) Regulations, 2018. Similarity index must be 20% or lower and AI-generated content must not exceed 15%."
+        },
+        {
+          "id": "cu-2026-41",
+          "type": "heading",
+          "text": "Independent evaluation",
+          "level": "h4"
+        },
+        {
+          "id": "cu-2026-42",
+          "type": "text",
+          "text": "Theses are examined by experts from institutions of national importance and other universities, with a clear decision matrix."
+        },
+        {
+          "id": "cu-2026-43",
+          "type": "heading",
+          "text": "Open access",
+          "level": "h4"
+        },
+        {
+          "id": "cu-2026-44",
+          "type": "text",
+          "text": "Every awarded thesis is made publicly available through Shodhganga (INFLIBNET)."
+        }
+      ]
+    },
+    {
+      "id": "notification",
+      "title": "Admission Notification",
+      "description": "",
+      "blocks": [
+        {
+          "id": "cu-2026-45",
+          "type": "text",
+          "text": "CHALAPATHI UNIVERSITY\nA.R. Nagar, Mothadaka, Guntur – 522016, Andhra Pradesh, India\nAdmission into Ph.D. Programmes 2026-27 (Full Time & Part Time)"
+        },
+        {
+          "id": "cu-2026-46",
+          "type": "bullets",
+          "bullets": [
+            {
+              "id": "cu-bullet-46-0",
+              "text": "Applications are invited from eligible and interested candidates for admission to the Ph.D. Programmes (Full Time & Part Time) at Chalapathi University for the Academic Year 2026-27.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-46-1",
+              "text": "The last date for receiving the hard copy of the completed application for the Ph.D. Programme along with the Application Fee is 25/10/2026, as per the University notification.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-46-2",
+              "text": "For the detailed advertisement, eligibility criteria, application form and information brochure, see the sections on this page.",
+              "targetKind": "none"
+            }
+          ]
+        },
+        {
+          "id": "cu-2026-47",
+          "type": "text",
+          "text": "Sd/- REGISTRAR"
+        },
+        {
+          "id": "cu-2026-48",
+          "type": "heading",
+          "text": "Important Dates",
+          "level": "h3"
+        },
+        {
+          "id": "cu-2026-49",
+          "type": "table",
+          "table": {
+            "rows": [
+              [
+                {
+                  "text": "Event"
+                },
+                {
+                  "text": "Date"
+                }
+              ],
+              [
+                {
+                  "text": "Last date for receipt of hard copy of application with fee"
+                },
+                {
+                  "text": "25/10/2026"
+                }
+              ],
+              [
+                {
+                  "text": "CU-RAT (Research Aptitude Test)"
+                },
+                {
+                  "text": "Will be notified"
+                }
+              ],
+              [
+                {
+                  "text": "Interview"
+                },
+                {
+                  "text": "Will be notified"
+                }
+              ],
+              [
+                {
+                  "text": "Announcement of selected candidates"
+                },
+                {
+                  "text": "Will be notified"
+                }
+              ]
+            ],
+            "columnWidths": [
+              50.0,
+              50.0
+            ],
+            "headerRows": 1,
+            "headerBackground": "#f9eeee",
+            "headerColor": "#222222",
+            "borderColor": "#e2e2e2",
+            "borders": "grid",
+            "fontSize": 15,
+            "padding": 12,
+            "minWidth": 480
+          }
+        },
+        {
+          "id": "cu-2026-50",
+          "type": "button",
+          "text": "Ph.D. Advertisement 2026-27 (PDF)",
+          "href": "/research/downloads/CU_PhD_Advertisement_2026-27.pdf",
+          "targetKind": "pdf",
+          "newTab": true,
+          "variant": "primary"
+        }
+      ]
+    },
+    {
+      "id": "eligibility",
+      "title": "Eligibility",
+      "description": "",
+      "blocks": [
+        {
+          "id": "cu-2026-51",
+          "type": "heading",
+          "text": "Minimum Educational Qualifications",
+          "level": "h3"
+        },
+        {
+          "id": "cu-2026-52",
+          "type": "bullets",
+          "bullets": [
+            {
+              "id": "cu-bullet-52-0",
+              "text": "Ph.D. in Engineering: Master's degree in Engineering/Technology or an equivalent qualification with a minimum of 55% marks from a UGC-recognised university.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-52-1",
+              "text": "Ph.D. in Sciences, Business & Management and Humanities: Master's degree or equivalent in the relevant area with a minimum of 55% marks from a UGC-recognised university.",
+              "targetKind": "none"
+            }
+          ]
+        },
+        {
+          "id": "cu-2026-53",
+          "type": "heading",
+          "text": "Programme-wise Eligibility",
+          "level": "h3"
+        },
+        {
+          "id": "cu-2026-54",
+          "type": "table",
+          "table": {
+            "rows": [
+              [
+                {
+                  "text": "School"
+                },
+                {
+                  "text": "Ph.D. Programme"
+                },
+                {
+                  "text": "Minimum Eligibility"
+                }
+              ],
+              [
+                {
+                  "text": "School of Engineering",
+                  "rowSpan": 4
+                },
+                {
+                  "text": "Civil Engineering"
+                },
+                {
+                  "text": "M.E./M.Tech. in the relevant Engineering discipline or equivalent, with a minimum of 55% marks"
+                }
+              ],
+              [
+                null,
+                {
+                  "text": "Electronics & Communication Engineering"
+                },
+                {
+                  "text": "M.E./M.Tech. in ECE or relevant/allied discipline, or equivalent, with a minimum of 55% marks"
+                }
+              ],
+              [
+                null,
+                {
+                  "text": "Electrical & Electronics Engineering"
+                },
+                {
+                  "text": "M.E./M.Tech. in EEE or relevant/allied discipline, or equivalent, with a minimum of 55% marks"
+                }
+              ],
+              [
+                null,
+                {
+                  "text": "Mechanical Engineering"
+                },
+                {
+                  "text": "M.E./M.Tech. in Mechanical Engineering or relevant/allied discipline, or equivalent, with a minimum of 55% marks"
+                }
+              ],
+              [
+                {
+                  "text": "School of Computing Sciences"
+                },
+                {
+                  "text": "Computer Science & Engineering"
+                },
+                {
+                  "text": "M.E./M.Tech. in CSE or allied disciplines, or equivalent, with a minimum of 55% marks"
+                }
+              ],
+              [
+                {
+                  "text": "School of Sciences and Humanities",
+                  "rowSpan": 4
+                },
+                {
+                  "text": "Mathematics"
+                },
+                {
+                  "text": "Postgraduate degree/M.Phil. in the relevant discipline or equivalent, with a minimum of 55% marks",
+                  "rowSpan": 4
+                }
+              ],
+              [
+                null,
+                {
+                  "text": "Physics"
+                },
+                null
+              ],
+              [
+                null,
+                {
+                  "text": "Chemistry"
+                },
+                null
+              ],
+              [
+                null,
+                {
+                  "text": "English"
+                },
+                null
+              ],
+              [
+                {
+                  "text": "School of Business and Management"
+                },
+                {
+                  "text": "Management"
+                },
+                {
+                  "text": "Postgraduate degree/M.Phil. in Management or equivalent, with a minimum of 55% marks"
+                }
+              ]
+            ],
+            "columnWidths": [
+              23,
+              26,
+              51
+            ],
+            "headerRows": 1,
+            "headerBackground": "#f9eeee",
+            "headerColor": "#222222",
+            "borderColor": "#e2e2e2",
+            "borders": "grid",
+            "fontSize": 15,
+            "padding": 12,
+            "minWidth": 640
+          }
+        },
+        {
+          "id": "cu-2026-55",
+          "type": "heading",
+          "text": "Additional Eligibility Notes",
+          "level": "h3"
+        },
+        {
+          "id": "cu-2026-56",
+          "type": "bullets",
+          "bullets": [
+            {
+              "id": "cu-bullet-56-0",
+              "text": "Candidates who have completed an M.Phil. programme with at least 55% aggregate marks (or an equivalent grade, or an equivalent duly accredited foreign qualification) are eligible for Ph.D. admission.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-56-1",
+              "text": "A relaxation of 5% marks, or the equivalent grade, is available to candidates from SC/ST/OBC (non-creamy layer), Differently Abled, Economically Weaker Section (EWS) and other categories recognised by the UGC from time to time.",
+              "targetKind": "none"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "duration",
+      "title": "Duration of the Programme",
+      "description": "",
+      "blocks": [
+        {
+          "id": "cu-2026-57",
+          "type": "table",
+          "table": {
+            "rows": [
+              [
+                {
+                  "text": "Category"
+                },
+                {
+                  "text": "Minimum"
+                },
+                {
+                  "text": "Maximum"
+                }
+              ],
+              [
+                {
+                  "text": "Full-time (PG qualification)"
+                },
+                {
+                  "text": "3 years"
+                },
+                {
+                  "text": "6 years"
+                }
+              ],
+              [
+                {
+                  "text": "Part-time (PG qualification)"
+                },
+                {
+                  "text": "4 years"
+                },
+                {
+                  "text": "8 years"
+                }
+              ],
+              [
+                {
+                  "text": "Full-time (M.Phil. holders)"
+                },
+                {
+                  "text": "2 years"
+                },
+                {
+                  "text": "4 years"
+                }
+              ],
+              [
+                {
+                  "text": "Part-time (M.Phil. holders)"
+                },
+                {
+                  "text": "3 years"
+                },
+                {
+                  "text": "6 years"
+                }
+              ]
+            ],
+            "columnWidths": [
+              33.333333333333336,
+              33.333333333333336,
+              33.333333333333336
+            ],
+            "headerRows": 1,
+            "headerBackground": "#f9eeee",
+            "headerColor": "#222222",
+            "borderColor": "#e2e2e2",
+            "borders": "grid",
+            "fontSize": 15,
+            "padding": 12,
+            "minWidth": 640
+          }
+        },
+        {
+          "id": "cu-2026-58",
+          "type": "bullets",
+          "bullets": [
+            {
+              "id": "cu-bullet-58-0",
+              "text": "Part-time scholars may not submit the thesis before completing four years from the date of admission.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-58-1",
+              "text": "A grace period of 30 days beyond the maximum permissible duration is allowed for thesis submission.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-58-2",
+              "text": "Women scholars and Persons with Disabilities (40% or greater disability) may be granted a further relaxation of up to two years, provided the total duration does not exceed ten years from the date of admission.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-58-3",
+              "text": "Full-time women scholars are entitled to Maternity Leave/Child Care Leave of up to 240 days, availed once during the programme.",
+              "targetKind": "none"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "procedure",
+      "title": "Admission Procedure",
+      "description": "",
+      "blocks": [
+        {
+          "id": "cu-2026-59",
+          "type": "bullets",
+          "bullets": [
+            {
+              "id": "cu-bullet-59-0",
+              "text": "1. Notification & Intake\nAdmissions are conducted through a transparent, merit-based process announced by an open notification. The Vice-Chancellor determines the intake for each programme, considering the availability of eligible research supervisors and research infrastructure.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-59-1",
+              "text": "2. Submit Application\nSend the hard copy of the completed application form with the Demand Draft of ₹1,000/- and enclosures to the University by 25/10/2026.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-59-2",
+              "text": "3. CU-RAT\nEligible candidates appear for the Chalapathi University Research Aptitude Test (CU-RAT), conducted online or offline.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-59-3",
+              "text": "4. Interview\nQualified candidates are interviewed on research aptitude, subject knowledge, proposed area of research and suitability for doctoral research.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-59-4",
+              "text": "5. Selection & Confirmation\nA departmental selection committee recommends candidates to the Dean, Research & Development, who confirms admissions subject to ratification by the Board of Management and the Academic Council.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-59-5",
+              "text": "6. Supervisor Allotment & Registration\nSupervisors are allotted based on vacant slots and merit; written consent of the supervisor is required before registration is finalised.",
+              "targetKind": "none"
+            }
+          ]
+        },
+        {
+          "id": "cu-2026-60",
+          "type": "text",
+          "text": "Exemption from CU-RAT: Candidates holding a valid UGC-NET / CSIR-JRF / SLET / GATE qualification, a teacher fellowship, an M.Phil. degree, or a qualifying score in the Andhra Pradesh Research Common Entrance Test (APRCET) may be exempted from CU-RAT, but must still clear the University interview."
+        },
+        {
+          "id": "cu-2026-61",
+          "type": "text",
+          "text": "Foreign Nationals, Persons of Indian Origin and NRIs (sponsored under a government exchange arrangement or applying on their own) may be admitted directly on meeting the eligibility norms, subject to clearing the University interview."
+        }
+      ]
+    },
+    {
+      "id": "apply",
+      "title": "Download Application",
+      "description": "",
+      "blocks": [
+        {
+          "id": "cu-2026-62",
+          "type": "button",
+          "text": "PDF\nPh.D. Application Form 2026-27Fill in, sign and send the hard copy",
+          "href": "/research/downloads/CU_PhD_Application_Form_2026-27.pdf",
+          "targetKind": "pdf",
+          "newTab": true,
+          "variant": "primary"
+        },
+        {
+          "id": "cu-2026-63",
+          "type": "button",
+          "text": "PDF\nPh.D. Advertisement 2026-27Official admission notification",
+          "href": "/research/downloads/CU_PhD_Advertisement_2026-27.pdf",
+          "targetKind": "pdf",
+          "newTab": true,
+          "variant": "primary"
+        },
+        {
+          "id": "cu-2026-64",
+          "type": "heading",
+          "text": "How to Apply",
+          "level": "h3"
+        },
+        {
+          "id": "cu-2026-65",
+          "type": "bullets",
+          "bullets": [
+            {
+              "id": "cu-bullet-65-0",
+              "text": "1. Download and print the application form.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-65-1",
+              "text": "2. Fill in all sections: programme and school, mode of study, personal and academic details, NET/SLET/GATE details, professional experience, publications and patents, specialization and order of preference of supervisors.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-65-2",
+              "text": "3. Paste a latest passport size photograph and sign the declaration.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-65-3",
+              "text": "4. Enclose a Research Plan of about 200 words covering the broad theme and title, Abstract, Objectives, Literature Survey, Scope and Timelines, and Expected Conclusions.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-65-4",
+              "text": "5. Send the hard copy with the Demand Draft and documents to the University so that it reaches by 25/10/2026.",
+              "targetKind": "none"
+            }
+          ]
+        },
+        {
+          "id": "cu-2026-66",
+          "type": "text",
+          "text": "Application Fee\n₹1,000/-\nBy Demand Draft in favour of \"Chalapathi University\", submitted with the hard copy of the application. Payable-at details will be specified by the University in the final notification."
+        },
+        {
+          "id": "cu-2026-67",
+          "type": "heading",
+          "text": "Check List",
+          "level": "h3"
+        },
+        {
+          "id": "cu-2026-68",
+          "type": "bullets",
+          "bullets": [
+            {
+              "id": "cu-bullet-68-0",
+              "text": "1. Demand Draft",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-68-1",
+              "text": "2. Latest Passport Size Photographs (2 Nos.)",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-68-2",
+              "text": "3. Completed Application Form",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-68-3",
+              "text": "4. Proof of Birth / Date of Birth",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-68-4",
+              "text": "5. UG Degree Certificate",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-68-5",
+              "text": "6. PG Degree Certificate relevant to Ph.D. Admission and Marks Memo",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-68-6",
+              "text": "7. NET / SLET / GATE or other qualifying Certificate, if qualified",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-68-7",
+              "text": "8. If Part Time – No Objection Certificate (NOC) from the Current Organization / Institution",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-68-8",
+              "text": "9. Experience Certificate, if any",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-68-9",
+              "text": "10. List of Publications & Patents (Enclose First Page)",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-68-10",
+              "text": "11. Research Plan",
+              "targetKind": "none"
+            }
+          ]
+        },
+        {
+          "id": "cu-2026-69",
+          "type": "heading",
+          "text": "Send the Application To",
+          "level": "h3"
+        },
+        {
+          "id": "cu-2026-70",
+          "type": "text",
+          "text": "The Dean, Research & Development\nChalapathi University\nA.R. Nagar, Mothadaka, Guntur – 522016, Andhra Pradesh, India"
+        },
+        {
+          "id": "cu-2026-71",
+          "type": "text",
+          "text": "For queries: research@chalapathiuniversity.edu.in"
+        },
+        {
+          "id": "cu-2026-72",
+          "type": "button",
+          "text": "research@chalapathiuniversity.edu.in",
+          "href": "mailto:research@chalapathiuniversity.edu.in",
+          "targetKind": "url",
+          "newTab": false,
+          "variant": "primary"
+        }
+      ]
+    },
+    {
+      "id": "fee",
+      "title": "Fee & Stipend",
+      "description": "",
+      "blocks": [
+        {
+          "id": "cu-2026-73",
+          "type": "table",
+          "table": {
+            "rows": [
+              [
+                {
+                  "text": "Fee Head"
+                },
+                {
+                  "text": "Amount"
+                }
+              ],
+              [
+                {
+                  "text": "Application Fee (by DD)"
+                },
+                {
+                  "text": "₹1,000/-"
+                }
+              ],
+              [
+                {
+                  "text": "Tuition Fee – Full-time"
+                },
+                {
+                  "text": "₹20,000/- per semester"
+                }
+              ],
+              [
+                {
+                  "text": "Tuition Fee – Part-time"
+                },
+                {
+                  "text": "₹30,000/- per semester"
+                }
+              ],
+              [
+                {
+                  "text": "Late Fee (within six months of due date)"
+                },
+                {
+                  "text": "₹2,000/-"
+                }
+              ],
+              [
+                {
+                  "text": "Change of Research Topic"
+                },
+                {
+                  "text": "₹5,000/-"
+                }
+              ],
+              [
+                {
+                  "text": "Conversion between Full-time and Part-time"
+                },
+                {
+                  "text": "₹5,000/-"
+                }
+              ]
+            ],
+            "columnWidths": [
+              50.0,
+              50.0
+            ],
+            "headerRows": 1,
+            "headerBackground": "#f9eeee",
+            "headerColor": "#222222",
+            "borderColor": "#e2e2e2",
+            "borders": "grid",
+            "fontSize": 15,
+            "padding": 12,
+            "minWidth": 480
+          }
+        },
+        {
+          "id": "cu-2026-74",
+          "type": "bullets",
+          "bullets": [
+            {
+              "id": "cu-bullet-74-0",
+              "text": "The fee is payable on or before the commencement of each academic year, until successful completion of the programme and thesis submission, or cancellation of admission.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-74-1",
+              "text": "Where registration is cancelled, the full fee due up to the date of cancellation remains payable.",
+              "targetKind": "none"
+            }
+          ]
+        },
+        {
+          "id": "cu-2026-75",
+          "type": "text",
+          "text": "Stipend: Full-time scholars whose services are engaged by the Department are paid a stipend of ₹25,000/- per month for a period of three years."
+        },
+        {
+          "id": "cu-2026-76",
+          "type": "heading",
+          "text": "Support for Research Scholars",
+          "level": "h3"
+        },
+        {
+          "id": "cu-2026-77",
+          "type": "bullets",
+          "bullets": [
+            {
+              "id": "cu-bullet-77-0",
+              "text": "Flexibility: Choice of full-time or part-time registration, with one conversion permitted; online NPTEL/SWAYAM coursework.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-77-1",
+              "text": "Inclusive provisions: Up to 240 days of maternity/child-care leave for full-time women scholars, and extended duration for women scholars and persons with disabilities.",
+              "targetKind": "none"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "journey",
+      "title": "The Doctoral Journey",
+      "description": "",
+      "blocks": [
+        {
+          "id": "cu-2026-78",
+          "type": "bullets",
+          "bullets": [
+            {
+              "id": "cu-bullet-78-0",
+              "text": "1. Admission\nCU-RAT followed by an interview. Candidates with UGC-NET/CSIR-JRF/SLET/GATE, APRCET, M.Phil. or a teacher fellowship are exempt from CU-RAT but must clear the interview.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-78-1",
+              "text": "2. Coursework\nMinimum 12 credits: Research Methodology (2), Research & Publication Ethics (2) and two discipline courses (4 each), with NPTEL/SWAYAM options; to be completed within 2 years.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-78-2",
+              "text": "3. Progress Review\nResearch Review Meetings every six months before the Research Review Committee, which includes an external expert.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-78-3",
+              "text": "4. Publications\nAt least three papers before thesis submission, of which at least two in Scopus/Web of Science indexed journals, carrying the University affiliation.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-78-4",
+              "text": "5. Synopsis & Pre-submission\nSynopsis and draft thesis presented in an open seminar before the Doctoral Research Committee, which certifies eligibility to submit.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-78-5",
+              "text": "6. Evaluation\nSimilarity index of 20% or less; thesis assessed by three external examiners chosen from IITs/NITs/IIITs/Central, State and private universities.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-78-6",
+              "text": "7. Viva-voce & Award\nOpen viva-voce; degree conferred after the thesis is uploaded to Shodhganga (INFLIBNET).",
+              "targetKind": "none"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coursework",
+      "title": "Doctoral Coursework",
+      "description": "",
+      "blocks": [
+        {
+          "id": "cu-2026-79",
+          "type": "text",
+          "text": "Every scholar must complete a minimum of 12 credits of coursework."
+        },
+        {
+          "id": "cu-2026-80",
+          "type": "table",
+          "table": {
+            "rows": [
+              [
+                {
+                  "text": "Course"
+                },
+                {
+                  "text": "Credits"
+                },
+                {
+                  "text": "Mode"
+                }
+              ],
+              [
+                {
+                  "text": "Course 1 – Research Methodology"
+                },
+                {
+                  "text": "2"
+                },
+                {
+                  "text": "University, or equivalent NPTEL/SWAYAM certification of at least 8 weeks"
+                }
+              ],
+              [
+                {
+                  "text": "Course 2 – Research & Publication Ethics"
+                },
+                {
+                  "text": "2"
+                },
+                {
+                  "text": "University, or equivalent NPTEL/SWAYAM certification of at least 8 weeks"
+                }
+              ],
+              [
+                {
+                  "text": "Courses 3 & 4 – Discipline-specific courses"
+                },
+                {
+                  "text": "4 each"
+                },
+                {
+                  "text": "Concerned School/Department, an allied PG programme, or NPTEL/SWAYAM PG-level certification, with supervisor's approval"
+                }
+              ]
+            ],
+            "columnWidths": [
+              33.333333333333336,
+              33.333333333333336,
+              33.333333333333336
+            ],
+            "headerRows": 1,
+            "headerBackground": "#f9eeee",
+            "headerColor": "#222222",
+            "borderColor": "#e2e2e2",
+            "borders": "grid",
+            "fontSize": 15,
+            "padding": 12,
+            "minWidth": 640
+          }
+        },
+        {
+          "id": "cu-2026-81",
+          "type": "bullets",
+          "bullets": [
+            {
+              "id": "cu-bullet-81-0",
+              "text": "Coursework must be completed within two years of admission for both full-time and part-time scholars.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-81-1",
+              "text": "Minimum 75% attendance in each taught course (online certifications are exempt); scholars failing to meet the attendance norm must repeat the course.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-81-2",
+              "text": "A minimum of 55% marks in each course is required to pass.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-81-3",
+              "text": "Scholars who do not clear a course on the first attempt are permitted up to four further attempts. A scholar who fails to clear all prescribed courses within a maximum of five attempts is liable to have the admission cancelled.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-81-4",
+              "text": "NPTEL/SWAYAM completion certificates, with grades endorsed by the Research Supervisor, are submitted to the Dean, R&D.",
+              "targetKind": "none"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "progress",
+      "title": "Progress & Publications",
+      "description": "",
+      "blocks": [
+        {
+          "id": "cu-2026-82",
+          "type": "heading",
+          "text": "Research Review Meetings (RRM)",
+          "level": "h3"
+        },
+        {
+          "id": "cu-2026-83",
+          "type": "bullets",
+          "bullets": [
+            {
+              "id": "cu-bullet-83-0",
+              "text": "Conducted by the Research Review Committee (RRC) once every six months to assess the quality and pace of each scholar's research.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-83-1",
+              "text": "Both full-time and part-time scholars must attend at least one RRM per year, with a minimum of four RRMs over the programme.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-83-2",
+              "text": "The RRC submits a six-monthly progress report on each scholar to the University, with a copy to the scholar.",
+              "targetKind": "none"
+            }
+          ]
+        },
+        {
+          "id": "cu-2026-84",
+          "type": "heading",
+          "text": "Publication Requirements",
+          "level": "h3"
+        },
+        {
+          "id": "cu-2026-85",
+          "type": "bullets",
+          "bullets": [
+            {
+              "id": "cu-bullet-85-0",
+              "text": "At least three published papers before submitting the thesis for adjudication.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-85-1",
+              "text": "At least two papers in Scopus/Web of Science indexed journals; the remaining publication may be a conference paper.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-85-2",
+              "text": "Papers published before admission are not counted.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-85-3",
+              "text": "Every qualifying publication must carry Chalapathi University as the scholar's affiliation and list both the scholar and the supervisor(s) as authors.",
+              "targetKind": "none"
+            }
+          ]
+        },
+        {
+          "id": "cu-2026-86",
+          "type": "heading",
+          "text": "Committees",
+          "level": "h3"
+        },
+        {
+          "id": "cu-2026-87",
+          "type": "heading",
+          "text": "Research Review Committee",
+          "level": "h4"
+        },
+        {
+          "id": "cu-2026-88",
+          "type": "text",
+          "text": "Chaired by the Chairman, Board of Studies, with the supervisor as convener and external and departmental experts. Conducts RRMs, assesses progress and confirms that recommendations are addressed before the pre-submission seminar."
+        },
+        {
+          "id": "cu-2026-89",
+          "type": "heading",
+          "text": "Doctoral Research Committee",
+          "level": "h4"
+        },
+        {
+          "id": "cu-2026-90",
+          "type": "text",
+          "text": "Chaired by the Head of the Department, with the Dean R&D, research supervisors and an external Professor-rank expert. Conducts the pre-submission seminar, certifies the thesis for submission and finalises its title."
+        }
+      ]
+    },
+    {
+      "id": "thesis",
+      "title": "Thesis Evaluation & Viva-Voce",
+      "description": "",
+      "blocks": [
+        {
+          "id": "cu-2026-91",
+          "type": "heading",
+          "text": "Synopsis & Submission",
+          "level": "h3"
+        },
+        {
+          "id": "cu-2026-92",
+          "type": "bullets",
+          "bullets": [
+            {
+              "id": "cu-bullet-92-0",
+              "text": "Synopsis (hard and soft copy) with a supervisor-approved draft thesis is submitted to the Dean, R&D through the HOD, followed by an open presentation before the DRC.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-92-1",
+              "text": "Thesis is checked with the University's approved software: similarity index of 20% or lower, and AI-generated content not exceeding 15%.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-92-2",
+              "text": "Six soft-bound hard copies are submitted, incorporating DRC recommendations.",
+              "targetKind": "none"
+            }
+          ]
+        },
+        {
+          "id": "cu-2026-93",
+          "type": "heading",
+          "text": "Evaluation",
+          "level": "h3"
+        },
+        {
+          "id": "cu-2026-94",
+          "type": "text",
+          "text": "The Vice-Chancellor appoints three examiners from a panel of nine – three from IITs/NITs/IIITs/Central Universities, three from State Government universities and three from private universities or autonomous institutions. Outcomes are Acceptance, Minor Revision, Major Revision or Rejection; divergent recommendations are resolved through the decision matrix below."
+        },
+        {
+          "id": "cu-2026-95",
+          "type": "table",
+          "table": {
+            "rows": [
+              [
+                {
+                  "text": "Examiner 1"
+                },
+                {
+                  "text": "Examiner 2"
+                },
+                {
+                  "text": "Examiner 3"
+                },
+                {
+                  "text": "Decision"
+                }
+              ],
+              [
+                {
+                  "text": "Accept"
+                },
+                {
+                  "text": "Accept"
+                },
+                {
+                  "text": "Accept"
+                },
+                {
+                  "text": "Degree Recommended (Accept)"
+                }
+              ],
+              [
+                {
+                  "text": "Revise"
+                },
+                {
+                  "text": "Revise"
+                },
+                {
+                  "text": "Revise"
+                },
+                {
+                  "text": "Revise and Resubmit"
+                }
+              ],
+              [
+                {
+                  "text": "Reject"
+                },
+                {
+                  "text": "Reject"
+                },
+                {
+                  "text": "Reject"
+                },
+                {
+                  "text": "Reject"
+                }
+              ],
+              [
+                {
+                  "text": "Accept"
+                },
+                {
+                  "text": "Accept"
+                },
+                {
+                  "text": "Revise"
+                },
+                {
+                  "text": "Accept"
+                }
+              ],
+              [
+                {
+                  "text": "Accept"
+                },
+                {
+                  "text": "Revise"
+                },
+                {
+                  "text": "Revise"
+                },
+                {
+                  "text": "Revise and Resubmit"
+                }
+              ],
+              [
+                {
+                  "text": "Accept"
+                },
+                {
+                  "text": "Accept"
+                },
+                {
+                  "text": "Reject"
+                },
+                {
+                  "text": "Accept"
+                }
+              ],
+              [
+                {
+                  "text": "Accept"
+                },
+                {
+                  "text": "Reject"
+                },
+                {
+                  "text": "Reject"
+                },
+                {
+                  "text": "Revise; Refer to a Fourth Examiner"
+                }
+              ],
+              [
+                {
+                  "text": "Accept"
+                },
+                {
+                  "text": "Revise"
+                },
+                {
+                  "text": "Reject"
+                },
+                {
+                  "text": "Revise; Refer to a Fourth Examiner"
+                }
+              ],
+              [
+                {
+                  "text": "Revise"
+                },
+                {
+                  "text": "Revise"
+                },
+                {
+                  "text": "Reject"
+                },
+                {
+                  "text": "Revise; Refer to a Fourth Examiner"
+                }
+              ],
+              [
+                {
+                  "text": "Revise"
+                },
+                {
+                  "text": "Reject"
+                },
+                {
+                  "text": "Reject"
+                },
+                {
+                  "text": "Reject"
+                }
+              ]
+            ],
+            "columnWidths": [
+              25.0,
+              25.0,
+              25.0,
+              25.0
+            ],
+            "headerRows": 1,
+            "headerBackground": "#f9eeee",
+            "headerColor": "#222222",
+            "borderColor": "#e2e2e2",
+            "borders": "grid",
+            "fontSize": 15,
+            "padding": 12,
+            "minWidth": 640
+          }
+        },
+        {
+          "id": "cu-2026-96",
+          "type": "heading",
+          "text": "Viva-Voce & Award",
+          "level": "h3"
+        },
+        {
+          "id": "cu-2026-97",
+          "type": "bullets",
+          "bullets": [
+            {
+              "id": "cu-bullet-97-0",
+              "text": "Open viva-voce is held once examiner reports recommend the award, before a committee appointed by the Vice-Chancellor.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-97-1",
+              "text": "A scholar who does not clear the viva-voce may reattempt within three months, up to two attempts.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-97-2",
+              "text": "The degree is conferred after the thesis is uploaded to Shodhganga/INFLIBNET; a provisional certificate is issued pending the formal degree certificate.",
+              "targetKind": "none"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "regulations",
+      "title": "Regulations & Guidelines",
+      "description": "",
+      "blocks": [
+        {
+          "id": "cu-2026-98",
+          "type": "text",
+          "text": "All matters relating to admission, eligibility, duration, coursework, supervision, research progress, thesis submission, evaluation, viva-voce and award of the Ph.D. degree are governed by the Ph.D. Regulations of Chalapathi University for the Academic Year 2026–2027, together with the applicable UGC regulations."
+        },
+        {
+          "id": "cu-2026-99",
+          "type": "button",
+          "text": "PDF\nPh.D. Research Regulations 2026-27Issued by the Dean of Research & Development",
+          "href": "/research/downloads/CU_PhD_Regulations_2026-27.pdf",
+          "targetKind": "pdf",
+          "newTab": true,
+          "variant": "primary"
+        },
+        {
+          "id": "cu-2026-100",
+          "type": "button",
+          "text": "PDF\nPh.D. Admission Guidelines 2026-27Eligibility, procedure and coursework",
+          "href": "/research/downloads/CU_PhD_Admission_Guidelines_2026-27.pdf",
+          "targetKind": "pdf",
+          "newTab": true,
+          "variant": "primary"
+        },
+        {
+          "id": "cu-2026-101",
+          "type": "button",
+          "text": "PDF\nOverview of Research 2026-27Schools, facilities and doctoral journey",
+          "href": "/research/downloads/CU_Overview_of_Research_2026-27.pdf",
+          "targetKind": "pdf",
+          "newTab": true,
+          "variant": "primary"
+        },
+        {
+          "id": "cu-2026-102",
+          "type": "button",
+          "text": "PDF\nResearch Vision, Mission & ObjectivesResearch goals of the University",
+          "href": "/research/downloads/CU_Research_Vision_Mission_Objectives.pdf",
+          "targetKind": "pdf",
+          "newTab": true,
+          "variant": "primary"
+        },
+        {
+          "id": "cu-2026-103",
+          "type": "heading",
+          "text": "Other Provisions",
+          "level": "h3"
+        },
+        {
+          "id": "cu-2026-104",
+          "type": "bullets",
+          "bullets": [
+            {
+              "id": "cu-bullet-104-0",
+              "text": "Change of research topic: on application with a fee of ₹5,000/-; thesis may be submitted only one year after the change.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-104-1",
+              "text": "Change of supervisor: considered on merit; thesis may be submitted only one year after the change. Earlier qualifying publications continue to count.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-104-2",
+              "text": "Conversion FT ↔ PT: permitted once, after one year from registration, with the Vice-Chancellor's approval and a fee of ₹5,000/-.",
+              "targetKind": "none"
+            },
+            {
+              "id": "cu-bullet-104-3",
+              "text": "In case of doubt or ambiguity in interpreting the Regulations, the decision of the Vice-Chancellor is final.",
+              "targetKind": "none"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "faqs",
+      "title": "Frequently Asked Questions",
+      "description": "",
+      "blocks": [
+        {
+          "id": "cu-2026-106",
+          "type": "accordion",
+          "text": "What is the last date to apply?",
+          "children": [
+            {
+              "id": "cu-2026-105",
+              "type": "text",
+              "text": "The hard copy of the completed application with the Demand Draft must reach the University by 25/10/2026."
+            }
+          ]
+        },
+        {
+          "id": "cu-2026-108",
+          "type": "accordion",
+          "text": "What is the application fee and how do I pay it?",
+          "children": [
+            {
+              "id": "cu-2026-107",
+              "type": "text",
+              "text": "₹1,000/- by Demand Draft in favour of \"Chalapathi University\", sent with the hard copy of the application."
+            }
+          ]
+        },
+        {
+          "id": "cu-2026-110",
+          "type": "accordion",
+          "text": "What is the minimum qualification for Ph.D. admission?",
+          "children": [
+            {
+              "id": "cu-2026-109",
+              "type": "text",
+              "text": "A Master's degree in the relevant discipline with a minimum of 55% marks from a UGC-recognised university. A 5% relaxation applies to SC/ST/OBC (non-creamy layer), Differently Abled, EWS and other UGC-recognised categories."
+            }
+          ]
+        },
+        {
+          "id": "cu-2026-112",
+          "type": "accordion",
+          "text": "Who is exempted from CU-RAT?",
+          "children": [
+            {
+              "id": "cu-2026-111",
+              "type": "text",
+              "text": "Candidates with a valid UGC-NET / CSIR-JRF / SLET / GATE qualification, a teacher fellowship, an M.Phil. degree, or a qualifying APRCET score. They must still clear the University interview."
+            }
+          ]
+        },
+        {
+          "id": "cu-2026-114",
+          "type": "accordion",
+          "text": "What should the Research Plan contain?",
+          "children": [
+            {
+              "id": "cu-2026-113",
+              "type": "text",
+              "text": "About 200 words covering the broad theme and title of the proposed research, Abstract, Objectives, Literature Survey, Scope and Timelines, and Expected Conclusions."
+            }
+          ]
+        },
+        {
+          "id": "cu-2026-116",
+          "type": "accordion",
+          "text": "Can I pursue a Ph.D. part-time while working?",
+          "children": [
+            {
+              "id": "cu-2026-115",
+              "type": "text",
+              "text": "Yes. Part-time candidates must enclose a No Objection Certificate from their current organisation. The programme takes a minimum of four and a maximum of eight years."
+            }
+          ]
+        },
+        {
+          "id": "cu-2026-118",
+          "type": "accordion",
+          "text": "How is my supervisor allotted?",
+          "children": [
+            {
+              "id": "cu-2026-117",
+              "type": "text",
+              "text": "You list your order of preference of approved supervisors in the application. Supervisors are allotted based on vacant slots and your merit, subject to University rules."
+            }
+          ]
+        },
+        {
+          "id": "cu-2026-120",
+          "type": "accordion",
+          "text": "What is the tuition fee and is there a stipend?",
+          "children": [
+            {
+              "id": "cu-2026-119",
+              "type": "text",
+              "text": "₹20,000/- per semester for full-time and ₹30,000/- per semester for part-time scholars. Full-time scholars engaged by their Department receive a stipend for three years."
+            }
+          ]
+        },
+        {
+          "id": "cu-2026-122",
+          "type": "accordion",
+          "text": "How many publications are required before thesis submission?",
+          "children": [
+            {
+              "id": "cu-2026-121",
+              "type": "text",
+              "text": "At least three papers published after admission, of which at least two in Scopus/Web of Science indexed journals, carrying the Chalapathi University affiliation."
+            }
+          ]
+        },
+        {
+          "id": "cu-2026-125",
+          "type": "accordion",
+          "text": "How do I contact the Research office?",
+          "children": [
+            {
+              "id": "cu-2026-123",
+              "type": "text",
+              "text": "Email the Dean, Research & Development at research@chalapathiuniversity.edu.in."
+            },
+            {
+              "id": "cu-2026-124",
+              "type": "button",
+              "text": "research@chalapathiuniversity.edu.in",
+              "href": "mailto:research@chalapathiuniversity.edu.in",
+              "targetKind": "url",
+              "newTab": false,
+              "variant": "primary"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "contact",
+      "title": "Contact",
+      "description": "",
+      "blocks": [
+        {
+          "id": "cu-2026-126",
+          "type": "heading",
+          "text": "Dean, Research & Development",
+          "level": "h4"
+        },
+        {
+          "id": "cu-2026-127",
+          "type": "text",
+          "text": "Chalapathi University\nA.R. Nagar, Mothadaka\nGuntur – 522016, Andhra Pradesh, India"
+        },
+        {
+          "id": "cu-2026-128",
+          "type": "text",
+          "text": "Email: research@chalapathiuniversity.edu.in\nWebsite: www.chalapathiuniversity.edu.in"
+        },
+        {
+          "id": "cu-2026-129",
+          "type": "button",
+          "text": "research@chalapathiuniversity.edu.in",
+          "href": "mailto:research@chalapathiuniversity.edu.in",
+          "targetKind": "url",
+          "newTab": false,
+          "variant": "primary"
+        },
+        {
+          "id": "cu-2026-130",
+          "type": "button",
+          "text": "www.chalapathiuniversity.edu.in",
+          "href": "https://www.chalapathiuniversity.edu.in",
+          "targetKind": "url",
+          "newTab": false,
+          "variant": "primary"
+        },
+        {
+          "id": "cu-2026-132",
+          "type": "button",
+          "text": "Email the Research Office",
+          "href": "mailto:research@chalapathiuniversity.edu.in?subject=Ph.D.%20Admissions%202026-27%20-%20Enquiry",
+          "targetKind": "url",
+          "newTab": false,
+          "variant": "primary"
+        }
+      ]
+    }
+  ],
+  "items": []
+}

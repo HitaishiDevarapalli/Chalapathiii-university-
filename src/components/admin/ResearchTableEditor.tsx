@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ResearchTable, ResearchTableCell, TablePosition, changeTableLine, createResearchTable,
   mergeTableCells, moveTableLine, parseTablePaste, researchEligibilityTable, researchTableSchema,
   setTableColumnWidth, splitTableCells, tableAnchorAt, tableSelection,
 } from "../../data/researchTable";
-import { researchCellStyle, researchTableStyle } from "../research/ResearchTable";
+import { ResearchTable as TablePreview, researchCellStyle, researchTableStyle } from "../research/ResearchTable";
+import { previewResearchExcel, readResearchExcel } from "../../services/researchExcelImport";
 import { ResearchNumberField } from "./ResearchNumberField";
 import "../../styles/research-table-editor.css";
 
@@ -18,6 +19,15 @@ export function ResearchTableEditor({ value, onChange, onClose }: {
   const [error, setError] = useState("");
   const [pasteOpen, setPasteOpen] = useState(false), [pasted, setPasted] = useState("");
   const [delimiter, setDelimiter] = useState("auto"), [pasteHeader, setPasteHeader] = useState(true);
+  const [excel, setExcel] = useState<Awaited<ReturnType<typeof readResearchExcel>> | null>(null);
+  const [excelSheet, setExcelSheet] = useState(""), [excelRange, setExcelRange] = useState(""), [excelHeaders, setExcelHeaders] = useState(1);
+  const [excelBusy, setExcelBusy] = useState(false), [excelError, setExcelError] = useState("");
+  const excelInput = useRef<HTMLInputElement>(null);
+  const imported = useMemo(() => {
+    if (!excel) return null;
+    try { return { preview: previewResearchExcel(excel, excelSheet, excelRange, excelHeaders), error: "" }; }
+    catch (error) { return { preview: null, error: error instanceof Error ? error.message : "The worksheet could not be imported." }; }
+  }, [excel, excelSheet, excelRange, excelHeaders]);
   const dialog = useRef<HTMLDialogElement>(null), textInput = useRef<HTMLTextAreaElement>(null);
   const dragging = useRef(false);
   const active = tableAnchorAt(table, start);
@@ -40,8 +50,8 @@ export function ResearchTableEditor({ value, onChange, onClose }: {
   const apply = (operation: ResearchTable | (() => ResearchTable)) => {
     try {
       const next = typeof operation === "function" ? operation() : operation;
-      if (next === table) return;
-      if (commit(next)) { setUndo(previous => [...previous.slice(-39), table]); setRedo([]); }
+      if (next === table) return false;
+      if (commit(next)) { setUndo(previous => [...previous.slice(-39), table]); setRedo([]); return true; }
     } catch (error) { setError(error instanceof Error ? error.message : "This table change could not be applied."); }
   };
   const patchCells = (patch: Partial<ResearchTableCell>, textOnly = false) => apply({ ...table, rows: table.rows.map((row, r) => row.map((cell, c) => {
@@ -66,9 +76,16 @@ export function ResearchTableEditor({ value, onChange, onClose }: {
     const cells = parseTablePaste(pasted, delimiter === "auto" ? undefined : delimiter === "tab" ? "\t" : ",");
     const next = createResearchTable(cells.length, cells[0].length);
     setPasteOpen(false);
-    return { ...table, rows: cells.map(row => row.map(text => ({ text }))), columnWidths: next.columnWidths, headerRows: pasteHeader ? 1 : 0 };
+    return { ...table, rows: cells.map(row => row.map(text => ({ text }))), columnWidths: next.columnWidths, headerRows: pasteHeader ? 1 : 0, rowHeights: undefined, widthPixels: undefined };
   });
-  const renderRow = (row: ResearchTable["rows"][number], r: number) => <tr key={r}>{row.map((cell, c) => {
+  const openExcel = async (file?: File) => {
+    if (!file) return;
+    setExcelBusy(true); setExcelError("");
+    try { const source = await readResearchExcel(file); setExcel(source); setExcelSheet(source.sheetNames[0]); setExcelRange(""); setExcelHeaders(1); setPasteOpen(false); }
+    catch (error) { setExcelError(error instanceof Error ? error.message : "The Excel file could not be opened."); }
+    finally { setExcelBusy(false); if (excelInput.current) excelInput.current.value = ""; }
+  };
+  const renderRow = (row: ResearchTable["rows"][number], r: number) => <tr key={r} style={table.rowHeights?.[r] ? { height: table.rowHeights[r]! } : undefined}>{row.map((cell, c) => {
     if (!cell) return null;
     const Tag = r < table.headerRows ? "th" : "td";
     const isSelected = r >= range.top && r <= range.bottom && c >= range.left && c <= range.right;
@@ -98,8 +115,18 @@ export function ResearchTableEditor({ value, onChange, onClose }: {
       <button type="button" className="secondary" data-admin-action="edit" disabled={!redo.length} onClick={() => history(false)}>Redo</button>
       <button type="button" className="secondary" data-admin-action="edit" onClick={() => apply(researchEligibilityTable())}>Programme eligibility template</button>
       <button type="button" className="secondary" data-admin-action="edit" onClick={() => setPasteOpen(!pasteOpen)}>Paste spreadsheet / CSV</button>
+      <button type="button" className="secondary" data-admin-action="edit" disabled={excelBusy} onClick={() => excelInput.current?.click()}>{excelBusy ? "Reading Excel…" : "Upload Excel (.xlsx)"}</button>
+      <input ref={excelInput} type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden aria-label="Upload Excel table" onChange={event => void openExcel(event.target.files?.[0])} />
     </div><p>{table.rows.length} rows × {table.columnWidths.length} columns · {selected.length} {selected.length === 1 ? "cell" : "cells"} selected</p></div>
     {error && <p className="rt-error" role="alert">{error}</p>}
+    {excelError && <p className="rt-error" role="alert">{excelError}</p>}
+    {excel && <section className="rt-excel-panel"><h3>Excel import preview</h3><p>{excel.name} · Check the layout before importing. This replaces the current table; Undo restores it.</p>
+      <div className="rt-controls-grid"><label>Excel worksheet<select value={excelSheet} onChange={event => setExcelSheet(event.target.value)}>{excel.sheetNames.map(name => <option key={name} value={name}>{name}</option>)}</select></label><label>Cell range (optional)<input value={excelRange} maxLength={40} placeholder="e.g. A1:C20 — blank uses the worksheet" onChange={event => setExcelRange(event.target.value)} /></label><ResearchNumberField label="Excel header rows" value={excelHeaders} min={0} max={5} onChange={setExcelHeaders} /></div>
+      <div className="research-editor-actions"><button type="button" data-admin-action="edit" disabled={!imported?.preview} onClick={() => { if (imported?.preview && apply(imported.preview.table)) { setExcel(null); setExcelError(""); } }}>Use this Excel table</button><button type="button" className="secondary" data-admin-action="view" onClick={() => { setExcel(null); setExcelError(""); }}>Cancel Excel import</button></div>
+      {imported?.error && <p role="alert" className="rt-error">{imported.error}</p>}
+      {imported?.preview && <><p>Range {imported.preview.range} · {imported.preview.table.rows.length} rows × {imported.preview.table.columnWidths.length} columns</p><div className="rt-excel-preview"><TablePreview table={imported.preview.table} /></div>{imported.preview.warnings.length > 0 && <ul className="rt-excel-notes">{imported.preview.warnings.map(warning => <li key={warning}>{warning}</li>)}</ul>}</>}
+      <p>Imports merges, text, standard cell formatting, borders, row heights and column widths. Font availability and browser text wrapping can affect exact spacing.</p>
+    </section>}
     {pasteOpen && <section className="rt-paste-panel"><label>Spreadsheet / CSV data<textarea rows={5} value={pasted} onChange={event => setPasted(event.target.value)} placeholder="Copy cells from Excel or Google Sheets and paste here." /></label><div className="rt-controls-grid"><label>Separator<select value={delimiter} onChange={event => setDelimiter(event.target.value)}><option value="auto">Detect automatically</option><option value="tab">Tab (spreadsheet)</option><option value="comma">Comma (CSV)</option></select></label><label className="rt-checkbox"><input type="checkbox" checked={pasteHeader} onChange={event => setPasteHeader(event.target.checked)} />First row contains headings</label></div><p>Import replaces the current table contents. Undo restores the previous table.</p><button type="button" data-admin-action="edit" onClick={importData}>Import pasted data</button></section>}
     <div className="rt-editor-layout"><section className="rt-grid-area"><p className="rt-tip">Click a cell, then edit Cell text. Shift-click or drag across cells to select a range, then merge. On mobile, use the selection controls below.</p>
       <div className="research-table-scroll rt-editor-scroll" tabIndex={0} role="region" aria-label="Editable table">
@@ -115,13 +142,14 @@ export function ResearchTableEditor({ value, onChange, onClose }: {
         <div className="rt-controls-grid">
           <ResearchNumberField label="Header rows" value={table.headerRows} min={0} max={Math.min(5, table.rows.length)} onChange={headerRows => apply({ ...table, headerRows })} />
           <ResearchNumberField label="Font size (px)" value={table.fontSize || 15} min={12} max={24} onChange={fontSize => apply({ ...table, fontSize })} />
-          <ResearchNumberField label="Cell padding (px)" value={table.padding ?? 12} min={4} max={24} onChange={padding => apply({ ...table, padding })} />
+          <ResearchNumberField label="Cell padding (px)" value={table.padding ?? 12} min={0} max={24} onChange={padding => apply({ ...table, padding })} />
           <ResearchNumberField label="Minimum table width (px)" value={table.minWidth || 640} min={320} max={2400} onChange={minWidth => apply({ ...table, minWidth })} />
           <label>Header background<input type="color" value={table.headerBackground || "#f9eeee"} onChange={event => apply({ ...table, headerBackground: event.target.value })} /></label>
           <label>Header text colour<input type="color" value={table.headerColor || "#222222"} onChange={event => apply({ ...table, headerColor: event.target.value })} /></label>
           <label>Border colour<input type="color" value={table.borderColor || "#e2e2e2"} onChange={event => apply({ ...table, borderColor: event.target.value })} /></label>
           <label>Borders<select value={table.borders || "grid"} onChange={event => apply({ ...table, borders: event.target.value as ResearchTable["borders"] })}><option value="grid">All borders</option><option value="horizontal">Horizontal only</option><option value="none">No borders</option></select></label>
         </div><label className="rt-checkbox"><input type="checkbox" checked={!!table.striped} onChange={event => apply({ ...table, striped: event.target.checked })} />Alternate row shading</label>
+        {table.widthPixels && <button type="button" className="secondary" data-admin-action="edit" onClick={() => apply({ ...table, widthPixels: undefined })}>Fit table to page width</button>}
       </details>
     </section><aside className="rt-cell-properties"><h3>Row {active.row + 1}, column {active.col + 1}</h3>
       <label>Cell text<textarea ref={textInput} rows={6} maxLength={20000} value={active.cell.text} onChange={event => patchCells({ text: event.target.value }, true)} placeholder="Type the cell content. Enter adds a new line." /></label>

@@ -1,5 +1,15 @@
 # Research & Innovation component editor
 
+## Supplied university research page (2026–27)
+
+The content supplied in `cu-research-page (1).zip` is built into the existing Research & Innovation page as 18 editable CMS sections: overview, vision/mission/objectives, facilities, supervision, integrity, notification/dates, eligibility, duration, admission procedure, application/checklist, fees/stipend, doctoral journey, coursework, progress/publications, thesis evaluation, regulations/guidelines, FAQs and contact. Merged eligibility cells are native editable tables. The six original PDFs and university logo are in `public/research/`; PDF buttons use permanent `/research/downloads/...` paths. The original archive's scripts and independent navigation/header are not executed or embedded.
+
+New installations and the exact original, untouched placeholder content load this page automatically. Previously customised or deliberately emptied content remains intact. For an existing customised page, open **Admin → Research & Innovation → Load supplied research content → Use supplied content in editor**, review it, then **Publish changes**. This replaces the editor draft only until publication. All imported text, tables, buttons and FAQs use the usual editor and server publishing flow.
+
+Run `npm run test:research-content` from `server/` after the frontend build for the supplied-content API/browser integration check. It uses an isolated temporary database; it does not change production content.
+
+Dates, fees, eligibility and policy wording are transcribed from the supplied files. The source's Approved Supervisors table has two empty entries; names, departments and research areas must be completed by the University in admin. No supervisor details or phone number have been invented. Email buttons use validated `mailto:` links. Browser layout follows the existing university website rather than embedding a separate HTML page.
+
 Open **Admin → Research & Innovation**, select a sidebar option, and use **Build this section**. You can create as many sidebar options as you need with **Add sidebar option**; rename, reorder, hide or delete any existing option.
 
 ## Build content
@@ -44,6 +54,16 @@ In **Admin → Research & Innovation**, select the sidebar section you want to e
 - Use **Paste spreadsheet / CSV** to import copied Excel/Google Sheets cells or quoted CSV. Multiline cells are supported. Import and the eligibility template replace the current contents; **Undo / Redo** let you recover the previous table while the builder remains open.
 
 Tables support up to **200 rows × 20 columns**. Choose **Done**, review the table in the research canvas, then **Publish changes**. Closing the builder retains your research draft; it does not publish. Table data, merges and formatting use the existing server publishing flow and survive reloads.
+
+### Import an Excel table with formatting
+
+Choose **Upload Excel (.xlsx)** in the table builder. Select the worksheet and, if needed, a range such as `A1:C20`. Set **Excel header rows** to match the table (use 0 if the selected range contains no headings). Review the preview, then choose **Use this Excel table → Done → Publish changes**. Cancel leaves the existing table unchanged; Undo restores it after applying an import.
+
+The importer preserves merged rows/columns, saved display values, font family and size, bold/italic/underline, text/fill colours, alignment, text wrapping, cell borders, column widths and explicit row heights. Excel widths are retained in pixels; wide tables scroll inside the page. **Fit table to page width** switches back to the normal responsive layout. Imported cells remain editable.
+
+Upload an unencrypted `.xlsx` workbook up to **10 MB**, with at most 200 rows and 20 columns in the selected range. Save older `.xls` files as `.xlsx` first. A range must include each intersecting merged cell completely. Excel formulas use their cached display values; recalculate and save in Excel before uploading. Formulas are not executed on the website. Missing saved formula results stop import instead of becoming silent blank cells.
+
+Images, charts and conditional formatting rules are not imported; the preview lists relevant limitations. Fonts must be available in the visitor's browser, and browser font metrics can change exact line wrapping and spacing. Preview the imported table before publishing.
 
 Run `npm run test:research-tables` from `server/` for structure and import tests. After building the frontend and backend, `node tests/research-table-browser.cjs` verifies the full editor and public page against isolated test data. Screenshots are under `work/research-qa/tables/`.
 

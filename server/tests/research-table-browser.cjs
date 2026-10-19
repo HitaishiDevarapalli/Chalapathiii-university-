@@ -109,6 +109,7 @@ const { PGLiteSocketServer } = require("@electric-sql/pglite-socket");
     assert.equal(await visitor.$eval(".research-table-scroll", element => element.scrollWidth > element.clientWidth), true);
     assert.equal(await visitor.$eval(".research-table-hint", element => getComputedStyle(element).display), "block");
     await visitor.screenshot({ path: path.join(output, "table-public-mobile.png"), fullPage: true });
+    await require("./research-excel-browser.cjs")({ admin, visitor, base, read, publish, output });
     assert.deepEqual(errors, []);
     console.log("PASS browser: Research table library, eligibility template, cell editing/formatting, vertical/horizontal merging, split, undo/redo, row/column operations, spreadsheet import, publication, server validation, reload persistence and mobile layout.");
   } catch (error) {

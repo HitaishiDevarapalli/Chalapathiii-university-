@@ -10,8 +10,9 @@ export const ResearchView: React.FC<ResearchViewProps> = ({ path }) => {
   const { data, loading, error } = usePublishedResearch();
   const [searchParams, setSearchParams] = useSearchParams();
   const sections = data.sections.filter(section => !section.hidden);
-  const legacySection = path?.endsWith("/projects") ? "sponsored" : path?.endsWith("/publications") ? "academic" : path?.endsWith("/patents") ? "innovation" : "updates";
-  const current = sections.find(section => section.id === (searchParams.get("section") || legacySection)) || sections[0];
+  const requestedSection = searchParams.get("section");
+  const legacySection = path?.endsWith("/projects") ? "sponsored" : path?.endsWith("/publications") ? "academic" : path?.endsWith("/patents") ? "innovation" : sections.some(section => section.id === "updates") ? "updates" : "overview";
+  const current = sections.find(section => section.id === (requestedSection || legacySection)) || sections[0];
   const blocks = current ? researchBlocksForSection(data, current.id) : [];
   if (data.hidden || data.isUnderConstruction) return <div className="research-notice research-page">
     <h1>{data.hidden ? "Research information is temporarily unavailable" : data.pageTitle}</h1>
@@ -26,6 +27,9 @@ export const ResearchView: React.FC<ResearchViewProps> = ({ path }) => {
     <div className={`research-layout${sections.length ? "" : " research-layout--empty"}`}>
       {sections.length > 0 && <aside className="research-sidebar">
         <div className="research-nav-heading">Explore Research</div>
+        <label className="research-mobile-section">Research section<select value={current?.id || ""} onChange={event => setSearchParams({ section: event.target.value }, { preventScrollReset: true })}>
+          {sections.map(section => <option key={section.id} value={section.id}>{section.title}</option>)}
+        </select></label>
         <nav aria-label="Research sections">
           {sections.map(section => <button key={section.id} type="button" aria-current={current?.id === section.id ? "page" : undefined}
             onClick={() => setSearchParams({ section: section.id }, { preventScrollReset: true })}>

@@ -6,7 +6,10 @@ export interface ResearchTableCell {
   align?: "left" | "center" | "right";
   verticalAlign?: "top" | "middle" | "bottom";
   background?: string; color?: string;
+  fontFamily?: string; fontSize?: number; wrapText?: boolean;
+  borderTop?: ResearchCellBorder; borderRight?: ResearchCellBorder; borderBottom?: ResearchCellBorder; borderLeft?: ResearchCellBorder;
 }
+export interface ResearchCellBorder { style: "none" | "solid" | "dashed" | "dotted" | "double"; width: number; color: string; }
 export interface ResearchTable {
   rows: (ResearchTableCell | null)[][];
   columnWidths: number[];
@@ -15,6 +18,7 @@ export interface ResearchTable {
   headerBackground?: string; headerColor?: string; borderColor?: string;
   borders?: "grid" | "horizontal" | "none";
   striped?: boolean; fontSize?: number; padding?: number; minWidth?: number;
+  rowHeights?: (number | null)[]; widthPixels?: number; lineHeight?: number;
 }
 export interface TablePosition { row: number; col: number; }
 export interface TableRange { top: number; left: number; bottom: number; right: number; }
@@ -53,20 +57,25 @@ export function tableGeometryError(table: ResearchTable): string | undefined {
   }
 }
 const color = z.string().regex(/^#[0-9a-f]{6}$/i, "Use a six-digit hex colour.");
+const borderSchema = z.object({ style: z.enum(["none", "solid", "dashed", "dotted", "double"]), width: z.number().min(0).max(5), color });
 const cellSchema = z.object({
   text: z.string().max(20000), rowSpan: z.number().int().min(1).max(MAX_TABLE_ROWS).optional(), colSpan: z.number().int().min(1).max(MAX_TABLE_COLUMNS).optional(),
   bold: z.boolean().optional(), italic: z.boolean().optional(), underline: z.boolean().optional(),
   align: z.enum(["left", "center", "right"]).optional(), verticalAlign: z.enum(["top", "middle", "bottom"]).optional(), background: color.optional(), color: color.optional(),
+  fontFamily: z.string().regex(/^[\p{L}\p{N} ._-]{1,80}$/u).optional(), fontSize: z.number().min(6).max(128).optional(), wrapText: z.boolean().optional(),
+  borderTop: borderSchema.optional(), borderRight: borderSchema.optional(), borderBottom: borderSchema.optional(), borderLeft: borderSchema.optional(),
 });
 export const researchTableSchema: z.ZodType<ResearchTable> = z.object({
   rows: z.array(z.array(cellSchema.nullable()).min(1).max(MAX_TABLE_COLUMNS)).min(1).max(MAX_TABLE_ROWS),
-  columnWidths: z.array(z.number().min(1).max(100)).min(1).max(MAX_TABLE_COLUMNS), headerRows: z.number().int().min(0).max(5),
+  columnWidths: z.array(z.number().min(.01).max(100)).min(1).max(MAX_TABLE_COLUMNS), headerRows: z.number().int().min(0).max(5),
   caption: z.string().max(1000).optional(), headerBackground: color.optional(), headerColor: color.optional(), borderColor: color.optional(),
   borders: z.enum(["grid", "horizontal", "none"]).optional(), striped: z.boolean().optional(),
-  fontSize: z.number().int().min(12).max(24).optional(), padding: z.number().int().min(4).max(24).optional(), minWidth: z.number().int().min(320).max(2400).optional(),
+  fontSize: z.number().int().min(12).max(24).optional(), padding: z.number().int().min(0).max(24).optional(), minWidth: z.number().int().min(320).max(2400).optional(),
+  rowHeights: z.array(z.number().min(1).max(2000).nullable()).max(MAX_TABLE_ROWS).optional(), widthPixels: z.number().min(100).max(20000).optional(), lineHeight: z.number().min(1).max(3).optional(),
 }).superRefine((table, context) => {
   const error = tableGeometryError(table);
   if (error) context.addIssue({ code: "custom", message: error });
+  if (table.rowHeights && table.rowHeights.length !== table.rows.length) context.addIssue({ code: "custom", message: "Row heights must match the number of rows." });
   if (Math.abs(table.columnWidths.reduce((a, b) => a + b, 0) - 100) > .01) context.addIssue({ code: "custom", message: "Column widths must total 100%." });
 });
 
@@ -136,12 +145,13 @@ export function changeTableLine(table: ResearchTable, axis: "row" | "column", in
     if (remove) widths.splice(index, 1);
     else {
       const added = 100 / (count + 1);
-      widths = widths.map(width => 1 + (width - 1) / (100 - count) * (100 - added - count));
+      widths = widths.map(width => .01 + (width - .01) / (100 - count * .01) * (100 - added - count * .01));
       widths.splice(index, 0, added);
     }
     next.columnWidths = normalizedWidths(widths);
   } else {
     next.headerRows = Math.min(5, next.rows.length, table.headerRows + (index < table.headerRows ? delta : 0));
+    if (table.rowHeights) { next.rowHeights = [...table.rowHeights]; if (remove) next.rowHeights.splice(index, 1); else next.rowHeights.splice(index, 0, null); }
   }
   return next;
 }
@@ -157,14 +167,15 @@ export function moveTableLine(table: ResearchTable, axis: "row" | "column", inde
   });
   const next = rebuild(table, table.rows.length, table.columnWidths.length, items);
   if (axis === "column") { next.columnWidths = [...table.columnWidths]; [next.columnWidths[index], next.columnWidths[target]] = [next.columnWidths[target], next.columnWidths[index]]; }
+  else if (table.rowHeights) { next.rowHeights = [...table.rowHeights]; [next.rowHeights[index], next.rowHeights[target]] = [next.rowHeights[target], next.rowHeights[index]]; }
   return next;
 }
 export function setTableColumnWidth(table: ResearchTable, column: number, width: number): ResearchTable {
   if (table.columnWidths.length === 1) return { ...table, columnWidths: [100] };
-  const value = Math.max(1, Math.min(100 - (table.columnWidths.length - 1), width));
+  const value = Math.max(.01, Math.min(100 - (table.columnWidths.length - 1) * .01, width));
   const remainder = 100 - table.columnWidths[column];
-  const extra = remainder - (table.columnWidths.length - 1);
-  const widths = table.columnWidths.map((current, index) => index === column ? value : extra < .00001 ? (100 - value) / (table.columnWidths.length - 1) : 1 + (current - 1) / extra * (100 - value - (table.columnWidths.length - 1)));
+  const extra = remainder - (table.columnWidths.length - 1) * .01;
+  const widths = table.columnWidths.map((current, index) => index === column ? value : extra < .00001 ? (100 - value) / (table.columnWidths.length - 1) : .01 + (current - .01) / extra * (100 - value - (table.columnWidths.length - 1) * .01));
   return { ...table, columnWidths: normalizedWidths(widths) };
 }
 export function researchEligibilityTable(): ResearchTable {
