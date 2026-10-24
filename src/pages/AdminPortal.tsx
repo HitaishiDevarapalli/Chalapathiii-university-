@@ -77,6 +77,7 @@ import { MediaBrowser, MediaBrowseButton, uploadMedia } from "../components/admi
 import { PlacementsCMS } from "../components/admin/PlacementsCMS";
 import { ResearchCMS } from "../components/admin/ResearchCMS";
 import { FacultyCMS } from "../components/admin/FacultyCMS";
+import { ProgramFacultyCMS } from "../components/admin/ProgramFacultyCMS";
 import { AdmissionsCMS } from "../components/admin/AdmissionsCMS";
 import { ContactCMS } from "../components/admin/ContactCMS";
 import { EventsCMS } from "../components/admin/EventsCMS";
@@ -1233,6 +1234,17 @@ export default function AdminPortal() {
         : getProgramFullData(selectedProgSlug, currentProg?.title, currentProg?.department)
     );
   }, [selectedProgSlug, currentProg, publishedPrograms]);
+
+  const programFacultyDepartmentKey = Object.keys(facultyData || {}).find(key =>
+    key.toLowerCase().replace(/[^a-z0-9]/g, "") === customFullProgram.department.toLowerCase().replace(/[^a-z0-9]/g, "")
+  ) || Object.keys(facultyData || {}).find(key => {
+    const department = customFullProgram.department.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const candidate = key.toLowerCase().replace(/[^a-z0-9]/g, "");
+    return department && (candidate.includes(department) || department.includes(candidate));
+  });
+  const programFacultyDirectory = programFacultyDepartmentKey ? facultyData[programFacultyDepartmentKey] : undefined;
+  const programFacultyCount = [programFacultyDirectory?.hod, ...(programFacultyDirectory?.others || [])]
+    .filter(member => Boolean(member?.name?.trim())).length;
 
   const selectProgramToEdit = (slug: string) => {
     setSelectedProgSlug(slug);
@@ -7857,7 +7869,7 @@ export default function AdminPortal() {
                       { id: "hodMessage", label: "2. HOD Message" },
                       { id: "visionMission", label: "3. Vision & Mission" },
                       { id: "peoPoPso", label: "4. PEOs, POs, PSOs" },
-                      { id: "faculty", label: `5. Faculty (${customFullProgram.facultyList?.length || 0})` },
+                      { id: "faculty", label: `5. Faculty (${programFacultyCount})` },
                       { id: "placements", label: "6. Placements" },
                       { id: "labs", label: `7. Infrastructure & Labs (${customFullProgram.laboratories?.length || 0})` },
                       { id: "achievements", label: `8. Achievements (${customFullProgram.achievements?.length || 0})` },
@@ -8903,112 +8915,11 @@ export default function AdminPortal() {
 
                   {/* ──────────────── 5. FACULTY DIRECTORY ──────────────── */}
                   {progEditorSubTab === "faculty" && (
-                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-5">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-3">
-                        <div>
-                          <h4 className="text-sm font-black text-[#072A6C] uppercase">
-                            Branch Faculty Directory ({customFullProgram.facultyList?.length || 0} Members)
-                          </h4>
-                          <p className="text-xs text-gray-500">Manage academic professors, assistant professors, and research mentors</p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const newFac = {
-                              name: "Dr. New Faculty",
-                              designation: "Assistant Professor",
-                              qualification: "Ph.D., M.Tech.",
-                              specialization: "Artificial Intelligence",
-                              experience: "5+ Years",
-                              email: "faculty@chalapathiuniversity.edu.in"
-                            };
-                            setCustomFullProgram({
-                              ...customFullProgram,
-                              facultyList: [newFac, ...(customFullProgram.facultyList || [])]
-                            });
-                          }}
-                          className="h-8 px-3 bg-[#072A6C] hover:bg-[#051c4a] text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer self-start sm:self-auto"
-                        >
-                          <Plus size={13} /> Add Faculty Member
-                        </button>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                        {(customFullProgram.facultyList || []).map((f, idx) => (
-                          <div key={idx} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
-                            <div className="flex items-center justify-between">
-                              <input
-                                type="text"
-                                value={f.name}
-                                onChange={(e) => {
-                                  const updated = [...customFullProgram.facultyList];
-                                  updated[idx].name = e.target.value;
-                                  setCustomFullProgram({ ...customFullProgram, facultyList: updated });
-                                }}
-                                className="font-extrabold text-xs text-[#072A6C] bg-white border border-gray-200 px-2 py-1 rounded-lg w-3/4"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const updated = customFullProgram.facultyList.filter((_, i) => i !== idx);
-                                  setCustomFullProgram({ ...customFullProgram, facultyList: updated });
-                                }}
-                                className="text-red-500 hover:text-red-700 p-1 cursor-pointer"
-                              >
-                                <Trash2 size={14} />
-                              </button>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-2 text-xs">
-                              <input
-                                type="text"
-                                value={f.designation}
-                                onChange={(e) => {
-                                  const updated = [...customFullProgram.facultyList];
-                                  updated[idx].designation = e.target.value;
-                                  setCustomFullProgram({ ...customFullProgram, facultyList: updated });
-                                }}
-                                placeholder="Designation"
-                                className="px-2 py-1 bg-white border border-gray-200 rounded-lg text-gray-700"
-                              />
-                              <input
-                                type="text"
-                                value={f.qualification}
-                                onChange={(e) => {
-                                  const updated = [...customFullProgram.facultyList];
-                                  updated[idx].qualification = e.target.value;
-                                  setCustomFullProgram({ ...customFullProgram, facultyList: updated });
-                                }}
-                                placeholder="Qualification"
-                                className="px-2 py-1 bg-white border border-gray-200 rounded-lg text-gray-700"
-                              />
-                              <input
-                                type="text"
-                                value={f.specialization}
-                                onChange={(e) => {
-                                  const updated = [...customFullProgram.facultyList];
-                                  updated[idx].specialization = e.target.value;
-                                  setCustomFullProgram({ ...customFullProgram, facultyList: updated });
-                                }}
-                                placeholder="Specialization"
-                                className="px-2 py-1 bg-white border border-gray-200 rounded-lg text-gray-700"
-                              />
-                              <input
-                                type="email"
-                                value={f.email}
-                                onChange={(e) => {
-                                  const updated = [...customFullProgram.facultyList];
-                                  updated[idx].email = e.target.value;
-                                  setCustomFullProgram({ ...customFullProgram, facultyList: updated });
-                                }}
-                                placeholder="Email"
-                                className="px-2 py-1 bg-white border border-gray-200 rounded-lg text-gray-700 font-mono"
-                              />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                    <ProgramFacultyCMS
+                      department={customFullProgram.department}
+                      facultyData={facultyData}
+                      updateFacultyData={updateFacultyData}
+                    />
                   )}
 
                   {/* ──────────────── 6. LABORATORIES ──────────────── */}
