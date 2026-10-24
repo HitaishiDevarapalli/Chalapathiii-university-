@@ -130,6 +130,20 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
     return SCHOOL_DEFINITIONS.find((s) => s.id === selectedSchoolId) || SCHOOL_DEFINITIONS[0];
   }, [selectedSchoolId]);
 
+  const resolveDepartment = (rawDepartment: string) => {
+    const normalized = rawDepartment.toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (!normalized) return "";
+    if (/csecs|cybersecurity/.test(normalized)) return "Cyber Security";
+    if (/ece|electronicsandcommunicationengineering/.test(normalized)) return "Electronics and Communication Engineering";
+    if (/cseai|artificialintelligence/.test(normalized)) return "Artificial Intelligence";
+    if (/civilengineering|civil/.test(normalized)) return "Civil Engineering";
+    if (/computerscienceengineering|cse/.test(normalized)) return "Computer Science & Engineering";
+    return Object.values(SCHOOL_DEFINITIONS).flatMap(school => school.departments).find(department => {
+      const candidate = department.toLowerCase().replace(/[^a-z0-9]/g, "");
+      return candidate === normalized || candidate.includes(normalized) || normalized.includes(candidate);
+    }) || "";
+  };
+
   // Sync state if context changes externally
   const handleSaveAll = () => {
     updateFacultyData(facultyForm);
@@ -365,39 +379,20 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
   //  EXCEL TEMPLATE DOWNLOAD HANDLER
   // ════════════════════════════════════════════════════════════
   const handleDownloadExcelTemplate = () => {
-    const templateData = [
-      {
-        "Full Name": "Dr. Ramesh Kumar",
-        "Designation / Title": "Professor",
-        "Qualifications": "Ph.D - IIT Madras",
-        "Department": currentSchool.departments[0] || "Computer Science & Engineering",
-        "Specialization / Research": "Artificial Intelligence, Data Analytics",
-        "Email": "ramesh.faculty@chalapathi.ac.in",
-        "Phone": "0863 2345432",
-        "Experience": "15 Years",
-        "Avatar or Initials": "RK",
-        "Is Head of Dept (Yes/No)": "No"
-      },
-      {
-        "Full Name": "Mrs. Priya Sharma",
-        "Designation / Title": "Assistant Professor",
-        "Qualifications": "M.Tech - JNTU Kakinada",
-        "Department": currentSchool.departments[0] || "Computer Science & Engineering",
-        "Specialization / Research": "Cyber Security, Cloud Computing",
-        "Email": "priya.faculty@chalapathi.ac.in",
-        "Phone": "0863 2345433",
-        "Experience": "8 Years",
-        "Avatar or Initials": "PS",
-        "Is Head of Dept (Yes/No)": "No"
-      }
+    const headers = [
+      "S.No.", "Faculty Name", "Qualification", "Designation", "Subject Teaching 1", "Subject Teaching 2",
+      "Subject Teaching 3", "Subject Teaching 4", "Administrative Duties", "Areas of Research",
+      "Publications 1 – Journals", "Publications 2 – Conferences", "Publications 3 – Book Chapters",
+      "Publications 4 – Books", "Publications 5 – Patents Published", "Publications 6 – Patents Granted",
+      "Conferences / Workshops / Seminars / FDPs Attended", "Conferences / Workshops / Seminars / FDPs Organized",
+      "Department", "Email", "Phone", "Experience", "Is Head of Dept (Yes/No)"
     ];
-
-    const worksheet = XLSX.utils.json_to_sheet(templateData);
+    const worksheet = XLSX.utils.aoa_to_sheet([headers]);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Faculty_Template");
 
     // Auto-fit column widths
-    const max_width = [25, 22, 25, 32, 35, 30, 15, 12, 18, 25];
+    const max_width = headers.map(header => Math.min(36, Math.max(16, header.length + 2)));
     worksheet["!cols"] = max_width.map((w) => ({ wch: w }));
 
     XLSX.writeFile(workbook, `Chalapathi_Faculty_Import_Template_${currentSchool.id}.xlsx`);
@@ -418,52 +413,83 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
     reader.onload = (evt) => {
       try {
         const bstr = evt.target?.result;
-        const wb = XLSX.read(bstr, { type: "binary" });
-        const wsName = wb.SheetNames[0];
-        const ws = wb.Sheets[wsName];
-        const rawJson: any[] = XLSX.utils.sheet_to_json(ws, { defval: "" });
+        const wb = XLSX.read(bstr, { type: "array" });
+        const normalize = (value: unknown) => String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+        let headers: string[] = [];
+        let dataRows: unknown[][] = [];
 
-        if (!rawJson || rawJson.length === 0) {
+        for (const sheetName of wb.SheetNames) {
+          const worksheet = wb.Sheets[sheetName];
+          const rows: unknown[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "", raw: false });
+          const headerIndex = rows.findIndex(row => row.some(cell => ["facultyname", "fullname", "name"].includes(normalize(cell))) && row.some(cell => ["qualification", "qualifications", "education"].includes(normalize(cell))));
+          if (headerIndex < 0) continue;
+          headers = rows[headerIndex].map(cell => String(cell || "").trim());
+          dataRows = rows.slice(headerIndex + 1);
+          break;
+        }
+
+        if (headers.length === 0 || dataRows.length === 0) {
           setExcelError("Uploaded spreadsheet is empty. Please check the file contents.");
           return;
         }
 
-        // Normalize columns (smart match headers)
-        const parsedRows: Array<Partial<FacultyMember> & { isHod?: boolean; rawDept?: string }> = rawJson.map((row) => {
-          const findVal = (keys: string[]) => {
-            for (const k of keys) {
-              const matchingKey = Object.keys(row).find(
-                (rk) => rk.toLowerCase().trim().replace(/[^a-z0-9]/g, "") === k.toLowerCase().replace(/[^a-z0-9]/g, "")
-              );
-              if (matchingKey && row[matchingKey] !== undefined && row[matchingKey] !== "") {
-                return String(row[matchingKey]).trim();
-              }
-            }
-            return "";
-          };
-
-          const name = findVal(["FullName", "Name", "FacultyName", "ProfessorName", "TeacherName"]);
-          const title = findVal(["DesignationTitle", "Designation", "Title", "Position", "Role"]) || "Assistant Professor";
-          const edu = findVal(["Qualifications", "Qualification", "Edu", "Degree", "Education"]) || "Ph.D / M.Tech";
-          const dept = findVal(["Department", "Dept", "Branch", "School"]);
-          const interests = findVal(["SpecializationResearch", "Specialization", "Research", "Interests", "AreaOfExpertise"]);
-          const email = findVal(["Email", "EmailID", "Mail", "EmailAddress"]);
-          const phone = findVal(["Phone", "Mobile", "Contact", "PhoneNumber"]);
-          const experience = findVal(["Experience", "Exp", "YearsOfExp"]) || "5+ Years";
-          const avatar = findVal(["AvatarOrInitials", "Avatar", "Photo", "Initials", "Image"]);
-          const isHodRaw = findVal(["IsHeadOfDeptYesNo", "IsHOD", "HOD", "Head", "IsHead"]).toLowerCase();
-          const isHod = isHodRaw === "yes" || isHodRaw === "true" || isHodRaw === "1" || title.toLowerCase().includes("hod");
+        const fileDepartment = resolveDepartment(file.name.replace(/\.[^.]+$/, ""));
+        if (fileDepartment) setExcelTargetDept(fileDepartment);
+        const fieldIndexes = new Map(headers.map((header, index) => [normalize(header), index]));
+        const findVal = (row: unknown[], names: string[]) => {
+          for (const name of names) {
+            const index = fieldIndexes.get(normalize(name));
+            const value = index === undefined ? "" : String(row[index] ?? "").trim();
+            if (value) return value;
+          }
+          return "";
+        };
+        const parsedRows: Array<Partial<FacultyMember> & { isHod?: boolean; rawDept?: string }> = dataRows.map(row => {
+          const name = findVal(row, ["Full Name", "Faculty Name", "Professor Name", "Teacher Name", "Name"]);
+          const title = findVal(row, ["Designation", "Designation / Title", "Title", "Position", "Role"]);
+          const edu = findVal(row, ["Qualification", "Qualifications", "Education", "Degree"]);
+          const rawDepartment = findVal(row, ["Department", "Dept", "Branch", "School"]);
+          const mappedDepartment = resolveDepartment(rawDepartment) || fileDepartment || excelTargetDept;
+          const teachingSubjects = headers.flatMap((header, index) => normalize(header).startsWith("subjectteaching") && String(row[index] ?? "").trim() ? [String(row[index]).trim()] : []);
+          const publications = Object.fromEntries(headers.flatMap((header, index) => normalize(header).startsWith("publications") && String(row[index] ?? "").trim() ? [[header, String(row[index]).trim()]] : []));
+          const administrativeDuties = findVal(row, ["Administrative Duties", "Administrative Work", "Duties"]);
+          const interests = findVal(row, ["Areas of Research", "Research Areas", "Specialization / Research", "Specialization", "Interests", "Area of Expertise"]);
+          const conferencesAttended = findVal(row, ["Conferences / Workshops / Seminars / FDPs Attended", "Conferences Attended", "Workshops Attended"]);
+          const conferencesOrganized = findVal(row, ["Conferences / Workshops / Seminars / FDPs Organized", "Have you organized any Conferences / Workshops / Seminars?", "Conferences Organized", "Workshops Organized"]);
+          const isHodRaw = findVal(row, ["Is Head of Dept (Yes/No)", "Is HOD", "HOD", "Head", "Is Head"]).toLowerCase();
+          const isHod = ["yes", "true", "1"].includes(isHodRaw) || /\bhod\b|head of (the )?department/i.test(`${title} ${administrativeDuties}`);
+          const mappedHeaders = new Set([
+            "fullname", "facultyname", "professorname", "teachername", "name", "designation", "designationtitle", "title", "position", "role",
+            "qualification", "qualifications", "education", "degree", "department", "dept", "branch", "school", "administrativeduties",
+            "administrativework", "duties", "areasofresearch", "researchareas", "specializationresearch", "specialization", "interests",
+            "areaofexpertise", "conferencesworkshopsseminarsfdpsattended", "conferencesattended", "workshopsattended",
+            "conferencesworkshopsseminarsfdpsorganized", "haveyouorganizedanyconferencesworkshopsseminars", "conferencesorganized", "workshopsorganized",
+            "isheadofdeptyesno", "ishod", "hod", "head", "isheadof", "email", "emailid", "mail", "emailaddress", "phone", "mobile",
+            "contact", "phonenumber", "experience", "exp", "yearsofexperience", "avatar", "photo", "initials", "image"
+          ]);
+          const additionalDetails = Object.fromEntries(headers.flatMap((header, index) => {
+            const value = String(row[index] ?? "").trim();
+            const key = normalize(header);
+            if (!value || mappedHeaders.has(key) || key.startsWith("subjectteaching") || key.startsWith("publications")) return [];
+            return [[header, value]];
+          }));
 
           return {
             name,
             title,
             edu,
-            rawDept: dept,
+            rawDept: mappedDepartment,
             interests,
-            email,
-            phone,
-            experience,
-            avatar,
+            email: findVal(row, ["Email", "Email ID", "Mail", "Email Address"]),
+            phone: findVal(row, ["Phone", "Mobile", "Contact", "Phone Number"]),
+            experience: findVal(row, ["Experience", "Exp", "Years of Experience"]),
+            avatar: findVal(row, ["Avatar", "Photo", "Initials", "Image"]),
+            teachingSubjects,
+            administrativeDuties,
+            publications,
+            conferencesAttended,
+            conferencesOrganized,
+            additionalDetails,
             isHod
           };
         }).filter((r) => r.name && r.name.trim().length > 0);
@@ -479,7 +505,7 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
       }
     };
 
-    reader.readAsBinaryString(file);
+    reader.readAsArrayBuffer(file);
   };
 
   // ════════════════════════════════════════════════════════════
@@ -494,13 +520,7 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
     const updated = { ...facultyForm };
 
     excelRows.forEach((row) => {
-      let targetDept = excelTargetDept;
-      if (row.rawDept) {
-        const matched = currentSchool.departments.find(
-          (d) => d.toLowerCase().includes(row.rawDept!.toLowerCase()) || row.rawDept!.toLowerCase().includes(d.toLowerCase())
-        );
-        if (matched) targetDept = matched;
-      }
+      const targetDept = resolveDepartment(row.rawDept || "") || excelTargetDept;
 
       if (!updated[targetDept]) {
         updated[targetDept] = {
@@ -521,26 +541,24 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
         };
       }
 
-      const initials = (row.name || "FAC")
-        .split(" ")
-        .filter((n) => !["Dr.", "Prof.", "Mr.", "Mrs.", "Smt.", "Sri"].includes(n))
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 3) || "FAC";
-
       const member: FacultyMember = {
-        name: row.name || "Faculty Member",
-        title: row.title || "Assistant Professor",
-        edu: row.edu || "M.Tech / Ph.D",
+        name: row.name || "",
+        title: row.title || "",
+        edu: row.edu || "",
         interests: row.interests || "",
-        phone: row.phone || "0863 2345400",
+        phone: row.phone || "",
         email: row.email || "",
-        avatar: row.avatar || initials,
+        avatar: row.avatar || "",
         age: "",
-        experience: row.experience || "5+ Years",
-        idNo: `CU-${targetDept.slice(0, 3).toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`,
-        department: targetDept
+        experience: row.experience || "",
+        idNo: row.idNo || "",
+        department: targetDept,
+        teachingSubjects: row.teachingSubjects || [],
+        administrativeDuties: row.administrativeDuties || "",
+        publications: row.publications || {},
+        conferencesAttended: row.conferencesAttended || "",
+        conferencesOrganized: row.conferencesOrganized || "",
+        additionalDetails: row.additionalDetails || {}
       };
 
       if (row.isHod) {
@@ -555,7 +573,8 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
 
     setFacultyForm(updated);
     updateFacultyData(updated);
-    notifySave(`Successfully imported ${excelRows.length} faculty members into ${currentSchool.name}!`);
+    const departments = [...new Set(excelRows.map(row => resolveDepartment(row.rawDept || "") || excelTargetDept))];
+    notifySave(`Successfully imported ${excelRows.length} faculty members into ${departments.join(", ")}!`);
 
     setShowExcelModal(false);
     setExcelRows([]);
@@ -568,40 +587,35 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
   // ════════════════════════════════════════════════════════════
   const handleExportCurrentSchoolToExcel = () => {
     const exportData: any[] = [];
+    const toExportRow = (member: FacultyMember, department: string, isHod: boolean) => ({
+      "Faculty Name": member.name,
+      "Qualification": member.edu,
+      "Designation": member.title,
+      ...Object.fromEntries((member.teachingSubjects || []).map((subject, index) => [`Subject Teaching ${index + 1}`, subject])),
+      "Administrative Duties": member.administrativeDuties || "",
+      "Areas of Research": member.interests,
+      ...(member.publications || {}),
+      "Conferences / Workshops / Seminars / FDPs Attended": member.conferencesAttended || "",
+      "Conferences / Workshops / Seminars / FDPs Organized": member.conferencesOrganized || "",
+      "Department": department,
+      "Email": member.email,
+      "Phone": member.phone,
+      "Experience": member.experience,
+      "Is Head of Dept (Yes/No)": isHod ? "Yes" : "No",
+      ...(member.additionalDetails || {})
+    });
 
     currentSchool.departments.forEach((dept) => {
       const data = facultyForm[dept];
       if (!data) return;
 
       if (data.hod && data.hod.name) {
-        exportData.push({
-          "Full Name": data.hod.name,
-          "Designation / Title": data.hod.title,
-          "Qualifications": data.hod.edu,
-          "Department": dept,
-          "Specialization / Research": data.hod.interests,
-          "Email": data.hod.email,
-          "Phone": data.hod.phone,
-          "Experience": data.hod.experience,
-          "Avatar or Initials": data.hod.avatar,
-          "Is Head of Dept (Yes/No)": "Yes"
-        });
+        exportData.push(toExportRow(data.hod, dept, true));
       }
 
       if (data.others) {
         data.others.forEach((mem) => {
-          exportData.push({
-            "Full Name": mem.name,
-            "Designation / Title": mem.title,
-            "Qualifications": mem.edu,
-            "Department": dept,
-            "Specialization / Research": mem.interests,
-            "Email": mem.email,
-            "Phone": mem.phone,
-            "Experience": mem.experience,
-            "Avatar or Initials": mem.avatar,
-            "Is Head of Dept (Yes/No)": "No"
-          });
+          exportData.push(toExportRow(mem, dept, false));
         });
       }
     });

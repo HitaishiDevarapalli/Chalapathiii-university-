@@ -32,7 +32,7 @@ interface ProgramDetailPageProps {
 export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPageProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const moduleParam = searchParams.get("tab") || searchParams.get("module");
-  const { programs } = useData();
+  const { programs, facultyData } = useData();
 
   // Find base program if available in programsData
   const matchedProgram = useMemo(() => {
@@ -42,14 +42,29 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
   const published = usePublishedPrograms();
   const programData: FullProgramData = useMemo(() => {
     const customProgramData = published[`custom_program_data_${slug}`];
-    if (customProgramData) return customProgramData;
-    return {
-      ...getProgramFullData(
+    const baseProgramData = customProgramData || getProgramFullData(
       slug, matchedProgram?.title, matchedProgram?.department, (matchedProgram as any)?.school
-      ),
-      facultyList: []
+    );
+    const normalize = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const departmentEntry = Object.entries(facultyData || {}).find(([department]) =>
+      normalize(department) === normalize(matchedProgram?.department || baseProgramData.department)
+    );
+    const departmentData = departmentEntry?.[1];
+    const members = departmentData
+      ? [departmentData.hod, ...(departmentData.others || [])].filter(member => member?.name?.trim())
+      : [];
+    return {
+      ...baseProgramData,
+      facultyList: members.map(member => ({
+        name: member.name,
+        designation: member.title,
+        qualification: member.edu,
+        specialization: member.interests || "",
+        experience: member.experience || "",
+        email: member.email || ""
+      }))
     };
-  }, [published, slug, matchedProgram]);
+  }, [published, slug, matchedProgram, facultyData]);
   const sections: SectionMeta[] = published[`program_sections_order_${slug}`] || DEFAULT_PROGRAM_SECTIONS;
 
   const enabledSections = useMemo(() => {

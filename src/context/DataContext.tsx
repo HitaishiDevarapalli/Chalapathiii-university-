@@ -3,6 +3,8 @@ import { canAccess, type AdminIdentity } from "../security/adminAccess";
 import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { safeSetItem } from "../lib/safeStorage";
 import { PROGRAMS_DATA, ProgramDetail } from "../data/programsData";
+import { INITIAL_FACULTY_DATA } from "../data/facultyRosters";
+export { INITIAL_FACULTY_DATA } from "../data/facultyRosters";
 import { CmsPage } from "../types/cms";
 import { INITIAL_CMS_PAGES } from "../data/initialCmsPages";
 import { CmsApiService } from "../services/cmsApi";
@@ -291,6 +293,12 @@ export interface FacultyMember {
   experience: string;
   idNo: string;
   department: string;
+  teachingSubjects?: string[];
+  administrativeDuties?: string;
+  publications?: Record<string, string>;
+  conferencesAttended?: string;
+  conferencesOrganized?: string;
+  additionalDetails?: Record<string, string>;
 }
 
 export interface DirectoryData {
@@ -2439,8 +2447,6 @@ export const INITIAL_SUCCESS_STORIES: SuccessStory[] = [
   }
 ];
 
-export const INITIAL_FACULTY_DATA: Record<string, DirectoryData> = {};
-
 export const INITIAL_BOARD_DATA: Record<string, DirectoryData> = {
   "Governing Council": {
     hod: { name: "Sri Y. V. Anjaneyulu", title: "Chairman & President", edu: "Graduate in Engineering & Humanities", interests: "Administration, institutional strategy, policy planning, and infrastructure development.", phone: "0863 2345401", email: "chairman@chalapathiuniversity.edu.in", avatar: "/chairman_v4.png", age: "65 Years", experience: "35 Years of Administrative Leadership", idNo: "CUB-GC-001", department: "Governing Council" },
@@ -3458,11 +3464,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
               setFooterContent((prev) => ({ ...prev, ...s.footerContent }));
               safeSetItem("chalapathi_footer_content", JSON.stringify(s.footerContent));
             }
-            if (s.facultyDataResetVersion !== "2026-10-24") {
-              setFacultyData({});
-              safeSetItem("chalapathi_faculty_data_v3", "{}");
-              if (await syncConfigToBackend("facultyData", {})) {
-                await syncConfigToBackend("facultyDataResetVersion", "2026-10-24");
+            if (s.facultyDataResetVersion !== "2026-10-24.2") {
+              setFacultyData(INITIAL_FACULTY_DATA);
+              safeSetItem("chalapathi_faculty_data_v3", JSON.stringify(INITIAL_FACULTY_DATA));
+              if (await syncConfigToBackend("facultyData", INITIAL_FACULTY_DATA)) {
+                await syncConfigToBackend("facultyDataResetVersion", "2026-10-24.2");
               }
             } else if (s.facultyData && typeof s.facultyData === "object") {
               setFacultyData(s.facultyData);
