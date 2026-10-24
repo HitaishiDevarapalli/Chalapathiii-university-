@@ -6,7 +6,7 @@ import { useLocation, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, ChevronRight, ChevronDown, Home, Calendar, BookOpen, Landmark, Info, Phone, ShieldCheck, UserPlus, FileText, UploadCloud, CreditCard, Clock, ShieldAlert, UserCheck, Scale, CalendarRange, GraduationCap, Mail, User, X, Globe, QrCode, Award, ChevronLeft } from "lucide-react";
 import { ACADEMIC_PROGRAMS_STRUCTURE } from "../components/layout/Header";
-import { useData, DEFAULT_CONTACT_PAGE_CONTENT, INITIAL_BOARD_DATA, type FacultyMember } from "../context/DataContext";
+import { useData, DEFAULT_CONTACT_PAGE_CONTENT, INITIAL_BOARD_DATA, type FacultyMember as DirectoryFacultyMember } from "../context/DataContext";
 import GlobalCertifications from "../components/sections/GlobalCertifications";
 import { AdmissionsPortalView } from "../components/admissions/AdmissionsPortalView";
 import { ApplyOnlineView } from "../components/admissions/ApplyOnlineView";
@@ -2075,20 +2075,6 @@ const DEPARTMENTS = [
   "School of Management"
 ];
 
-interface FacultyMember {
-  name: string;
-  title: string;
-  edu: string;
-  interests: string;
-  phone: string;
-  email: string;
-  avatar: string;
-  age: string;
-  experience: string;
-  idNo: string;
-  department: string;
-}
-
 const isRealUploadedImage = (url?: string): boolean => {
   if (!url || typeof url !== "string") return false;
   const trimmed = url.trim();
@@ -2722,7 +2708,7 @@ function StaffDirectory() {
 
 function FacultyDirectory() {
   const { facultyData } = useData();
-  const [selectedFaculty, setSelectedFaculty] = useState<{ member: FacultyMember; profileFields?: string[] } | null>(null);
+  const [selectedFaculty, setSelectedFaculty] = useState<{ member: DirectoryFacultyMember; profileFields?: string[] } | null>(null);
   
   const location = useLocation();
   const path = location.pathname.toLowerCase();
@@ -2771,7 +2757,7 @@ function FacultyDirectory() {
   }
 
   // Flatten the faculty lists for the selected departments
-  const allFacultyMembers: Array<{ member: FacultyMember; department: string; cardFields: string[]; profileFields?: string[] }> = [];
+  const allFacultyMembers: Array<{ member: DirectoryFacultyMember; department: string; cardFields: string[]; profileFields?: string[] }> = [];
   const seenNames = new Set<string>();
 
   departmentsToShow.forEach(dept => {
