@@ -290,6 +290,7 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
                   setFacultyFilter,
                   facultySearch,
                   setFacultySearch,
+                  setSelectedFaculty,
                   filteredFaculty
                 )}
               </motion.div>
@@ -349,6 +350,7 @@ function renderSectionBody(
   setFacultyFilter: (f: string) => void,
   facultySearch: string,
   setFacultySearch: (s: string) => void,
+  setSelectedFaculty: (faculty: DirectoryFacultyMember | null) => void,
   filteredFaculty: any[]
 ) {
   switch (sectionId) {

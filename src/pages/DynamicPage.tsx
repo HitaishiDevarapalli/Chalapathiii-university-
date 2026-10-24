@@ -2075,6 +2075,20 @@ const DEPARTMENTS = [
   "School of Management"
 ];
 
+interface FacultyMember {
+  name: string;
+  title: string;
+  edu: string;
+  interests: string;
+  phone: string;
+  email: string;
+  avatar: string;
+  age: string;
+  experience: string;
+  idNo: string;
+  department: string;
+}
+
 const isRealUploadedImage = (url?: string): boolean => {
   if (!url || typeof url !== "string") return false;
   const trimmed = url.trim();

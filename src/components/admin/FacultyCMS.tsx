@@ -146,7 +146,10 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
     const defaults = type === "card" ? ["title", "edu"] : displayOptions.map(option => option.key);
     const current = source.displayFields?.[type] ?? defaults;
     const selected = checked ? [...new Set([...current, key])] : current.filter(field => field !== key);
-    const displayFields = { ...source.displayFields };
+    const displayFields = {
+      card: source.displayFields?.card ?? ["title", "edu"],
+      profile: source.displayFields?.profile
+    };
     if (type === "card") displayFields.card = selected;
     else displayFields.profile = selected;
     const updated: Record<string, DirectoryData> = {
