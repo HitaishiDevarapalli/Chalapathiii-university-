@@ -19,7 +19,6 @@ const storage = multer.diskStorage({
 
 export const upload = multer({
   storage,
-  limits: { fileSize: 20 * 1024 * 1024 }, // 20 MB per file
   fileFilter: (_req, file, cb) => {
     const allowed = /^(\.jpe?g|\.png|\.gif|\.webp|\.pdf|\.xlsx?|\.mp4)$/;
     const ext = allowed.test(path.extname(file.originalname).toLowerCase());

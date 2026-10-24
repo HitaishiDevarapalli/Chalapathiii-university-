@@ -12,7 +12,6 @@ const router = Router();
 const handler = (fn: (req: Request, res: Response) => Promise<unknown>) =>
   (req: Request, res: Response, next: NextFunction) => { Promise.resolve(fn(req, res)).catch(next); };
 const prefix = "__academic_document:";
-const maxSize = 50 * 1024 * 1024;
 const staging = path.join(uploadsDirectory, ".academic-document-staging");
 const metadata = z.object({
   title: z.string().trim().min(1, "Enter a document title.").max(200),
@@ -24,10 +23,10 @@ const upload = multer({
     destination: (_req, _file, callback) => { fs.mkdir(staging, { recursive: true }).then(() => callback(null, staging), error => callback(error, staging)); },
     filename: (_req, _file, callback) => callback(null, randomUUID()),
   }),
-  limits: { fileSize: maxSize, files: 1, fields: 4, fieldSize: 4096 },
+  limits: { files: 1, fields: 4, fieldSize: 4096 },
   fileFilter: (_req, file, callback) => {
     if (path.extname(file.originalname).toLowerCase() === ".pdf" && ["application/pdf", "application/octet-stream"].includes(file.mimetype)) callback(null, true);
-    else callback(Object.assign(new Error("Choose a PDF document, up to 50 MB."), { status: 400 }));
+    else callback(Object.assign(new Error("Choose a PDF document."), { status: 400 }));
   },
 });
 const fail = (status: number, message: string) => Object.assign(new Error(message), { status });
@@ -121,8 +120,8 @@ async function validatePdf(filename: string) {
 }
 
 router.use((error: any, _req: any, res: any, _next: any) => {
-  const status = error.code === "LIMIT_FILE_SIZE" ? 413 : error instanceof multer.MulterError ? 400 : error.status || 500;
-  res.status(status).json({ error: status === 413 ? "This PDF exceeds the 50 MB limit. Choose a smaller file." : status === 500 ? "The document could not be saved. Please retry." : error.message });
+  const status = error instanceof multer.MulterError ? 400 : error.status || 500;
+  res.status(status).json({ error: status === 500 ? "The document could not be saved. Please retry." : error.message });
 });
 
 export default router;

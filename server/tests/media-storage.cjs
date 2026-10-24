@@ -37,10 +37,13 @@ module.exports = async ({ base, admin, viewer, visitor, prisma, directory, db })
   assert.equal((await sharp(Buffer.from(await publicImage.arrayBuffer())).metadata()).width, 120);
   assert.equal((await send('', 'POST', form(null, Buffer.from('not an image')))).status, 400);
   assert.equal((await send('', 'POST', form('missing'))).status, 404);
-  assert.equal((await send('', 'POST', form(null, Buffer.alloc(10 * 1024 * 1024 + 1)))).status, 413);
   assert.equal((await send('', 'POST', form(null, Buffer.from('%PDF-1.7\n/JavaScript bad\n%%EOF'), 'application/pdf', 'bad.pdf'))).status, 400);
-  const pdf = await send('', 'POST', form(campus.body.id, Buffer.from('%PDF-1.7\n1 0 obj << /Type /Catalog >> endobj\n%%EOF'), 'application/pdf', 'brochure.pdf'));
+  const pdf = await send('', 'POST', form(campus.body.id, Buffer.from('%PDF-1.7\n1 0 obj << /Type /Catalog /OpenAction [3 0 R /XYZ null null 0] >> endobj\n%%EOF'), 'application/pdf', 'brochure.pdf'));
   assert.equal(pdf.status, 201);
+  const largePdfBytes = Buffer.concat([Buffer.from('%PDF-1.7\n'), Buffer.alloc(10 * 1024 * 1024 + 1), Buffer.from('\n%%EOF')]);
+  const largePdf = await send('', 'POST', form(campus.body.id, largePdfBytes, 'application/pdf', 'large-brochure.pdf'));
+  assert.equal(largePdf.status, 201, 'PDF media uploads are not blocked by the former 10 MB limit');
+  assert.equal((await send('/' + largePdf.body.id, 'DELETE')).status, 200);
   const scoped = await send('?folder=' + child.body.id + '&type=image');
   assert.equal(scoped.body.total, 2);
   assert.equal((await send('?type=pdf')).body.items.every(item => item.mime === 'application/pdf'), true);

@@ -5,7 +5,7 @@ import { useAdminAccess } from "../../security/adminAccess";
 import {
   AcademicDegree, AcademicDocument, AcademicDocumentCategory, academicDocumentPath,
   categoryLabels, degreeLabels, deleteAcademicDocument, documentSize,
-  MAX_ACADEMIC_DOCUMENT_SIZE, readAcademicDocuments, saveAcademicDocument,
+  readAcademicDocuments, saveAcademicDocument,
 } from "../../services/academicDocuments";
 
 export default function AcademicDocumentsCMS({ initialDegree = "btech", initialCategory = "syllabus" }: {
@@ -94,14 +94,14 @@ export default function AcademicDocumentsCMS({ initialDegree = "btech", initialC
         <label className="block text-sm font-medium text-gray-700">{editing ? "Replace PDF (optional)" : "PDF document"}
           <input ref={fileInput} type="file" accept=".pdf,application/pdf" disabled={busy} required={!editing} onChange={event => {
             const selected = event.target.files?.[0]; setError("");
-            if (selected && (selected.size > MAX_ACADEMIC_DOCUMENT_SIZE || !selected.name.toLowerCase().endsWith(".pdf") || !selected.size)) {
-              setError("Choose a non-empty PDF document up to 50 MB."); event.target.value = ""; setFile(undefined); return;
+            if (selected && (!selected.name.toLowerCase().endsWith(".pdf") || !selected.size)) {
+              setError("Choose a non-empty PDF document."); event.target.value = ""; setFile(undefined); return;
             }
             setFile(selected);
             if (selected && !title) setTitle(selected.name.replace(/\.pdf$/i, ""));
           }} className="mt-2 block w-full rounded-lg border border-dashed border-gray-300 bg-white p-4 text-sm" />
         </label>
-        <p className="text-xs text-gray-500">{file ? `${file.name} · ${documentSize(file.size)}` : editing ? "Keep the current PDF, or select a new file to replace it." : "Maximum 50 MB per PDF. You can add multiple documents to each section."}</p>
+        <p className="text-xs text-gray-500">{file ? `${file.name} · ${documentSize(file.size)}` : editing ? "Keep the current PDF, or select a new file to replace it." : "You can add multiple PDF documents to each section."}</p>
         {busy && <div role="status" className="space-y-2"><p className="text-sm text-[#072A6C]">{progress < 99 ? `Uploading… ${progress}%` : "Saving document…"}</p><progress value={progress} max={100} className="h-2 w-full" /></div>}
         <div className="flex flex-wrap gap-3"><button type="submit" data-admin-action={editing ? "edit" : "create"} disabled={busy || loading || loadFailed} className="admin-button admin-button-primary disabled:opacity-50"><UploadCloud size={17} />{busy ? "Please wait…" : editing ? "Save document" : "Upload & publish"}</button>{editing && <button type="button" disabled={busy} onClick={resetForm} className="admin-button admin-button-secondary"><X size={16} /> Cancel edit</button>}</div>
       </form>}

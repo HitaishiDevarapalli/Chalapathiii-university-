@@ -11,7 +11,6 @@ export interface AcademicDocument {
   createdAt: string;
   updatedAt: string;
 }
-export const MAX_ACADEMIC_DOCUMENT_SIZE = 50 * 1024 * 1024;
 export const degreeLabels = { btech: "BTech", mtech: "MTech" };
 export const categoryLabels = { syllabus: "Syllabus", regulations: "Regulations" };
 export const academicDocumentPath = (degree: AcademicDegree, category: AcademicDocumentCategory) => `/academics/documents/${degree}/${category}`;
@@ -30,7 +29,6 @@ export async function readAcademicDocuments(degree?: AcademicDegree, category?: 
 export async function saveAcademicDocument(input: { title: string; degree: AcademicDegree; category: AcademicDocumentCategory; file?: File; id?: string }, onProgress: (progress: number) => void): Promise<AcademicDocument> {
   if (input.file) {
     if (!input.file.name.toLowerCase().endsWith(".pdf")) throw new Error("Choose a PDF document.");
-    if (input.file.size > MAX_ACADEMIC_DOCUMENT_SIZE) throw new Error("This PDF exceeds the 50 MB limit.");
     if (!input.file.size) throw new Error("This file is empty. Choose a PDF document.");
   }
   const csrf = await fetch("/api/auth/csrf", { credentials: "same-origin", cache: "no-store" });

@@ -9,6 +9,7 @@ import prisma from "../prisma";
 import { requirePermission, assertPermission } from "../middleware/auth";
 import { audit, digest, permitted } from "../security/core";
 import { uploadsDirectory } from "../middleware/upload";
+import { isPassivePdf, mediaUploadStorage } from "../middleware/mediaUpload";
 import {
   documentSchema,
   BuilderDocument,
@@ -482,96 +483,93 @@ router.get(
     );
   }),
 );
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024, files: 1, fields: 2 },
-});
+const upload = multer({ storage: mediaUploadStorage, limits: { files: 1, fields: 2 } });
 router.post(
   "/media",
   requirePermission("gallery.create"),
   upload.single("file"),
   run(async (req, res) => {
     const file = req.file;
-    if (!file) fail(400, "Choose an image or PDF");
-    let bytes: Buffer;
-    let mime: string;
-    let extension: string;
-    let width: number | undefined;
-    let height: number | undefined;
-    if (
-      ["image/png", "image/jpeg", "image/webp", "image/gif"].includes(
-        file!.mimetype,
-      )
-    ) {
-      try {
-        const result = await sharp(file!.buffer, {
-          limitInputPixels: 40_000_000,
-        })
-          .rotate()
-          .resize({
-            width: 2400,
-            height: 2400,
-            fit: "inside",
-            withoutEnlargement: true,
-          })
-          .webp({ quality: 88 })
-          .toBuffer({ resolveWithObject: true });
-        bytes = result.data;
-        width = result.info.width;
-        height = result.info.height;
-        mime = "image/webp";
-        extension = "webp";
-      } catch {
-        return fail(400, "The image could not be decoded");
-      }
-    } else if (
-      file!.mimetype === "application/pdf" &&
-      file!.buffer.subarray(0, 5).toString() === "%PDF-" &&
-      file!.buffer.subarray(-1024).includes(Buffer.from("%%EOF")) &&
-      !/\/(JavaScript|JS|Launch|EmbeddedFile|OpenAction|AA)\b/.test(
-        file!.buffer.toString("latin1"),
-      )
-    ) {
-      bytes = file!.buffer;
-      mime = "application/pdf";
-      extension = "pdf";
-    } else
-      return fail(
-        400,
-        "Only valid raster images and passive PDF documents are supported",
-      );
-    const filename = `${randomUUID()}.${extension}`;
-    const destination = path.join(uploadsDirectory, filename);
-    await fs.writeFile(destination, bytes, { flag: "wx" });
+    if (!file) return fail(400, "Choose an image or PDF");
     try {
-      const media = await prisma.$transaction(async (tx) => {
-        const m = await tx.builderMedia.create({
-          data: {
-            originalName: path.basename(file!.originalname).slice(0, 200),
-            filename,
-            mime,
-            size: bytes.length,
-            width,
-            height,
-            alt: String(req.body.alt || "").slice(0, 500),
-            uploadedBy: req.adminUser.id,
-          },
-        });
-        await audit(
-          req,
-          "page_media_uploaded",
-          true,
-          "Validated media stored in the existing durable uploads directory",
-          undefined,
-          m.id,
-          tx,
+      let bytes: Buffer | undefined;
+      let mime: string;
+      let extension: string;
+      let width: number | undefined;
+      let height: number | undefined;
+      if (
+        ["image/png", "image/jpeg", "image/webp", "image/gif"].includes(
+          file.mimetype,
+        )
+      ) {
+        try {
+          const result = await sharp(file.path, {
+            limitInputPixels: 40_000_000,
+          })
+            .rotate()
+            .resize({
+              width: 2400,
+              height: 2400,
+              fit: "inside",
+              withoutEnlargement: true,
+            })
+            .webp({ quality: 88 })
+            .toBuffer({ resolveWithObject: true });
+          bytes = result.data;
+          width = result.info.width;
+          height = result.info.height;
+          mime = "image/webp";
+          extension = "webp";
+        } catch {
+          return fail(400, "The image could not be decoded");
+        }
+      } else if (
+        file.mimetype === "application/pdf" &&
+        await isPassivePdf(file.path)
+      ) {
+        mime = "application/pdf";
+        extension = "pdf";
+      } else
+        return fail(
+          400,
+          "Only valid raster images and passive PDF documents are supported",
         );
-        return m;
-      });
-      return res.status(201).json({ ...media, url: `/uploads/${filename}` });
-    } catch (e) {
-      await fs.unlink(destination).catch(() => {});
-      throw e;
+      const filename = `${randomUUID()}.${extension}`;
+      const destination = path.join(uploadsDirectory, filename);
+      if (bytes) await fs.writeFile(destination, bytes, { flag: "wx" });
+      else await fs.rename(file.path, destination);
+      try {
+        const media = await prisma.$transaction(async (tx) => {
+          const m = await tx.builderMedia.create({
+            data: {
+              originalName: path.basename(file.originalname).slice(0, 200),
+              filename,
+              mime,
+              size: bytes?.length ?? file.size,
+              width,
+              height,
+              alt: String(req.body.alt || "").slice(0, 500),
+              uploadedBy: req.adminUser.id,
+            },
+          });
+          await audit(
+            req,
+            "page_media_uploaded",
+            true,
+            "Validated media stored in the existing durable uploads directory",
+            undefined,
+            m.id,
+            tx,
+          );
+          return m;
+        });
+        return res.status(201).json({ ...media, url: `/uploads/${filename}` });
+      } catch (e) {
+        await fs.unlink(destination).catch(() => {});
+        throw e;
+      }
+    } finally {
+      await fs.unlink(file.path).catch(() => {});
     }
   }),
 );

@@ -45,7 +45,7 @@ function MediaField({ kind, value, onSelect, onBrowse, onBusy }: {
       <input ref={input} type="file" hidden accept={kind === "pdf" ? "application/pdf" : "image/png,image/jpeg,image/webp,image/gif"} aria-label={kind === "pdf" ? "Upload PDF file" : "Upload image file"} onChange={event => void upload(event.target.files?.[0])} />
     </span><button type="button" className="secondary" data-admin-action="view" disabled={busy} onClick={() => onBrowse(kind, onSelect)}>Media Storage</button></div>
     {value && <p className="research-attached-file">Attached: {value.split("/").pop()}</p>}
-    <small>Uploads are saved in Media Storage. Maximum 10 MB per file.</small>
+    <small>Uploads are saved in Media Storage. Images are optimized for the website.</small>
     {!can("gallery", "create") && <small>Uploading requires Media Storage upload permission.</small>}
     {error && <p role="alert" className="research-editor-error">{error}</p>}
   </div>;

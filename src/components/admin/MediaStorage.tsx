@@ -20,7 +20,6 @@ export async function mediaRequest<T = any>(path = "", method = "GET", body?: un
   return data;
 }
 export function uploadMedia(file: File, folderId?: string | null): Promise<MediaAsset> {
-  if (file.size > 10 * 1024 * 1024) return Promise.reject(new Error(`${file.name}: each file must be 10 MB or smaller.`));
   const form = new FormData(); form.append("file", file);
   if (folderId) form.append("folderId", folderId);
   return mediaRequest("", "POST", form);
@@ -129,7 +128,7 @@ export function MediaBrowser({ onSelect, type = "all" }: { onSelect?: (asset: Me
     <div className="media-layout"><aside className="media-folders" aria-label="Media folders">
       <strong>Storage folders</strong><button type="button" data-admin-action="view" aria-current={folder === "all" ? "location" : undefined} onClick={() => openFolder("all")}><HardDrive size={17} /><span>All files</span></button>
       <button type="button" data-admin-action="view" aria-current={folder === "unfiled" ? "location" : undefined} onClick={() => openFolder("unfiled")}><ImageIcon size={17} /><span>Unfiled</span></button>{tree(null)}
-      <p>JPG, PNG, WebP, GIF and PDF.<br />Up to 10 MB per file. Images are optimized for the website.</p></aside>
+      <p>JPG, PNG, WebP, GIF and PDF. Images are optimized for the website.</p></aside>
       <section className="media-main" aria-label="Stored media">
         <div className="media-toolbar"><nav aria-label="Folder location"><button type="button" data-admin-action="view" onClick={() => openFolder("all")}>Media Storage</button>
           {folder === "unfiled" && <><ChevronRight size={14} /><span>Unfiled</span></>}{isFolder && folderPath(folder).map(row => <React.Fragment key={row.id}><ChevronRight size={14} /><button type="button" data-admin-action="view" onClick={() => openFolder(row.id)}>{row.name}</button></React.Fragment>)}</nav>

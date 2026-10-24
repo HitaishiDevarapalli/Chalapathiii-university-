@@ -8,6 +8,7 @@ import prisma from "../prisma";
 import { requireAnyPermission, requirePermission } from "../middleware/auth";
 import { audit } from "../security/core";
 import { uploadsDirectory } from "../middleware/upload";
+import { isPassivePdf, mediaUploadStorage } from "../middleware/mediaUpload";
 
 const router = Router();
 const fail = (status: number, message: string): never => { throw Object.assign(new Error(message), { status }); };
@@ -26,26 +27,26 @@ const folderValue = async (value: unknown) => {
 
 // URLs depend only on immutable UUID filenames; moving folders never moves files.
 export async function storeMedia(req: Request, file: Express.Multer.File, folderId: string | null) {
-  let bytes: Buffer, mime: string, extension: string;
+  let bytes: Buffer | undefined, mime: string, extension: string;
   let width: number | undefined, height: number | undefined;
   if (["image/png", "image/jpeg", "image/webp", "image/gif"].includes(file.mimetype)) {
     try {
-      const image = await sharp(file.buffer, { limitInputPixels: 40_000_000 }).rotate()
+      const image = await sharp(file.path, { limitInputPixels: 40_000_000 }).rotate()
         .resize({ width: 2400, height: 2400, fit: "inside", withoutEnlargement: true })
         .webp({ quality: 88 }).toBuffer({ resolveWithObject: true });
       bytes = image.data; width = image.info.width; height = image.info.height;
       mime = "image/webp"; extension = "webp";
     } catch { return fail(400, "The image could not be decoded. Choose a valid JPG, PNG, WebP or GIF."); }
-  } else if (file.mimetype === "application/pdf" && file.buffer.subarray(0, 5).toString() === "%PDF-" &&
-    file.buffer.subarray(-1024).includes(Buffer.from("%%EOF")) && !/\/(JavaScript|JS|Launch|EmbeddedFile|OpenAction|AA)\b/.test(file.buffer.toString("latin1"))) {
-    bytes = file.buffer; mime = "application/pdf"; extension = "pdf";
+  } else if (file.mimetype === "application/pdf" && await isPassivePdf(file.path)) {
+    mime = "application/pdf"; extension = "pdf";
   } else { return fail(400, "Choose a valid JPG, PNG, WebP, GIF or passive PDF document."); }
   const filename = `${randomUUID()}.${extension}`;
   const destination = path.join(uploadsDirectory, filename);
-  await fs.writeFile(destination, bytes, { flag: "wx" });
+  if (bytes) await fs.writeFile(destination, bytes, { flag: "wx" });
+  else await fs.rename(file.path, destination);
   try {
     const media = await prisma.$transaction(async tx => {
-      const asset = await tx.builderMedia.create({ data: { filename, originalName: path.basename(file.originalname).slice(0, 200), mime, size: bytes.length,
+      const asset = await tx.builderMedia.create({ data: { filename, originalName: path.basename(file.originalname).slice(0, 200), mime, size: bytes?.length ?? file.size,
         width, height, alt: String(req.body.alt || "").slice(0, 500), uploadedBy: req.adminUser.id, folderId } });
       await audit(req, "media_uploaded", true, "File added to Media Storage", undefined, asset.id, tx);
       return asset;
@@ -92,10 +93,14 @@ router.get("/", run(async (req, res) => {
   ]);
   return res.json({ items: items.map(mediaView), total, page, pageSize: 40 });
 }));
-const mediaUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024, files: 1, fields: 3 } });
+const mediaUpload = multer({ storage: mediaUploadStorage, limits: { files: 1, fields: 3 } });
 router.post("/", requirePermission("gallery.create"), mediaUpload.single("file"), run(async (req, res) => {
   if (!req.file) return fail(400, "Choose a photo or PDF to upload.");
-  return res.status(201).json(await storeMedia(req, req.file, await folderValue(req.body.folderId)));
+  try {
+    return res.status(201).json(await storeMedia(req, req.file, await folderValue(req.body.folderId)));
+  } finally {
+    await fs.unlink(req.file.path).catch(() => {});
+  }
 }));
 router.patch("/:id", requirePermission("gallery.edit"), run(async (req, res) => {
   const data: any = {};
@@ -154,7 +159,7 @@ router.delete("/:id", requirePermission("gallery.delete"), run(async (req, res) 
 router.use((error: any, _req: Request, res: Response, _next: NextFunction) => {
   const relationConflict = ["P2003", "P2014"].includes(error.code);
   const status = error.code === "P2002" ? 409 : error.code === "P2025" ? 404 : relationConflict ? 409 : error.code === "LIMIT_FILE_SIZE" ? 413 : error instanceof multer.MulterError ? 400 : error.status || 500;
-  const message = error.code === "P2002" ? "A folder with that name already exists here." : error.code === "P2025" ? "The file or folder no longer exists." : relationConflict ? "This folder is not empty or its destination no longer exists. Refresh and retry." : error.code === "LIMIT_FILE_SIZE" ? "Each file must be 10 MB or smaller." : status < 500 ? error.message : "Media Storage is unavailable. Please retry.";
+  const message = error.code === "P2002" ? "A folder with that name already exists here." : error.code === "P2025" ? "The file or folder no longer exists." : relationConflict ? "This folder is not empty or its destination no longer exists. Refresh and retry." : status < 500 ? error.message : "Media Storage is unavailable. Please retry.";
   return res.status(status).json({ error: message });
 });
 export default router;

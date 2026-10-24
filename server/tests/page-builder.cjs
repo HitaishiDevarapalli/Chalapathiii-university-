@@ -351,6 +351,12 @@ const { PGLiteSocketServer } = require("@electric-sql/pglite-socket");
       "bad.pdf",
     );
     assert.equal((await admin.post("/media", badPdf)).status, 400);
+    const pageActionPdf = form(
+      Buffer.from("%PDF-1.7\n1 0 obj << /Type /Catalog /OpenAction [3 0 R /XYZ null null 0] >> endobj\n%%EOF"),
+      "application/pdf",
+      "application-form.pdf",
+    );
+    assert.equal((await admin.post("/media", pageActionPdf)).status, 201, "ordinary page-opening metadata is not executable PDF content");
     pass(
       "media authorization, decoded image optimization, persistent metadata and invalid file rejection",
     );
