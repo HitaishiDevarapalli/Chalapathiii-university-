@@ -41,9 +41,14 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
 
   const published = usePublishedPrograms();
   const programData: FullProgramData = useMemo(() => {
-    return published[`custom_program_data_${slug}`] || getProgramFullData(
+    const customProgramData = published[`custom_program_data_${slug}`];
+    if (customProgramData) return customProgramData;
+    return {
+      ...getProgramFullData(
       slug, matchedProgram?.title, matchedProgram?.department, (matchedProgram as any)?.school
-    );
+      ),
+      facultyList: []
+    };
   }, [published, slug, matchedProgram]);
   const sections: SectionMeta[] = published[`program_sections_order_${slug}`] || DEFAULT_PROGRAM_SECTIONS;
 

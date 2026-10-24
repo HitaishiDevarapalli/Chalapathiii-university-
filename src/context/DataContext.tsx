@@ -2439,89 +2439,7 @@ export const INITIAL_SUCCESS_STORIES: SuccessStory[] = [
   }
 ];
 
-export const INITIAL_FACULTY_DATA: Record<string, DirectoryData> = {
-  "Computer Science & Engineering": {
-    hod: { name: "Prof. P. V. Ramana", title: "HOD & Professor", edu: "Ph.D - Indian Institute of Technology Madras, India", interests: "Algorithms, Distributed Networks, Database Optimization", phone: "0863 2345432", email: "hod.cse@chalapathiuniversity.edu.in", avatar: "", age: "52 Years", experience: "24 Years of Teaching & Research", idNo: "CCIT-CSE-001", department: "Computer Science & Engineering" },
-    others: [
-      { name: "Dr. A. Kiran Kumar", title: "Professor", edu: "Ph.D - National Institute of Technology Warangal, India", interests: "Cyber Security, Network Architectures & Trust Models", phone: "0863 2345433", email: "kiran.cse@chalapathiuniversity.edu.in", avatar: "", age: "45 Years", experience: "16 Years", idNo: "CCIT-CSE-002", department: "Computer Science & Engineering" },
-      { name: "Mrs. K. Jhansi", title: "Assistant Professor", edu: "M.Tech - JNTU, Kakinada", interests: "Software Engineering & Object Oriented Designs", phone: "0863 2345434", email: "jhansi.cse@chalapathiuniversity.edu.in", avatar: "", age: "34 Years", experience: "8 Years", idNo: "CCIT-CSE-003", department: "Computer Science & Engineering" },
-      { name: "Dr. B. Satyanarayana", title: "Associate Professor", edu: "Ph.D - Osmania University, Hyderabad", interests: "Cloud Computing, Grid Virtualization, Distributing Computing", phone: "0863 2345435", email: "satyanarayana.cse@chalapathiuniversity.edu.in", avatar: "", age: "41 Years", experience: "13 Years", idNo: "CCIT-CSE-004", department: "Computer Science & Engineering" },
-      { name: "Dr. M. Himaja", title: "Assistant Professor", edu: "Ph.D - JNTU Hyderabad", interests: "Information Retrieval, Web Mining & Data Architectures", phone: "0863 2345436", email: "himaja.cse@chalapathiuniversity.edu.in", avatar: "", age: "36 Years", experience: "9 Years", idNo: "CCIT-CSE-005", department: "Computer Science & Engineering" }
-    ]
-  },
-  "Artificial Intelligence & ML": {
-    hod: { name: "Dr. S. Mallikharjuna Rao", title: "HOD & Associate Professor", edu: "Ph.D - Andhra University", interests: "Machine Learning, Neural Networks, Natural Language Processing", phone: "0863 2345440", email: "hod.ai@chalapathiuniversity.edu.in", avatar: "", age: "43 Years", experience: "15 Years", idNo: "CCIT-AI-001", department: "Artificial Intelligence & ML" },
-    others: [
-      { name: "Dr. K. Swetha", title: "Professor", edu: "Ph.D - University of Hyderabad", interests: "Computer Vision, Cognitive Robotics, Automation", phone: "0863 2345441", email: "swetha.ai@chalapathiuniversity.edu.in", avatar: "", age: "46 Years", experience: "17 Years", idNo: "CCIT-AI-002", department: "Artificial Intelligence & ML" },
-      { name: "Mr. P. Ravi", title: "Assistant Professor", edu: "M.Tech - JNTU Hyderabad", interests: "Deep Learning, Python ML frameworks, TensorFlow operations", phone: "0863 2345442", email: "ravi.ai@chalapathiuniversity.edu.in", avatar: "", age: "32 Years", experience: "6 Years", idNo: "CCIT-AI-003", department: "Artificial Intelligence & ML" },
-      { name: "Dr. R. Karthik", title: "Associate Professor", edu: "Ph.D - NIT Trichy", interests: "Reinforcement Learning, Generative AI & Robotics", phone: "0863 2345443", email: "karthik.ai@chalapathiuniversity.edu.in", avatar: "", age: "40 Years", experience: "13 Years", idNo: "CCIT-AI-004", department: "Artificial Intelligence & ML" },
-      { name: "Mrs. V. Kalyani", title: "Assistant Professor", edu: "M.Tech - JNTU Kakinada", interests: "Natural Language Processing, Sentiment Analysis", phone: "0863 2345444", email: "kalyani.ai@chalapathiuniversity.edu.in", avatar: "", age: "35 Years", experience: "8 Years", idNo: "CCIT-AI-005", department: "Artificial Intelligence & ML" }
-    ]
-  },
-  "Data Science": {
-    hod: { name: "Dr. G. Srinivasa Rao", title: "HOD & Associate Professor", edu: "Ph.D - Acharya Nagarjuna University", interests: "Data Analytics, Big Data ecosystems, Hadoop clusters setup", phone: "0863 2345450", email: "hod.ds@chalapathiuniversity.edu.in", avatar: "", age: "44 Years", experience: "16 Years", idNo: "CCIT-DS-001", department: "Data Science" },
-    others: [
-      { name: "Smt. T. Kavitha", title: "Assistant Professor", edu: "M.Tech - JNTU Kakinada", interests: "Statistical Analytics, R programming, data warehousing", phone: "0863 2345451", email: "kavitha.ds@chalapathiuniversity.edu.in", avatar: "", age: "35 Years", experience: "9 Years", idNo: "CCIT-DS-002", department: "Data Science" },
-      { name: "Dr. V. Rajesh", title: "Associate Professor", edu: "Ph.D - Osmania University", interests: "Big Data Systems, Predictive Modeling & Cloud ETL", phone: "0863 2345452", email: "rajesh.ds@chalapathiuniversity.edu.in", avatar: "", age: "42 Years", experience: "14 Years", idNo: "CCIT-DS-003", department: "Data Science" },
-      { name: "Mr. K. Suresh", title: "Assistant Professor", edu: "M.Tech - ANU", interests: "Data Visualization, Tableau, Python for Data Science", phone: "0863 2345453", email: "suresh.ds@chalapathiuniversity.edu.in", avatar: "", age: "33 Years", experience: "7 Years", idNo: "CCIT-DS-004", department: "Data Science" },
-      { name: "Dr. N. Sandhya", title: "Professor", edu: "Ph.D - Andhra University", interests: "High Performance Analytics, Distributed Datastores", phone: "0863 2345454", email: "sandhya.ds@chalapathiuniversity.edu.in", avatar: "", age: "48 Years", experience: "20 Years", idNo: "CCIT-DS-005", department: "Data Science" }
-    ]
-  },
-  "Cyber Security": {
-    hod: { name: "Dr. B. Rajesh Kumar", title: "HOD & Professor", edu: "Ph.D - IIT Kharagpur", interests: "Cryptography, Network Security, Cyber Forensics", phone: "0863 2345455", email: "hod.cyber@chalapathiuniversity.edu.in", avatar: "", age: "47 Years", experience: "18 Years", idNo: "CCIT-CS-001", department: "Cyber Security" },
-    others: [
-      { name: "Mr. K. V. Satish", title: "Assistant Professor", edu: "M.Tech - JNTU Hyderabad", interests: "Ethical Hacking, Cloud Security, Blockchain", phone: "0863 2345456", email: "satish.cyber@chalapathiuniversity.edu.in", avatar: "", age: "33 Years", experience: "7 Years", idNo: "CCIT-CS-002", department: "Cyber Security" },
-      { name: "Dr. S. Praveen", title: "Associate Professor", edu: "Ph.D - JNTUK", interests: "Malware Analysis, Intrusion Prevention Systems", phone: "0863 2345457", email: "praveen.cyber@chalapathiuniversity.edu.in", avatar: "", age: "41 Years", experience: "12 Years", idNo: "CCIT-CS-003", department: "Cyber Security" },
-      { name: "Mrs. M. Lakshmi", title: "Assistant Professor", edu: "M.Tech - BITS Pilani", interests: "Identity Management, Information Security Governance", phone: "0863 2345458", email: "lakshmi.cyber@chalapathiuniversity.edu.in", avatar: "", age: "36 Years", experience: "9 Years", idNo: "CCIT-CS-004", department: "Cyber Security" },
-      { name: "Mr. T. Venkatesh", title: "Assistant Professor", edu: "M.Tech - JNTU", interests: "Penetration Testing, Wireless & IoT Security", phone: "0863 2345459", email: "venkatesh.cyber@chalapathiuniversity.edu.in", avatar: "", age: "34 Years", experience: "8 Years", idNo: "CCIT-CS-005", department: "Cyber Security" }
-    ]
-  },
-  "Electronics & Communication Engineering": {
-    hod: { name: "Dr. V. Radha Krishna", title: "HOD & Professor", edu: "Ph.D - JNTU Hyderabad", interests: "VLSI Design, Embedded Systems, IoT", phone: "0863 2345460", email: "hod.ece@chalapathiuniversity.edu.in", avatar: "", age: "48 Years", experience: "20 Years", idNo: "CCIT-ECE-001", department: "Electronics & Communication Engineering" },
-    others: [
-      { name: "Mr. B. Naveen", title: "Assistant Professor", edu: "M.Tech - NIT Trichy", interests: "Signal Processing, Wireless Communications", phone: "0863 2345461", email: "naveen.ece@chalapathiuniversity.edu.in", avatar: "", age: "35 Years", experience: "10 Years", idNo: "CCIT-ECE-002", department: "Electronics & Communication Engineering" },
-      { name: "Dr. P. S. Rao", title: "Associate Professor", edu: "Ph.D - IIT Madras", interests: "Microstrip Antennas, Microwave Circuitry", phone: "0863 2345462", email: "psrao.ece@chalapathiuniversity.edu.in", avatar: "", age: "42 Years", experience: "14 Years", idNo: "CCIT-ECE-003", department: "Electronics & Communication Engineering" },
-      { name: "Dr. K. Madhavi", title: "Professor", edu: "Ph.D - Andhra University", interests: "Digital Signal Processing, FPGA Design Systems", phone: "0863 2345463", email: "madhavi.ece@chalapathiuniversity.edu.in", avatar: "", age: "49 Years", experience: "21 Years", idNo: "CCIT-ECE-004", department: "Electronics & Communication Engineering" },
-      { name: "Mr. Ch. Srinivas", title: "Assistant Professor", edu: "M.Tech - JNTUA", interests: "Optical Communications, Sensor Architectures", phone: "0863 2345464", email: "srinivas.ece@chalapathiuniversity.edu.in", avatar: "", age: "34 Years", experience: "8 Years", idNo: "CCIT-ECE-005", department: "Electronics & Communication Engineering" }
-    ]
-  },
-  "Civil Engineering": {
-    hod: { name: "Dr. K. Venkateswara Rao", title: "HOD & Professor", edu: "Ph.D - IIT Madras", interests: "Structural Dynamics, Earthquake Resistance, Advanced Concrete Tech", phone: "0863 2345465", email: "hod.civil@chalapathiuniversity.edu.in", avatar: "", age: "51 Years", experience: "22 Years", idNo: "CCIT-CIVIL-001", department: "Civil Engineering" },
-    others: [
-      { name: "Dr. M. Ramesh", title: "Associate Professor", edu: "Ph.D - NIT Warangal", interests: "Geotechnical Engineering, Soil Mechanics, Foundation Design", phone: "0863 2345466", email: "ramesh.civil@chalapathiuniversity.edu.in", avatar: "", age: "43 Years", experience: "15 Years", idNo: "CCIT-CIVIL-002", department: "Civil Engineering" },
-      { name: "Mr. P. Suresh", title: "Assistant Professor", edu: "M.Tech - JNTU Kakinada", interests: "Transportation Engineering, Structural CAD Modeling", phone: "0863 2345467", email: "suresh.civil@chalapathiuniversity.edu.in", avatar: "", age: "34 Years", experience: "8 Years", idNo: "CCIT-CIVIL-003", department: "Civil Engineering" },
-      { name: "Dr. G. Divya", title: "Associate Professor", edu: "Ph.D - IIT Roorkee", interests: "Hydraulics & Water Resource Management", phone: "0863 2345468", email: "divya.civil@chalapathiuniversity.edu.in", avatar: "", age: "39 Years", experience: "11 Years", idNo: "CCIT-CIVIL-004", department: "Civil Engineering" },
-      { name: "Mr. B. Kishore", title: "Assistant Professor", edu: "M.Tech - SVU", interests: "Environmental Engineering, Green Construction Materials", phone: "0863 2345469", email: "kishore.civil@chalapathiuniversity.edu.in", avatar: "", age: "32 Years", experience: "6 Years", idNo: "CCIT-CIVIL-005", department: "Civil Engineering" }
-    ]
-  },
-  "Basic Science & Humanities": {
-    hod: { name: "Dr. T. V. Subba Rao", title: "HOD & Professor", edu: "Ph.D - Andhra University", interests: "Applied Mathematics, Fluid Dynamics, Differential Equations", phone: "0863 2345468", email: "hod.bsh@chalapathiuniversity.edu.in", avatar: "", age: "53 Years", experience: "24 Years", idNo: "CCIT-BSH-001", department: "Basic Science & Humanities" },
-    others: [
-      { name: "Dr. S. Lakshmi", title: "Professor of English", edu: "Ph.D - Osmania University", interests: "Professional Communication, ELT, Phonetics", phone: "0863 2345469", email: "lakshmi.english@chalapathiuniversity.edu.in", avatar: "", age: "46 Years", experience: "17 Years", idNo: "CCIT-BSH-002", department: "Basic Science & Humanities" },
-      { name: "Dr. N. V. Prasad", title: "Associate Professor of Physics", edu: "Ph.D - University of Hyderabad", interests: "Materials Science, Solid State Physics, Nanomaterials", phone: "0863 2345473", email: "prasad.physics@chalapathiuniversity.edu.in", avatar: "", age: "41 Years", experience: "13 Years", idNo: "CCIT-BSH-003", department: "Basic Science & Humanities" },
-      { name: "Dr. Ch. Radhika", title: "Assistant Professor of Chemistry", edu: "Ph.D - Acharya Nagarjuna University", interests: "Polymer Chemistry, Environmental Analysis", phone: "0863 2345474", email: "radhika.chem@chalapathiuniversity.edu.in", avatar: "", age: "36 Years", experience: "10 Years", idNo: "CCIT-BSH-004", department: "Basic Science & Humanities" },
-      { name: "Dr. K. Anitha", title: "Associate Professor of Mathematics", edu: "Ph.D - ANU", interests: "Numerical Methods, Complex Variables & Linear Algebra", phone: "0863 2345475", email: "anitha.maths@chalapathiuniversity.edu.in", avatar: "", age: "43 Years", experience: "15 Years", idNo: "CCIT-BSH-005", department: "Basic Science & Humanities" }
-    ]
-  },
-  "School of Pharmacy": {
-    hod: { name: "Prof. Dr. A. Narendra", title: "Principal & Professor", edu: "Ph.D - Indian Institute of Chemical Technology (IICT), Hyderabad", interests: "Pharmaceutics, Target-oriented Drug Delivery Systems, Nano-carriers", phone: "0863 2345470", email: "principal.pharmacy@chalapathiuniversity.edu.in", avatar: "", age: "55 Years", experience: "26 Years of Research", idNo: "CCIT-PH-001", department: "School of Pharmacy" },
-    others: [
-      { name: "Dr. P. Kavitha", title: "Professor", edu: "Ph.D - JNTU Anantapur", interests: "Pharmacology, clinical drug safety audits, toxicity metrics", phone: "0863 2345471", email: "kavitha.pharmacy@chalapathiuniversity.edu.in", avatar: "", age: "47 Years", experience: "18 Years", idNo: "CCIT-PH-002", department: "School of Pharmacy" },
-      { name: "Smt. G. Swathi", title: "Assistant Professor", edu: "M.Pharm - Acharya Nagarjuna University", interests: "Pharmaceutical analysis, quality control procedures", phone: "0863 2345472", email: "swathi.pharmacy@chalapathiuniversity.edu.in", avatar: "", age: "33 Years", experience: "7 Years", idNo: "CCIT-PH-003", department: "School of Pharmacy" },
-      { name: "Dr. M. V. Ramana", title: "Associate Professor", edu: "Ph.D - Andhra University", interests: "Pharmacognosy, Herbal Formulations & Quality Metrics", phone: "0863 2345476", email: "ramana.pharmacy@chalapathiuniversity.edu.in", avatar: "", age: "44 Years", experience: "16 Years", idNo: "CCIT-PH-004", department: "School of Pharmacy" },
-      { name: "Mr. K. Prakash", title: "Assistant Professor", edu: "M.Pharm - Kakatiya University", interests: "Hospital & Clinical Pharmacy Practices", phone: "0863 2345477", email: "prakash.pharmacy@chalapathiuniversity.edu.in", avatar: "", age: "35 Years", experience: "8 Years", idNo: "CCIT-PH-005", department: "School of Pharmacy" }
-    ]
-  },
-  "School of Management": {
-    hod: { name: "Dr. K. S. Rao", title: "Principal & Professor", edu: "Ph.D - Andhra University, Visakhapatnam", interests: "Financial Management, Corporate governance, accounting practices", phone: "0863 2345480", email: "director.mba@chalapathiuniversity.edu.in", avatar: "", age: "50 Years", experience: "22 Years", idNo: "CCIT-MGMT-001", department: "School of Management" },
-    others: [
-      { name: "Dr. P. S. R. Murthy", title: "Associate Professor", edu: "Ph.D - Andhra University", interests: "Marketing Management, Consumer Behaviour, Digital Retail", phone: "0863 2345482", email: "murthy.mba@chalapathiuniversity.edu.in", avatar: "", age: "44 Years", experience: "17 Years", idNo: "CCIT-MGMT-003", department: "School of Management" },
-      { name: "Mr. G. Ravindra", title: "Assistant Professor", edu: "MBA - Acharya Nagarjuna University", interests: "Operations Management, Supply Chain Logistics, Quality Auditing", phone: "0863 2345483", email: "ravi.mba@chalapathiuniversity.edu.in", avatar: "", age: "33 Years", experience: "8 Years", idNo: "CCIT-MGMT-004", department: "School of Management" },
-      { name: "Dr. T. Swapna", title: "Associate Professor", edu: "Ph.D - Osmania University", interests: "Human Resource Management, Talent Analytics & OB", phone: "0863 2345484", email: "swapna.mba@chalapathiuniversity.edu.in", avatar: "", age: "41 Years", experience: "13 Years", idNo: "CCIT-MGMT-005", department: "School of Management" },
-      { name: "Mrs. V. Geetha", title: "Assistant Professor", edu: "MBA - JNTU", interests: "Business Analytics, Financial Modeling & Fintech", phone: "0863 2345485", email: "geetha.mba@chalapathiuniversity.edu.in", avatar: "", age: "34 Years", experience: "7 Years", idNo: "CCIT-MGMT-006", department: "School of Management" }
-    ]
-  }
-};
+export const INITIAL_FACULTY_DATA: Record<string, DirectoryData> = {};
 
 export const INITIAL_BOARD_DATA: Record<string, DirectoryData> = {
   "Governing Council": {
@@ -2798,26 +2716,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Directories
   const [facultyData, setFacultyData] = useState<Record<string, DirectoryData>>(() => {
-    const local = localStorage.getItem("chalapathi_faculty_data_v3");
-    if (local) {
-      try {
-        const parsed = JSON.parse(local);
-        // Ensure no unsplash urls remain
-        Object.keys(parsed).forEach(dept => {
-          if (parsed[dept]?.hod?.avatar && parsed[dept].hod.avatar.includes("images.unsplash.com")) {
-            parsed[dept].hod.avatar = "";
-          }
-          if (Array.isArray(parsed[dept]?.others)) {
-            parsed[dept].others.forEach((o: any) => {
-              if (o?.avatar && o.avatar.includes("images.unsplash.com")) {
-                o.avatar = "";
-              }
-            });
-          }
-        });
-        return parsed;
-      } catch (e) {}
-    }
     return INITIAL_FACULTY_DATA;
   });
 
@@ -3027,8 +2925,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const localCalendar = localStorage.getItem("chalapathi_calendar");
         if (localCalendar) setCalendarData(JSON.parse(localCalendar));
 
-        const localFaculty = localStorage.getItem("chalapathi_faculty_data_v2");
-        if (localFaculty) setFacultyData(JSON.parse(localFaculty));
+        localStorage.removeItem("chalapathi_faculty_data_v2");
+        localStorage.removeItem("chalapathi_faculty_data_v3");
 
         const localBoard = localStorage.getItem("chalapathi_board_data_v3") || localStorage.getItem("chalapathi_board_data");
         if (localBoard) {
@@ -3560,9 +3458,30 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
               setFooterContent((prev) => ({ ...prev, ...s.footerContent }));
               safeSetItem("chalapathi_footer_content", JSON.stringify(s.footerContent));
             }
-            if (s.facultyData) {
+            if (s.facultyDataResetVersion !== "2026-10-24") {
+              setFacultyData({});
+              safeSetItem("chalapathi_faculty_data_v3", "{}");
+              if (await syncConfigToBackend("facultyData", {})) {
+                await syncConfigToBackend("facultyDataResetVersion", "2026-10-24");
+              }
+            } else if (s.facultyData && typeof s.facultyData === "object") {
               setFacultyData(s.facultyData);
               safeSetItem("chalapathi_faculty_data_v3", JSON.stringify(s.facultyData));
+            }
+            if (s.programFacultyResetVersion !== "2026-10-24") {
+              const savedProgramDetails = Object.entries(s).filter(([key, value]) => key.startsWith("custom_program_data_") && value && typeof value === "object");
+              let programsCleared = true;
+              for (const [key, value] of savedProgramDetails) {
+                const clearedProgram = await syncConfigToBackend(key, { ...value, facultyList: [] });
+                if (!clearedProgram) {
+                  programsCleared = false;
+                  break;
+                }
+              }
+              if (programsCleared) {
+                await syncConfigToBackend("programFacultyResetVersion", "2026-10-24");
+                window.dispatchEvent(new Event("programs-published"));
+              }
             }
             if (s.staffData) {
               setStaffData(s.staffData);
