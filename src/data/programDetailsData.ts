@@ -37,6 +37,16 @@ export interface FacultyMember {
   experience: string;
   email: string;
   image?: string;
+  avatar?: string;
+  department?: string;
+  phone?: string;
+  teachingSubjects?: string[];
+  administrativeDuties?: string;
+  publications?: Record<string, string>;
+  publicationDetails?: Record<string, string>[];
+  conferencesAttended?: string;
+  conferencesOrganized?: string;
+  additionalDetails?: Record<string, string>;
 }
 
 export interface LaboratoryItem {
@@ -145,6 +155,7 @@ export interface FullProgramData {
     psos: { id: string; title: string; desc: string }[];
   };
   facultyList: FacultyMember[];
+  facultyDisplayFields?: { card: string[]; profile?: string[] };
   placements: PlacementStat;
   laboratories: LaboratoryItem[];
   achievements: {

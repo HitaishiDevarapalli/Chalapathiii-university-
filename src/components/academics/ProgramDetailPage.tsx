@@ -23,6 +23,9 @@ import {
   getProgramFullData
 } from "../../data/programDetailsData";
 import { useData } from "../../context/DataContext";
+import type { FacultyMember as DirectoryFacultyMember } from "../../context/DataContext";
+import { FacultyProfileModal } from "../common/FacultyProfileModal";
+import { facultyFieldOptions, facultyFieldValue } from "../../utils/facultyFields";
 
 interface ProgramDetailPageProps {
   slug: string;
@@ -61,8 +64,20 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
         qualification: member.edu,
         specialization: member.interests || "",
         experience: member.experience || "",
-        email: member.email || ""
-      }))
+        email: member.email || "",
+        image: member.avatar,
+        avatar: member.avatar,
+        department: member.department || departmentEntry?.[0] || "",
+        phone: member.phone || "",
+        teachingSubjects: member.teachingSubjects || [],
+        administrativeDuties: member.administrativeDuties || "",
+        publications: member.publications || {},
+        publicationDetails: member.publicationDetails || [],
+        conferencesAttended: member.conferencesAttended || "",
+        conferencesOrganized: member.conferencesOrganized || "",
+        additionalDetails: member.additionalDetails || {}
+      })),
+      facultyDisplayFields: departmentData?.displayFields
     };
   }, [published, slug, matchedProgram, facultyData]);
   const sections: SectionMeta[] = published[`program_sections_order_${slug}`] || DEFAULT_PROGRAM_SECTIONS;
@@ -103,6 +118,7 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
   const [syllabusSem, setSyllabusSem] = useState<number>(0);
   const [facultyFilter, setFacultyFilter] = useState<string>("All");
   const [facultySearch, setFacultySearch] = useState<string>("");
+  const [selectedFaculty, setSelectedFaculty] = useState<DirectoryFacultyMember | null>(null);
 
   // Filtered faculty list
   const filteredFaculty = useMemo(() => {
@@ -311,6 +327,8 @@ export default function ProgramDetailPage({ slug, defaultData }: ProgramDetailPa
           </div>
         </div>
       </section>
+
+      {selectedFaculty && <FacultyProfileModal member={selectedFaculty} selectedFields={programData.facultyDisplayFields?.profile} onClose={() => setSelectedFaculty(null)} />}
 
     </div>
   );
@@ -613,7 +631,19 @@ function renderSectionBody(
             {filteredFaculty.map((f, i) => (
               <div
                 key={i}
-                className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs flex flex-col justify-between space-y-3"
+                role="button"
+                tabIndex={0}
+                onClick={() => setSelectedFaculty({
+                  name: f.name, title: f.designation, edu: f.qualification, interests: f.specialization,
+                  phone: f.phone || "", email: f.email || "", avatar: f.avatar || "", age: "",
+                  experience: f.experience || "", idNo: "", department: f.department || programData.department,
+                  teachingSubjects: f.teachingSubjects || [], administrativeDuties: f.administrativeDuties || "",
+                  publications: f.publications || {}, publicationDetails: f.publicationDetails || [],
+                  conferencesAttended: f.conferencesAttended || "", conferencesOrganized: f.conferencesOrganized || "",
+                  additionalDetails: f.additionalDetails || {}
+                })}
+                onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}
+                className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs flex flex-col justify-between space-y-3 cursor-pointer hover:border-blue-300 hover:shadow-md transition-all"
               >
                 <div>
                   <div className="flex items-center gap-3 mb-2.5">
@@ -634,20 +664,16 @@ function renderSectionBody(
                     </div>
                   </div>
                   <div className="space-y-1 text-xs text-slate-600">
-                    <p>
-                      <strong>Qual:</strong> {f.qualification}
-                    </p>
-                    <p>
-                      <strong>Area:</strong> {f.specialization}
-                    </p>
-                    <p>
-                      <strong>Exp:</strong> {f.experience}
-                    </p>
+                    {facultyFieldOptions([f]).filter(field => (programData.facultyDisplayFields?.card ?? ["title", "edu"]).includes(field.key)).map(field => {
+                      const value = facultyFieldValue(f, field.key);
+                      return value ? <p key={field.key}><strong>{field.label}:</strong> {value}</p> : null;
+                    })}
                   </div>
                 </div>
                 <div className="pt-2.5 border-t border-slate-100 text-xs">
                   <a
                     href={`mailto:${f.email}`}
+                    onClick={event => event.stopPropagation()}
                     className="text-[#072A6C] hover:underline font-medium flex items-center gap-1.5"
                   >
                     <Mail size={12} /> {f.email}

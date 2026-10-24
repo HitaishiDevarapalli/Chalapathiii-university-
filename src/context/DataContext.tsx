@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect, useRef } from "r
 import { safeSetItem } from "../lib/safeStorage";
 import { PROGRAMS_DATA, ProgramDetail } from "../data/programsData";
 import { INITIAL_FACULTY_DATA } from "../data/facultyRosters";
+import { loadFacultyPublicationData, mergeFacultyPublicationData } from "../data/facultyPublicationData";
 export { INITIAL_FACULTY_DATA } from "../data/facultyRosters";
 import { CmsPage } from "../types/cms";
 import { INITIAL_CMS_PAGES } from "../data/initialCmsPages";
@@ -298,12 +299,19 @@ export interface FacultyMember {
   publications?: Record<string, string>;
   conferencesAttended?: string;
   conferencesOrganized?: string;
+  publicationDetails?: Record<string, string>[];
   additionalDetails?: Record<string, string>;
+}
+
+export interface FacultyDisplayFields {
+  card: string[];
+  profile?: string[];
 }
 
 export interface DirectoryData {
   hod: FacultyMember;
   others: FacultyMember[];
+  displayFields?: FacultyDisplayFields;
 }
 
 export interface PlacedStudent {
@@ -3464,7 +3472,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
               setFooterContent((prev) => ({ ...prev, ...s.footerContent }));
               safeSetItem("chalapathi_footer_content", JSON.stringify(s.footerContent));
             }
-            if (s.facultyDataResetVersion !== "2026-10-24.2") {
+            const resetFacultyData = s.facultyDataResetVersion !== "2026-10-24.2";
+            if (resetFacultyData) {
               setFacultyData(INITIAL_FACULTY_DATA);
               safeSetItem("chalapathi_faculty_data_v3", JSON.stringify(INITIAL_FACULTY_DATA));
               if (await syncConfigToBackend("facultyData", INITIAL_FACULTY_DATA)) {
@@ -3473,6 +3482,20 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             } else if (s.facultyData && typeof s.facultyData === "object") {
               setFacultyData(s.facultyData);
               safeSetItem("chalapathi_faculty_data_v3", JSON.stringify(s.facultyData));
+            }
+            if (s.facultyPublicationDataSeedVersion !== "2026-10-24.1") {
+              try {
+                const facultyForPublications = resetFacultyData ? INITIAL_FACULTY_DATA : (s.facultyData || INITIAL_FACULTY_DATA);
+                const publications = await loadFacultyPublicationData();
+                const facultyWithPublications = mergeFacultyPublicationData(facultyForPublications, publications);
+                setFacultyData(facultyWithPublications);
+                safeSetItem("chalapathi_faculty_data_v3", JSON.stringify(facultyWithPublications));
+                if (await syncConfigToBackend("facultyData", facultyWithPublications)) {
+                  await syncConfigToBackend("facultyPublicationDataSeedVersion", "2026-10-24.1");
+                }
+              } catch (publicationError) {
+                console.error("Faculty publication data could not be initialized:", publicationError);
+              }
             }
             if (s.programFacultyResetVersion !== "2026-10-24") {
               const savedProgramDetails = Object.entries(s).filter(([key, value]) => key.startsWith("custom_program_data_") && value && typeof value === "object");

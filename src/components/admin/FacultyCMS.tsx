@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from "react";
+import React, { useState, useRef, useMemo, useEffect } from "react";
 import { 
   Users, Plus, Trash2, Edit3, CheckCircle2, UploadCloud, Download, 
   Search, Filter, GraduationCap, Building2, Briefcase, Phone, Mail, 
@@ -13,6 +13,7 @@ import {
   INITIAL_BOARD_DATA 
 } from "../../context/DataContext";
 import { ImageField, SectionHeader, PageVisibilityBanner } from "./AdminComponents";
+import { facultyFieldOptions } from "../../utils/facultyFields";
 
 interface FacultyCMSProps {
   notifySave: (msg: string) => void;
@@ -79,6 +80,8 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
   const [facultyForm, setFacultyForm] = useState<Record<string, DirectoryData>>(facultyData);
   const [boardForm, setBoardForm] = useState<Record<string, DirectoryData>>(boardData);
 
+  useEffect(() => setFacultyForm(facultyData), [facultyData]);
+
   // Active view: "schools" (School-wise Esteemed Faculty), "board" (Board of Governance) or "homepage"
   const [mainView, setMainView] = useState<"schools" | "board" | "homepage">("schools");
 
@@ -120,7 +123,7 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
   const [showExcelModal, setShowExcelModal] = useState<boolean>(false);
   const [excelRows, setExcelRows] = useState<Array<Partial<FacultyMember> & { isHod?: boolean; rawDept?: string }>>([]);
   const [excelTargetDept, setExcelTargetDept] = useState<string>(SCHOOL_DEFINITIONS[0].departments[0]);
-  const [excelImportMode, setExcelImportMode] = useState<"append" | "replace">("append");
+  const [excelImportMode, setExcelImportMode] = useState<"append" | "replace">("replace");
   const [excelFileName, setExcelFileName] = useState<string>("");
   const [excelError, setExcelError] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -129,6 +132,25 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
   const currentSchool = useMemo(() => {
     return SCHOOL_DEFINITIONS.find((s) => s.id === selectedSchoolId) || SCHOOL_DEFINITIONS[0];
   }, [selectedSchoolId]);
+
+  const displayDepartment = selectedDeptFilter === "all" ? currentSchool.departments[0] : selectedDeptFilter;
+  const displayDirectory = getDeptData(displayDepartment, facultyForm);
+  const displayMembers = [displayDirectory?.hod, ...(displayDirectory?.others || [])].filter((member): member is FacultyMember => Boolean(member?.name?.trim()));
+  const displayOptions = facultyFieldOptions(displayMembers);
+  const visibleCardFields = displayDirectory?.displayFields?.card ?? ["title", "edu"];
+  const visibleProfileFields = displayDirectory?.displayFields?.profile ?? displayOptions.map(option => option.key);
+
+  const updateDisplayFields = (type: "card" | "profile", key: string, checked: boolean) => {
+    const source = facultyForm[displayDepartment] || displayDirectory;
+    if (!source) return;
+    const defaults = type === "card" ? ["title", "edu"] : displayOptions.map(option => option.key);
+    const current = source.displayFields?.[type] ?? defaults;
+    const selected = checked ? [...new Set([...current, key])] : current.filter(field => field !== key);
+    const updated = { ...facultyForm, [displayDepartment]: { ...source, displayFields: { ...(source.displayFields || {}), [type]: selected } } };
+    setFacultyForm(updated);
+    updateFacultyData(updated);
+    notifySave(`Updated ${type === "card" ? "faculty card" : "profile detail"} visibility for ${displayDepartment}.`);
+  };
 
   const resolveDepartment = (rawDepartment: string) => {
     const normalized = rawDepartment.toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -385,7 +407,7 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
       "Publications 1 – Journals", "Publications 2 – Conferences", "Publications 3 – Book Chapters",
       "Publications 4 – Books", "Publications 5 – Patents Published", "Publications 6 – Patents Granted",
       "Conferences / Workshops / Seminars / FDPs Attended", "Conferences / Workshops / Seminars / FDPs Organized",
-      "Department", "Email", "Phone", "Experience", "Is Head of Dept (Yes/No)"
+      "Department", "Email", "Phone", "Age", "Experience", "ID No", "Avatar", "Is Head of Dept (Yes/No)"
     ];
     const worksheet = XLSX.utils.aoa_to_sheet([headers]);
     const workbook = XLSX.utils.book_new();
@@ -417,15 +439,31 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
         const normalize = (value: unknown) => String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
         let headers: string[] = [];
         let dataRows: unknown[][] = [];
+        let publicationHeaders: string[] = [];
+        const publicationRows: Array<{ facultyName: string; details: Record<string, string> }> = [];
 
         for (const sheetName of wb.SheetNames) {
           const worksheet = wb.Sheets[sheetName];
           const rows: unknown[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "", raw: false });
+          const publicationHeaderIndex = rows.findIndex(row => row.some(cell => normalize(cell).includes("facultyname")) && row.some(cell => normalize(cell).includes("publicationtype")) && row.some(cell => normalize(cell).includes("titleofpublication")));
+          if (publicationHeaderIndex >= 0) {
+            publicationHeaders = rows[publicationHeaderIndex].map(cell => String(cell || "").trim());
+            let currentFacultyName = "";
+            rows.slice(publicationHeaderIndex + 1).forEach(row => {
+              const currentName = String(row[publicationHeaders.findIndex(header => normalize(header).includes("facultyname"))] || "").trim();
+              if (currentName) currentFacultyName = currentName;
+              const details = Object.fromEntries(publicationHeaders.flatMap((header, index) => {
+                if (normalize(header).includes("facultyname")) return [];
+                const value = String(row[index] ?? "").trim();
+                return value ? [[header, value]] : [];
+              }));
+              if (currentFacultyName && Object.keys(details).length) publicationRows.push({ facultyName: currentFacultyName, details });
+            });
+          }
           const headerIndex = rows.findIndex(row => row.some(cell => ["facultyname", "fullname", "name"].includes(normalize(cell))) && row.some(cell => ["qualification", "qualifications", "education"].includes(normalize(cell))));
-          if (headerIndex < 0) continue;
+          if (headerIndex < 0 || headers.length > 0) continue;
           headers = rows[headerIndex].map(cell => String(cell || "").trim());
           dataRows = rows.slice(headerIndex + 1);
-          break;
         }
 
         if (headers.length === 0 || dataRows.length === 0) {
@@ -443,6 +481,39 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
             if (value) return value;
           }
           return "";
+        };
+        const cleanPersonName = (value: string) => value.replace(/^(dr|prof|mr|mrs|ms|smt|sri)(?:\.|\s+)/i, "");
+        const normalizePersonName = (value: string) => normalize(cleanPersonName(value));
+        const personNameTokens = (value: string) => cleanPersonName(value).toLowerCase().split(/[^a-z0-9]+/).filter(token => token.length >= 4);
+        const sharesLongNameFragment = (first: string, second: string) => {
+          const shortest = first.length < second.length ? first : second;
+          const longest = first.length < second.length ? second : first;
+          for (let length = Math.min(12, shortest.length); length >= 7; length -= 1) {
+            for (let start = 0; start <= shortest.length - length; start += 1) {
+              if (longest.includes(shortest.slice(start, start + length))) return true;
+            }
+          }
+          return false;
+        };
+        const matchPublications = (facultyName: string) => {
+          const expected = normalizePersonName(facultyName);
+          if (!expected) return [];
+          const exact = publicationRows.filter(publication => {
+            const candidate = normalizePersonName(publication.facultyName);
+            return candidate === expected || candidate.includes(expected) || expected.includes(candidate);
+          });
+          if (exact.length) return exact.map(publication => publication.details);
+          const expectedTokens = personNameTokens(facultyName);
+          const scores = new Map<string, number>();
+          publicationRows.forEach(publication => {
+            const candidate = normalizePersonName(publication.facultyName);
+            const sharedTokens = personNameTokens(publication.facultyName).filter(token => expectedTokens.includes(token));
+            const score = sharedTokens.length * 10 + (sharesLongNameFragment(expected, candidate) ? 1 : 0);
+            if (score > 0) scores.set(publication.facultyName, Math.max(score, scores.get(publication.facultyName) || 0));
+          });
+          const bestScore = Math.max(0, ...scores.values());
+          const bestNames = [...scores].filter(([, score]) => score === bestScore && score > 0).map(([name]) => name);
+          return bestNames.length === 1 ? publicationRows.filter(publication => publication.facultyName === bestNames[0]).map(publication => publication.details) : [];
         };
         const parsedRows: Array<Partial<FacultyMember> & { isHod?: boolean; rawDept?: string }> = dataRows.map(row => {
           const name = findVal(row, ["Full Name", "Faculty Name", "Professor Name", "Teacher Name", "Name"]);
@@ -465,7 +536,7 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
             "areaofexpertise", "conferencesworkshopsseminarsfdpsattended", "conferencesattended", "workshopsattended",
             "conferencesworkshopsseminarsfdpsorganized", "haveyouorganizedanyconferencesworkshopsseminars", "conferencesorganized", "workshopsorganized",
             "isheadofdeptyesno", "ishod", "hod", "head", "isheadof", "email", "emailid", "mail", "emailaddress", "phone", "mobile",
-            "contact", "phonenumber", "experience", "exp", "yearsofexperience", "avatar", "photo", "initials", "image"
+            "contact", "phonenumber", "age", "experience", "exp", "yearsofexperience", "idno", "idnumber", "avatar", "photo", "initials", "image"
           ]);
           const additionalDetails = Object.fromEntries(headers.flatMap((header, index) => {
             const value = String(row[index] ?? "").trim();
@@ -482,11 +553,14 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
             interests,
             email: findVal(row, ["Email", "Email ID", "Mail", "Email Address"]),
             phone: findVal(row, ["Phone", "Mobile", "Contact", "Phone Number"]),
+            age: findVal(row, ["Age", "Age / Years"]),
             experience: findVal(row, ["Experience", "Exp", "Years of Experience"]),
             avatar: findVal(row, ["Avatar", "Photo", "Initials", "Image"]),
+            idNo: findVal(row, ["ID No", "ID Number", "Faculty ID", "Employee ID"]),
             teachingSubjects,
             administrativeDuties,
             publications,
+            publicationDetails: matchPublications(name),
             conferencesAttended,
             conferencesOrganized,
             additionalDetails,
@@ -518,6 +592,16 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
     }
 
     const updated = { ...facultyForm };
+    const importDepartments = [...new Set(excelRows.map(row => resolveDepartment(row.rawDept || "") || excelTargetDept))];
+    if (excelImportMode === "replace") {
+      importDepartments.forEach(department => {
+        updated[department] = {
+          hod: { name: "", title: "", edu: "", interests: "", phone: "", email: "", avatar: "", age: "", experience: "", idNo: "", department },
+          others: [],
+          displayFields: updated[department]?.displayFields
+        };
+      });
+    }
 
     excelRows.forEach((row) => {
       const targetDept = resolveDepartment(row.rawDept || "") || excelTargetDept;
@@ -549,13 +633,14 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
         phone: row.phone || "",
         email: row.email || "",
         avatar: row.avatar || "",
-        age: "",
+        age: row.age || "",
         experience: row.experience || "",
         idNo: row.idNo || "",
         department: targetDept,
         teachingSubjects: row.teachingSubjects || [],
         administrativeDuties: row.administrativeDuties || "",
         publications: row.publications || {},
+        publicationDetails: row.publicationDetails || [],
         conferencesAttended: row.conferencesAttended || "",
         conferencesOrganized: row.conferencesOrganized || "",
         additionalDetails: row.additionalDetails || {}
@@ -588,6 +673,7 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
   const handleExportCurrentSchoolToExcel = () => {
     const exportData: any[] = [];
     const toExportRow = (member: FacultyMember, department: string, isHod: boolean) => ({
+      ...(member.additionalDetails || {}),
       "Faculty Name": member.name,
       "Qualification": member.edu,
       "Designation": member.title,
@@ -600,9 +686,11 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
       "Department": department,
       "Email": member.email,
       "Phone": member.phone,
+      "Age": member.age,
       "Experience": member.experience,
-      "Is Head of Dept (Yes/No)": isHod ? "Yes" : "No",
-      ...(member.additionalDetails || {})
+      "ID No": member.idNo,
+      "Avatar": member.avatar,
+      "Is Head of Dept (Yes/No)": isHod ? "Yes" : "No"
     });
 
     currentSchool.departments.forEach((dept) => {
@@ -623,6 +711,17 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
     const worksheet = XLSX.utils.json_to_sheet(exportData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, currentSchool.name.slice(0, 30));
+    const publicationData = exportData.flatMap(row => {
+      const name = row["Faculty Name"];
+      const department = row.Department;
+      const member = currentSchool.departments.flatMap(dept => {
+        const directory = facultyForm[dept];
+        return directory ? [directory.hod, ...(directory.others || [])].filter(person => person.name === name && person.department === department) : [];
+      })[0];
+      return (member?.publicationDetails || []).map(detail => ({ Department: department, "Faculty Name": name, ...detail }));
+    });
+    const publicationSheet = XLSX.utils.json_to_sheet(publicationData.length ? publicationData : [{ Department: "", "Faculty Name": "", "Publication Type": "", "Title of Publication": "", "Journal / Conference / Proceedings Name": "", Year: "", "Volume / Issue / Pages": "", "DOI / ISSN / ISBN / Link": "" }]);
+    XLSX.utils.book_append_sheet(workbook, publicationSheet, "Publications");
     XLSX.writeFile(workbook, `Chalapathi_${currentSchool.id}_Faculty_Export.xlsx`);
     notifySave(`Exported ${exportData.length} faculty records to Excel!`);
   };
@@ -1041,6 +1140,31 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
               />
             </div>
           </div>
+
+          <section className="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-wide text-[#072A6C]">Public Faculty Display Customization</h3>
+                <p className="text-[11px] text-gray-500 mt-1">Choose what visitors see on each faculty card and in the full profile. Name always stays on the card.</p>
+              </div>
+              <span className="text-[11px] font-semibold text-blue-800 bg-blue-50 px-2.5 py-1 rounded-lg">{displayDepartment}</span>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {[{ type: "card" as const, title: "Faculty card (top-level listing)", selected: visibleCardFields }, { type: "profile" as const, title: "Full profile details", selected: visibleProfileFields }].map(group => (
+                <div key={group.type} className="rounded-xl border border-slate-200 p-3 space-y-2">
+                  <h4 className="text-[11px] font-bold uppercase text-slate-700">{group.title}</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-52 overflow-y-auto">
+                    {displayOptions.map(option => (
+                      <label key={`${group.type}-${option.key}`} className="flex items-center gap-2 text-[11px] text-slate-700 cursor-pointer">
+                        <input type="checkbox" checked={group.selected.includes(option.key)} onChange={event => updateDisplayFields(group.type, option.key, event.target.checked)} className="rounded text-[#072A6C]" />
+                        <span>{option.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
 
           {/*  FACULTY CARDS LIST */}
           <div className="space-y-3">
@@ -1477,6 +1601,53 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
                   className="w-full h-8.5 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg"
                 />
               </div>
+
+              <div className="space-y-1 sm:col-span-2">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Subjects Taught (one per line)</label>
+                <textarea rows={3} value={(editingFaculty.member.teachingSubjects || []).join("\n")} onChange={e => setEditingFaculty({ ...editingFaculty, member: { ...editingFaculty.member, teachingSubjects: e.target.value.split("\n") } })} className="w-full p-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg" />
+              </div>
+
+              <div className="space-y-1 sm:col-span-2">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Administrative Duties</label>
+                <textarea rows={3} value={editingFaculty.member.administrativeDuties || ""} onChange={e => setEditingFaculty({ ...editingFaculty, member: { ...editingFaculty.member, administrativeDuties: e.target.value } })} className="w-full p-2.5 text-xs bg-slate-50 border border-gray-200 rounded-lg" />
+              </div>
+
+              {Object.entries(editingFaculty.member.publications || {}).map(([field, value]) => (
+                <div key={field} className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-600 uppercase">{field}</label>
+                  <input type="text" value={value} onChange={e => setEditingFaculty({ ...editingFaculty, member: { ...editingFaculty.member, publications: { ...(editingFaculty.member.publications || {}), [field]: e.target.value } } })} className="w-full h-8.5 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg" />
+                </div>
+              ))}
+
+              {Object.entries(editingFaculty.member.additionalDetails || {}).map(([field, value]) => (
+                <div key={field} className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-600 uppercase">{field}</label>
+                  <input type="text" value={value} onChange={e => setEditingFaculty({ ...editingFaculty, member: { ...editingFaculty.member, additionalDetails: { ...(editingFaculty.member.additionalDetails || {}), [field]: e.target.value } } })} className="w-full h-8.5 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg" />
+                </div>
+              ))}
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Conferences Attended</label>
+                <input type="text" value={editingFaculty.member.conferencesAttended || ""} onChange={e => setEditingFaculty({ ...editingFaculty, member: { ...editingFaculty.member, conferencesAttended: e.target.value } })} className="w-full h-8.5 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-600 uppercase">Conferences Organized</label>
+                <input type="text" value={editingFaculty.member.conferencesOrganized || ""} onChange={e => setEditingFaculty({ ...editingFaculty, member: { ...editingFaculty.member, conferencesOrganized: e.target.value } })} className="w-full h-8.5 px-3 text-xs bg-slate-50 border border-gray-200 rounded-lg" />
+              </div>
+              <details className="sm:col-span-2 rounded-xl border border-slate-200 p-3">
+                <summary className="cursor-pointer text-[11px] font-bold text-[#072A6C]">Detailed publication records ({editingFaculty.member.publicationDetails?.length || 0})</summary>
+                <div className="mt-3 space-y-3 max-h-72 overflow-y-auto">
+                  {(editingFaculty.member.publicationDetails || []).map((record, index) => (
+                    <article key={`${record["Title of Publication"] || record.Title || index}-${index}`} className="rounded-lg bg-slate-50 border border-slate-100 p-3">
+                      <p className="text-xs font-bold text-slate-800">{record["Title of Publication"] || record["Title of Publication ((Journal / Conference / Book Chapter / Book / Patent)"] || record.Title || "Publication record"}</p>
+                      <dl className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                        {Object.entries(record).filter(([key, value]) => key !== "Faculty Name" && key !== "Title of Publication" && value).map(([key, value]) => <div key={key} className="text-[10px]"><dt className="font-bold text-slate-500">{key}</dt><dd className="text-slate-700 break-words">{value}</dd></div>)}
+                      </dl>
+                    </article>
+                  ))}
+                  {!editingFaculty.member.publicationDetails?.length && <p className="text-[11px] text-slate-500">No publication details in this record. Export the current department workbook, edit its Publications sheet, and re-upload to replace this department’s data.</p>}
+                </div>
+              </details>
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-gray-100">
@@ -1576,10 +1747,10 @@ export function FacultyCMS({ notifySave }: FacultyCMSProps) {
                   className="w-full h-8.5 px-2.5 text-xs bg-white border border-gray-200 rounded-lg font-bold text-slate-800"
                 >
                   <option value="append">Append (Add to existing faculty)</option>
-                  <option value="replace">Replace (Overwrite current faculty in school)</option>
+                  <option value="replace">Replace departments in uploaded file</option>
                 </select>
                 <span className="text-[9.5px] text-gray-500">
-                  Append adds new records safely; Replace overwrites previous data
+                  Replace updates only departments present in the uploaded workbook and keeps other departments unchanged
                 </span>
               </div>
             </div>

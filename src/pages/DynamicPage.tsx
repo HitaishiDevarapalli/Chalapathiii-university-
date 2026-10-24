@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLocation, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, ChevronRight, ChevronDown, Home, Calendar, BookOpen, Landmark, Info, Phone, ShieldCheck, UserPlus, FileText, UploadCloud, CreditCard, Clock, ShieldAlert, UserCheck, Scale, CalendarRange, GraduationCap, Mail, User, X, Globe, QrCode, Award, ChevronLeft } from "lucide-react";
 import { ACADEMIC_PROGRAMS_STRUCTURE } from "../components/layout/Header";
-import { useData, DEFAULT_CONTACT_PAGE_CONTENT, INITIAL_BOARD_DATA } from "../context/DataContext";
+import { useData, DEFAULT_CONTACT_PAGE_CONTENT, INITIAL_BOARD_DATA, type FacultyMember } from "../context/DataContext";
 import GlobalCertifications from "../components/sections/GlobalCertifications";
 import { AdmissionsPortalView } from "../components/admissions/AdmissionsPortalView";
 import { ApplyOnlineView } from "../components/admissions/ApplyOnlineView";
@@ -14,6 +14,8 @@ import ProgramDetailPage from "../components/academics/ProgramDetailPage";
 import { ResearchView } from "../components/research/ResearchView";
 import SEO from "../components/SEO";
 import { DynamicSectionRenderer } from "../components/common/DynamicSectionRenderer";
+import { FacultyProfileModal } from "../components/common/FacultyProfileModal";
+import { facultyFieldOptions, facultyFieldValue } from "../utils/facultyFields";
 
 
 const getProgramTimeline = (title: string) => {
@@ -2720,6 +2722,7 @@ function StaffDirectory() {
 
 function FacultyDirectory() {
   const { facultyData } = useData();
+  const [selectedFaculty, setSelectedFaculty] = useState<{ member: FacultyMember; profileFields?: string[] } | null>(null);
   
   const location = useLocation();
   const path = location.pathname.toLowerCase();
@@ -2768,7 +2771,7 @@ function FacultyDirectory() {
   }
 
   // Flatten the faculty lists for the selected departments
-  const allFacultyMembers: FacultyMember[] = [];
+  const allFacultyMembers: Array<{ member: FacultyMember; department: string; cardFields: string[]; profileFields?: string[] }> = [];
   const seenNames = new Set<string>();
 
   departmentsToShow.forEach(dept => {
@@ -2778,7 +2781,7 @@ function FacultyDirectory() {
         const key = dData.hod.name.toLowerCase().trim();
         if (!seenNames.has(key)) {
           seenNames.add(key);
-          allFacultyMembers.push(dData.hod);
+          allFacultyMembers.push({ member: dData.hod, department: dept, cardFields: dData.displayFields?.card ?? ["title", "edu"], profileFields: dData.displayFields?.profile });
         }
       }
       if (dData.others && Array.isArray(dData.others)) {
@@ -2787,7 +2790,7 @@ function FacultyDirectory() {
             const key = mem.name.toLowerCase().trim();
             if (!seenNames.has(key)) {
               seenNames.add(key);
-              allFacultyMembers.push(mem);
+            allFacultyMembers.push({ member: mem, department: dept, cardFields: dData.displayFields?.card ?? ["title", "edu"], profileFields: dData.displayFields?.profile });
             }
           }
         });
@@ -2807,42 +2810,43 @@ function FacultyDirectory() {
           Faculty records are currently being updated for this school.
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-6">
-          {allFacultyMembers.map((faculty, fIdx) => (
-            <div 
-              key={fIdx}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 sm:p-4 flex items-center gap-3.5 sm:gap-5 group min-h-[120px] sm:min-h-[140px]"
-            >
-              {/* Photo / Icon */}
-              <div className="w-20 h-24 sm:w-[100px] sm:h-[110px] shrink-0 rounded-lg overflow-hidden bg-[#072A6C]/5 border border-gray-100 shadow-inner flex items-center justify-center">
-                <MemberAvatar 
-                  avatar={faculty.avatar} 
-                  name={faculty.name} 
-                  className="w-full h-full object-cover" 
-                />
-              </div>
-              
-              {/* Info */}
-              <div className="flex flex-col flex-1 justify-center min-w-0">
-                <h4 className="text-[13px] sm:text-[14px] font-black text-[#072A6C] uppercase leading-snug mb-1 group-hover:text-red-800 transition-colors break-words">
-                  {faculty.name}
-                </h4>
-                <p className="text-[11px] sm:text-[12px] font-bold text-red-700/90 uppercase tracking-wider mb-1 line-clamp-1">
-                  {faculty.title.replace("HOD & ", "").replace("Principal & ", "")}
-                </p>
-                <p className="text-[10px] sm:text-[11px] font-semibold text-red-600/70 truncate">
-                  {faculty.edu.split('-')[0].trim()}
-                </p>
-              </div>
-            </div>
-          ))}
+        <div className="space-y-9">
+          {departmentsToShow.map(department => {
+            const departmentFaculty = allFacultyMembers.filter(item => item.department === department);
+            if (departmentFaculty.length === 0) return null;
+            return (
+              <section key={department} className="space-y-4">
+                <h4 className="text-base sm:text-lg font-black text-[#072A6C] uppercase tracking-wide border-b border-slate-200 pb-2">{department}</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-6">
+                  {departmentFaculty.map(({ member: faculty, cardFields, profileFields }, fIdx) => (
+                    <div
+                      key={`${department}-${faculty.name}-${fIdx}`}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setSelectedFaculty({ member: faculty, profileFields })}
+                      onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setSelectedFaculty({ member: faculty, profileFields }); } }}
+                      className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 sm:p-4 flex items-center gap-3.5 sm:gap-5 group min-h-[120px] sm:min-h-[140px] cursor-pointer hover:border-blue-300 hover:shadow-md transition-all"
+                    >
+                      <div className="w-20 h-24 sm:w-[100px] sm:h-[110px] shrink-0 rounded-lg overflow-hidden bg-[#072A6C]/5 border border-gray-100 shadow-inner flex items-center justify-center">
+                        <MemberAvatar avatar={faculty.avatar} name={faculty.name} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex flex-col flex-1 justify-center min-w-0">
+                        <h4 className="text-[13px] sm:text-[14px] font-black text-[#072A6C] uppercase leading-snug mb-1 group-hover:text-red-800 transition-colors break-words">{faculty.name}</h4>
+                        {facultyFieldOptions([faculty]).filter(field => cardFields.includes(field.key)).map(field => {
+                          const value = facultyFieldValue(faculty, field.key);
+                          return value ? <p key={field.key} className="text-[10px] sm:text-[11px] font-semibold text-slate-600 truncate" title={`${field.label}: ${value}`}><span className="font-bold">{field.label}:</span> {value}</p> : null;
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            );
+          })}
         </div>
       )}
 
-      {/* ======================================================== */}
-      {/* 🌟 FACULTY DETAILS MODAL POPUP (CENTERED LAYOUT)          */}
-      {/* ======================================================== */}
-      {/* Modal removed as per user request */}
+      {selectedFaculty && <FacultyProfileModal member={selectedFaculty.member} selectedFields={selectedFaculty.profileFields} onClose={() => setSelectedFaculty(null)} />}
     </div>
   );
 }
