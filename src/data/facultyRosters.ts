@@ -1,8 +1,8 @@
 import type { DirectoryData, FacultyMember } from "../context/DataContext";
 
-export interface FacultyRosterEntry extends FacultyMember {
+export type FacultyRosterEntry = Omit<FacultyMember, "phone" | "email" | "avatar" | "age" | "experience" | "idNo"> & {
   isHod: boolean;
-}
+};
 
 export const FACULTY_ROSTER: FacultyRosterEntry[] = [
   {
