@@ -451,6 +451,7 @@ export interface SiteSettings {
   logoWhiteUrl: string;
   faviconUrl: string;
   splashVideoUrl: string;
+  homepageHero: HomepageVideoHeroSettings;
   enableSplash: boolean;
   contactPhone: string;
   contactEmail: string;
@@ -468,6 +469,31 @@ export interface SiteSettings {
   seoDescription: string;
   seoKeywords: string;
   hiddenPages?: Record<string, boolean>;
+}
+
+export interface HomepageVideoHeroSettings {
+  videoUrl: string;
+  posterUrl: string;
+  eyebrow: string;
+  titleLine1: string;
+  titleLine2: string;
+  tagline: string;
+  primaryButtonLabel: string;
+  primaryButtonUrl: string;
+  secondaryButtonLabel: string;
+  secondaryButtonUrl: string;
+  fontFamily: string;
+  titleColor: string;
+  bodyColor: string;
+  eyebrowColor: string;
+  titleSize: number;
+  titleWeight: number;
+  overlayOpacity: number;
+  primaryButtonColor: string;
+  primaryButtonTextColor: string;
+  secondaryButtonColor: string;
+  secondaryButtonTextColor: string;
+  buttonRadius: number;
 }
 
 export interface ThemeColors {
@@ -967,6 +993,30 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   logoWhiteUrl: "/logo.png?v=3",
   faviconUrl: "/favicon.ico",
   splashVideoUrl: "/chalapathi_logo_intro.mp4",
+  homepageHero: {
+    videoUrl: "/chalapathi-campus-intro.mp4",
+    posterUrl: "/campus_hero.webp",
+    eyebrow: "A LEGACY OF EXCELLENCE",
+    titleLine1: "CHALAPATHI",
+    titleLine2: "UNIVERSITY",
+    tagline: "Shaping Minds. Inspiring Futures.",
+    primaryButtonLabel: "Explore Programs",
+    primaryButtonUrl: "/programs",
+    secondaryButtonLabel: "Admissions",
+    secondaryButtonUrl: "/admissions",
+    fontFamily: "Poppins",
+    titleColor: "#FFFFFF",
+    bodyColor: "#FFFFFF",
+    eyebrowColor: "#D4AF37",
+    titleSize: 92,
+    titleWeight: 900,
+    overlayOpacity: 58,
+    primaryButtonColor: "#D4AF37",
+    primaryButtonTextColor: "#072A6C",
+    secondaryButtonColor: "#FFFFFF",
+    secondaryButtonTextColor: "#FFFFFF",
+    buttonRadius: 999,
+  },
   enableSplash: false,
   contactPhone: "8886630355 | 8886630356 9905505566",
   contactEmail: "admissions@chalapathiuniversity.edu.in",
@@ -2612,7 +2662,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Site Settings
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(() => {
     const local = localStorage.getItem("chalapathi_site_settings");
-    return local ? { ...DEFAULT_SITE_SETTINGS, ...JSON.parse(local) } : DEFAULT_SITE_SETTINGS;
+    if (!local) return DEFAULT_SITE_SETTINGS;
+    const parsed = JSON.parse(local);
+    return { ...DEFAULT_SITE_SETTINGS, ...parsed, homepageHero: { ...DEFAULT_SITE_SETTINGS.homepageHero, ...parsed.homepageHero } };
   });
 
   // Theme Colors
@@ -3036,10 +3088,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateSiteSettings = async (settings: SiteSettings): Promise<boolean> => {
-    setSiteSettings(settings);
-    safeSetItem("chalapathi_site_settings", JSON.stringify(settings));
+    const mergedSettings = { ...DEFAULT_SITE_SETTINGS, ...settings, homepageHero: { ...DEFAULT_SITE_SETTINGS.homepageHero, ...settings.homepageHero } };
+    setSiteSettings(mergedSettings);
+    safeSetItem("chalapathi_site_settings", JSON.stringify(mergedSettings));
     recordSave();
-    return syncConfigToBackend("siteSettings", settings);
+    return syncConfigToBackend("siteSettings", mergedSettings);
   };
 
   const updateThemeColors = (colors: ThemeColors) => {
@@ -3426,8 +3479,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
               safeSetItem("chalapathi_board_data_v3", JSON.stringify(s.boardData));
             }
             if (s.siteSettings) {
-              setSiteSettings((prev) => ({ ...prev, ...s.siteSettings }));
-              safeSetItem("chalapathi_site_settings", JSON.stringify(s.siteSettings));
+              setSiteSettings((prev) => ({ ...prev, ...s.siteSettings, homepageHero: { ...DEFAULT_SITE_SETTINGS.homepageHero, ...prev.homepageHero, ...s.siteSettings.homepageHero } }));
+              safeSetItem("chalapathi_site_settings", JSON.stringify({ ...DEFAULT_SITE_SETTINGS, ...s.siteSettings, homepageHero: { ...DEFAULT_SITE_SETTINGS.homepageHero, ...s.siteSettings.homepageHero } }));
             }
             if (s.contactPageContent && typeof s.contactPageContent === "object") {
               const contactContent = { ...DEFAULT_CONTACT_PAGE_CONTENT, ...s.contactPageContent };

@@ -134,8 +134,10 @@ export default function Home() {
     campusGallery,
     campusBanners,
     homepageSections,
-    aboutContent
+    aboutContent,
+    siteSettings
   } = useData();
+  const introHero = siteSettings.homepageHero;
   const campusCards = campusLifeContent?.["/campus-life"]?.highlights?.filter(item => item.title || item.desc) || [];
   const publishedCampusVideos = (contextCampusVideos || []).filter(item => item.url);
   const navigate = useNavigate();
@@ -409,8 +411,8 @@ export default function Home() {
       <section aria-label="Discover Chalapathi University" className="relative isolate h-[100svh] min-h-[560px] w-full overflow-hidden bg-[#072A6C] text-white">
         <video
           className="absolute inset-0 h-full w-full object-cover"
-          src="/chalapathi-campus-intro.mp4"
-          poster="/campus_hero.webp"
+          src={introHero.videoUrl || "/chalapathi-campus-intro.mp4"}
+          poster={introHero.posterUrl || undefined}
           autoPlay
           muted
           playsInline
@@ -418,14 +420,20 @@ export default function Home() {
           preload="auto"
           aria-label="A cinematic view of Chalapathi University"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/25 to-black/5" aria-hidden="true" />
+        <div className="absolute inset-0" style={{ background: `linear-gradient(90deg, rgba(0,0,0,${introHero.overlayOpacity / 100}) 0%, rgba(0,0,0,${introHero.overlayOpacity / 250}) 58%, rgba(0,0,0,0.04) 100%)` }} aria-hidden="true" />
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/45 to-transparent" aria-hidden="true" />
         <div className="absolute inset-x-0 bottom-0 mx-auto flex w-full max-w-[1440px] items-end justify-between gap-6 px-5 pb-10 sm:px-8 md:pb-14 lg:px-12">
-          <div className="max-w-3xl">
-            <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.22em] text-[#D4AF37] sm:text-sm">A place to discover what’s possible</p>
-            <h1 className="text-3xl font-black leading-[1.04] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">A future shaped<br className="hidden sm:block" /> by possibility.</h1>
-            <p className="mt-4 max-w-xl text-sm leading-relaxed text-white/85 sm:text-base md:text-lg">Explore a vibrant campus where ambition, ideas and opportunity come together.</p>
-            <a href="#homepage-banner" className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#D4AF37] px-5 py-3 text-sm font-extrabold text-[#072A6C] shadow-lg transition-transform hover:scale-[1.03]">Discover Chalapathi <ArrowRight size={16} /></a>
+          <div className="max-w-4xl" style={{ fontFamily: introHero.fontFamily }}>
+            <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.22em] sm:text-sm" style={{ color: introHero.eyebrowColor }}>{introHero.eyebrow}</p>
+            <h1 className="leading-[0.92] tracking-[-0.045em] drop-shadow-lg" style={{ color: introHero.titleColor, fontWeight: introHero.titleWeight, fontSize: `clamp(2.8rem, 7.2vw, ${Math.max(48, Math.min(120, introHero.titleSize))}px)` }}>
+              <span className="block">{introHero.titleLine1}</span>
+              <span className="block">{introHero.titleLine2}</span>
+            </h1>
+            <p className="mt-4 max-w-xl text-base font-medium leading-relaxed sm:text-lg md:text-xl" style={{ color: introHero.bodyColor }}>{introHero.tagline}</p>
+            <div className="mt-6 flex flex-wrap gap-3 sm:gap-4">
+              <a href={introHero.primaryButtonUrl || "/programs"} className="inline-flex min-h-12 items-center justify-center gap-2 border border-transparent px-6 py-3 text-sm font-extrabold shadow-lg transition-transform hover:scale-[1.03] sm:text-base" style={{ backgroundColor: introHero.primaryButtonColor, color: introHero.primaryButtonTextColor, borderRadius: `${introHero.buttonRadius}px` }}>{introHero.primaryButtonLabel} <ArrowRight size={17} /></a>
+              <a href={introHero.secondaryButtonUrl || "/admissions"} className="inline-flex min-h-12 items-center justify-center border border-white/80 bg-white/10 px-6 py-3 text-sm font-bold backdrop-blur-sm transition-colors hover:bg-white/20 sm:text-base" style={{ color: introHero.secondaryButtonTextColor, borderRadius: `${introHero.buttonRadius}px`, backgroundColor: `${introHero.secondaryButtonColor}1A` }}>{introHero.secondaryButtonLabel}</a>
+            </div>
           </div>
         </div>
       </section>

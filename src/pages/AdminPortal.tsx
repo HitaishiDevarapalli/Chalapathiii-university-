@@ -346,7 +346,7 @@ export default function AdminPortal() {
   // ----------------------------------------------------
   const [sectionsList, setSectionsList] = useState<HomepageSectionConfig[]>(homepageSections);
   const [activeHomeSubTab, setActiveHomeSubTab] = useState<
-    "ordering" | "hero" | "ticker" | "stats" | "whyChoose" | "programs" | "newsEvents" | "campusLife" | "chairman" | 
+    "ordering" | "hero" | "videoHero" | "ticker" | "stats" | "whyChoose" | "programs" | "newsEvents" | "campusLife" | "chairman" |
     "placements" | "virtualTour" | "styling"
   >("ordering");
 
@@ -1602,11 +1602,13 @@ export default function AdminPortal() {
   // ----------------------------------------------------
   const [footerForm, setFooterForm] = useState<FooterContent>(footerContent);
   const [settingsForm, setSettingsForm] = useState<SiteSettings>(siteSettings);
+  const [videoHeroForm, setVideoHeroForm] = useState(siteSettings.homepageHero);
   const [colorsForm, setColorsForm] = useState<ThemeColors>(themeColors);
   const [navForm, setNavForm] = useState<NavMenuItem[]>(navigationMenu);
 
   React.useEffect(() => setFooterForm(footerContent), [footerContent]);
   React.useEffect(() => setSettingsForm(siteSettings), [siteSettings]);
+  React.useEffect(() => setVideoHeroForm(siteSettings.homepageHero), [siteSettings.homepageHero]);
   React.useEffect(() => setColorsForm(themeColors), [themeColors]);
   React.useEffect(() => setNavForm(navigationMenu), [navigationMenu]);
 
@@ -1625,6 +1627,11 @@ export default function AdminPortal() {
   const saveStyling = () => {
     updateThemeColors(colorsForm);
     notifySave("Homepage styling & theme colors updated live!");
+  };
+
+  const saveVideoHero = () => {
+    updateSiteSettings({ ...siteSettings, homepageHero: videoHeroForm });
+    notifySave("Opening video hero and headline published!");
   };
 
   // ====================================================
@@ -1828,6 +1835,7 @@ export default function AdminPortal() {
       section: "MAIN WEBSITE PAGES",
       subItems: [
         { id: "ordering", label: "Ordering & Visibility", onClick: () => { setActiveTab("homepage"); setActiveHomeSubTab("ordering"); }, isActive: activeTab === "homepage" && activeHomeSubTab === "ordering" },
+        { id: "videoHero", label: "Opening Video & Headline", onClick: () => { setActiveTab("homepage"); setActiveHomeSubTab("videoHero"); }, isActive: activeTab === "homepage" && activeHomeSubTab === "videoHero" },
         { id: "hero", label: "Hero Banner Slides", onClick: () => { setActiveTab("homepage"); setActiveHomeSubTab("hero"); }, isActive: activeTab === "homepage" && activeHomeSubTab === "hero" },
         { id: "ticker", label: "Admissions Alert Ticker", onClick: () => { setActiveTab("homepage"); setActiveHomeSubTab("ticker"); }, isActive: activeTab === "homepage" && activeHomeSubTab === "ticker" },
         { id: "chairman", label: "Chairman / VC Message", onClick: () => { setActiveTab("homepage"); setActiveHomeSubTab("chairman"); }, isActive: activeTab === "homepage" && activeHomeSubTab === "chairman" },
@@ -2025,6 +2033,7 @@ export default function AdminPortal() {
               <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3">
                 {[
                   { id: "ordering", label: "Section Ordering & Visibility" },
+                  { id: "videoHero", label: "Opening Video & Headline" },
                   { id: "hero", label: "1. Hero Carousel" },
                   { id: "ticker", label: "2. Admission Ticker" },
                   { id: "stats", label: "3. Key Statistics" },
@@ -2174,6 +2183,52 @@ export default function AdminPortal() {
                       );
                     })}
                   </div>
+                </div>
+              )}
+
+              {/* Sub-tab: Hero Slides */}
+              {activeHomeSubTab === "videoHero" && (
+                <div className="space-y-5 rounded-2xl border border-gray-200 bg-white p-5 text-left shadow-xs md:p-7">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-sm font-black uppercase text-[#072A6C]">Opening video & headline</h3>
+                      <p className="mt-1 text-xs text-gray-500">Edit the first screen, video, headline styling, and both calls to action. The carousel remains directly below it.</p>
+                    </div>
+                    <button type="button" onClick={saveVideoHero} className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#072A6C] px-4 text-xs font-bold text-white hover:bg-[#0b3b91]"><Save size={14} /> Publish opening screen</button>
+                  </div>
+                  <div className="grid gap-5 xl:grid-cols-2">
+                    <div className="space-y-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                      <h4 className="text-xs font-black uppercase tracking-wide text-slate-700">Video and poster</h4>
+                      <label className="block space-y-1 text-xs font-bold text-slate-700">Video file or URL
+                        <input value={videoHeroForm.videoUrl} onChange={e => setVideoHeroForm(v => ({ ...v, videoUrl: e.target.value }))} placeholder="/campus-intro.mp4 or https://…" className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2.5 font-normal" />
+                      </label>
+                      <VideoField label="Upload replacement video (MP4, WebM, OGG)" value={videoHeroForm.videoUrl} onChange={value => setVideoHeroForm(v => ({ ...v, videoUrl: value }))} poster={videoHeroForm.posterUrl} />
+                      <ImageField label="Video poster / fallback image" value={videoHeroForm.posterUrl} onChange={value => setVideoHeroForm(v => ({ ...v, posterUrl: value }))} aspectRatio="video" recommendedSize="1920 × 1080 px (16:9 HD)" />
+                    </div>
+                    <div className="space-y-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                      <h4 className="text-xs font-black uppercase tracking-wide text-slate-700">Headline and supporting text</h4>
+                      {([
+                        ["Eyebrow", "eyebrow"], ["Headline line 1", "titleLine1"], ["Headline line 2", "titleLine2"], ["Tagline", "tagline"]
+                      ] as const).map(([label, key]) => <label key={key} className="block space-y-1 text-xs font-bold text-slate-700">{label}<input value={videoHeroForm[key]} onChange={e => setVideoHeroForm(v => ({ ...v, [key]: e.target.value }))} className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2.5 font-normal" /></label>)}
+                    </div>
+                    <div className="space-y-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                      <h4 className="text-xs font-black uppercase tracking-wide text-slate-700">Buttons</h4>
+                      {([
+                        ["Primary button label", "primaryButtonLabel"], ["Primary button link", "primaryButtonUrl"], ["Secondary button label", "secondaryButtonLabel"], ["Secondary button link", "secondaryButtonUrl"]
+                      ] as const).map(([label, key]) => <label key={key} className="block space-y-1 text-xs font-bold text-slate-700">{label}<input value={videoHeroForm[key]} onChange={e => setVideoHeroForm(v => ({ ...v, [key]: e.target.value }))} placeholder="/programs or https://…" className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2.5 font-normal" /></label>)}
+                    </div>
+                    <div className="space-y-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                      <h4 className="text-xs font-black uppercase tracking-wide text-slate-700">Typography and contrast</h4>
+                      <label className="block space-y-1 text-xs font-bold text-slate-700">Font family<select value={videoHeroForm.fontFamily} onChange={e => setVideoHeroForm(v => ({ ...v, fontFamily: e.target.value }))} className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2.5 font-normal">{["Poppins", "Arial", "Georgia", "Trebuchet MS", "system-ui"].map(font => <option key={font}>{font}</option>)}</select></label>
+                      <label className="block space-y-1 text-xs font-bold text-slate-700">Headline size <span className="font-normal">{videoHeroForm.titleSize}px</span><input type="range" min="48" max="120" value={videoHeroForm.titleSize} onChange={e => setVideoHeroForm(v => ({ ...v, titleSize: Number(e.target.value) }))} className="mt-2 w-full accent-[#072A6C]" /></label>
+                      <label className="block space-y-1 text-xs font-bold text-slate-700">Headline weight <span className="font-normal">{videoHeroForm.titleWeight}</span><input type="range" min="500" max="900" step="100" value={videoHeroForm.titleWeight} onChange={e => setVideoHeroForm(v => ({ ...v, titleWeight: Number(e.target.value) }))} className="mt-2 w-full accent-[#072A6C]" /></label>
+                      <div className="grid grid-cols-3 gap-3">{([["Headline", "titleColor"], ["Tagline", "bodyColor"], ["Eyebrow", "eyebrowColor"]] as const).map(([label, key]) => <label key={key} className="space-y-1 text-[11px] font-bold text-slate-700">{label}<input type="color" value={videoHeroForm[key]} onChange={e => setVideoHeroForm(v => ({ ...v, [key]: e.target.value }))} className="h-10 w-full cursor-pointer rounded border border-slate-300 bg-white p-1" /></label>)}</div>
+                      <div className="grid grid-cols-2 gap-3">{([["Primary button", "primaryButtonColor"], ["Primary text", "primaryButtonTextColor"], ["Secondary button", "secondaryButtonColor"], ["Secondary text", "secondaryButtonTextColor"]] as const).map(([label, key]) => <label key={key} className="space-y-1 text-[11px] font-bold text-slate-700">{label}<input type="color" value={videoHeroForm[key]} onChange={e => setVideoHeroForm(v => ({ ...v, [key]: e.target.value }))} className="h-10 w-full cursor-pointer rounded border border-slate-300 bg-white p-1" /></label>)}</div>
+                      <label className="block space-y-1 text-xs font-bold text-slate-700">Button corner roundness <span className="font-normal">{videoHeroForm.buttonRadius}px</span><input type="range" min="0" max="999" value={videoHeroForm.buttonRadius} onChange={e => setVideoHeroForm(v => ({ ...v, buttonRadius: Number(e.target.value) }))} className="mt-2 w-full accent-[#072A6C]" /></label>
+                      <label className="block space-y-1 text-xs font-bold text-slate-700">Dark overlay strength <span className="font-normal">{videoHeroForm.overlayOpacity}%</span><input type="range" min="20" max="85" value={videoHeroForm.overlayOpacity} onChange={e => setVideoHeroForm(v => ({ ...v, overlayOpacity: Number(e.target.value) }))} className="mt-2 w-full accent-[#072A6C]" /></label>
+                    </div>
+                  </div>
+                  <div className="flex justify-end border-t border-slate-200 pt-4"><button type="button" onClick={saveVideoHero} className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#072A6C] px-4 text-xs font-bold text-white hover:bg-[#0b3b91]"><Save size={14} /> Publish opening screen</button></div>
                 </div>
               )}
 
