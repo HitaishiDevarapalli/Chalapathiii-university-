@@ -138,6 +138,7 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
 
   const location = useLocation();
   const navigate = useNavigate();
+  const isHome = location.pathname === "/";
 
   const isPageHidden = (name: string, href?: string) => {
     if (name === "Placements" && placementsContent?.hidePage) return true;
@@ -329,6 +330,7 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
+    onScroll();
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -357,10 +359,12 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
   return (
     <>
       <header
-        className={`sticky top-0 z-40 w-full bg-white transition-all duration-300 ${
-          scrolled ? "shadow-md" : ""
+        className={`${isHome ? "fixed" : "sticky"} top-0 z-40 w-full transition-all duration-300 ${
+          isHome && !scrolled
+            ? "bg-white/90 backdrop-blur-md border-transparent shadow-sm"
+            : "bg-white border-gray-200 shadow-md"
         } h-[78px] sm:h-[88px] md:h-[98px] min-[1280px]:h-[105px]`}
-        style={{ borderBottom: "1px solid #E8E8E8" }}
+        style={{ borderBottom: isHome && !scrolled ? "1px solid rgba(255,255,255,0.32)" : "1px solid #E8E8E8" }}
       >
         <div className="max-w-[1440px] mx-auto h-full px-3 min-[1280px]:px-5 flex items-center justify-between gap-2 min-[1280px]:gap-3 relative">
           {/* Logo - Prominently Sized */}

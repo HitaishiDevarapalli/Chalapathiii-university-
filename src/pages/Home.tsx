@@ -407,33 +407,8 @@ export default function Home() {
         url="https://chalapathiuniversity.edu.in/"
         keywords="Chalapathi University, ChalapathiUniversity, Chalapathi university, Chalapathi clg, Chalapathi college, Chalapathi University official website, Chalapathi University Andhra Pradesh, Chalapathi University admissions, Chalapathi University Guntur, best university in Andhra Pradesh, colleges in Guntur"
       />
-      {announcements?.some((announcement) => announcement.title?.trim()) && (
-        <section
-          aria-label="University announcements"
-          className="relative z-20 flex h-11 w-full items-center overflow-hidden bg-[#D71920] text-white shadow-sm"
-        >
-          <div className="announcement-marquee-track flex w-max items-center font-[var(--font-poppins)] text-sm font-bold md:text-base">
-            {[0, 1].map((copy) => (
-              <div
-                key={copy}
-                aria-hidden={copy === 1}
-                className="flex shrink-0 items-center"
-              >
-                {announcements
-                  .filter((announcement) => announcement.title?.trim())
-                  .map((announcement, index) => (
-                    <span key={`${announcement.id || announcement.title}-${index}`} className="whitespace-nowrap px-5">
-                      {announcement.title.trim()}
-                      <span className="mx-4 text-white/70" aria-hidden="true">•</span>
-                    </span>
-                  ))}
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
       {/* ═══ CINEMATIC CAMPUS INTRO ═══ */}
-      <section aria-label="Discover Chalapathi University" className="relative isolate h-[68svh] min-h-[440px] max-h-[820px] w-full overflow-hidden bg-[#072A6C] text-white md:h-[76svh]">
+      <section aria-label="Discover Chalapathi University" className="relative isolate h-[100svh] min-h-[560px] w-full overflow-hidden bg-[#072A6C] text-white">
         <video
           ref={introVideoRef}
           className="absolute inset-0 h-full w-full object-cover"
@@ -474,7 +449,7 @@ export default function Home() {
       <section
         id="homepage-banner"
         aria-label="University highlights"
-        className="relative w-full overflow-hidden bg-white select-none h-[44svh] min-h-[300px] sm:h-[56svh] md:h-[68svh] lg:h-[76svh] max-h-[820px]"
+        className="relative w-full scroll-mt-[105px] overflow-hidden bg-white select-none h-[72svh] min-h-[440px] max-h-[820px]"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -524,12 +499,12 @@ export default function Home() {
           return (
             <div
               key={slide.id}
-              className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${
+              className={`absolute inset-0 bg-cover bg-top transition-opacity duration-1000 ${
                 isActive ? "opacity-100 z-10" : "opacity-0 z-0"
               }`}
               style={{
                 backgroundImage: `url('${optimizeImageUrl(slide.image)}')`,
-                backgroundPosition: "center center"
+                backgroundPosition: "center top"
               }}
             >
               {/* Optional text overlay if title/subtitle are provided */}
@@ -567,6 +542,28 @@ export default function Home() {
           </div>
         )}
       </section>
+
+      {announcements?.some((announcement) => announcement.title?.trim()) && (
+        <section
+          aria-label="University announcements"
+          className="relative z-20 flex h-11 w-full items-center overflow-hidden bg-[#D71920] text-white shadow-sm"
+        >
+          <div className="announcement-marquee-track flex w-max items-center font-[var(--font-poppins)] text-sm font-bold md:text-base">
+            {[0, 1].map((copy) => (
+              <div key={copy} aria-hidden={copy === 1} className="flex shrink-0 items-center">
+                {announcements
+                  .filter((announcement) => announcement.title?.trim())
+                  .map((announcement, index) => (
+                    <span key={`${announcement.id || announcement.title}-${index}`} className="whitespace-nowrap px-5">
+                      {announcement.title.trim()}
+                      <span className="mx-4 text-white/70" aria-hidden="true">•</span>
+                    </span>
+                  ))}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ═══ ADMISSION ALERT TICKER ═══ */}
       {(() => {
