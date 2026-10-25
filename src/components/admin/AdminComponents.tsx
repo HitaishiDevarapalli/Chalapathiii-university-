@@ -697,6 +697,7 @@ interface VideoFieldProps {
   maxSizeMb?: number;
   recommendedLimit?: string;
   poster?: string;
+  stableReplacement?: "homepageIntro";
 }
 
 export const VideoField: React.FC<VideoFieldProps> = ({
@@ -707,11 +708,13 @@ export const VideoField: React.FC<VideoFieldProps> = ({
   onSizeChange,
   maxSizeMb = 50,
   recommendedLimit = "Max 50.0 MB (MP4, WebM, OGG)",
-  poster
+  poster,
+  stableReplacement
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [previewVersion, setPreviewVersion] = useState(() => Date.now());
   const [videoStatus, setVideoStatus] = useState<{
     isValid: boolean;
     sizeMbStr: string;
@@ -731,6 +734,10 @@ export const VideoField: React.FC<VideoFieldProps> = ({
         errorMsg: "Invalid format. Please upload MP4, WebM, or OGG video."
       });
       alert("Please upload a valid video file (MP4, WebM, OGG).");
+      return;
+    }
+    if (stableReplacement === "homepageIntro" && file.type !== "video/mp4") {
+      alert("The homepage keeps a fixed .mp4 URL. Please upload an MP4 video so the URL stays the same.");
       return;
     }
 
@@ -755,11 +762,13 @@ export const VideoField: React.FC<VideoFieldProps> = ({
     setIsUploading(true);
     try {
       const body = new FormData();
+      if (stableReplacement) body.append("slot", stableReplacement);
       body.append("file", file);
       const response = await fetch("/api/upload", { method: "POST", credentials: "same-origin", body });
       const result = await response.json().catch(() => ({}));
       if (!response.ok || !result.url) throw new Error(result.error || "Video upload failed. Please retry.");
       onChange(result.url, calculatedMb);
+      setPreviewVersion(value => Math.max(Date.now(), value + 1));
       if (onSizeChange) onSizeChange(calculatedMb);
       setVideoStatus({ isValid: true, sizeMbStr: calculatedMb });
     } catch (error: any) {
@@ -829,7 +838,8 @@ export const VideoField: React.FC<VideoFieldProps> = ({
         <div className="md:col-span-5 aspect-video w-full rounded-xl bg-black overflow-hidden relative shadow-md flex items-center justify-center border border-gray-300">
           {value ? (
             <video
-              src={value}
+              key={`${value}-${previewVersion}`}
+              src={`${stableReplacement === "homepageIntro" && value === "/chalapathi-campus-intro.mp4" ? "/uploads/chalapathi-campus-intro.mp4" : value}${(stableReplacement === "homepageIntro" || previewVersion > 0) ? `${value.includes("?") ? "&" : "?"}preview=${previewVersion}` : ""}`}
               poster={poster}
               controls
               muted
@@ -872,7 +882,7 @@ export const VideoField: React.FC<VideoFieldProps> = ({
                   const file = e.target.files?.[0];
                   if (file) processVideoFile(file);
                 }}
-                accept="video/mp4,video/webm,video/ogg"
+                accept={stableReplacement === "homepageIntro" ? "video/mp4" : "video/mp4,video/webm,video/ogg"}
                 className="hidden"
               />
               <button

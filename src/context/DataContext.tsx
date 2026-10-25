@@ -473,6 +473,7 @@ export interface SiteSettings {
 
 export interface HomepageVideoHeroSettings {
   videoUrl: string;
+  videoVersion: string;
   posterUrl: string;
   eyebrow: string;
   titleLine1: string;
@@ -995,6 +996,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   splashVideoUrl: "/chalapathi_logo_intro.mp4",
   homepageHero: {
     videoUrl: "/chalapathi-campus-intro.mp4",
+    videoVersion: "default",
     posterUrl: "/campus_hero.webp",
     eyebrow: "A LEGACY OF EXCELLENCE",
     titleLine1: "CHALAPATHI",

@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { upload } from "../middleware/upload";
+import path from "path";
+import { upload, uploadsDirectory } from "../middleware/upload";
 import fs from "fs";
 import { requireAuth } from "../middleware/auth";
 
@@ -23,6 +24,23 @@ router.post("/", upload.single("file"), (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
+    }
+    if (req.body?.slot === "homepageIntro") {
+      if (req.file.mimetype !== "video/mp4" || path.extname(req.file.originalname).toLowerCase() !== ".mp4") {
+        fs.unlinkSync(req.file.path);
+        return res.status(400).json({ error: "The homepage intro video must be an MP4 file." });
+      }
+      const stablePath = path.join(uploadsDirectory, "chalapathi-campus-intro.mp4");
+      fs.renameSync(req.file.path, stablePath);
+      res.setHeader("Cache-Control", "no-store");
+      return res.json({
+        success: true,
+        url: "/chalapathi-campus-intro.mp4",
+        filename: "chalapathi-campus-intro.mp4",
+        originalName: req.file.originalname,
+        size: req.file.size,
+        mimetype: req.file.mimetype,
+      });
     }
     validateImage(req.file);
     const fileUrl = `/uploads/${req.file.filename}`;

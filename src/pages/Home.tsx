@@ -138,6 +138,12 @@ export default function Home() {
     siteSettings
   } = useData();
   const introHero = siteSettings.homepageHero;
+  const introVideoBase = introHero.videoUrl === "/chalapathi-campus-intro.mp4"
+    ? "/uploads/chalapathi-campus-intro.mp4"
+    : introHero.videoUrl;
+  const introVideoSource = introVideoBase.startsWith("/")
+    ? `${introVideoBase}${introVideoBase.includes("?") ? "&" : "?"}v=${encodeURIComponent(introHero.videoVersion || "1")}`
+    : introVideoBase;
   const campusCards = campusLifeContent?.["/campus-life"]?.highlights?.filter(item => item.title || item.desc) || [];
   const publishedCampusVideos = (contextCampusVideos || []).filter(item => item.url);
   const navigate = useNavigate();
@@ -410,9 +416,9 @@ export default function Home() {
       {/* ═══ CINEMATIC CAMPUS INTRO ═══ */}
       <section aria-label="Discover Chalapathi University" className="relative isolate h-[100svh] min-h-[560px] w-full overflow-hidden bg-[#072A6C] text-white">
         <video
-          key={introHero.videoUrl}
+          key={`${introHero.videoUrl}-${introHero.videoVersion}`}
           className="absolute inset-0 h-full w-full object-cover"
-          src={introHero.videoUrl || "/chalapathi-campus-intro.mp4"}
+          src={introVideoSource || "/uploads/chalapathi-campus-intro.mp4"}
           poster={introHero.posterUrl || undefined}
           autoPlay
           muted

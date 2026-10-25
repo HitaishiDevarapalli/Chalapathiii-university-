@@ -1630,7 +1630,9 @@ export default function AdminPortal() {
   };
 
   const saveVideoHero = async () => {
-    const published = await updateSiteSettings({ ...siteSettings, homepageHero: videoHeroForm });
+    const updatedHero = { ...videoHeroForm, videoVersion: String(Date.now()) };
+    setVideoHeroForm(updatedHero);
+    const published = await updateSiteSettings({ ...siteSettings, homepageHero: updatedHero });
     notifySave(published ? "Opening video hero and headline published!" : "Saved on this device, but server publishing failed. Check the connection and retry.");
   };
 
@@ -2202,7 +2204,7 @@ export default function AdminPortal() {
                       <label className="block space-y-1 text-xs font-bold text-slate-700">Video file or URL
                         <input value={videoHeroForm.videoUrl} onChange={e => setVideoHeroForm(v => ({ ...v, videoUrl: e.target.value }))} placeholder="/campus-intro.mp4 or https://…" className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2.5 font-normal" />
                       </label>
-                      <VideoField label="Upload replacement video (MP4, WebM, OGG)" value={videoHeroForm.videoUrl} onChange={value => setVideoHeroForm(v => ({ ...v, videoUrl: value }))} poster={videoHeroForm.posterUrl} />
+                      <VideoField label="Upload replacement MP4 (keeps the existing video URL)" value={videoHeroForm.videoUrl} onChange={value => setVideoHeroForm(v => ({ ...v, videoUrl: value }))} poster={videoHeroForm.posterUrl} recommendedLimit="Max 50 MB (MP4; stable homepage URL)" stableReplacement="homepageIntro" />
                       <ImageField label="Video poster / fallback image" value={videoHeroForm.posterUrl} onChange={value => setVideoHeroForm(v => ({ ...v, posterUrl: value }))} aspectRatio="video" recommendedSize="1920 × 1080 px (16:9 HD)" />
                     </div>
                     <div className="space-y-4 rounded-xl border border-slate-200 bg-slate-50 p-4">

@@ -1,4 +1,5 @@
 import path from "path";
+import fs from "fs";
 import dotenv from "dotenv";
 dotenv.config();
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
@@ -78,6 +79,15 @@ app.use(
 );
 
 app.use("/api", adminApiGuard);
+app.get("/uploads/chalapathi-campus-intro.mp4", (req, res, next) => {
+  const stablePath = path.join(uploadsDirectory, "chalapathi-campus-intro.mp4");
+  const fallbackPath = path.resolve(__dirname, "../../public/chalapathi-campus-intro.mp4");
+  const filePath = fs.existsSync(stablePath) ? stablePath : fallbackPath;
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.sendFile(filePath, { cacheControl: false }, error => { if (error) next(error); });
+});
+
 app.use("/uploads", express.static(uploadsDirectory, {
   maxAge: "30d", immutable: true, dotfiles: "ignore",
   setHeaders: res => { res.setHeader("X-Content-Type-Options", "nosniff"); }
