@@ -136,6 +136,8 @@ export default function Home() {
     homepageSections,
     aboutContent
   } = useData();
+  const [introMuted, setIntroMuted] = useState(true);
+  const introVideoRef = useRef<HTMLVideoElement>(null);
   const campusCards = campusLifeContent?.["/campus-life"]?.highlights?.filter(item => item.title || item.desc) || [];
   const publishedCampusVideos = (contextCampusVideos || []).filter(item => item.url);
   const navigate = useNavigate();
@@ -430,9 +432,49 @@ export default function Home() {
           </div>
         </section>
       )}
+      {/* ═══ CINEMATIC CAMPUS INTRO ═══ */}
+      <section aria-label="Discover Chalapathi University" className="relative isolate h-[68svh] min-h-[440px] max-h-[820px] w-full overflow-hidden bg-[#072A6C] text-white md:h-[76svh]">
+        <video
+          ref={introVideoRef}
+          className="absolute inset-0 h-full w-full object-cover"
+          src="/chalapathi-campus-intro.mp4"
+          poster="/campus_hero.webp"
+          autoPlay
+          muted={introMuted}
+          playsInline
+          loop
+          preload="auto"
+          aria-label="A cinematic view of Chalapathi University"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/25 to-black/5" aria-hidden="true" />
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/45 to-transparent" aria-hidden="true" />
+        <div className="absolute inset-x-0 bottom-0 mx-auto flex w-full max-w-[1440px] items-end justify-between gap-6 px-5 pb-10 sm:px-8 md:pb-14 lg:px-12">
+          <div className="max-w-3xl">
+            <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.22em] text-[#D4AF37] sm:text-sm">A place to discover what’s possible</p>
+            <h1 className="text-3xl font-black leading-[1.04] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">A future shaped<br className="hidden sm:block" /> by possibility.</h1>
+            <p className="mt-4 max-w-xl text-sm leading-relaxed text-white/85 sm:text-base md:text-lg">Explore a vibrant campus where ambition, ideas and opportunity come together.</p>
+            <a href="#homepage-banner" className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#D4AF37] px-5 py-3 text-sm font-extrabold text-[#072A6C] shadow-lg transition-transform hover:scale-[1.03]">Discover Chalapathi <ArrowRight size={16} /></a>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              const nextMuted = !introMuted;
+              setIntroMuted(nextMuted);
+              if (introVideoRef.current) introVideoRef.current.muted = nextMuted;
+            }}
+            className="mb-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/40 bg-black/25 text-white backdrop-blur-md transition hover:bg-black/50"
+            aria-label={introMuted ? "Turn campus video sound on" : "Mute campus video"}
+          >
+            {introMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+          </button>
+        </div>
+      </section>
+
       {/* ═══ HERO SECTION (Responsive height for mobile & desktop) ═══ */}
       <section
-        className="relative w-full overflow-hidden bg-white select-none h-[220px] min-[375px]:h-[240px] min-[420px]:h-[270px] min-[520px]:h-[340px] sm:h-[440px] md:h-[580px] lg:h-[720px]"
+        id="homepage-banner"
+        aria-label="University highlights"
+        className="relative w-full overflow-hidden bg-white select-none h-[44svh] min-h-[300px] sm:h-[56svh] md:h-[68svh] lg:h-[76svh] max-h-[820px]"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -482,12 +524,12 @@ export default function Home() {
           return (
             <div
               key={slide.id}
-              className={`absolute inset-0 bg-cover bg-top transition-opacity duration-1000 ${
+              className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${
                 isActive ? "opacity-100 z-10" : "opacity-0 z-0"
               }`}
               style={{
                 backgroundImage: `url('${optimizeImageUrl(slide.image)}')`,
-                backgroundPosition: "center top"
+                backgroundPosition: "center center"
               }}
             >
               {/* Optional text overlay if title/subtitle are provided */}
@@ -524,45 +566,6 @@ export default function Home() {
             ))}
           </div>
         )}
-      </section>
-
-      <section className="bg-white border-b border-gray-100">
-        <div className="max-w-[1120px] mx-auto px-5 py-10 text-center">
-          <p className="text-[12px] font-[800] uppercase tracking-[0.18em] text-[#D4AF37] mb-3">
-            Official University Website
-          </p>
-          <h1 className="text-[30px] md:text-[42px] font-[900] text-[#072A6C] leading-tight">
-            Chalapathi University in Andhra Pradesh
-          </h1>
-          <p className="mt-4 text-[15px] md:text-[17px] leading-7 text-gray-700 font-[500]">
-            Chalapathi University, Guntur, Andhra Pradesh, offers undergraduate, postgraduate, and research programs in Engineering, Computer Science, Artificial Intelligence, Data Science, Management, Pharmacy, Agriculture, Law, Sciences, MCA, MBA, M.Tech, and Ph.D pathways with placement training and industry-connected learning.
-          </p>
-          <p className="mt-3 text-[14px] md:text-[16px] leading-7 text-gray-600 font-[500]">
-            Students searching for ChalapathiUniversity, Chalapathi University, Chalapathi college, or Chalapathi clg can use this official website to find admissions, eligibility, campus facilities, academic departments, student life, news, events, scholarships, and contact details for the Andhra Pradesh campus.
-          </p>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-            <Link to="/admissions" className="text-[12px] font-[800] text-[#072A6C] hover:text-[#D4AF37] underline underline-offset-4">
-              Admissions 2026-27
-            </Link>
-            <Link to="/academics/programmes" className="text-[12px] font-[800] text-[#072A6C] hover:text-[#D4AF37] underline underline-offset-4">
-              Programs Offered
-            </Link>
-            <Link to="/placements" className="text-[12px] font-[800] text-[#072A6C] hover:text-[#D4AF37] underline underline-offset-4">
-              Placements
-            </Link>
-            <Link to="/contact" className="text-[12px] font-[800] text-[#072A6C] hover:text-[#D4AF37] underline underline-offset-4">
-              Contact Chalapathi University
-            </Link>
-            <a
-              href="https://www.google.com/maps/place/Chalapathi+Institute+of+Technology/@16.3752188,80.2858169,17z"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[12px] font-[800] text-[#072A6C] hover:text-[#D4AF37] underline underline-offset-4"
-            >
-              Google Maps
-            </a>
-          </div>
-        </div>
       </section>
 
       {/* ═══ ADMISSION ALERT TICKER ═══ */}
