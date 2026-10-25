@@ -2183,7 +2183,7 @@ export default function AdminPortal() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-sm font-black text-[#072A6C] uppercase">Hero Banner Slides Carousel</h3>
-                      <p className="text-xs text-gray-500">Add or replace full-width banner slides displayed at top of homepage</p>
+                      <p className="text-xs text-gray-500">Manage the wide homepage carousel shown immediately after the looping campus video. Use 1920 × 960 px images for a clean 2:1 fit.</p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                       <button
@@ -2278,7 +2278,7 @@ export default function AdminPortal() {
                             notifySave("Slide banner image reset to default!");
                           }}
                           onChange={(val) => handleUpdateHeroSlide(idx, "image", val)}
-                          aspectRatio="banner"
+                          aspectRatio="carousel"
                         />
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

@@ -329,11 +329,19 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
   };
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
+    const onScroll = () => {
+      const headerHeight = window.innerWidth >= 1280 ? 105 : window.innerWidth >= 640 ? 88 : 78;
+      const threshold = isHome ? Math.max(40, window.innerHeight - headerHeight) : 40;
+      setScrolled(window.scrollY >= threshold);
+    };
     onScroll();
     window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [isHome]);
 
   useEffect(() => {
     setMobileOpen(false);
@@ -358,30 +366,36 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
 
   return (
     <>
+      {isHome && !scrolled && (
+        <style>{`
+          .home-video-header .header-desktop-navigation,
+          .home-video-header .header-desktop-actions { display: none !important; }
+        `}</style>
+      )}
       <header
-        className={`${isHome ? "fixed" : "sticky"} top-0 z-40 w-full transition-all duration-300 ${
+        className={`${isHome ? "fixed" : "sticky"} ${isHome && !scrolled ? "home-video-header" : ""} top-0 z-40 w-full transition-all duration-300 ${
           isHome && !scrolled
-            ? "bg-white/90 backdrop-blur-md border-transparent shadow-sm"
+            ? "bg-transparent border-transparent shadow-none"
             : "bg-white border-gray-200 shadow-md"
         } h-[78px] sm:h-[88px] md:h-[98px] min-[1280px]:h-[105px]`}
-        style={{ borderBottom: isHome && !scrolled ? "1px solid rgba(255,255,255,0.32)" : "1px solid #E8E8E8" }}
+        style={{ borderBottom: isHome && !scrolled ? "1px solid transparent" : "1px solid #E8E8E8" }}
       >
         <div className="max-w-[1440px] mx-auto h-full px-3 min-[1280px]:px-5 flex items-center justify-between gap-2 min-[1280px]:gap-3 relative">
           {/* Logo - Prominently Sized */}
           <Link to="/" className="flex items-center shrink-0 py-1">
             <img
-              src={siteSettings?.logoUrl || "/logo.png?v=3"}
+              src={isHome && !scrolled && !siteSettings?.logoUrl ? "/logo.svg" : siteSettings?.logoUrl || "/logo.png?v=3"}
               alt={siteSettings?.universityName || "Chalapathi University"}
               width={800}
               height={359}
-              className="h-12 sm:h-14 md:h-16 min-[1280px]:h-18 min-[1440px]:h-20 w-auto max-w-[260px] sm:max-w-[320px] object-contain no-lift transition-all duration-300"
+              className={`h-12 sm:h-14 md:h-16 min-[1280px]:h-18 min-[1440px]:h-20 w-auto max-w-[260px] sm:max-w-[320px] object-contain no-lift transition-all duration-300 ${isHome && !scrolled && !siteSettings?.logoUrl ? "brightness-0 invert" : ""}`}
               loading="eager"
               decoding="async"
             />
           </Link>
 
           {/* Center nav */}
-          <nav className="hidden min-[1440px]:flex items-center justify-center gap-0.5 min-[1280px]:gap-1 min-[1440px]:gap-1 h-full flex-1 mx-auto">
+          <nav className="header-desktop-navigation hidden min-[1440px]:flex items-center justify-center gap-0.5 min-[1280px]:gap-1 min-[1440px]:gap-1 h-full flex-1 mx-auto">
             {visibleNavLinks.map((name) => {
               if (name === "Syllabus & Regulations") {
                 return <SyllabusRegulationsMenu key={name} />;
@@ -720,7 +734,7 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
           </nav>
 
           {/* Right CTA */}
-          <div className="hidden min-[1440px]:flex items-center gap-2 min-[1280px]:gap-3 shrink-0 z-10 bg-white">
+          <div className="header-desktop-actions hidden min-[1440px]:flex items-center gap-2 min-[1280px]:gap-3 shrink-0 z-10 bg-white">
             <Link
               to="/admissions/apply"
               className="h-9 min-[1280px]:h-10 px-3.5 min-[1280px]:px-4 text-xs min-[1280px]:text-xs min-[1440px]:text-sm bg-[#D4AF37] hover:bg-[#C9A84C] text-white font-bold rounded-[10px] min-[1280px]:rounded-[12px] inline-flex items-center justify-center transition-colors shadow-sm font-[var(--font-poppins)] whitespace-nowrap"
@@ -730,10 +744,10 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
           </div>
 
           {/* Mobile menu trigger */}
-          <div className="flex min-[1440px]:hidden items-center gap-1">
+          <div className={`${isHome && !scrolled ? "flex" : "flex min-[1440px]:hidden"} items-center gap-1`}>
             <button 
               onClick={() => setMobileOpen(!mobileOpen)} 
-              className="p-2 text-[#222222] hover:text-[#D4AF37] transition-colors cursor-pointer outline-none"
+              className={`p-2 ${isHome && !scrolled ? "text-white drop-shadow" : "text-[#222222]"} hover:text-[#D4AF37] transition-colors cursor-pointer outline-none`}
               aria-label="Toggle mobile menu"
             >
               {mobileOpen ? <X size={24} /> : <Menu size={24} />}

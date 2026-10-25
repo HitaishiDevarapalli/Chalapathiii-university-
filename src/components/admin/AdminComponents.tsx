@@ -13,7 +13,7 @@ interface ImageFieldProps {
   onAltChange?: (alt: string) => void;
   descriptionPrompt?: string;
   onPromptChange?: (prompt: string) => void;
-  aspectRatio?: "square" | "video" | "portrait" | "banner" | "wide";
+  aspectRatio?: "square" | "video" | "portrait" | "banner" | "carousel" | "wide";
   recommendedSize?: string;
   placeholder?: string;
   compact?: boolean;
@@ -51,6 +51,7 @@ export const ImageField: React.FC<ImageFieldProps> = ({
   const targetSize = recommendedSize || (() => {
     switch (aspectRatio) {
       case "banner": return "1920 × 600 px (Banner)";
+      case "carousel": return "1920 × 960 px (Homepage carousel, 2:1)";
       case "video": return "1200 × 675 px (16:9 HD)";
       case "portrait": return "400 × 500 px (Portrait)";
       case "square": return "500 × 500 px (1:1 Square)";
@@ -181,6 +182,7 @@ export const ImageField: React.FC<ImageFieldProps> = ({
       case "square": return "aspect-square w-full max-h-44 max-w-[180px] mx-auto";
       case "portrait": return "aspect-[3/4] w-full max-h-48 max-w-[160px] mx-auto";
       case "banner": return "aspect-[21/9] w-full max-h-32";
+      case "carousel": return "aspect-[2/1] w-full max-h-36";
       case "video": return "aspect-video w-full max-h-36";
       default: return "aspect-[16/10] w-full max-h-36";
     }

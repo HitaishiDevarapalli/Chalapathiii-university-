@@ -136,8 +136,6 @@ export default function Home() {
     homepageSections,
     aboutContent
   } = useData();
-  const [introMuted, setIntroMuted] = useState(true);
-  const introVideoRef = useRef<HTMLVideoElement>(null);
   const campusCards = campusLifeContent?.["/campus-life"]?.highlights?.filter(item => item.title || item.desc) || [];
   const publishedCampusVideos = (contextCampusVideos || []).filter(item => item.url);
   const navigate = useNavigate();
@@ -410,12 +408,11 @@ export default function Home() {
       {/* ═══ CINEMATIC CAMPUS INTRO ═══ */}
       <section aria-label="Discover Chalapathi University" className="relative isolate h-[100svh] min-h-[560px] w-full overflow-hidden bg-[#072A6C] text-white">
         <video
-          ref={introVideoRef}
           className="absolute inset-0 h-full w-full object-cover"
           src="/chalapathi-campus-intro.mp4"
           poster="/campus_hero.webp"
           autoPlay
-          muted={introMuted}
+          muted
           playsInline
           loop
           preload="auto"
@@ -430,18 +427,6 @@ export default function Home() {
             <p className="mt-4 max-w-xl text-sm leading-relaxed text-white/85 sm:text-base md:text-lg">Explore a vibrant campus where ambition, ideas and opportunity come together.</p>
             <a href="#homepage-banner" className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#D4AF37] px-5 py-3 text-sm font-extrabold text-[#072A6C] shadow-lg transition-transform hover:scale-[1.03]">Discover Chalapathi <ArrowRight size={16} /></a>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              const nextMuted = !introMuted;
-              setIntroMuted(nextMuted);
-              if (introVideoRef.current) introVideoRef.current.muted = nextMuted;
-            }}
-            className="mb-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/40 bg-black/25 text-white backdrop-blur-md transition hover:bg-black/50"
-            aria-label={introMuted ? "Turn campus video sound on" : "Mute campus video"}
-          >
-            {introMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-          </button>
         </div>
       </section>
 
@@ -449,98 +434,47 @@ export default function Home() {
       <section
         id="homepage-banner"
         aria-label="University highlights"
-        className="relative w-full scroll-mt-[105px] overflow-hidden bg-white select-none h-[72svh] min-h-[440px] max-h-[820px]"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+        className="scroll-mt-[105px] bg-white px-4 py-7 sm:px-6 md:py-10"
       >
-        <style dangerouslySetInnerHTML={{__html: `
-          @keyframes slideEntrance {
-            0% {
-              opacity: 0;
-              transform: translateY(40px);
-              filter: blur(8px);
-            }
-            100% {
-              opacity: 1;
-              transform: translateY(0);
-              filter: blur(0);
-            }
-          }
-          @keyframes letter-fade {
-            0% { opacity: 0; }
-            100% { opacity: 1; }
-          }
-          .animate-letter-fade {
-            opacity: 0;
-            animation: letter-fade 300ms ease-out forwards;
-          }
-          @keyframes tagline-fade {
-            0% { opacity: 0; transform: translateY(10px); }
-            100% { opacity: 1; transform: translateY(0); }
-          }
-          .animate-tagline-fade {
-            opacity: 0;
-            animation: tagline-fade 500ms ease-out forwards;
-          }
-          @keyframes scale-width {
-            0% { transform: scaleX(0); }
-            100% { transform: scaleX(1); }
-          }
-          .animate-scale-width {
-            transform: scaleX(0);
-            animation: scale-width 600ms cubic-bezier(0.25, 1, 0.5, 1) forwards;
-          }
-        `}} />
+        <div
+          className="relative mx-auto aspect-[16/9] min-h-[340px] max-h-[760px] w-full max-w-[1920px] select-none overflow-hidden bg-slate-100 shadow-[0_24px_60px_rgba(7,42,108,0.16)] md:aspect-[2/1]"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          <style dangerouslySetInnerHTML={{__html: `
+            @keyframes slideEntrance { 0% { opacity: 0; transform: translateY(24px); } 100% { opacity: 1; transform: translateY(0); } }
+          `}} />
+          {visibleHeroSlides.map((slide, index) => {
+            const isActive = currentSlide === index;
+            return (
+              <div
+                key={slide.id}
+                className={`absolute inset-0 bg-cover bg-top transition-opacity duration-700 ${isActive ? "z-10 opacity-100" : "z-0 opacity-0"}`}
+                style={{ backgroundImage: `url('${optimizeImageUrl(slide.image)}')`, backgroundPosition: "center top" }}
+              >
+                {(slide.title || slide.subtitle) && (
+                  <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/25 p-5 text-center">
+                    {slide.title && <h2 className="mb-2 animate-[slideEntrance_0.6s_ease-out] text-3xl font-black uppercase tracking-wider text-white md:text-5xl lg:text-6xl">{slide.title}</h2>}
+                    {slide.subtitle && <p className="animate-[slideEntrance_0.8s_ease-out] text-sm font-bold uppercase tracking-widest text-gray-100 md:text-lg lg:text-xl">{slide.subtitle}</p>}
+                  </div>
+                )}
+              </div>
+            );
+          })}
 
-        {/* Dynamic slides carousel */}
-        {visibleHeroSlides && visibleHeroSlides.length > 0 && visibleHeroSlides.map((slide, index) => {
-          const isActive = currentSlide === index;
-          return (
-            <div
-              key={slide.id}
-              className={`absolute inset-0 bg-cover bg-top transition-opacity duration-1000 ${
-                isActive ? "opacity-100 z-10" : "opacity-0 z-0"
-              }`}
-              style={{
-                backgroundImage: `url('${optimizeImageUrl(slide.image)}')`,
-                backgroundPosition: "center top"
-              }}
-            >
-              {/* Optional text overlay if title/subtitle are provided */}
-              {(slide.title || slide.subtitle) && (
-                <div className="absolute inset-0 bg-black/35 flex flex-col items-center justify-center text-center p-5 z-20">
-                  {slide.title && (
-                    <h2 className="text-white text-3xl md:text-5xl lg:text-6xl font-black uppercase tracking-wider mb-2 animate-[slideEntrance_0.8s_ease-out]">
-                      {slide.title}
-                    </h2>
-                  )}
-                  {slide.subtitle && (
-                    <p className="text-gray-100 text-sm md:text-lg lg:text-xl font-bold uppercase tracking-widest animate-[slideEntrance_1s_ease-out]">
-                      {slide.subtitle}
-                    </p>
-                  )}
-                </div>
-              )}
+          {visibleHeroSlides.length > 1 && <>
+            <button type="button" aria-label="Previous banner" onClick={() => { setCurrentSlide((prev) => (prev - 1 + slidesCount) % slidesCount); setProgress(0); }} className="absolute left-4 top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-[#D4AF37]/95 text-white shadow-lg transition hover:scale-105 hover:bg-[#c49f2e] md:left-6 md:h-14 md:w-14">
+              <ChevronLeft size={25} strokeWidth={2.5} />
+            </button>
+            <button type="button" aria-label="Next banner" onClick={() => { setCurrentSlide((prev) => (prev + 1) % slidesCount); setProgress(0); }} className="absolute right-4 top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-[#D4AF37]/95 text-white shadow-lg transition hover:scale-105 hover:bg-[#c49f2e] md:right-6 md:h-14 md:w-14">
+              <ChevronRight size={25} strokeWidth={2.5} />
+            </button>
+            <div className="absolute bottom-5 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2 rounded-full bg-black/25 px-3 py-2 backdrop-blur-sm">
+              {visibleHeroSlides.map((_, idx) => <button key={idx} type="button" aria-label={`Show banner ${idx + 1}`} aria-current={currentSlide === idx} onClick={() => handleDotClick(idx)} className={`h-2.5 rounded-full transition-all duration-300 ${currentSlide === idx ? "w-7 bg-[#D4AF37]" : "w-2.5 bg-white/70 hover:bg-white"}`} />)}
             </div>
-          );
-        })}
-
-        {/* Slider Indicator Dots (only show if slides > 1) */}
-        {visibleHeroSlides && visibleHeroSlides.length > 1 && (
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2.5 z-30">
-            {visibleHeroSlides.map((_, idx) => (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => handleDotClick(idx)}
-                className={`h-2.5 rounded-full transition-all duration-300 border-none outline-none cursor-pointer ${
-                  currentSlide === idx ? "bg-[#D4AF37] w-6" : "bg-white/50 w-2.5 hover:bg-white"
-                }`}
-              />
-            ))}
-          </div>
-        )}
+          </>}
+        </div>
       </section>
 
       {announcements?.some((announcement) => announcement.title?.trim()) && (
