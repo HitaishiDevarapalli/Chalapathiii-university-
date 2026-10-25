@@ -388,18 +388,18 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
           {/* Logo - Prominently Sized */}
           <Link to="/" className="flex items-center shrink-0 py-1">
             <img
-              src={isHome && !scrolled ? "/logo.svg" : siteSettings?.logoUrl || "/logo.png?v=3"}
+              src={isHome && !scrolled ? "/logo-video.png" : siteSettings?.logoUrl || "/logo.png?v=3"}
               alt={siteSettings?.universityName || "Chalapathi University"}
               width={800}
               height={359}
-              className={`h-12 sm:h-14 md:h-16 min-[1280px]:h-18 min-[1440px]:h-20 w-auto max-w-[260px] sm:max-w-[320px] object-contain no-lift transition-all duration-300 ${isHome && !scrolled ? "brightness-0 invert" : ""}`}
+              className={`h-12 sm:h-14 md:h-16 min-[1280px]:h-18 min-[1440px]:h-20 w-auto max-w-[220px] min-[1440px]:max-w-[300px] object-contain no-lift transition-all duration-300 ${isHome && !scrolled ? "brightness-0 invert" : ""}`}
               loading="eager"
               decoding="async"
             />
           </Link>
 
           {/* Center nav */}
-          <nav className="header-desktop-navigation hidden min-[1440px]:flex items-center justify-center gap-0.5 min-[1280px]:gap-1 min-[1440px]:gap-1 h-full flex-1 mx-auto">
+          <nav className="header-desktop-navigation hidden min-[1200px]:flex items-center justify-center gap-0 min-[1280px]:gap-0.5 min-[1440px]:gap-1 h-full flex-1 mx-auto">
             {visibleNavLinks.map((name) => {
               if (name === "Syllabus & Regulations") {
                 return <SyllabusRegulationsMenu key={name} />;
@@ -738,7 +738,7 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
           </nav>
 
           {/* Right CTA */}
-          <div className="header-desktop-actions hidden min-[1440px]:flex items-center gap-2 min-[1280px]:gap-3 shrink-0 z-10 bg-white">
+          <div className="header-desktop-actions hidden min-[1200px]:flex items-center gap-2 min-[1280px]:gap-3 shrink-0 z-10 bg-white">
             <Link
               to="/admissions/apply"
               className="h-9 min-[1280px]:h-10 px-3.5 min-[1280px]:px-4 text-xs min-[1280px]:text-xs min-[1440px]:text-sm bg-[#D4AF37] hover:bg-[#C9A84C] text-white font-bold rounded-[10px] min-[1280px]:rounded-[12px] inline-flex items-center justify-center transition-colors shadow-sm font-[var(--font-poppins)] whitespace-nowrap"
@@ -748,10 +748,10 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
           </div>
 
           {/* Mobile menu trigger */}
-          <div className="flex min-[1440px]:hidden items-center gap-1">
+          <div className="flex min-[1200px]:hidden items-center gap-1">
             <button 
               onClick={() => setMobileOpen(!mobileOpen)} 
-              className={`p-2 ${isHome && !scrolled ? "text-white drop-shadow" : "text-[#222222]"} hover:text-[#D4AF37] transition-colors cursor-pointer outline-none`}
+              className={`p-2 ${isHome && !scrolled ? "text-white drop-shadow hover:text-white" : "text-[#222222] hover:text-[#D4AF37]"} transition-colors cursor-pointer outline-none`}
               aria-label="Toggle mobile menu"
             >
               {mobileOpen ? <X size={24} /> : <Menu size={24} />}
