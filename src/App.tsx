@@ -42,6 +42,7 @@ const IconMap: Record<string, React.ComponentType<any>> = {
 
 function AppContent() {
   const location = useLocation();
+  const initialLocationKey = React.useRef(location.key);
   const navigate = useNavigate();
   const isAdminPage = location.pathname.startsWith("/admin");
   const isApplyPage = location.pathname.includes("apply");
@@ -129,7 +130,8 @@ function AppContent() {
 
   // Automatic popup trigger on page load (Public Pages Only, respects Admin popup settings)
   useEffect(() => {
-    if (!isAdminPage && !suppressEntryOverlays && !showSplash && activePopup && activePopup.autoOpen !== false) {
+    const isFreshPageLoad = location.key === initialLocationKey.current;
+    if (isFreshPageLoad && !isAdminPage && !suppressEntryOverlays && !showSplash && activePopup && activePopup.autoOpen !== false) {
       const delayMs = (activePopup.autoOpenDelay ?? 1) * 1000;
       const timer = setTimeout(() => {
         setShowEnquiryModal(true);
