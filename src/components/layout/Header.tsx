@@ -368,9 +368,11 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
     <>
       {isHome && !scrolled && (
         <style>{`
-          .home-video-header .header-desktop-navigation :is(a, button) {
+          .home-video-header .header-desktop-navigation > a,
+          .home-video-header .header-desktop-navigation > div > a,
+          .home-video-header .header-desktop-navigation > div > button {
             color: #fff !important;
-            text-shadow: 0 1px 8px rgba(0,0,0,.5);
+            text-shadow: 0 1px 10px rgba(0,0,0,.75);
           }
           .home-video-header .header-desktop-actions { background: transparent !important; }
           .home-video-header .header-desktop-actions > button { color: #fff !important; }
@@ -379,7 +381,7 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
       <header
         className={`${isHome ? "fixed" : "sticky"} ${isHome && !scrolled ? "home-video-header" : ""} top-0 z-40 w-full transition-all duration-300 ${
           isHome && !scrolled
-            ? "bg-transparent border-transparent shadow-none"
+            ? "bg-black/20 backdrop-blur-[2px] border-transparent shadow-none"
             : "bg-white border-gray-200 shadow-md"
         } h-[78px] sm:h-[88px] md:h-[98px] min-[1280px]:h-[105px]`}
         style={{ borderBottom: isHome && !scrolled ? "1px solid transparent" : "1px solid #E8E8E8" }}
