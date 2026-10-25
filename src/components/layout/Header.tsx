@@ -368,8 +368,12 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
     <>
       {isHome && !scrolled && (
         <style>{`
-          .home-video-header .header-desktop-navigation,
-          .home-video-header .header-desktop-actions { display: none !important; }
+          .home-video-header .header-desktop-navigation :is(a, button) {
+            color: #fff !important;
+            text-shadow: 0 1px 8px rgba(0,0,0,.5);
+          }
+          .home-video-header .header-desktop-actions { background: transparent !important; }
+          .home-video-header .header-desktop-actions > button { color: #fff !important; }
         `}</style>
       )}
       <header
@@ -384,11 +388,11 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
           {/* Logo - Prominently Sized */}
           <Link to="/" className="flex items-center shrink-0 py-1">
             <img
-              src={isHome && !scrolled && !siteSettings?.logoUrl ? "/logo.svg" : siteSettings?.logoUrl || "/logo.png?v=3"}
+              src={isHome && !scrolled ? "/logo.svg" : siteSettings?.logoUrl || "/logo.png?v=3"}
               alt={siteSettings?.universityName || "Chalapathi University"}
               width={800}
               height={359}
-              className={`h-12 sm:h-14 md:h-16 min-[1280px]:h-18 min-[1440px]:h-20 w-auto max-w-[260px] sm:max-w-[320px] object-contain no-lift transition-all duration-300 ${isHome && !scrolled && !siteSettings?.logoUrl ? "brightness-0 invert" : ""}`}
+              className={`h-12 sm:h-14 md:h-16 min-[1280px]:h-18 min-[1440px]:h-20 w-auto max-w-[260px] sm:max-w-[320px] object-contain no-lift transition-all duration-300 ${isHome && !scrolled ? "brightness-0 invert" : ""}`}
               loading="eager"
               decoding="async"
             />
@@ -744,7 +748,7 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
           </div>
 
           {/* Mobile menu trigger */}
-          <div className={`${isHome && !scrolled ? "flex" : "flex min-[1440px]:hidden"} items-center gap-1`}>
+          <div className="flex min-[1440px]:hidden items-center gap-1">
             <button 
               onClick={() => setMobileOpen(!mobileOpen)} 
               className={`p-2 ${isHome && !scrolled ? "text-white drop-shadow" : "text-[#222222]"} hover:text-[#D4AF37] transition-colors cursor-pointer outline-none`}

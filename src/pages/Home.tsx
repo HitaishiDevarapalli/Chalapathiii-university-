@@ -437,7 +437,7 @@ export default function Home() {
         className="scroll-mt-[105px] bg-white px-4 py-7 sm:px-6 md:py-10"
       >
         <div
-          className="relative mx-auto aspect-[16/9] min-h-[340px] max-h-[760px] w-full max-w-[1920px] select-none overflow-hidden bg-slate-100 shadow-[0_24px_60px_rgba(7,42,108,0.16)] md:aspect-[2/1]"
+          className="relative mx-auto aspect-[16/9] max-h-[760px] w-full max-w-[1920px] select-none overflow-hidden bg-slate-100 shadow-[0_24px_60px_rgba(7,42,108,0.16)] md:aspect-[2/1]"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -464,11 +464,11 @@ export default function Home() {
           })}
 
           {visibleHeroSlides.length > 1 && <>
-            <button type="button" aria-label="Previous banner" onClick={() => { setCurrentSlide((prev) => (prev - 1 + slidesCount) % slidesCount); setProgress(0); }} className="absolute left-4 top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-[#D4AF37]/95 text-white shadow-lg transition hover:scale-105 hover:bg-[#c49f2e] md:left-6 md:h-14 md:w-14">
-              <ChevronLeft size={25} strokeWidth={2.5} />
+            <button type="button" aria-label="Previous banner" onClick={() => { setCurrentSlide((prev) => (prev - 1 + slidesCount) % slidesCount); setProgress(0); }} className="absolute left-3 top-1/2 z-30 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-[#D4AF37]/95 text-white shadow-lg transition hover:scale-105 hover:bg-[#c49f2e] sm:left-5 sm:h-11 sm:w-11 md:left-7 md:h-14 md:w-14">
+              <ChevronLeft size={23} strokeWidth={2.5} />
             </button>
-            <button type="button" aria-label="Next banner" onClick={() => { setCurrentSlide((prev) => (prev + 1) % slidesCount); setProgress(0); }} className="absolute right-4 top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-[#D4AF37]/95 text-white shadow-lg transition hover:scale-105 hover:bg-[#c49f2e] md:right-6 md:h-14 md:w-14">
-              <ChevronRight size={25} strokeWidth={2.5} />
+            <button type="button" aria-label="Next banner" onClick={() => { setCurrentSlide((prev) => (prev + 1) % slidesCount); setProgress(0); }} className="absolute right-3 top-1/2 z-30 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-[#D4AF37]/95 text-white shadow-lg transition hover:scale-105 hover:bg-[#c49f2e] sm:right-5 sm:h-11 sm:w-11 md:right-7 md:h-14 md:w-14">
+              <ChevronRight size={23} strokeWidth={2.5} />
             </button>
             <div className="absolute bottom-5 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2 rounded-full bg-black/25 px-3 py-2 backdrop-blur-sm">
               {visibleHeroSlides.map((_, idx) => <button key={idx} type="button" aria-label={`Show banner ${idx + 1}`} aria-current={currentSlide === idx} onClick={() => handleDotClick(idx)} className={`h-2.5 rounded-full transition-all duration-300 ${currentSlide === idx ? "w-7 bg-[#D4AF37]" : "w-2.5 bg-white/70 hover:bg-white"}`} />)}
