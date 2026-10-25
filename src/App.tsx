@@ -60,7 +60,8 @@ function AppContent() {
   const activePopup = useMemo(() => selectActivePopup(popupCmsData), [popupCmsData]);
   const enquiryPopupConfig = resolveEnquiryConfig(admissionsContent?.enquiryPopup || DEFAULT_ADMISSIONS_CONTENT.enquiryPopup, activePopup?.enquiryConfig);
 
-  const [showSplash, setShowSplash] = useState(siteSettings?.enableSplash === true);
+  const suppressEntryOverlays = location.state?.suppressEntryOverlays === true;
+  const [showSplash, setShowSplash] = useState(location.pathname === "/" && siteSettings?.enableSplash === true);
 
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const fallbackTimerRef = React.useRef<NodeJS.Timeout | null>(null);
@@ -128,16 +129,16 @@ function AppContent() {
 
   // Automatic popup trigger on page load (Public Pages Only, respects Admin popup settings)
   useEffect(() => {
-    if (!isAdminPage && !showSplash && activePopup && activePopup.autoOpen !== false) {
+    if (!isAdminPage && !suppressEntryOverlays && !showSplash && activePopup && activePopup.autoOpen !== false) {
       const delayMs = (activePopup.autoOpenDelay ?? 1) * 1000;
       const timer = setTimeout(() => {
         setShowEnquiryModal(true);
       }, delayMs);
       return () => clearTimeout(timer);
-    } else if (isAdminPage || !activePopup) {
+    } else {
       setShowEnquiryModal(false);
     }
-  }, [showSplash, isAdminPage, activePopup]);
+  }, [showSplash, isAdminPage, activePopup, location.key, suppressEntryOverlays]);
 
   useEffect(() => {
     if (showEnquiryModal) {

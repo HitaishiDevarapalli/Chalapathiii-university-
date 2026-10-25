@@ -1001,14 +1001,14 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
     titleLine2: "UNIVERSITY",
     tagline: "Shaping Minds. Inspiring Futures.",
     primaryButtonLabel: "Explore Programs",
-    primaryButtonUrl: "/programs",
+    primaryButtonUrl: "/academics/programmes",
     secondaryButtonLabel: "Admissions",
     secondaryButtonUrl: "/admissions",
     fontFamily: "Poppins",
     titleColor: "#FFFFFF",
     bodyColor: "#FFFFFF",
     eyebrowColor: "#D4AF37",
-    titleSize: 92,
+    titleSize: 68,
     titleWeight: 900,
     overlayOpacity: 58,
     primaryButtonColor: "#D4AF37",
@@ -1034,6 +1034,21 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   seoDescription: "Chalapathi University offers world-class higher education with premium undergraduate, postgraduate, and research programs. Admissions Open for 2026–2027.",
   seoKeywords: "Chalapathi University, Engineering College Guntur, Best University Andhra Pradesh, B.Tech Admissions",
   hiddenPages: {}
+};
+
+const normalizeSiteSettings = (settings: Partial<SiteSettings>): SiteSettings => {
+  const normalized = {
+    ...DEFAULT_SITE_SETTINGS,
+    ...settings,
+    homepageHero: { ...DEFAULT_SITE_SETTINGS.homepageHero, ...settings.homepageHero },
+  };
+  if (normalized.homepageHero.primaryButtonUrl === "/programs") {
+    normalized.homepageHero.primaryButtonUrl = "/academics/programmes";
+  }
+  if (normalized.homepageHero.titleSize === 92) {
+    normalized.homepageHero.titleSize = 68;
+  }
+  return normalized;
 };
 
 export const DEFAULT_ADMISSIONS_CONTENT: AdmissionsContent = {
@@ -2664,7 +2679,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const local = localStorage.getItem("chalapathi_site_settings");
     if (!local) return DEFAULT_SITE_SETTINGS;
     const parsed = JSON.parse(local);
-    return { ...DEFAULT_SITE_SETTINGS, ...parsed, homepageHero: { ...DEFAULT_SITE_SETTINGS.homepageHero, ...parsed.homepageHero } };
+    return normalizeSiteSettings(parsed);
   });
 
   // Theme Colors
@@ -3088,7 +3103,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateSiteSettings = async (settings: SiteSettings): Promise<boolean> => {
-    const mergedSettings = { ...DEFAULT_SITE_SETTINGS, ...settings, homepageHero: { ...DEFAULT_SITE_SETTINGS.homepageHero, ...settings.homepageHero } };
+    const mergedSettings = normalizeSiteSettings(settings);
     setSiteSettings(mergedSettings);
     safeSetItem("chalapathi_site_settings", JSON.stringify(mergedSettings));
     recordSave();
@@ -3479,8 +3494,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
               safeSetItem("chalapathi_board_data_v3", JSON.stringify(s.boardData));
             }
             if (s.siteSettings) {
-              setSiteSettings((prev) => ({ ...prev, ...s.siteSettings, homepageHero: { ...DEFAULT_SITE_SETTINGS.homepageHero, ...prev.homepageHero, ...s.siteSettings.homepageHero } }));
-              safeSetItem("chalapathi_site_settings", JSON.stringify({ ...DEFAULT_SITE_SETTINGS, ...s.siteSettings, homepageHero: { ...DEFAULT_SITE_SETTINGS.homepageHero, ...s.siteSettings.homepageHero } }));
+              const mergedSettings = normalizeSiteSettings({ ...siteSettings, ...s.siteSettings, homepageHero: { ...siteSettings.homepageHero, ...s.siteSettings.homepageHero } });
+              setSiteSettings(mergedSettings);
+              safeSetItem("chalapathi_site_settings", JSON.stringify(mergedSettings));
             }
             if (s.contactPageContent && typeof s.contactPageContent === "object") {
               const contactContent = { ...DEFAULT_CONTACT_PAGE_CONTENT, ...s.contactPageContent };
