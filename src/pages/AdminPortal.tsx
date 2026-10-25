@@ -1629,9 +1629,9 @@ export default function AdminPortal() {
     notifySave("Homepage styling & theme colors updated live!");
   };
 
-  const saveVideoHero = () => {
-    updateSiteSettings({ ...siteSettings, homepageHero: videoHeroForm });
-    notifySave("Opening video hero and headline published!");
+  const saveVideoHero = async () => {
+    const published = await updateSiteSettings({ ...siteSettings, homepageHero: videoHeroForm });
+    notifySave(published ? "Opening video hero and headline published!" : "Saved on this device, but server publishing failed. Check the connection and retry.");
   };
 
   // ====================================================

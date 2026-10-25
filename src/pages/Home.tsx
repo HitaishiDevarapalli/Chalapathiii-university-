@@ -410,6 +410,7 @@ export default function Home() {
       {/* ═══ CINEMATIC CAMPUS INTRO ═══ */}
       <section aria-label="Discover Chalapathi University" className="relative isolate h-[100svh] min-h-[560px] w-full overflow-hidden bg-[#072A6C] text-white">
         <video
+          key={introHero.videoUrl}
           className="absolute inset-0 h-full w-full object-cover"
           src={introHero.videoUrl || "/chalapathi-campus-intro.mp4"}
           poster={introHero.posterUrl || undefined}

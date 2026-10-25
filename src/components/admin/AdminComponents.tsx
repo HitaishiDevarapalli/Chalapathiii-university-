@@ -721,7 +721,7 @@ export const VideoField: React.FC<VideoFieldProps> = ({
     sizeMbStr: sizeMb || ""
   });
 
-  const processVideoFile = (file: File) => {
+  const processVideoFile = async (file: File) => {
     if (!file) return;
 
     if (!file.type.startsWith("video/")) {
@@ -744,6 +744,7 @@ export const VideoField: React.FC<VideoFieldProps> = ({
         errorMsg: `Video file size (${calculatedMb}) exceeds the ${maxSizeMb} MB limit.`
       });
       alert(`Video size (${calculatedMb}) is larger than the recommended maximum of ${maxSizeMb} MB. Please optimize or compress the video.`);
+      return;
     } else {
       setVideoStatus({
         isValid: true,
@@ -752,19 +753,21 @@ export const VideoField: React.FC<VideoFieldProps> = ({
     }
 
     setIsUploading(true);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      if (typeof event.target?.result === "string") {
-        onChange(event.target.result, calculatedMb);
-        if (onSizeChange) onSizeChange(calculatedMb);
-      }
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const response = await fetch("/api/upload", { method: "POST", credentials: "same-origin", body });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.url) throw new Error(result.error || "Video upload failed. Please retry.");
+      onChange(result.url, calculatedMb);
+      if (onSizeChange) onSizeChange(calculatedMb);
+      setVideoStatus({ isValid: true, sizeMbStr: calculatedMb });
+    } catch (error: any) {
+      setVideoStatus({ isValid: false, sizeMbStr: calculatedMb, errorMsg: error.message || "Video upload failed." });
+      alert(error.message || "Video upload failed. Please retry.");
+    } finally {
       setIsUploading(false);
-    };
-    reader.onerror = () => {
-      setIsUploading(false);
-      alert("Failed to read video file.");
-    };
-    reader.readAsDataURL(file);
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -869,7 +872,7 @@ export const VideoField: React.FC<VideoFieldProps> = ({
                   const file = e.target.files?.[0];
                   if (file) processVideoFile(file);
                 }}
-                accept="video/mp4,video/webm,video/ogg,video/quicktime"
+                accept="video/mp4,video/webm,video/ogg"
                 className="hidden"
               />
               <button
