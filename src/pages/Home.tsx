@@ -467,7 +467,7 @@ export default function Home() {
             <button type="button" aria-label="Previous banner" onClick={() => { setCurrentSlide((prev) => (prev - 1 + slidesCount) % slidesCount); setProgress(0); }} className="absolute left-3 top-1/2 z-30 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-[#D4AF37]/95 text-white shadow-lg transition hover:scale-105 hover:bg-[#c49f2e] sm:left-5 sm:h-11 sm:w-11 md:left-7 md:h-14 md:w-14">
               <ChevronLeft size={23} strokeWidth={2.5} />
             </button>
-            <button type="button" aria-label="Next banner" onClick={() => { setCurrentSlide((prev) => (prev + 1) % slidesCount); setProgress(0); }} className="absolute right-3 top-1/2 z-30 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-[#D4AF37]/95 text-white shadow-lg transition hover:scale-105 hover:bg-[#c49f2e] sm:right-5 sm:h-11 sm:w-11 md:right-7 md:h-14 md:w-14">
+            <button type="button" aria-label="Next banner" onClick={() => { setCurrentSlide((prev) => (prev + 1) % slidesCount); setProgress(0); }} style={{ position: "absolute", right: "clamp(12px, 2vw, 28px)", left: "auto", top: "50%", transform: "translateY(-50%)", zIndex: 50 }} className="flex h-10 w-10 items-center justify-center rounded-full bg-[#D4AF37]/95 text-white shadow-lg transition hover:scale-105 hover:bg-[#c49f2e] sm:h-11 sm:w-11 md:h-14 md:w-14">
               <ChevronRight size={23} strokeWidth={2.5} />
             </button>
             <div className="absolute bottom-5 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2 rounded-full bg-black/25 px-3 py-2 backdrop-blur-sm">
