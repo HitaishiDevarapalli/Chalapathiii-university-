@@ -537,7 +537,40 @@ export function renderHtml(
     head.childNodes.unshift(...bootstrap.childNodes.find((n: any) => n.tagName === "html").childNodes.find((n: any) => n.tagName === "head").childNodes);
   }
   const script: any = parse(
-    `<script>(()=>{const send=(kind,message)=>parent.postMessage({type:'code-page',channel:${JSON.stringify(channel)},kind,message},'*');addEventListener('error',e=>send('error',e.message||'Asset failed: '+(e.target.src||e.target.href||e.target.tagName)),true);addEventListener('unhandledrejection',e=>send('error',String(e.reason)));addEventListener('securitypolicyviolation',e=>send('error','Blocked '+e.violatedDirective+': '+e.blockedURI));const original=console.error.bind(console);console.error=(...args)=>{send('error',args.map(String).join(' ').slice(0,500));original(...args)};addEventListener('load',()=>{send('loaded','Preview rendered');const report=()=>send('height',Math.max(document.body.scrollHeight,document.documentElement.scrollHeight));report();new ResizeObserver(report).observe(document.body)})})();</script>`,
+    `<script>(()=>{
+      const send=(kind,message)=>parent.postMessage({type:'code-page',channel:${JSON.stringify(channel)},kind,message},'*');
+      addEventListener('error',e=>send('error',e.message||'Asset failed: '+(e.target.src||e.target.href||e.target.tagName)),true);
+      addEventListener('unhandledrejection',e=>send('error',String(e.reason)));
+      addEventListener('securitypolicyviolation',e=>send('error','Blocked '+e.violatedDirective+': '+e.blockedURI));
+      const original=console.error.bind(console);
+      console.error=(...args)=>{send('error',args.map(String).join(' ').slice(0,500));original(...args)};
+      let anchorFrame=0;
+      const reportAnchor=()=>{
+        cancelAnimationFrame(anchorFrame);
+        anchorFrame=requestAnimationFrame(()=>{
+          let name;
+          try{name=decodeURIComponent(location.hash.slice(1));}catch{return;}
+          const target=name?(document.getElementById(name)||document.getElementsByName(name)[0]):document.body;
+          if(target)send('anchor',{top:name?target.getBoundingClientRect().top:0});
+        });
+      };
+      addEventListener('hashchange',reportAnchor);
+      // Hash changes alone cannot scroll an expanded, opaque-origin iframe's
+      // ancestors. Also handle repeated clicks on the current fragment.
+      addEventListener('click',e=>{
+        if(e.defaultPrevented||e.button!==0||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;
+        const link=e.target.closest?.('a[href],area[href]');
+        if(!link||link.hasAttribute('download')||(link.target&&link.target!=='_self'))return;
+        const url=new URL(link.href,location.href);
+        if(url.origin===location.origin&&url.pathname===location.pathname&&url.search===location.search&&link.href.includes('#'))reportAnchor();
+      });
+      addEventListener('load',()=>{
+        send('loaded','Preview rendered');
+        const report=()=>send('height',Math.max(document.body.scrollHeight,document.documentElement.scrollHeight));
+        report();new ResizeObserver(report).observe(document.body);
+        if(location.hash)reportAnchor();
+      });
+    })();</script>`,
   );
   head.childNodes.unshift(
     ...script.childNodes

@@ -79,6 +79,25 @@ export default function PublicCodePage({ page }: { page: CodePage }) {
         return;
       if (event.data.kind === "height" && Number.isFinite(event.data.message))
         setHeight(Math.max(320, Math.min(30000, event.data.message)));
+      if (
+        event.data.kind === "anchor" &&
+        typeof event.data.message?.top === "number" &&
+        Number.isFinite(event.data.message.top)
+      ) {
+        const element = frame.current;
+        if (!element) return;
+        const bounds = element.getBoundingClientRect();
+        const offset = Math.max(0, Math.min(bounds.height, event.data.message.top));
+        // Keep section headings visible beneath the site's fixed/sticky header.
+        const header = document.querySelector("header");
+        const headerStyle = header && getComputedStyle(header);
+        const headerHeight = header && ["fixed", "sticky"].includes(headerStyle!.position)
+          ? header.getBoundingClientRect().height : 0;
+        window.scrollTo({
+          top: Math.max(0, window.scrollY + bounds.top + offset - headerHeight),
+          behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+        });
+      }
     };
     window.addEventListener("message", listener);
     return () => window.removeEventListener("message", listener);

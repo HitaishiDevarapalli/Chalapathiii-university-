@@ -97,7 +97,9 @@ module.exports = async ({ base, files, zip, directory }) => {
     await page.waitForSelector(".cp-upload");
     const fixture = {
       ...files,
-      "campaign/index.html": files["campaign/index.html"].replace("</body>", `
+      "campaign/index.html": files["campaign/index.html"].replace("<body>", `<body>
+        <a id="jump-register" href="#register">Register now</a>
+      `).replace("</body>", `
         <a id="zip-link" href="/pages/details.html?from=main#details">ZIP details</a>
         <a id="site-link" href="/about?from=code#team">About university</a>
         <a id="relative-site-link" href="about?from=relative">Relative website route</a>
@@ -122,6 +124,16 @@ module.exports = async ({ base, files, zip, directory }) => {
           <button formaction="/__code-page-test/registration" formtarget="_self">Override destination</button>
         </form>
         <button id="programmatic-form" onclick="const form=document.createElement('form');form.method='get';form.action='/__code-page-test/registration?source=programmatic';const input=document.createElement('input');input.name='source';input.value='programmatic';form.append(input);document.body.append(form);form.submit();">Submit dynamic form</button>
+        <div style="height:4500px" aria-hidden="true"></div>
+        <section id="register" style="min-height:1000px;padding:40px">
+          <h2 class="registration-reveal" style="opacity:0">How to register</h2>
+          <a id="section-form-link" href="${externalUrl}/section-registration">Open registration form</a>
+        </section>
+        <script>
+          new IntersectionObserver(entries=>entries.forEach(entry=>{
+            if(entry.isIntersecting)entry.target.style.opacity='1';
+          }),{threshold:.12}).observe(document.querySelector('.registration-reveal'));
+        </script>
       </body>`),
       "campaign/pages/details.html": '<h1 id="details">Packaged details</h1><a id="back-link" href="../index.html">Back</a>',
       "campaign/scripts/app.js":
@@ -372,6 +384,49 @@ module.exports = async ({ base, files, zip, directory }) => {
       path: path.join(out, "07-published-page.png"),
       fullPage: true,
     });
+    // Regression: an auto-height opaque frame has no inner scroll range. A hash
+    // changing is insufficient; the outer viewport must reveal the distant section.
+    await publicPage.waitForFunction(() => document.querySelector('iframe').getBoundingClientRect().height > 5000);
+    await publicPage.evaluate(() => scrollTo({top:0,behavior:'instant'}));
+    const liveMapping = await (await fetch(base + '/api/code-pages/resolve?route=/browser-campaign')).json();
+    await publishedFrame.evaluate(channel => {
+      parent.postMessage({type:'code-page',channel:'wrong-release',kind:'anchor',message:{top:4500}},'*');
+      for(const top of ['4500',NaN,Infinity,{}])
+        parent.postMessage({type:'code-page',channel,kind:'anchor',message:{top}},'*');
+    },liveMapping.versionId);
+    await publicPage.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    assert.equal(await publicPage.evaluate(() => scrollY),0,'Stale channels and malformed positions cannot scroll the main page');
+    const assertRegistrationVisible = async () => {
+      const sectionTop = await publishedFrame.$eval('#register', el => el.getBoundingClientRect().top);
+      const expectedScroll = await publicPage.$eval('iframe', (el, sectionTop) => {
+        const header = document.querySelector('header');
+        return window.scrollY + el.getBoundingClientRect().top + sectionTop - (header?.getBoundingClientRect().height || 0);
+      }, sectionTop);
+      await publicPage.waitForFunction(expected => Math.abs(window.scrollY - expected) < 4, {}, expectedScroll);
+      await publishedFrame.waitForFunction(() => getComputedStyle(document.querySelector('.registration-reveal')).opacity === '1');
+      const bounds = await publicPage.$eval('iframe', el => ({top: el.getBoundingClientRect().top}));
+      const heading = await publishedFrame.$eval('.registration-reveal', el => ({top: el.getBoundingClientRect().top,bottom:el.getBoundingClientRect().bottom}));
+      const viewport = await publicPage.evaluate(() => innerHeight);
+      assert.ok(bounds.top + heading.top >= 0 && bounds.top + heading.bottom < viewport,
+        'Registration heading is visible in the main browser viewport, not just in the iframe DOM');
+    };
+    await publishedFrame.click('#jump-register');
+    await assertRegistrationVisible();
+    await publicPage.screenshot({path:path.join(out,'10-registration-anchor-desktop.png')});
+    const sectionPopup = await popupFrom(publicPage, publishedFrame, '#section-form-link', externalUrl + '/section-registration');
+    await sectionPopup.waitForSelector('#registration-site');
+    await sectionPopup.close();
+    // Clicking the same hash again must work even when no hashchange event fires.
+    await publicPage.evaluate(() => scrollTo({top:0,behavior:'instant'}));
+    await publishedFrame.click('#jump-register');
+    await assertRegistrationVisible();
+    await publicPage.setViewport({width:390,height:844});
+    await publicPage.evaluate(() => scrollTo({top:0,behavior:'instant'}));
+    await publishedFrame.click('#jump-register');
+    await assertRegistrationVisible();
+    await publicPage.screenshot({path:path.join(out,'11-registration-anchor-mobile.png')});
+    await publicPage.setViewport({width:1440,height:1000});
+    console.log('PASS: code pages — distant Register anchors scroll the outer viewport on desktop/mobile and repeated clicks, reveal animated content and expose the working external registration link');
     for (const [selector, suffix] of [["#registration-link", "/register"], ["#dynamic-link", "/dynamic"]]) {
       const popup = await popupFrom(publicPage, publishedFrame, selector, externalUrl + suffix);
       await popup.waitForSelector("#registration-site");
