@@ -88,6 +88,33 @@ module.exports = async function codePagesTest({
   directory,
 }) {
   const pass = (message) => console.log("PASS: code pages — " + message);
+  const { resolveNavigation, CODE_PAGE_SANDBOX } = require("../dist/codePages/navigation");
+  const context = {
+    base: "https://university.example/api/code-pages/content/page/release/",
+    route: "https://university.example/campaign",
+    file: "pages/details.html",
+    paths: ["index.html", "pages/details.html", "brochure/index.html"],
+    preview: false,
+  };
+  for (const [href, expected, target] of [
+    ["#register", "#register", "_self"],
+    ["../index.html", context.base + "index.html", "_self"],
+    ["../", context.base + "index.html", "_self"],
+    ["/pages/details.html?x=1#info", context.base + "pages/details.html?x=1#info", "_self"],
+    ["/brochure/", context.base + "brochure/index.html", "_self"],
+    ["/admissions?year=2026#apply", "https://university.example/admissions?year=2026#apply", "_top"],
+    ["registration", "https://university.example/registration", "_top"],
+    ["https://forms.example/apply", "https://forms.example/apply", "_blank"],
+    ["//forms.example/apply", "https://forms.example/apply", "_blank"],
+    ["mailto:admissions@example.com", "mailto:admissions@example.com", "_blank"],
+    ["tel:+919876543210", "tel:+919876543210", "_blank"],
+  ]) assert.deepEqual(resolveNavigation(href, context), { href: expected, target });
+  assert.equal(resolveNavigation("/admissions", { ...context, preview: true }).target, "_blank");
+  assert.equal(resolveNavigation("https://forms.example/submit", context, true).target, "_blank");
+  for (const value of ["", "javascript:alert(1)", "data:text/html,hello", "http://forms.example/submit"])
+    assert.equal(resolveNavigation(value, context, true), null);
+  assert.doesNotMatch(CODE_PAGE_SANDBOX, /allow-same-origin/);
+  pass("ZIP paths, site routes, external registration links, query/fragment preservation and safe form destinations");
   const { seoSchema } = require("../dist/codePages/schema");
   const {
     socialImageError,
@@ -193,7 +220,10 @@ module.exports = async function codePagesTest({
     const csp = rendered.headers.get("content-security-policy");
     assert.match(csp, /sandbox allow-scripts/);
     assert.doesNotMatch(csp, /allow-same-origin/);
-    assert.match(csp, /form-action 'none'/);
+    assert.match(csp, /form-action https:/);
+    assert.match(csp, /allow-forms/);
+    assert.match(csp, /allow-popups-to-escape-sandbox/);
+    assert.match(csp, /allow-top-navigation-by-user-activation/);
     assert.match(csp, /frame-src 'none'/);
     assert.equal(rendered.headers.get("x-frame-options"), null);
     assert.equal(rendered.headers.get("x-robots-tag"), "noindex, nofollow");
@@ -279,6 +309,16 @@ module.exports = async function codePagesTest({
   assert.equal(current.document.package.entry, "index.html");
   assert.equal(current.document.package.files.length, 6);
   assert.equal(current.document.validation.errors.length, 0);
+  const stored = await prisma.codeDocument.findUnique({ where: { pageId: id } });
+  const legacyDocument = JSON.parse(stored.draftJson);
+  legacyDocument.validation.warnings = ["Legacy policy: forms and popups are blocked"];
+  await prisma.codeDocument.update({
+    where: { pageId: id }, data: { draftJson: JSON.stringify(legacyDocument) },
+  });
+  const refreshed = await expect(request(admin, `/${id}`), 200);
+  assert.equal(refreshed.revision, current.revision);
+  assert.ok(refreshed.document.validation.warnings.some((message) => message.includes("HTTPS form submissions are supported")));
+  assert.ok(refreshed.document.validation.warnings.every((message) => !message.includes("Legacy policy")));
   assert.equal(
     current.document.package.files.find((f) => f.path === "assets/banner.png")
       .source,

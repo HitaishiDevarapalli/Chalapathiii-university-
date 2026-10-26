@@ -9,6 +9,7 @@ import { requirePermission, assertPermission } from "../middleware/auth";
 import { audit, fail, digest, permitted } from "../security/core";
 import { settingsSchema, Settings } from "../codePages/schema";
 import { resolveSocialImage, socialImageError } from "../codePages/seo";
+import { CODE_PAGE_SANDBOX } from "../codePages/navigation";
 import {
   Package,
   MAX_ZIP,
@@ -58,6 +59,9 @@ const docOf = (row: { draftJson: string }) =>
   JSON.parse(row.draftJson) as Document;
 const view = (row: any, includeSource = true) => {
   const doc = docOf(row);
+  // Old drafts retain their original diagnostics in snapshots. Reflect the active
+  // navigation policy without forcing an edit, new revision or re-publication.
+  if (includeSource && doc.package.files.length) doc.validation = validationFor(doc);
   return {
     id: row.pageId,
     revision: row.revision,
@@ -396,7 +400,7 @@ async function serve(
   const allowed = `${req.protocol}://${req.get("host")}${base}`;
   res.setHeader(
     "Content-Security-Policy",
-    `sandbox allow-scripts; default-src 'none'; script-src 'unsafe-inline' ${allowed}; style-src 'unsafe-inline' ${allowed}; img-src data: ${allowed}; font-src data: ${allowed}; media-src ${allowed}; connect-src ${allowed}; frame-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'`,
+    `sandbox ${CODE_PAGE_SANDBOX}; default-src 'none'; script-src 'unsafe-inline' ${allowed}; style-src 'unsafe-inline' ${allowed}; img-src data: ${allowed}; font-src data: ${allowed}; media-src ${allowed}; connect-src ${allowed}; frame-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action https:${["localhost", "127.0.0.1", "[::1]"].includes(req.hostname) ? " " + req.protocol + "://" + req.get("host") : ""}; frame-ancestors 'self'`,
   );
   let body: Buffer | string =
     file.source ?? (await fs.readFile(path.join(assetDirectory, file.hash)));
@@ -417,6 +421,13 @@ async function serve(
         noindex: preview || doc.seo.noindex,
       },
       channel,
+      {
+        base: allowed,
+        route: `${req.protocol}://${req.get("host")}${doc.integration.route}`,
+        file: requested,
+        paths: doc.package.files.map((f) => f.path),
+        preview,
+      },
     );
   if (file.mime === "text/css") body = rewriteCss(String(body), base);
   return res.type(file.mime).send(body);

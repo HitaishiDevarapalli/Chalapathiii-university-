@@ -39,6 +39,12 @@ const { PGLiteSocketServer } = require("@electric-sql/pglite-socket");
   const prisma = require("../dist/prisma").default;
   const app = require("../dist/index").default;
   const express = require("express");
+  // Test-only form destination; never part of the production API or real accounts.
+  if (process.env.CODE_PAGE_BROWSER === "1")
+    app.all("/__code-page-test/registration", (req, res) => {
+      res.set("X-Frame-Options", "DENY");
+      res.json({ method: req.method, query: req.query, body: req.body });
+    });
   app.use(express.static(path.resolve("../dist")));
   // Production proxies /uploads to the API, without the frontend SPA fallback.
   app.use("/uploads", (_req, res) => res.sendStatus(404));

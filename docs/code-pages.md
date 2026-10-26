@@ -19,9 +19,29 @@ This application is a React/Vite SPA with an Express API and the existing Prisma
 
 Text sources are stored in database snapshots. Binary assets use SHA-256 content-addressed files in **`CODE_PAGE_ASSETS_DIR`**, defaulting to `code-page-assets` beside the existing uploads directory. This directory must be durable, writable by the API user, included in backups, and outside the public uploads directory. The API refuses a configuration that places it inside public uploads. Back up the database and assets together. Deleted drafts can leave unreferenced content-addressed assets; retain these until an operator performs reference-aware cleanup, including all version and unexpired preview records.
 
-The SPA checks `/api/code-pages/resolve?route=…` before rendering a public route, including the homepage and existing static routes. A code page renders in an iframe with **only `sandbox="allow-scripts"`**. API-rendered HTML also carries a mandatory CSP `sandbox allow-scripts` response header, including when opened directly. Never add `allow-same-origin`. Uploaded code has no portal DOM, storage or credential access. CSP allows only this package's content URL prefix for scripts, styles, images, fonts, media and local data requests. Forms, workers, nested frames, popups and privileged API/external network requests are blocked. External dependencies should be included in the ZIP; CDN references produce warnings and are blocked. Browser modules use CORS-enabled package responses. The portal accepts bounded diagnostics/height messages only from the expected iframe window and channel.
+The SPA checks `/api/code-pages/resolve?route=…` before rendering a public route, including the homepage and existing static routes. Both preview/public iframes and the mandatory response CSP share `CODE_PAGE_SANDBOX`: `allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation`. This supports clicked links, new tabs and form submissions, including when the HTML is opened directly. Never add `allow-same-origin`. Uploaded scripts still cannot read the portal DOM, storage or cookies. CSP allows only this package's content URL prefix for scripts, styles, images, fonts, media and local data requests. Workers, nested frames, privileged API requests and external fetch/resources remain blocked. Form actions permit HTTPS (same-origin loopback HTTP additionally works for local testing). External dependencies should be included in the ZIP; CDN references produce warnings and are blocked. Browser modules use CORS-enabled package responses. The portal accepts bounded diagnostics/height messages only from the expected iframe window and channel.
 
 HTML is parsed and serialized with parse5. Existing base tags, meta http-equiv directives and duplicate configured SEO tags are removed. Root-relative HTML/CSS resource URLs are resolved against the package; normal relative paths keep their directory structure. JavaScript-generated URLs should be relative to the packaged page (for example `fetch('./data.json')`), rather than root-relative privileged API URLs. CSS remains inside the iframe, so it cannot affect the portal or shared layout.
+
+### Links and registrations
+
+Links to files found in the ZIP (including nested pages and directory index files) remain in the isolated frame. Other root-relative or relative links resolve against the configured public route, preserving query strings and fragments. Published same-site links navigate the browser's main page; external HTTP/HTTPS links open a separate tab, so sites that refuse iframe embedding work normally. An explicit `target="_blank"` stays in a new tab. Preview website links open a new tab to retain the editor. Hash links, `mailto:` and `tel:` links are supported. Email/telephone handlers depend on the visitor's installed apps. Dynamically inserted links receive the same treatment when clicked.
+
+Use standard links, or `window.open(url, '_blank')` / `window.codePage.navigate(url)` inside a click handler for script-driven buttons. `window.codePage.navigate('/admissions')` resolves site routes correctly; its external destinations open a new tab. Clicked `top.location` redirects are allowed by the browser sandbox. A raw `location.href` assignment navigates the iframe itself; use the helper when a destination must leave the frame. Automatic top-level redirects and unsolicited popups remain subject to browser user-activation rules.
+
+HTML forms need an actual HTTPS `action` endpoint and named inputs. They use native validation and GET/POST encoding and submit into a new tab without inheriting the frame's sandbox. The builder does not create a registrations database or bypass the destination's authentication/CSRF requirements. A form with no valid action is stopped with a preview diagnostic; external AJAX `fetch` submissions remain blocked. Submit-button `formaction` overrides are supported. Example:
+
+```html
+<a href="https://forms.example.com/registration">Register</a>
+<form action="https://registration.example.com/submit" method="post">
+  <input name="studentName" required>
+  <input name="email" type="email" required>
+  <button type="submit">Register</button>
+</form>
+<button onclick="window.codePage.navigate('/admissions')">Admissions</button>
+```
+
+The example domains are placeholders; replace them with your real service. Test submissions may create real registrations in that service, including from the preview.
 
 Published HTML/asset URLs are immutable for the life of a publication. Previous published releases remain retrievable while the page is live so requests started before a release switch can finish loading their assets. Unpublishing revokes every public release; draft/restored versions are never served publicly. Preview tokens are random, stored hashed, tied to a revision and requesting administrator, scoped to content reads, and expire after 15 minutes.
 

@@ -2,6 +2,14 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 module.exports = async ({ base, files, zip, directory }) => {
+  const external = require("node:http").createServer((_req, res) => {
+    res.setHeader("X-Frame-Options", "DENY");
+    res.setHeader("Content-Security-Policy", "frame-ancestors 'none'");
+    res.setHeader("Content-Type", "text/html");
+    res.end('<h1 id="registration-site">External registration site</h1>');
+  });
+  await new Promise((resolve) => external.listen(0, "127.0.0.1", resolve));
+  const externalUrl = `http://127.0.0.1:${external.address().port}`;
   const { default: puppeteer } = await import("puppeteer-core");
   const browser = await puppeteer.launch({
     executablePath:
@@ -89,8 +97,35 @@ module.exports = async ({ base, files, zip, directory }) => {
     await page.waitForSelector(".cp-upload");
     const fixture = {
       ...files,
+      "campaign/index.html": files["campaign/index.html"].replace("</body>", `
+        <a id="zip-link" href="/pages/details.html?from=main#details">ZIP details</a>
+        <a id="site-link" href="/about?from=code#team">About university</a>
+        <a id="relative-site-link" href="about?from=relative">Relative website route</a>
+        <a id="registration-link" href="${externalUrl}/register" target="_self">Register externally</a>
+        <a id="explicit-blank" href="${externalUrl}/blank" target="_blank">New tab</a>
+        <a id="anchor-link" href="#heading">Jump to heading</a>
+        <a id="email-link" href="mailto:admissions@example.com">Email</a>
+        <a id="phone-link" href="tel:+919876543210">Call</a>
+        <button id="script-link" onclick="window.open('${externalUrl}/script', '_blank')">Script registration</button>
+        <button id="helper-link" onclick="window.codePage.navigate('${externalUrl}/helper')">Button redirect</button>
+        <button id="helper-site-link" onclick="window.codePage.navigate('/about?from=helper')">Website button</button>
+        <button id="top-link" onclick="top.location.href='/about?from=script'">Script top navigation</button>
+        <form id="post-registration" method="post" action="${base}/__code-page-test/registration">
+          <input required name="student" value="Test Student"><button>Register POST</button>
+        </form>
+        <form id="get-registration" method="get" action="/__code-page-test/registration">
+          <input name="course" value="Engineering"><button>Register GET</button>
+        </form>
+        <form id="missing-action"><button>Missing destination</button></form>
+        <form id="override-registration" action="https://unused.example/" method="post">
+          <input name="student" value="Override Student">
+          <button formaction="/__code-page-test/registration" formtarget="_self">Override destination</button>
+        </form>
+        <button id="programmatic-form" onclick="const form=document.createElement('form');form.method='get';form.action='/__code-page-test/registration?source=programmatic';const input=document.createElement('input');input.name='source';input.value='programmatic';form.append(input);document.body.append(form);form.submit();">Submit dynamic form</button>
+      </body>`),
+      "campaign/pages/details.html": '<h1 id="details">Packaged details</h1><a id="back-link" href="../index.html">Back</a>',
       "campaign/scripts/app.js":
-        "document.body.dataset.executed='yes';try{parent.document.body.dataset.compromised='yes'}catch(e){document.body.dataset.domBlocked='yes'};try{localStorage.getItem('secret')}catch(e){document.body.dataset.storageBlocked='yes'};fetch('/api/auth/me').then(()=>document.body.dataset.apiBlocked='no').catch(()=>document.body.dataset.apiBlocked='yes');",
+        `document.body.dataset.executed='yes';try{parent.document.body.dataset.compromised='yes'}catch(e){document.body.dataset.domBlocked='yes'};try{localStorage.getItem('secret')}catch(e){document.body.dataset.storageBlocked='yes'};fetch('/api/auth/me').then(()=>document.body.dataset.apiBlocked='no').catch(()=>document.body.dataset.apiBlocked='yes');document.body.insertAdjacentHTML('beforeend','<a id="dynamic-link" href="${externalUrl}/dynamic">Dynamic registration</a>');`,
     };
     const archive = path.join(directory, "browser-campaign.zip");
     fs.writeFileSync(archive, zip(fixture));
@@ -103,7 +138,7 @@ module.exports = async ({ base, files, zip, directory }) => {
     );
     await fill(
       ".cp-code",
-      files["campaign/index.html"].replace(
+      fixture["campaign/index.html"].replace(
         "Code fixture",
         "Browser edited page",
       ),
@@ -161,10 +196,10 @@ module.exports = async ({ base, files, zip, directory }) => {
         ?.textContent.includes("Preview rendered"),
     );
     const iframe = await page.$('iframe[title="Isolated code page preview"]');
-    assert.equal(
-      await iframe.evaluate((el) => el.getAttribute("sandbox")),
-      "allow-scripts",
-    );
+    const sandbox = await iframe.evaluate((el) => el.getAttribute("sandbox"));
+    assert.match(sandbox, /allow-forms/);
+    assert.match(sandbox, /allow-popups-to-escape-sandbox/);
+    assert.doesNotMatch(sandbox, /allow-same-origin/);
     const content = await iframe.contentFrame();
     await content.waitForFunction(
       () => document.body.dataset.apiBlocked === "yes",
@@ -191,6 +226,59 @@ module.exports = async ({ base, files, zip, directory }) => {
       await page.evaluate(() => document.body.dataset.compromised),
       undefined,
     );
+    // A real destination that refuses embedding must open successfully outside the frame.
+    const popupFrom = async (owner, frame, selector, url) => {
+      const destination = browser.waitForTarget((target) => target.url() === url, { timeout: 20000 });
+      await frame.click(selector);
+      const popup = await (await destination).page();
+      await popup.waitForFunction(() => document.readyState === "complete");
+      assert.equal(await popup.evaluate(() => window.opener === null), true);
+      assert.equal(owner.isClosed(), false);
+      return popup;
+    };
+    for (const [selector, suffix] of [
+      ["#registration-link", "/register"], ["#explicit-blank", "/blank"],
+      ["#script-link", "/script"], ["#helper-link", "/helper"],
+      ["#dynamic-link", "/dynamic"],
+    ]) {
+      const popup = await popupFrom(page, content, selector, externalUrl + suffix);
+      await popup.waitForSelector("#registration-site");
+      assert.equal(await popup.evaluate(() => !!document.cookie || localStorage.length >= 0), true,
+        "Destination runs normally without inheriting the uploaded page sandbox");
+      await popup.close();
+    }
+    const previewSite = await popupFrom(page, content, "#site-link", base + "/about?from=code#team");
+    await previewSite.close();
+    assert.match(page.url(), /\/admin/, "Preview links keep the editor open");
+    await content.click("#anchor-link");
+    await content.waitForFunction(() => location.hash === "#heading");
+    await content.click("#zip-link");
+    await content.waitForSelector("#details");
+    assert.match(content.url(), /\/pages\/details\.html\?from=main#details$/);
+    await content.click("#back-link");
+    await content.waitForSelector("#heading");
+    const student = await content.$('#post-registration input');
+    await student.evaluate((input) => input.value = "");
+    await content.click("#post-registration button");
+    assert.equal(await student.evaluate((input) => input.validity.valueMissing), true);
+    await student.type("Test Student");
+    const postPopup = await popupFrom(page, content, "#post-registration button", base + "/__code-page-test/registration");
+    const submission = await postPopup.$eval("body", (el) => JSON.parse(el.textContent));
+    assert.equal(submission.method, "POST");
+    assert.equal(submission.body.student, "Test Student");
+    await postPopup.close();
+    const getPopup = await popupFrom(page, content, "#get-registration button", base + "/__code-page-test/registration?course=Engineering");
+    assert.equal((await getPopup.$eval("body", (el) => JSON.parse(el.textContent))).query.course, "Engineering");
+    await getPopup.close();
+    const overridePopup = await popupFrom(page, content, "#override-registration button", base + "/__code-page-test/registration");
+    assert.equal((await overridePopup.$eval("body", (el) => JSON.parse(el.textContent))).body.student, "Override Student");
+    await overridePopup.close();
+    const dynamicFormPopup = await popupFrom(page, content, "#programmatic-form", base + "/__code-page-test/registration?source=programmatic");
+    assert.equal((await dynamicFormPopup.$eval("body", (el) => JSON.parse(el.textContent))).query.source, "programmatic");
+    await dynamicFormPopup.close();
+    await content.click("#missing-action button");
+    assert.match(content.url(), /index\.html/, "Unconfigured forms cannot submit into the content API");
+    console.log("PASS: code pages — external/new-tab/dynamic links, script redirects, nested ZIP links, anchors, preview navigation, native form validation and GET/POST submissions; admin DOM/storage/API isolation retained");
     await page.screenshot({
       path: path.join(out, "04-desktop-preview.png"),
       fullPage: true,
@@ -284,7 +372,14 @@ module.exports = async ({ base, files, zip, directory }) => {
       path: path.join(out, "07-published-page.png"),
       fullPage: true,
     });
-    await publicPage.click('footer a[href="/about"]');
+    for (const [selector, suffix] of [["#registration-link", "/register"], ["#dynamic-link", "/dynamic"]]) {
+      const popup = await popupFrom(publicPage, publishedFrame, selector, externalUrl + suffix);
+      await popup.waitForSelector("#registration-site");
+      await popup.close();
+    }
+    assert.equal(await publishedFrame.$eval("#email-link", (el) => el.getAttribute("href")), "mailto:admissions@example.com");
+    assert.equal(await publishedFrame.$eval("#phone-link", (el) => el.getAttribute("href")), "tel:+919876543210");
+    await publishedFrame.click("#site-link");
     await publicPage.waitForFunction(
       () =>
         location.pathname === "/about" &&
@@ -296,6 +391,23 @@ module.exports = async ({ base, files, zip, directory }) => {
           meta.content === "https://chalapathiuniversity.edu.in/logo.png",
       ),
     );
+    assert.equal(publicPage.url(), base + "/about?from=code#team");
+    await publicPage.goto(base + "/browser-campaign");
+    const relativeFrame = await (await publicPage.waitForSelector('iframe[title="Browser campaign"]')).contentFrame();
+    await relativeFrame.waitForSelector("#relative-site-link");
+    await relativeFrame.click("#relative-site-link");
+    await publicPage.waitForFunction(() => location.pathname === "/about" && location.search === "?from=relative");
+    await publicPage.goto(base + "/browser-campaign");
+    const helperFrame = await (await publicPage.waitForSelector('iframe[title="Browser campaign"]')).contentFrame();
+    await helperFrame.waitForSelector("#helper-site-link");
+    await helperFrame.click("#helper-site-link");
+    await publicPage.waitForFunction(() => location.pathname === "/about" && location.search === "?from=helper");
+    await publicPage.goto(base + "/browser-campaign");
+    const scriptFrame = await (await publicPage.waitForSelector('iframe[title="Browser campaign"]')).contentFrame();
+    await scriptFrame.waitForSelector("#top-link");
+    await scriptFrame.click("#top-link");
+    await publicPage.waitForFunction(() => location.pathname === "/about" && location.search === "?from=script");
+    console.log("PASS: code pages — published site/relative links and clicked top-level script navigation leave the iframe correctly");
     await publicPage.close();
     await page.click(".cp-builder-switch button:first-child");
     await page.waitForSelector(".pb-manager", { visible: true });
@@ -391,5 +503,6 @@ module.exports = async ({ base, files, zip, directory }) => {
     throw error;
   } finally {
     await browser.close();
+    await new Promise((resolve) => external.close(resolve));
   }
 };

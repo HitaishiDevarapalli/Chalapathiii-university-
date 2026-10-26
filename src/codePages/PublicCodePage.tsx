@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { codeApi, PublicCodePage as CodePage } from "./model";
+import { CODE_PAGE_SANDBOX } from "../../server/src/codePages/navigation";
 
 export function usePublishedCodePage(route: string, enabled: boolean) {
   const [result, setResult] = useState<{
@@ -143,7 +144,7 @@ export default function PublicCodePage({ page }: { page: CodePage }) {
         key={page.versionId}
         title={page.name}
         src={page.contentUrl}
-        sandbox="allow-scripts"
+        sandbox={CODE_PAGE_SANDBOX}
         referrerPolicy="no-referrer"
         style={{
           display: "block",

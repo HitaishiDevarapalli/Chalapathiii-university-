@@ -36,6 +36,7 @@ import {
   bytes,
 } from "./model";
 import "./codePages.css";
+import { CODE_PAGE_SANDBOX } from "../../server/src/codePages/navigation";
 
 function Dialog({
   title,
@@ -984,6 +985,8 @@ export default function CodePageBuilder() {
                   network resources and API calls are blocked; include required
                   resources in your ZIP. Source edits stay in draft until you
                   explicitly publish.
+                  {" "}Website links navigate normally; external links open a new tab.
+                  Registration forms need a real HTTPS action URL and submit in a new tab.
                 </p>
               </>
             )}
@@ -1041,7 +1044,7 @@ export default function CodePageBuilder() {
                         key={frameKey}
                         title="Isolated code page preview"
                         src={preview.url}
-                        sandbox="allow-scripts"
+                        sandbox={CODE_PAGE_SANDBOX}
                         referrerPolicy="no-referrer"
                       />
                     ) : (

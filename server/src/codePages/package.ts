@@ -5,6 +5,7 @@ import yauzl from "yauzl";
 import { parse, serialize } from "parse5";
 import { uploadsDirectory } from "../middleware/upload";
 import { fail } from "../security/core";
+import { NavigationContext, resolveNavigation } from "./navigation";
 
 export const MAX_ZIP = 20 * 1024 * 1024;
 export const MAX_EXPANDED = 50 * 1024 * 1024;
@@ -338,9 +339,17 @@ export function validatePackage(pkg: Package): Validation {
           warnings.push(
             `${file.path}: base and http-equiv directives are removed`,
           );
+        if (node.tagName === "form") {
+          const action = node.attrs?.find((a: any) => a.name === "action")?.value;
+          if (!action?.trim())
+            warnings.push(`${file.path}: form has no action URL; connect a submission endpoint to save registrations`);
+          else if (/^http:/i.test(action))
+            warnings.push(`${file.path}: form submissions require an HTTPS action URL`);
+        }
         for (const attr of node.attrs || []) {
           if (["src", "poster", "href", "xlink:href"].includes(attr.name))
-            check(attr.value, file.path, node.tagName !== "a");
+            // Links navigate to website routes or other sites, not just ZIP assets.
+            if (!["a", "area"].includes(node.tagName)) check(attr.value, file.path);
           if (attr.name === "srcset")
             for (const item of attr.value.split(","))
               check(item.trim().split(/\s/)[0], file.path);
@@ -365,7 +374,7 @@ export function validatePackage(pkg: Package): Validation {
         check(m[1] || m[2], file.path);
     if (file.mime === "text/javascript") {
       warnings.push(
-        `${file.path}: scripts run in an isolated origin; privileged APIs, forms, popups and external resources are blocked`,
+        `${file.path}: clicked links, new tabs and HTTPS form submissions are supported. Scripts remain isolated; portal storage, privileged APIs and external fetch/resources are blocked. Forms need a real submission endpoint`,
       );
       for (const match of source.matchAll(
         /(?:\b(?:import|export)\s+(?:[^'"\n]*?\sfrom\s*)?|\bimport\s*\(\s*|\bnew\s+URL\s*\(\s*)['"]([^'"]+)['"]/g,
@@ -400,6 +409,7 @@ export function renderHtml(
   base: string,
   metadata: Record<string, any>,
   channel = "",
+  navigation?: NavigationContext,
 ) {
   const tree: any = parse(source);
   const walk = (node: any) => {
@@ -424,9 +434,27 @@ export function renderHtml(
             )
           ),
       );
+    const navigationAttribute = ["a", "area"].includes(node.tagName)
+      ? "href" : node.tagName === "form" ? "action" : "";
+    if (navigation && navigationAttribute) {
+      const attr = node.attrs?.find((a: any) => a.name === navigationAttribute);
+      const resolved = attr && resolveNavigation(attr.value, navigation, node.tagName === "form");
+      if (resolved) {
+        attr.value = resolved.href;
+        const set = (name: string, value: string) => {
+          const existing = node.attrs.find((a: any) => a.name === name);
+          if (existing) existing.value = value;
+          else node.attrs.push({ name, value });
+        };
+        const target = node.attrs.find((a: any) => a.name === "target");
+        set("target", target?.value === "_blank" ? "_blank" : resolved.target);
+        set("rel", "noopener noreferrer");
+      }
+    }
     for (const attr of node.attrs || []) {
       if (
         ["src", "href", "poster", "xlink:href"].includes(attr.name) &&
+        !(navigation && navigationAttribute === "href" && attr.name === "href") &&
         /^\/(?!\/)/.test(attr.value)
       )
         attr.value = base + attr.value.slice(1);
@@ -461,6 +489,53 @@ export function renderHtml(
     .find((n: any) => n.tagName === "html")
     .childNodes.find((n: any) => n.tagName === "head").childNodes;
   head.childNodes.unshift(...nodes);
+  if (navigation) {
+    // Use the browser's native navigation, form validation/encoding and popup rules.
+    // No messages from uploaded scripts can navigate the portal.
+    const config = JSON.stringify(navigation).replace(/</g, "\\u003c");
+    const bootstrap: any = parse(`<script>(()=>{
+      const context=${config};
+      const resolve=${resolveNavigation.toString()};
+      const prepare=(el,attr,form,targetAttr='target')=>{
+        const result=resolve(el.getAttribute(attr)||'',context,form);
+        if(!result)return false;
+        el.setAttribute(attr,result.href);
+        if(el.getAttribute(targetAttr)!=='_blank')el.setAttribute(targetAttr,result.target);
+        el.setAttribute('rel','noopener noreferrer');
+        return true;
+      };
+      for(const type of ['click','auxclick'])addEventListener(type,e=>{
+        const link=e.target.closest?.('a[href],area[href]');
+        if(link)prepare(link,'href',false);
+      },true);
+      addEventListener('submit',e=>{
+        const form=e.target,button=e.submitter;
+        const override=button?.hasAttribute('formaction');
+        if(button?.hasAttribute('formtarget'))button.setAttribute('formtarget','_blank');
+        if(!prepare(override?button:form,override?'formaction':'action',true,override?'formtarget':'target')){
+          e.preventDefault();
+          console.error('Registration form needs a valid HTTPS action URL. No registration was submitted.');
+        }
+      },true);
+      const submit=HTMLFormElement.prototype.submit;
+      HTMLFormElement.prototype.submit=function(){
+        if(prepare(this,'action',true))return submit.call(this);
+        console.error('Registration form needs a valid HTTPS action URL. No registration was submitted.');
+      };
+      const open=window.open.bind(window);
+      window.open=(url,target,features)=>{
+        if(!url)return open(url,target,features);
+        const result=resolve(String(url),context);
+        if(!result)return null;
+        return open(result.href,target==='_blank'||!target?'_blank':result.target,(features?features+',':'')+'noopener,noreferrer');
+      };
+      window.codePage={navigate:url=>{
+        const result=resolve(String(url),context);
+        if(result)window.open(result.href,result.target);
+      }};
+    })();</script>`);
+    head.childNodes.unshift(...bootstrap.childNodes.find((n: any) => n.tagName === "html").childNodes.find((n: any) => n.tagName === "head").childNodes);
+  }
   const script: any = parse(
     `<script>(()=>{const send=(kind,message)=>parent.postMessage({type:'code-page',channel:${JSON.stringify(channel)},kind,message},'*');addEventListener('error',e=>send('error',e.message||'Asset failed: '+(e.target.src||e.target.href||e.target.tagName)),true);addEventListener('unhandledrejection',e=>send('error',String(e.reason)));addEventListener('securitypolicyviolation',e=>send('error','Blocked '+e.violatedDirective+': '+e.blockedURI));const original=console.error.bind(console);console.error=(...args)=>{send('error',args.map(String).join(' ').slice(0,500));original(...args)};addEventListener('load',()=>{send('loaded','Preview rendered');const report=()=>send('height',Math.max(document.body.scrollHeight,document.documentElement.scrollHeight));report();new ResizeObserver(report).observe(document.body)})})();</script>`,
   );
