@@ -32,7 +32,9 @@ const { PGLiteSocketServer } = require("@electric-sql/pglite-socket");
     "postgresql://postgres:postgres@127.0.0.1:55445/postgres?connection_limit=1";
   process.env.SESSION_SECRET = crypto.randomBytes(40).toString("hex");
   process.env.UPLOADS_DIR = directory;
-  process.env.CODE_PAGE_ASSETS_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "university-code-assets-test-"));
+  process.env.CODE_PAGE_ASSETS_DIR = fs.mkdtempSync(
+    path.join(os.tmpdir(), "university-code-assets-test-"),
+  );
   process.env.NODE_ENV = "test";
   const prisma = require("../dist/prisma").default;
   const app = require("../dist/index").default;
@@ -353,11 +355,17 @@ const { PGLiteSocketServer } = require("@electric-sql/pglite-socket");
     );
     assert.equal((await admin.post("/media", badPdf)).status, 400);
     const pageActionPdf = form(
-      Buffer.from("%PDF-1.7\n1 0 obj << /Type /Catalog /OpenAction [3 0 R /XYZ null null 0] >> endobj\n%%EOF"),
+      Buffer.from(
+        "%PDF-1.7\n1 0 obj << /Type /Catalog /OpenAction [3 0 R /XYZ null null 0] >> endobj\n%%EOF",
+      ),
       "application/pdf",
       "application-form.pdf",
     );
-    assert.equal((await admin.post("/media", pageActionPdf)).status, 201, "ordinary page-opening metadata is not executable PDF content");
+    assert.equal(
+      (await admin.post("/media", pageActionPdf)).status,
+      201,
+      "ordinary page-opening metadata is not executable PDF content",
+    );
     pass(
       "media authorization, decoded image optimization, persistent metadata and invalid file rejection",
     );
@@ -592,6 +600,157 @@ const { PGLiteSocketServer } = require("@electric-sql/pglite-socket");
     pass(
       "server restart retains drafts, sessions, uploaded files and not-found behavior",
     );
+    const deleteVisual = (client, row, options = {}) =>
+      client.request(`/api/page-builder/${row.id}`, "DELETE", {
+        version: row.version,
+        confirm: true,
+        ...options,
+      });
+    const deletionDraft = (
+      await editor.post("", {
+        document: {
+          ...document,
+          title: "Delete draft fixture",
+          slug: "/pages/delete-draft-fixture",
+        },
+      })
+    ).body;
+    assert.equal((await deleteVisual(visitor, deletionDraft)).status, 401);
+    assert.equal((await deleteVisual(viewer, deletionDraft)).status, 403);
+    assert.equal(
+      (
+        await admin.request(
+          `/api/page-builder/${deletionDraft.id}`,
+          "DELETE",
+          { version: deletionDraft.version, confirm: true },
+          false,
+        )
+      ).status,
+      403,
+    );
+    assert.equal(
+      (await deleteVisual(editor, deletionDraft, { confirm: false })).status,
+      400,
+    );
+    assert.equal(
+      (
+        await deleteVisual(editor, deletionDraft, {
+          version: deletionDraft.version + 1,
+        })
+      ).status,
+      409,
+    );
+    assert.equal((await editor.get(`/${deletionDraft.id}`)).status, 200);
+    assert.equal((await deleteVisual(editor, deletionDraft)).status, 200);
+    assert.equal((await editor.get(`/${deletionDraft.id}`)).status, 404);
+    assert.equal(
+      await prisma.cmsPageVersion.count({
+        where: { pageSlug: deletionDraft.document.slug },
+      }),
+      0,
+    );
+    let deletionLive = (
+      await editor.post("", {
+        document: {
+          ...document,
+          title: "Delete live fixture",
+          slug: "/pages/delete-live-fixture",
+        },
+      })
+    ).body;
+    deletionLive = (
+      await admin.post(`/${deletionLive.id}/publish`, {
+        version: deletionLive.version,
+      })
+    ).body;
+    deletionLive = (
+      await editor.put(`/${deletionLive.id}`, {
+        version: deletionLive.version,
+        document: {
+          ...deletionLive.document,
+          slug: "/pages/delete-live-renamed",
+        },
+      })
+    ).body;
+    deletionLive = (
+      await admin.post(`/${deletionLive.id}/publish`, {
+        version: deletionLive.version,
+      })
+    ).body;
+    assert.equal(
+      (await deleteVisual(editor, deletionLive)).status,
+      403,
+      "Deleting a published visual page also requires publication permission",
+    );
+    assert.equal(
+      (
+        await deleteVisual(admin, deletionLive, {
+          version: deletionLive.version - 1,
+        })
+      ).status,
+      409,
+    );
+    assert.equal(
+      (await visitor.get("/public?slug=/pages/delete-live-renamed")).status,
+      200,
+    );
+    assert.equal((await deleteVisual(admin, deletionLive)).status, 200);
+    for (const slug of [
+      "/pages/delete-live-fixture",
+      "/pages/delete-live-renamed",
+    ])
+      assert.equal((await visitor.get(`/public?slug=${slug}`)).status, 404);
+    assert.equal(
+      await prisma.builderNavigation.count({
+        where: { pageId: deletionLive.id },
+      }),
+      0,
+    );
+    assert.equal(
+      await prisma.builderRedirect.count({
+        where: { pageId: deletionLive.id },
+      }),
+      0,
+    );
+    assert.equal(
+      await prisma.cmsPageVersion.count({
+        where: { pageSlug: deletionLive.document.slug },
+      }),
+      0,
+    );
+    assert.equal(
+      await prisma.adminSecurityEvent.count({
+        where: {
+          target: deletionLive.id,
+          event: "page_deleted",
+          success: true,
+        },
+      }),
+      1,
+    );
+    let deletionArchived = (
+      await editor.post("", {
+        document: {
+          ...document,
+          title: "Delete archive fixture",
+          slug: "/pages/delete-archive-fixture",
+        },
+      })
+    ).body;
+    deletionArchived = (
+      await editor.post(`/${deletionArchived.id}/archive`, {
+        version: deletionArchived.version,
+      })
+    ).body;
+    assert.equal((await deleteVisual(editor, deletionArchived)).status, 200);
+    assert.equal(
+      (await editor.get(`/${id}`)).status,
+      200,
+      "Unrelated visual pages remain intact",
+    );
+    pass(
+      "permanent visual deletion checks confirmation, CSRF, permissions and versions, removes live routes/navigation/redirects/history, preserves audit and unrelated pages, and supports archived pages",
+    );
     const editorUser = await prisma.adminUser.findUnique({
       where: { username: "builder-editor" },
     });
@@ -619,10 +778,28 @@ const { PGLiteSocketServer } = require("@electric-sql/pglite-socket");
     await prisma.adminLoginThrottle.delete({ where: { key: budgetKey } });
     pass("database-backed edit budgets reject excessive operations");
     if (process.env.CODE_PAGE_TEST === "1")
-      await require("./code-pages.cjs")({base,admin,editor,viewer,visitor,prisma,directory,db});
+      await require("./code-pages.cjs")({
+        base,
+        admin,
+        editor,
+        viewer,
+        visitor,
+        prisma,
+        directory,
+        db,
+      });
     if (process.env.BROWSER_TEST === "1")
       await require("./page-builder-browser.cjs")(base);
-    if (process.env.MEDIA_TEST === "1") await require("./media-storage.cjs")({ base, admin, viewer, visitor, prisma, directory, db });
+    if (process.env.MEDIA_TEST === "1")
+      await require("./media-storage.cjs")({
+        base,
+        admin,
+        viewer,
+        visitor,
+        prisma,
+        directory,
+        db,
+      });
     const sectionUser = await prisma.adminUser.findUnique({
       where: { username: "builder-viewer" },
     });
@@ -680,21 +857,41 @@ const { PGLiteSocketServer } = require("@electric-sql/pglite-socket");
     pass(
       "protected section summaries include saved drafts, omit component data, and paginate without duplicates",
     );
-    console.log("PASS: visual page builder integration suite completed against isolated PostgreSQL.");
+    console.log(
+      "PASS: visual page builder integration suite completed against isolated PostgreSQL.",
+    );
   } finally {
     await new Promise((resolve) => server.close(resolve));
     await prisma.$disconnect();
     await socket.stop();
     await db.close();
     for (const target of [directory, process.env.CODE_PAGE_ASSETS_DIR]) {
-      assert.equal(path.dirname(path.resolve(target)), path.resolve(os.tmpdir()));
-      assert.match(path.basename(target), /^university-(builder|code-assets)-test-/);
+      assert.equal(
+        path.dirname(path.resolve(target)),
+        path.resolve(os.tmpdir()),
+      );
+      assert.match(
+        path.basename(target),
+        /^university-(builder|code-assets)-test-/,
+      );
       try {
-        fs.rmSync(target, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+        fs.rmSync(target, {
+          recursive: true,
+          force: true,
+          maxRetries: 10,
+          retryDelay: 100,
+        });
       } catch (error) {
         // Chrome/Windows can retain file handles briefly after all functional assertions pass.
-        if (process.platform !== "win32" || !["EPERM", "EBUSY"].includes(error.code)) throw error;
-        console.warn("Windows retained isolated test fixtures after browser shutdown:", target);
+        if (
+          process.platform !== "win32" ||
+          !["EPERM", "EBUSY"].includes(error.code)
+        )
+          throw error;
+        console.warn(
+          "Windows retained isolated test fixtures after browser shutdown:",
+          target,
+        );
       }
     }
   }

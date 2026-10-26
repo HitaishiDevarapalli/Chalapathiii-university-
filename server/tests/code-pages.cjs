@@ -660,7 +660,25 @@ module.exports = async function codePagesTest({
   );
   await expect(
     request(admin, `/${id}`, "DELETE", { revision: current.revision }),
+    400,
+  );
+  await expect(
+    request(editor, `/${id}`, "DELETE", {
+      revision: current.revision,
+      confirm: true,
+    }),
+    403,
+  );
+  await expect(
+    request(admin, `/${id}`, "DELETE", {
+      revision: current.revision - 1,
+      confirm: true,
+    }),
     409,
+  );
+  assert.equal(
+    (await expect(request(visitor, "/resolve?route=/"), 200)).id,
+    id,
   );
   current = await expect(
     request(admin, `/${id}/unpublish`, "POST", {
@@ -728,11 +746,120 @@ module.exports = async function codePagesTest({
       event,
     );
   await expect(
-    request(admin, `/${id}`, "DELETE", { revision: current.revision }),
+    request(admin, `/${id}`, "DELETE", {
+      revision: current.revision,
+      confirm: true,
+    }),
     200,
   );
   await expect(request(admin, `/${id}`), 404);
+  assert.equal(await prisma.codeVersion.count({ where: { pageId: id } }), 0);
+  assert.equal(await prisma.codePreview.count({ where: { pageId: id } }), 0);
+  let deleteLive = await create(
+    "Delete published code fixture",
+    "/delete-published-code",
+  );
+  deleteLive = await expect(upload(admin, deleteLive, zip(files)), 200);
+  deleteLive = await put(deleteLive, {
+    ...deleteLive.document,
+    integration: {
+      ...deleteLive.document.integration,
+      mode: "footer",
+      parent: "quickLinks",
+      label: "Delete published code fixture",
+    },
+  });
+  deleteLive = await release(deleteLive);
+  const deletedRoute = await expect(
+    request(visitor, "/resolve?route=/delete-published-code"),
+    200,
+  );
+  const previewToDelete = await expect(
+    request(admin, `/${deleteLive.id}/preview`, "POST", {
+      revision: deleteLive.revision,
+    }),
+    200,
+  );
+  assert.ok(
+    (await admin.get("/placements")).body.navigation.some(
+      (page) => page.id === deleteLive.id,
+    ),
+  );
+  await expect(
+    request(visitor, `/${deleteLive.id}`, "DELETE", {
+      revision: deleteLive.revision,
+      confirm: true,
+    }),
+    401,
+  );
+  await expect(
+    request(viewer, `/${deleteLive.id}`, "DELETE", {
+      revision: deleteLive.revision,
+      confirm: true,
+    }),
+    403,
+  );
+  await expect(
+    request(editor, `/${deleteLive.id}`, "DELETE", {
+      revision: deleteLive.revision,
+      confirm: true,
+    }),
+    403,
+  );
+  await expect(
+    request(
+      admin,
+      `/${deleteLive.id}`,
+      "DELETE",
+      { revision: deleteLive.revision, confirm: true },
+      false,
+    ),
+    403,
+  );
+  await expect(
+    request(admin, `/${deleteLive.id}`, "DELETE", {
+      revision: deleteLive.revision,
+      confirm: true,
+    }),
+    200,
+  );
+  assert.equal(
+    await expect(
+      request(visitor, "/resolve?route=/delete-published-code"),
+      200,
+    ),
+    null,
+  );
+  assert.equal((await fetch(base + deletedRoute.contentUrl)).status, 404);
+  assert.equal((await fetch(base + previewToDelete.url)).status, 404);
+  assert.equal(
+    await prisma.codeVersion.count({ where: { pageId: deleteLive.id } }),
+    0,
+  );
+  assert.equal(
+    await prisma.builderNavigation.count({ where: { pageId: deleteLive.id } }),
+    0,
+  );
+  assert.equal(
+    await prisma.adminSecurityEvent.count({
+      where: {
+        target: deleteLive.id,
+        event: "code_page_deleted",
+        success: true,
+      },
+    }),
+    1,
+  );
+  assert.equal(
+    (await request(admin, `/${other.id}`)).status,
+    200,
+    "Unrelated code drafts remain intact",
+  );
+  assert.ok(
+    fs.existsSync(assetPath),
+    "Shared content-addressed assets remain intact",
+  );
   pass(
-    "database-backed upload rate limits, audit history and unpublished draft deletion",
+    "deletion checks confirmation, CSRF, permissions and versions, revokes live pages/previews/navigation/history, and preserves audits, shared assets and unrelated drafts",
   );
 };

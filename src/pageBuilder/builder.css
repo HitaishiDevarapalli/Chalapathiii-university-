@@ -224,6 +224,20 @@
 .pb-row-actions button {
   color: #134ca0;
 }
+.pb-row-actions {
+  flex-wrap: wrap;
+}
+.pb-app .pb-delete-page {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #b12f3a;
+  white-space: nowrap;
+}
+.pb-app .pb-delete-page:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 .pb-status {
   display: inline-block;
   font-size: 10px;

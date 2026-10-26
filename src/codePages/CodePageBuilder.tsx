@@ -375,22 +375,32 @@ export default function CodePageBuilder() {
     });
   const announce = () => window.dispatchEvent(new Event("builder-published"));
   const confirm = (value: Confirm) => {
+    setError("");
+    setNotice("");
     setConfirmText("");
     setConfirmation(value);
   };
-  const action = (kind: "unpublish" | "delete") => {
-    if (!record) return;
-    const current = record;
+  const canDelete = (page: CodeRecord) =>
+    can("pages", "delete") &&
+    (!page.publishedVersionId || can("pages", "publish"));
+  const deleteHint = (page: CodeRecord) =>
+    !can("pages", "delete")
+      ? "Requires permission to delete pages"
+      : page.publishedVersionId && !can("pages", "publish")
+        ? "Deleting a live page also requires publication permission"
+        : "Permanently delete this page and its version history";
+  const action = (kind: "unpublish" | "delete", current = record) => {
+    if (!current) return;
     confirm({
       title:
         kind === "delete"
-          ? "Delete this unpublished draft?"
+          ? `Delete “${current.document.name}”?`
           : "Unpublish this page?",
       message:
         kind === "delete"
-          ? "This deletes the draft and its version history."
+          ? `This permanently deletes the page, saved drafts and version history.${current.publishedVersionId ? ` The live page at ${current.liveRoute} and its menu or footer entry will be removed. A replaced original page or homepage will become visible again.` : ""} Unsaved changes will be discarded. This cannot be undone.`
           : "The code page and its menu entry will be removed. A replaced original page or homepage will become visible again.",
-      label: kind === "delete" ? "Delete Draft" : "Unpublish",
+      label: kind === "delete" ? "Delete permanently" : "Unpublish",
       action: kind === "delete" ? "delete" : "publish",
       run: async () => {
         const value = await codeApi(
@@ -399,8 +409,16 @@ export default function CodePageBuilder() {
           { revision: current.revision, confirm: true },
         );
         if (kind === "delete") {
-          setRecord(null);
-          setDoc(null);
+          if (record?.id === current.id) {
+            setRecord(null);
+            setDoc(null);
+            setEdits({});
+            setPreview(null);
+            setRendered(false);
+          }
+          setItems((items) => items.filter((item) => item.id !== current.id));
+          setPage(1);
+          setNotice(`“${current.document.name}” was deleted.`);
         } else accept(value);
         setRefresh((v) => v + 1);
         announce();
@@ -533,6 +551,16 @@ export default function CodePageBuilder() {
                 onClick={publishSummary}
               >
                 Publish
+              </button>
+              <button
+                className="cp-danger"
+                data-admin-action="delete"
+                disabled={!!busy || !canDelete(record)}
+                title={deleteHint(record)}
+                onClick={() => action("delete")}
+              >
+                <Trash2 size={16} />
+                Delete page
               </button>
             </>
           ) : (
@@ -689,9 +717,25 @@ export default function CodePageBuilder() {
                         </small>
                       </td>
                       <td>
-                        <button onClick={() => open(item.id)} disabled={!!busy}>
-                          Open page →
-                        </button>
+                        <div className="cp-actions">
+                          <button
+                            onClick={() => open(item.id)}
+                            disabled={!!busy}
+                          >
+                            Open page →
+                          </button>
+                          <button
+                            className="cp-danger"
+                            data-admin-action="delete"
+                            disabled={!!busy || !canDelete(item)}
+                            title={deleteHint(item)}
+                            aria-label={`Delete ${item.document.name}`}
+                            onClick={() => action("delete", item)}
+                          >
+                            <Trash2 size={14} />
+                            Delete page
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -1456,17 +1500,16 @@ export default function CodePageBuilder() {
                         Unpublish
                       </button>
                     )}
-                    {!record.publishedVersionId && (
-                      <button
-                        className="cp-danger"
-                        data-admin-action="delete"
-                        disabled={!!busy || !can("pages", "delete")}
-                        onClick={() => action("delete")}
-                      >
-                        <Trash2 size={16} />
-                        Delete Draft
-                      </button>
-                    )}
+                    <button
+                      className="cp-danger"
+                      data-admin-action="delete"
+                      disabled={!!busy || !canDelete(record)}
+                      title={deleteHint(record)}
+                      onClick={() => action("delete")}
+                    >
+                      <Trash2 size={16} />
+                      Delete page
+                    </button>
                   </div>
                 </div>
               </div>
@@ -1767,6 +1810,11 @@ export default function CodePageBuilder() {
           }}
         >
           <p>{confirmation.message}</p>
+          {error && (
+            <div className="cp-alert cp-error" role="alert">
+              {error}
+            </div>
+          )}
           {confirmation.route && (
             <label className="cp-field">
               Type {confirmation.route} to confirm

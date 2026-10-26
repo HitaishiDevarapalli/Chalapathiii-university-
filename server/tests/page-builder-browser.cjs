@@ -171,11 +171,33 @@ module.exports = async function builderBrowserTest(base) {
       uploadPath,
       Buffer.from(await (await fetch(existingPhoto)).arrayBuffer()),
     );
-    await (await page.$('.media-storage input[type="file"]')).uploadFile(uploadPath);
-    await page.waitForFunction(() => document.querySelector('.media-notice')?.textContent.includes('1 file added'));
-    await page.waitForFunction(existing => [...document.querySelectorAll('.media-grid img')].some(img => img.src !== existing), {}, existingPhoto);
-    await page.evaluate(existing => [...document.querySelectorAll('.media-grid img')].find(img => img.src !== existing).closest('button').click(), existingPhoto);
-    await page.waitForFunction(() => !document.querySelector(".media-picker-dialog"));
+    await (
+      await page.$('.media-storage input[type="file"]')
+    ).uploadFile(uploadPath);
+    await page.waitForFunction(() =>
+      document
+        .querySelector(".media-notice")
+        ?.textContent.includes("1 file added"),
+    );
+    await page.waitForFunction(
+      (existing) =>
+        [...document.querySelectorAll(".media-grid img")].some(
+          (img) => img.src !== existing,
+        ),
+      {},
+      existingPhoto,
+    );
+    await page.evaluate(
+      (existing) =>
+        [...document.querySelectorAll(".media-grid img")]
+          .find((img) => img.src !== existing)
+          .closest("button")
+          .click(),
+      existingPhoto,
+    );
+    await page.waitForFunction(
+      () => !document.querySelector(".media-picker-dialog"),
+    );
     await page.waitForSelector(".pb-canvas .pb-type-image img");
     assert.notEqual(
       await page.$eval(".pb-canvas .pb-type-image img", (image) => image.src),
@@ -675,6 +697,58 @@ module.exports = async function builderBrowserTest(base) {
       "View-only users cannot upload photos",
     );
     await readerContext.close();
+    assert.ok(
+      await page.$(
+        '.pb-row-actions button[aria-label="Delete Visual browser test"]',
+      ),
+      "Delete is visible in the visual page list",
+    );
+    await page.click('[aria-label="Edit Visual browser test"]');
+    await page.waitForSelector(".pb-editor-footer");
+    await click("Publish");
+    await click("Confirm publication");
+    await page.waitForSelector(".pb-status-published");
+    await click("Delete page");
+    await page.waitForFunction(() =>
+      document
+        .querySelector(".pb-modal")
+        ?.textContent.includes("This cannot be undone"),
+    );
+    await click("Cancel");
+    assert.equal((await api(`/${current.id}`)).status, 200);
+    await click("Delete page");
+    await page.screenshot({
+      path: path.join(out, "delete-page-confirmation.png"),
+      fullPage: true,
+    });
+    await click("Delete permanently");
+    await page.waitForSelector(".pb-manager");
+    assert.equal((await api(`/${current.id}`)).status, 404);
+    await page.waitForFunction(
+      () =>
+        ![...document.querySelectorAll(".admin-subnavigation button")].some(
+          (button) => button.textContent.includes("Visual browser test"),
+        ),
+    );
+    await page.click(
+      '.pb-row-actions button[aria-label="Delete Added standalone page"]',
+    );
+    await click("Cancel");
+    assert.ok(
+      await page.$(
+        '.pb-row-actions button[aria-label="Delete Added standalone page"]',
+      ),
+    );
+    await page.click(
+      '.pb-row-actions button[aria-label="Delete Added standalone page"]',
+    );
+    await click("Delete permanently");
+    await page.waitForFunction(
+      () =>
+        !document.querySelector(
+          '.pb-row-actions button[aria-label="Delete Added standalone page"]',
+        ),
+    );
     assert.deepEqual(errors, [], "no browser runtime errors");
     fs.writeFileSync(
       path.join(out, "report.json"),
@@ -706,6 +780,7 @@ module.exports = async function builderBrowserTest(base) {
             "saved-state and revision dialog recovery",
             "modal keyboard isolation and notification layering",
             "unpublish",
+            "confirmed live-page and draft deletion from editor/list with cancellation and sidebar cleanup",
             "mobile editor",
             "reload persistence",
           ],

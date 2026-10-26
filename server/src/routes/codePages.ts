@@ -6,7 +6,7 @@ import multer from "multer";
 import { Prisma } from "@prisma/client";
 import prisma from "../prisma";
 import { requirePermission, assertPermission } from "../middleware/auth";
-import { audit, fail, digest } from "../security/core";
+import { audit, fail, digest, permitted } from "../security/core";
 import { settingsSchema, Settings } from "../codePages/schema";
 import { resolveSocialImage, socialImageError } from "../codePages/seo";
 import {
@@ -479,7 +479,8 @@ router.use((req, _res, next) => {
     if (["GET", "HEAD", "OPTIONS"].includes(req.method)) return;
     const scope = req.path.endsWith("/upload")
       ? "upload"
-      : /\/(publish|rollback|unpublish)$/.test(req.path)
+      : req.method === "DELETE" ||
+          /\/(publish|rollback|unpublish)$/.test(req.path)
         ? "publish"
         : "edit";
     const key = digest(`code-pages:${req.adminUser.id}:${scope}`);
@@ -1055,16 +1056,17 @@ router.delete(
   "/:id",
   requirePermission("pages.delete"),
   run(async (req, res) => {
+    if (req.body?.confirm !== true) fail("Confirm permanent page deletion");
     await transaction(async (tx) => {
       const row = await getRow(tx, req.params.id);
-      if (row.publishedVersionId)
-        fail("Unpublish before deleting a draft", 409);
+      if (row.publishedVersionId && !permitted(req.adminUser, "pages.publish"))
+        fail("Publication permission is required to delete a live page", 403);
       await claim(tx, req, row.pageId);
       await audit(
         req,
         "code_page_deleted",
         true,
-        "Unpublished code draft deleted",
+        "Code page, releases, previews and automatic placement permanently deleted",
         undefined,
         row.pageId,
         tx,

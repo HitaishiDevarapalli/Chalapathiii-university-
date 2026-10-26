@@ -58,8 +58,11 @@ async function uniqueSlug(tx: Tx, slug: string, id: string) {
     tx.builderDocument.findUnique({ where: { slug } }),
     tx.builderRedirect.findUnique({ where: { slug } }),
   ]);
-  const codeOwner = await tx.codeDocument.findUnique({ where: { liveRoute: slug } });
-  if (codeOwner && codeOwner.pageId !== id) fail(409, "This URL belongs to a published code page");
+  const codeOwner = await tx.codeDocument.findUnique({
+    where: { liveRoute: slug },
+  });
+  if (codeOwner && codeOwner.pageId !== id)
+    fail(409, "This URL belongs to a published code page");
   if (
     [page?.id, draft?.pageId, redirect?.pageId].some(
       (owner) => owner && owner !== id,
@@ -116,11 +119,22 @@ async function validateReferences(
   const targetRows = await tx.cmsPage.findMany({
     where: {
       status: "published",
-      OR: [{ id: { in: [...ids] } }, { slug: { in: slugs } }, { codeDocument: { liveRoute: { in: slugs } } }],
+      OR: [
+        { id: { in: [...ids] } },
+        { slug: { in: slugs } },
+        { codeDocument: { liveRoute: { in: slugs } } },
+      ],
     },
-    select: { id: true, slug: true, codeDocument: { select: { liveRoute: true } } },
+    select: {
+      id: true,
+      slug: true,
+      codeDocument: { select: { liveRoute: true } },
+    },
   });
-  const targets = targetRows.map(row => ({ id: row.id, slug: row.codeDocument?.liveRoute || row.slug }));
+  const targets = targetRows.map((row) => ({
+    id: row.id,
+    slug: row.codeDocument?.liveRoute || row.slug,
+  }));
   if ([...ids].some((id) => !targets.some((p) => p.id === id)))
     fail(400, "An internal page destination is no longer published");
   if (slugs.some((slug) => !targets.some((p) => p.slug === slug)))
@@ -282,7 +296,14 @@ router.get(
       prisma.builderNavigation.findMany({
         where: { visible: true, page: { status: "published" } },
         orderBy: [{ position: "asc" }, { id: "asc" }],
-        include: { page: { select: { slug: true, codeDocument: { select: { liveRoute: true } } } } },
+        include: {
+          page: {
+            select: {
+              slug: true,
+              codeDocument: { select: { liveRoute: true } },
+            },
+          },
+        },
       }),
       prisma.cmsPage.findMany({
         where: { type: "visual", status: "published" },
@@ -325,7 +346,8 @@ router.use((req, _res, next) => {
     const scope =
       req.path === "/media"
         ? "media"
-        : /\/(publish|unpublish|archive)$/.test(req.path)
+        : req.method === "DELETE" ||
+            /\/(publish|unpublish|archive)$/.test(req.path)
           ? "publication"
           : "edit";
     const key = digest(`page-builder:${req.adminUser.id}:${scope}`);
@@ -350,12 +372,25 @@ router.get(
   "/links",
   run(async (_req, res) =>
     res.json(
-      await prisma.cmsPage.findMany({
-        where: { status: "published" },
-        select: { id: true, title: true, slug: true, codeDocument: { select: { liveRoute: true } } },
-        orderBy: { title: "asc" },
-        take: 500,
-      }).then(rows => rows.map(row => ({ id: row.id, title: row.title, slug: row.codeDocument?.liveRoute || row.slug }))),
+      await prisma.cmsPage
+        .findMany({
+          where: { status: "published" },
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            codeDocument: { select: { liveRoute: true } },
+          },
+          orderBy: { title: "asc" },
+          take: 500,
+        })
+        .then((rows) =>
+          rows.map((row) => ({
+            id: row.id,
+            title: row.title,
+            slug: row.codeDocument?.liveRoute || row.slug,
+          })),
+        ),
     ),
   ),
 );
@@ -486,7 +521,10 @@ router.get(
     );
   }),
 );
-const upload = multer({ storage: mediaUploadStorage, limits: { files: 1, fields: 2 } });
+const upload = multer({
+  storage: mediaUploadStorage,
+  limits: { files: 1, fields: 2 },
+});
 router.post(
   "/media",
   requirePermission("gallery.create"),
@@ -528,7 +566,7 @@ router.post(
         }
       } else if (
         file.mimetype === "application/pdf" &&
-        await isPassivePdf(file.path)
+        (await isPassivePdf(file.path))
       ) {
         mime = "application/pdf";
         extension = "pdf";
@@ -622,6 +660,41 @@ router.put(
       return record(tx, row.pageId);
     });
     return res.json(view(result));
+  }),
+);
+router.delete(
+  "/:id",
+  requirePermission("pages.delete"),
+  run(async (req, res) => {
+    if (req.body?.confirm !== true)
+      fail(400, "Confirm permanent page deletion");
+    const version = versionOf(req);
+    await prisma.$transaction(
+      async (tx) => {
+        const row = await record(tx, req.params.id);
+        if (
+          row.page.status === "published" &&
+          !permitted(req.adminUser, "pages.publish")
+        )
+          fail(403, "Publication permission is required to delete a live page");
+        await claim(tx, req, row.pageId, version);
+        await audit(
+          req,
+          "page_deleted",
+          true,
+          "Visual page, revisions, redirects and automatic placement permanently deleted",
+          undefined,
+          row.pageId,
+          tx,
+        );
+        await tx.cmsPage.delete({ where: { id: row.pageId } });
+      },
+      {
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+        timeout: 15000,
+      },
+    );
+    return res.json({ success: true });
   }),
 );
 router.post(

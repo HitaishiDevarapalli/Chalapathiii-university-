@@ -155,11 +155,12 @@ function Modal({
 const Button = ({
   children,
   primary,
+  className = "",
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & { primary?: boolean }) => (
   <button
     type="button"
-    className={`admin-button admin-button-${primary ? "primary" : "secondary"}`}
+    className={`admin-button admin-button-${primary ? "primary" : "secondary"} ${className}`}
     {...props}
   >
     {children}
@@ -1026,6 +1027,7 @@ export default function PageBuilder({
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [modal, setModal] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<BuilderRecord | null>(null);
   const [editorMode, setEditorMode] = useState<"content" | "layout">(
     initialPageId ? "content" : "layout",
   );
@@ -1180,6 +1182,52 @@ export default function PageBuilder({
       );
       window.dispatchEvent(new Event("builder-published"));
       window.dispatchEvent(new Event("builder-document-saved"));
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const canDelete = (row: BuilderRecord) =>
+    can("pages", "delete") && (!row.liveSlug || can("pages", "publish"));
+  const deleteHint = (row: BuilderRecord) =>
+    !can("pages", "delete")
+      ? "Requires permission to delete pages"
+      : row.liveSlug && !can("pages", "publish")
+        ? "Deleting a live page also requires publication permission"
+        : "Permanently delete this page and its revisions";
+  const requestDelete = (row: BuilderRecord) => {
+    setDeleteTarget(row);
+    setError("");
+    setNotice("");
+    setModal("delete");
+  };
+  const deletePage = async () => {
+    if (!deleteTarget) return;
+    const target = deleteTarget;
+    setBusy(true);
+    setError("");
+    try {
+      await builderApi(`/${target.id}`, "DELETE", {
+        version: target.version,
+        confirm: true,
+      });
+      setItems((items) => items.filter((row) => row.id !== target.id));
+      setPage(1);
+      setReload((value) => value + 1);
+      setModal("");
+      setDeleteTarget(null);
+      setNotice(`“${target.document.title}” was deleted.`);
+      if (active?.id === target.id) {
+        setActive(null);
+        setDoc(null);
+        setPast([]);
+        setFuture([]);
+        setSelected("");
+      }
+      window.dispatchEvent(new Event("builder-published"));
+      window.dispatchEvent(new Event("builder-document-saved"));
+      if (active?.id === target.id) onReturnToPages?.();
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -1598,6 +1646,17 @@ export default function PageBuilder({
                               <ExternalLink size={16} />
                             </a>
                           )}
+                          <button
+                            className="pb-delete-page"
+                            data-admin-action="delete"
+                            aria-label={`Delete ${row.document.title}`}
+                            disabled={busy || !canDelete(row)}
+                            title={deleteHint(row)}
+                            onClick={() => requestDelete(row)}
+                          >
+                            <Trash2 size={15} />
+                            Delete page
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -2059,6 +2118,16 @@ export default function PageBuilder({
                   Archive page
                 </Button>
               )}
+              <Button
+                className="pb-delete-page"
+                data-admin-action="delete"
+                disabled={busy || !canDelete(active)}
+                title={deleteHint(active)}
+                onClick={() => requestDelete(active)}
+              >
+                <Trash2 size={15} />
+                Delete page
+              </Button>
             </div>
           </div>
         </>
@@ -2301,6 +2370,49 @@ export default function PageBuilder({
           </div>
         </Modal>
       )}
+      {modal === "delete" && deleteTarget && (
+        <Modal
+          title={`Delete “${deleteTarget.document.title}”?`}
+          error={error}
+          dismissError={() => setError("")}
+          close={() => {
+            if (!busy) {
+              setModal("");
+              setDeleteTarget(null);
+            }
+          }}
+        >
+          <div className="pb-confirm">
+            <p>
+              This permanently deletes the page, saved drafts and all revisions.{" "}
+              {deleteTarget.liveSlug
+                ? `The live page at ${deleteTarget.liveSlug}, its redirects and automatic menu placement will be removed. `
+                : ""}
+              Unsaved changes will be discarded. This cannot be undone.
+            </p>
+            <div>
+              <Button
+                data-admin-action="view"
+                disabled={busy}
+                onClick={() => {
+                  setModal("");
+                  setDeleteTarget(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                primary
+                data-admin-action="delete"
+                disabled={busy || !canDelete(deleteTarget)}
+                onClick={() => void deletePage()}
+              >
+                {busy ? "Deleting…" : "Delete permanently"}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
       {["publish", "unpublish", "archive", "leave"].includes(modal) && (
         <Modal
           error={error}
@@ -2388,10 +2500,22 @@ export default function PageBuilder({
         </Modal>
       )}
       {modal === "media" && (
-        <MediaPicker type={findNode(doc?.nodes || [], mediaTarget.current)?.type === "download" ? "pdf" : "image"}
-          onClose={() => setModal("")} onSelect={asset => {
-            if (editable) chooseMedia({ ...asset, width: asset.width ?? undefined, height: asset.height ?? undefined });
-          }} />
+        <MediaPicker
+          type={
+            findNode(doc?.nodes || [], mediaTarget.current)?.type === "download"
+              ? "pdf"
+              : "image"
+          }
+          onClose={() => setModal("")}
+          onSelect={(asset) => {
+            if (editable)
+              chooseMedia({
+                ...asset,
+                width: asset.width ?? undefined,
+                height: asset.height ?? undefined,
+              });
+          }}
+        />
       )}
       {modal === "revisions" && (
         <Modal

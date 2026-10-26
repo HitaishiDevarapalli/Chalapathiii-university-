@@ -301,19 +301,88 @@ module.exports = async ({ base, files, zip, directory }) => {
     await page.waitForSelector(".pb-manager", { visible: true });
     await page.click(".cp-builder-switch button:nth-child(2)");
     await click("Configure Page Integration");
-    await click("Unpublish");
-    await click("Unpublish", ".cp-modal button");
     await page.waitForFunction(() =>
-      document.querySelector(".cp-statusbar")?.textContent.includes("DRAFT"),
+      document
+        .querySelector(".cp-statusbar")
+        ?.textContent.includes("PUBLISHED"),
     );
     await page.setViewport({ width: 390, height: 844 });
     await page.screenshot({
       path: path.join(out, "08-admin-mobile.png"),
       fullPage: true,
     });
+    await click("Delete page");
+    await page.waitForFunction(() =>
+      document
+        .querySelector(".cp-modal")
+        ?.textContent.includes("This cannot be undone"),
+    );
+    await click("Cancel", ".cp-modal button");
+    assert.ok(
+      await (
+        await fetch(base + "/api/code-pages/resolve?route=/browser-campaign")
+      ).json(),
+      "Cancelling keeps the published page live",
+    );
+    await click("All pages");
+    await page.waitForSelector(
+      '.cp-table button[aria-label="Delete Browser campaign"]',
+    );
+    const published = await (
+      await fetch(base + "/api/code-pages/resolve?route=/browser-campaign")
+    ).json();
+    await page.click('.cp-table button[aria-label="Delete Browser campaign"]');
+    await page.waitForSelector(".cp-modal");
+    assert.match(
+      await page.$eval(".cp-modal", (el) => el.textContent),
+      /\/browser-campaign/,
+    );
+    await page.screenshot({
+      path: path.join(out, "09-delete-confirmation.png"),
+      fullPage: true,
+    });
+    await click("Delete permanently", ".cp-modal button");
+    await page.waitForFunction(
+      () =>
+        !document.querySelector(".cp-modal") &&
+        !document.querySelector('button[aria-label="Delete Browser campaign"]'),
+    );
+    assert.equal(
+      await (
+        await fetch(base + "/api/code-pages/resolve?route=/browser-campaign")
+      ).json(),
+      null,
+    );
+    assert.equal((await fetch(base + published.contentUrl)).status, 404);
+    assert.equal(
+      (
+        await (await fetch(base + "/api/page-builder/placements")).json()
+      ).navigation.some((page) => page.id === published.id),
+      false,
+    );
+    await click("Create New Code Page");
+    await fill(".cp-modal input", "Delete browser draft");
+    await click("Create page", ".cp-modal button");
+    await page.waitForSelector(".cp-upload");
+    await click("Configure Page Integration");
+    await fill("#cp-social-image", "unsaved invalid input");
+    await click("Delete page");
+    await click("Delete permanently", ".cp-modal button");
+    await page.waitForFunction(
+      () =>
+        !document.querySelector(".cp-modal") &&
+        !!document.querySelector(".cp-table"),
+    );
+    assert.equal(
+      await page.$$eval(".cp-table tbody tr", (rows) =>
+        rows.some((row) => row.textContent.includes("Delete browser draft")),
+      ),
+      false,
+      "Draft deletion works without saving invalid unfinished fields",
+    );
     assert.deepEqual(errors, [], "No uncaught portal errors");
     console.log(
-      "PASS: code pages — browser upload, editing UI, footer configuration, real isolated JS/CSS/images, blocked DOM/storage/API access, responsive previews, approval, publication, source comparison, public route/footer and Visual Builder preservation",
+      "PASS: code pages — upload/edit/preview/publish, sharing metadata, public mapping, visible delete actions, cancellation, published-page deletion with menu cleanup, and deletion of unfinished drafts",
     );
   } catch (error) {
     await page

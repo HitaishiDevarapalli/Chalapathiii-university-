@@ -9,7 +9,7 @@ Open **Admin Portal → Page Builder → Code-Based Page Builder**. The Visual P
 3. Configure the route, placement, shared/standalone layout and SEO fields. The social-sharing image is optional: leave it blank, choose a PNG/JPEG/WebP/GIF/AVIF image from the ZIP, enter an HTTPS image URL, or use a website image path such as `/uploads/banner.webp`. ZIP images are mapped to their published asset URLs automatically. Main menu entries, existing submenus and footer sections use the existing `BuilderNavigation` registry. Replacement and homepage overrides leave the original CMS record or application component intact.
 4. Preview the saved revision in desktop, tablet and mobile sizes. Preview links expire after 15 minutes. Missing asset references block approval. Rendering errors appear in the diagnostics panel when the browser can report them.
 5. Approve the preview, review the publishing summary and confirm publication. Replacing a page or homepage additionally requires typing the destination path.
-6. Source/configuration changes after publishing stay in draft. Version history compares file contents and hashes, restores drafts, or rolls back a previously published release with its original placement. Unpublishing removes the override and menu entry, revealing the original destination.
+6. Source/configuration changes after publishing stay in draft. Version history compares file contents and hashes, restores drafts, or rolls back a previously published release with its original placement. Unpublishing removes the override and menu entry, revealing the original destination. **Delete page** is available in the page list, editor header and publication controls. Confirming deletion permanently removes the page, all versions and preview links, and its automatic placement. Deleting a live page also removes its route override and restores any underlying original destination. The Visual Page Builder likewise offers permanent deletion in its list and editor, while retaining its separate archive/restore option.
 
 Saving configuration invalidates approval; preview and approve the saved revision again. Publication and rollback reject stale revisions, conflicting routes and missing/corrupt stored assets. Concurrent publication is protected by a serializable database transaction and a unique live-route constraint.
 
@@ -33,7 +33,7 @@ Published parent routes receive configured SEO metadata through the existing Rea
 - `pages.create`: create a draft.
 - `pages.edit`: upload, save/validate and restore draft versions.
 - `pages.publish`: approve, review summary, publish/unpublish and roll back.
-- `pages.delete`: delete an unpublished draft.
+- `pages.delete`: permanently delete a page and its history after confirmation. Deleting a published page additionally requires `pages.publish`.
 
 All administrative writes use the existing session/CSRF policy. The legacy CMS and page endpoints reject code-page mutations. Audit records cover create, upload, edit, preview, approval, publication, restore, rollback, unpublish and delete.
 
@@ -61,7 +61,7 @@ The repository's `deploy.sh` performs a full VPS update. The code-page migration
 
 Public: `GET /api/code-pages/resolve?route=…`, `GET /sitemap.xml`, `GET /content/:pageId/:versionId/*`, `GET /preview/:token/*` under `/api/code-pages`.
 
-Administrative: `GET/POST /`, `GET /destinations`, `GET/PUT/DELETE /:id`, `POST /:id/upload`, `POST /:id/validate`, `POST /:id/preview`, `POST /:id/previewed`, `POST /:id/approve`, `GET /:id/summary`, `POST /:id/publish`, `POST /:id/unpublish`, `GET /:id/versions`, `GET /:id/versions/:versionId`, `POST /:id/restore`, `POST /:id/rollback`. All content-changing requests carry `revision`; upload uses multipart `file` and `revision`. Publication/unpublication/rollback require `confirm: true`; replacement publication/rollback additionally requires `confirmRoute` matching the destination.
+Administrative: `GET/POST /`, `GET /destinations`, `GET/PUT/DELETE /:id`, `POST /:id/upload`, `POST /:id/validate`, `POST /:id/preview`, `POST /:id/previewed`, `POST /:id/approve`, `GET /:id/summary`, `POST /:id/publish`, `POST /:id/unpublish`, `GET /:id/versions`, `GET /:id/versions/:versionId`, `POST /:id/restore`, `POST /:id/rollback`. All content-changing requests carry `revision`; upload uses multipart `file` and `revision`. Deletion/publication/unpublication/rollback require `confirm: true`; replacement publication/rollback additionally requires `confirmRoute` matching the destination. Visual-page deletion uses `DELETE /api/page-builder/:id` with `version` and `confirm: true`. Deletion checks the current version and permissions within the transaction; shared media assets are retained.
 
 ## Verification
 
