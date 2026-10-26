@@ -630,6 +630,33 @@
 .cp-field input:disabled {
   background: #f1f4f8;
 }
+.cp .cp-field-hint {
+  color: #7b899b;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.7;
+}
+.cp .cp-field-error {
+  color: #aa303b;
+  font-size: 11px;
+  font-weight: 400;
+  margin: 0;
+}
+.cp-field input[aria-invalid="true"] {
+  border-color: #c84a55;
+  background: #fff8f8;
+}
+.cp-zip-image-label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 7px;
+}
+.cp .cp-clear-image {
+  align-self: flex-start;
+  padding: 6px 10px;
+  font-size: 10px;
+}
 .cp-check {
   display: flex;
   align-items: center;

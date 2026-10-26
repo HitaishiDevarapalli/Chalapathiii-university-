@@ -20,6 +20,12 @@ import {
 } from "lucide-react";
 import { useAdminAccess, formatIST } from "../security/adminAccess";
 import {
+  SOCIAL_IMAGE_HELP,
+  SOCIAL_IMAGE_MIMES,
+  normalizeSocialImage,
+  socialImageError,
+} from "../../server/src/codePages/seo";
+import {
   CodeDocument,
   CodeRecord,
   CodeVersion,
@@ -145,6 +151,14 @@ export default function CodePageBuilder() {
   const frame = useRef<HTMLIFrameElement>(null),
     previewBox = useRef<HTMLDivElement>(null),
     uploadInput = useRef<HTMLInputElement>(null);
+  const socialImageInput = useRef<HTMLInputElement>(null);
+  const [socialImageTouched, setSocialImageTouched] = useState(false);
+  const imageError = doc
+    ? socialImageError(doc.seo.image, doc.package.files)
+    : undefined;
+  const zipImages =
+    doc?.package.files.filter((file) => SOCIAL_IMAGE_MIMES.has(file.mime)) ||
+    [];
   const dirty =
     !!record &&
     !!doc &&
@@ -156,6 +170,7 @@ export default function CodePageBuilder() {
     setRecord(value);
     setDoc(structuredClone(value.document));
     setEdits({});
+    setSocialImageTouched(false);
     setPreview(null);
     setRendered(false);
     setFilePath((current) =>
@@ -259,6 +274,15 @@ export default function CodePageBuilder() {
   const save = async () => {
     if (!record || !doc) throw new Error("Open a page first");
     if (!dirty) return record;
+    if (imageError) {
+      setSocialImageTouched(true);
+      setTab("integration");
+      requestAnimationFrame(() => {
+        socialImageInput.current?.scrollIntoView({ block: "center" });
+        socialImageInput.current?.focus({ preventScroll: true });
+      });
+      throw new Error(`Check the social-sharing image. ${imageError}`);
+    }
     const value = await codeApi<CodeRecord>(`/${record.id}`, "PUT", {
       revision: record.revision,
       document: doc,
@@ -1270,7 +1294,6 @@ export default function CodePageBuilder() {
                       ["canonical", "Canonical URL"],
                       ["ogTitle", "Open Graph title"],
                       ["ogDescription", "Open Graph description"],
-                      ["image", "Social-sharing image URL"],
                     ].map(([key, label]) => (
                       <label key={key} className="cp-field">
                         {label}
@@ -1289,6 +1312,94 @@ export default function CodePageBuilder() {
                         />
                       </label>
                     ))}
+                    <div className="cp-field">
+                      <label htmlFor="cp-social-image">
+                        Social-sharing image (optional)
+                      </label>
+                      <input
+                        id="cp-social-image"
+                        ref={socialImageInput}
+                        value={doc.seo.image}
+                        placeholder="https://… or /uploads/banner.webp"
+                        aria-invalid={socialImageTouched && !!imageError}
+                        aria-describedby={
+                          socialImageTouched && imageError
+                            ? "cp-social-image-hint cp-social-image-error"
+                            : "cp-social-image-hint"
+                        }
+                        onChange={(e) => {
+                          patch({ seo: { ...doc.seo, image: e.target.value } });
+                          setError("");
+                        }}
+                        onBlur={() => {
+                          setSocialImageTouched(true);
+                          patch({
+                            seo: {
+                              ...doc.seo,
+                              image: normalizeSocialImage(doc.seo.image),
+                            },
+                          });
+                        }}
+                      />
+                      <small
+                        id="cp-social-image-hint"
+                        className="cp-field-hint"
+                      >
+                        {SOCIAL_IMAGE_HELP}
+                      </small>
+                      {socialImageTouched && imageError && (
+                        <p
+                          id="cp-social-image-error"
+                          className="cp-field-error"
+                          role="alert"
+                        >
+                          {imageError}
+                        </p>
+                      )}
+                      {zipImages.length > 0 && (
+                        <label className="cp-zip-image-label">
+                          Or choose an image from your uploaded ZIP
+                          <select
+                            aria-label="Choose social-sharing image from ZIP"
+                            value={
+                              zipImages.some(
+                                (file) => file.path === doc.seo.image,
+                              )
+                                ? doc.seo.image
+                                : ""
+                            }
+                            onChange={(e) => {
+                              patch({
+                                seo: { ...doc.seo, image: e.target.value },
+                              });
+                              setSocialImageTouched(true);
+                              setError("");
+                            }}
+                          >
+                            <option value="">Choose an uploaded image…</option>
+                            {zipImages.map((file) => (
+                              <option key={file.path} value={file.path}>
+                                {file.path}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      )}
+                      {doc.seo.image && (
+                        <button
+                          type="button"
+                          className="cp-clear-image"
+                          data-admin-action="edit"
+                          onClick={() => {
+                            patch({ seo: { ...doc.seo, image: "" } });
+                            setSocialImageTouched(false);
+                            setError("");
+                          }}
+                        >
+                          Clear optional image
+                        </button>
+                      )}
+                    </div>
                     <label className="cp-check">
                       <input
                         type="checkbox"

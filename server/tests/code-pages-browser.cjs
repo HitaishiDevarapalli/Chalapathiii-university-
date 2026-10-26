@@ -116,6 +116,32 @@ module.exports = async ({ base, files, zip, directory }) => {
     await selectLabel("Publish destination", "footer");
     await fill('input[aria-label="Published URL path"]', "/browser-campaign");
     await selectLabel("Footer section", "quickLinks");
+    await fill("#cp-social-image", "hello");
+    await click("Save changes");
+    await page.waitForSelector('#cp-social-image[aria-invalid="true"]');
+    assert.match(
+      await page.$eval("#cp-social-image-error", (el) => el.textContent),
+      /optional field blank/,
+    );
+    assert.equal(
+      await page.$eval("#cp-social-image", (el) => el.value),
+      "hello",
+      "Invalid input stays available to correct",
+    );
+    await click("Clear optional image");
+    assert.equal(await page.$eval("#cp-social-image", (el) => el.value), "");
+    await click("Save changes");
+    await page.waitForFunction(
+      () =>
+        document
+          .querySelector(".cp-heading")
+          ?.textContent.includes("All changes saved") &&
+        !document.querySelector(".cp-busy"),
+    );
+    await page.select(
+      'select[aria-label="Choose social-sharing image from ZIP"]',
+      "assets/banner.png",
+    );
     await click("Save changes");
     await page.waitForFunction(
       () =>
@@ -237,10 +263,39 @@ module.exports = async ({ base, files, zip, directory }) => {
       ),
     );
     assert.equal(await publicPage.title(), "Browser campaign");
+    assert.match(
+      await publicPage.$eval('meta[property="og:image"]', (el) => el.content),
+      /^https:\/\/chalapathiuniversity\.edu\.in\/api\/code-pages\/content\/.+\/assets\/banner\.png$/,
+    );
+    assert.equal(
+      await publicPage.$$eval('meta[property="og:image"]', (els) => els.length),
+      1,
+      "Configured sharing image replaces the static fallback",
+    );
+    assert.equal(
+      await publicPage.$$eval('link[rel="canonical"]', (els) => els.length),
+      1,
+    );
+    assert.match(
+      await publicPage.$eval('meta[name="twitter:image"]', (el) => el.content),
+      /\/assets\/banner\.png$/,
+    );
     await publicPage.screenshot({
       path: path.join(out, "07-published-page.png"),
       fullPage: true,
     });
+    await publicPage.click('footer a[href="/about"]');
+    await publicPage.waitForFunction(
+      () =>
+        location.pathname === "/about" &&
+        !document.querySelector('iframe[title="Browser campaign"]'),
+    );
+    await publicPage.waitForFunction(() =>
+      [...document.querySelectorAll('meta[property="og:image"]')].some(
+        (meta) =>
+          meta.content === "https://chalapathiuniversity.edu.in/logo.png",
+      ),
+    );
     await publicPage.close();
     await page.click(".cp-builder-switch button:first-child");
     await page.waitForSelector(".pb-manager", { visible: true });

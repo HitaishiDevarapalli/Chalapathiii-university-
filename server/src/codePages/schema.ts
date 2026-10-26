@@ -1,22 +1,15 @@
 import { z } from "zod";
 import menus from "../pageBuilder/menus.json";
+import {
+  isSecureHttpsUrl,
+  normalizeSocialImage,
+  socialImageError,
+} from "./seo";
 const secureUrl = z
   .string()
+  .trim()
   .max(2048)
-  .refine(
-    (v) =>
-      !v ||
-      (/^https:\/\/[^\s<>"\\]+$/.test(v) &&
-        (() => {
-          try {
-            const u = new URL(v);
-            return !u.username && !u.password;
-          } catch {
-            return false;
-          }
-        })()),
-    "Use a secure absolute HTTPS URL",
-  );
+  .refine((v) => !v || isSecureHttpsUrl(v), "Use a secure absolute HTTPS URL");
 export const integrationSchema = z
   .object({
     mode: z
@@ -84,7 +77,14 @@ export const seoSchema = z.object({
   canonical: secureUrl.default(""),
   ogTitle: z.string().max(160).default(""),
   ogDescription: z.string().max(500).default(""),
-  image: secureUrl.default(""),
+  image: z
+    .string()
+    .transform(normalizeSocialImage)
+    .superRefine((image, ctx) => {
+      const message = socialImageError(image);
+      if (message) ctx.addIssue({ code: "custom", message });
+    })
+    .default(""),
   noindex: z.boolean().default(false),
   sitemap: z.boolean().default(true),
 });

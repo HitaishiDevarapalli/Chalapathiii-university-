@@ -8,6 +8,7 @@ import prisma from "../prisma";
 import { requirePermission, assertPermission } from "../middleware/auth";
 import { audit, fail, digest } from "../security/core";
 import { settingsSchema, Settings } from "../codePages/schema";
+import { resolveSocialImage, socialImageError } from "../codePages/seo";
 import {
   Package,
   MAX_ZIP,
@@ -28,6 +29,12 @@ const router = Router();
 type Document = Settings & {
   package: Package;
   validation: ReturnType<typeof validatePackage>;
+};
+const validationFor = (doc: Pick<Document, "package" | "seo">) => {
+  const validation = validatePackage(doc.package);
+  const imageError = socialImageError(doc.seo.image, doc.package.files);
+  if (imageError) validation.errors.push(`Social-sharing image: ${imageError}`);
+  return validation;
 };
 const run =
   (fn: (req: Request, res: Response) => Promise<unknown>) =>
@@ -140,7 +147,13 @@ const publicView = (row: any, version: any) => {
     name: doc.name,
     route: row.liveRoute,
     integration: doc.integration,
-    seo: doc.seo,
+    seo: {
+      ...doc.seo,
+      image: resolveSocialImage(
+        doc.seo.image,
+        `https://chalapathiuniversity.edu.in/api/code-pages/content/${row.pageId}/${version.id}/`,
+      ),
+    },
     contentUrl: `/api/code-pages/content/${row.pageId}/${version.id}/${doc.package.entry.split("/").map(encodeURIComponent).join("/")}`,
   };
 };
@@ -234,7 +247,7 @@ async function publish(
   doc: Document,
   kind = "PUBLISHED",
 ) {
-  const validation = validatePackage(doc.package);
+  const validation = validationFor(doc);
   if (validation.errors.length)
     fail("Resolve validation errors before publishing");
   await routeCheck(tx, row.pageId, doc);
@@ -393,6 +406,10 @@ async function serve(
       base,
       {
         ...doc.seo,
+        image: resolveSocialImage(
+          doc.seo.image,
+          `${req.protocol}://${req.get("host")}${base}`,
+        ),
         title: doc.seo.title || doc.name,
         canonical:
           doc.seo.canonical ||
@@ -638,7 +655,7 @@ router.post(
       const doc = {
         ...docOf(current),
         package: pkg,
-        validation: validatePackage(pkg),
+        validation: validationFor({ package: pkg, seo: docOf(current).seo }),
       };
       await claim(tx, req, current.pageId, {
         draftJson: JSON.stringify(doc),
@@ -704,7 +721,7 @@ router.put(
       const doc: Document = {
         ...settings,
         package: pkg,
-        validation: validatePackage(pkg),
+        validation: validationFor({ package: pkg, seo: settings.seo }),
       };
       await claim(tx, req, current.pageId, {
         draftJson: JSON.stringify(doc),
@@ -744,7 +761,7 @@ router.post(
     const row = await transaction(async (tx) => {
       const current = await getRow(tx, req.params.id),
         doc = docOf(current);
-      doc.validation = validatePackage(doc.package);
+      doc.validation = validationFor(doc);
       await claim(tx, req, current.pageId, {
         draftJson: JSON.stringify(doc),
         stage: doc.validation.errors.length ? "VALIDATING" : "DRAFT",
@@ -763,7 +780,7 @@ router.post(
         doc = docOf(row);
       if (row.revision !== revision(req))
         fail("Save and reload the current draft first", 409);
-      const validation = validatePackage(doc.package);
+      const validation = validationFor(doc);
       // Missing assets can be inspected in preview, but still block approval/publication.
       if (
         !doc.package.files.some(
@@ -845,7 +862,7 @@ router.post(
         doc = docOf(current);
       if (current.revision !== revision(req) || current.stage !== "PREVIEWED")
         fail("Preview the latest saved draft before approving", 409);
-      if (validatePackage(doc.package).errors.length)
+      if (validationFor(doc).errors.length)
         fail("Resolve missing assets and validation errors before approving");
       await routeCheck(tx, current.pageId, doc);
       await tx.codeDocument.update({
@@ -1061,17 +1078,17 @@ router.use((error: any, _req: Request, res: Response, _next: NextFunction) => {
   if (error.name === "ZodError")
     return res.status(400).json({
       error: error.issues
-        .map((i: any) => `${i.path.join(".")}: ${i.message}`)
+        .map(
+          (i: any) =>
+            `${i.path.join(".") === "seo.image" ? "Social-sharing image" : i.path.join(".")}: ${i.message}`,
+        )
         .slice(0, 5)
         .join("; "),
     });
   if (error.code === "P2002" || error.code === "P2034")
-    return res
-      .status(409)
-      .json({
-        error:
-          "This route or page changed in another session. Reload and retry.",
-      });
+    return res.status(409).json({
+      error: "This route or page changed in another session. Reload and retry.",
+    });
   if (error.code === "LIMIT_FILE_SIZE")
     return res
       .status(413)
@@ -1079,11 +1096,8 @@ router.use((error: any, _req: Request, res: Response, _next: NextFunction) => {
   if (error.status)
     return res.status(error.status).json({ error: error.message });
   console.error("Code page request failed", error.code || error.name);
-  return res
-    .status(500)
-    .json({
-      error:
-        "Code page operation failed. The current publication was preserved.",
-    });
+  return res.status(500).json({
+    error: "Code page operation failed. The current publication was preserved.",
+  });
 });
 export default router;

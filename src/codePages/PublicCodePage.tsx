@@ -41,6 +41,32 @@ export function usePublishedCodePage(route: string, enabled: boolean) {
 export default function PublicCodePage({ page }: { page: CodePage }) {
   const frame = useRef<HTMLIFrameElement>(null);
   const [height, setHeight] = useState(800);
+  const canonical =
+    page.seo.canonical || `https://chalapathiuniversity.edu.in${page.route}`;
+  useEffect(() => {
+    // Helmet manages its own tags; index.html's static fallbacks otherwise remain first.
+    // Restore those exact nodes when leaving a code page so the existing routes keep their defaults.
+    const selector = [
+      'meta[name="description"]',
+      'meta[name="robots"]',
+      'link[rel="canonical"]',
+      ...["title", "description", "image", "url"].map(
+        (name) => `meta[property="og:${name}"]`,
+      ),
+      ...["title", "description", "image", "card"].map(
+        (name) => `meta[name="twitter:${name}"]`,
+      ),
+    ].join(",");
+    const fallbacks = [...document.head.querySelectorAll(selector)].filter(
+      (node) =>
+        !node.hasAttribute("data-rh") &&
+        !node.hasAttribute("data-code-page-seo"),
+    );
+    fallbacks.forEach((node) => node.remove());
+    return () => {
+      fallbacks.forEach((node) => document.head.appendChild(node));
+    };
+  }, []);
   useEffect(() => {
     const listener = (event: MessageEvent) => {
       if (
@@ -60,28 +86,56 @@ export default function PublicCodePage({ page }: { page: CodePage }) {
     <>
       <Helmet>
         <title>{page.seo.title || page.name}</title>
-        <meta name="description" content={page.seo.description} />
         <meta
+          data-code-page-seo=""
+          name="description"
+          content={page.seo.description}
+        />
+        <meta
+          data-code-page-seo=""
           name="robots"
           content={page.seo.noindex ? "noindex, nofollow" : "index, follow"}
         />
-        <link
-          rel="canonical"
-          href={
-            page.seo.canonical ||
-            `https://chalapathiuniversity.edu.in${page.route}`
-          }
-        />
+        <link data-code-page-seo="" rel="canonical" href={canonical} />
         <meta
+          data-code-page-seo=""
           property="og:title"
           content={page.seo.ogTitle || page.seo.title || page.name}
         />
         <meta
+          data-code-page-seo=""
           property="og:description"
           content={page.seo.ogDescription || page.seo.description}
         />
         {page.seo.image && (
-          <meta property="og:image" content={page.seo.image} />
+          <meta
+            data-code-page-seo=""
+            property="og:image"
+            content={page.seo.image}
+          />
+        )}
+        <meta data-code-page-seo="" property="og:url" content={canonical} />
+        <meta
+          data-code-page-seo=""
+          name="twitter:card"
+          content={page.seo.image ? "summary_large_image" : "summary"}
+        />
+        <meta
+          data-code-page-seo=""
+          name="twitter:title"
+          content={page.seo.ogTitle || page.seo.title || page.name}
+        />
+        <meta
+          data-code-page-seo=""
+          name="twitter:description"
+          content={page.seo.ogDescription || page.seo.description}
+        />
+        {page.seo.image && (
+          <meta
+            data-code-page-seo=""
+            name="twitter:image"
+            content={page.seo.image}
+          />
         )}
       </Helmet>
       <iframe

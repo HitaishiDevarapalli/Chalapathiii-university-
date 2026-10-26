@@ -88,6 +88,66 @@ module.exports = async function codePagesTest({
   directory,
 }) {
   const pass = (message) => console.log("PASS: code pages — " + message);
+  const { seoSchema } = require("../dist/codePages/schema");
+  const {
+    socialImageError,
+    resolveSocialImage,
+  } = require("../dist/codePages/seo");
+  for (const image of [
+    "",
+    "  ",
+    " https://example.com/share.jpg ",
+    "/uploads/share.webp",
+    "assets/banner.png",
+    "./assets/banner.png",
+  ]) {
+    assert.equal(seoSchema.safeParse({ image }).success, true, image);
+  }
+  for (const image of [
+    "hello",
+    "http://example.com/a.png",
+    "//example.com/a.png",
+    "javascript:alert(1)",
+    "data:image/png;base64,abc",
+    "../banner.png",
+    "/uploads/../banner.png",
+    "/uploads/%2e%2e/banner.png",
+    "/uploads/%00banner.png",
+    "https://user:secret@example.com/a.png",
+  ]) {
+    assert.equal(seoSchema.safeParse({ image }).success, false, image);
+  }
+  assert.equal(seoSchema.parse({ image: "  " }).image, "");
+  assert.equal(
+    seoSchema.parse({ image: " ./assets/banner.png " }).image,
+    "assets/banner.png",
+  );
+  assert.equal(
+    seoSchema.safeParse({ canonical: "/local-path" }).success,
+    false,
+  );
+  assert.ok(
+    socialImageError("assets/missing.png", [
+      { path: "assets/banner.png", mime: "image/png" },
+    ]).includes("not in the current ZIP"),
+  );
+  assert.equal(
+    resolveSocialImage(
+      "assets/banner one.png",
+      "https://example.com/api/code-pages/content/page/version/",
+    ),
+    "https://example.com/api/code-pages/content/page/version/assets/banner%20one.png",
+  );
+  assert.equal(
+    resolveSocialImage(
+      "/uploads/share.webp",
+      "https://example.com/api/code-pages/content/page/version/",
+    ),
+    "https://example.com/uploads/share.webp",
+  );
+  pass(
+    "optional sharing images accept blanks, HTTPS, website paths and ZIP images; unsafe URLs remain blocked",
+  );
   const request = (client, route, method = "GET", body, csrf = true) =>
     client.request("/api/code-pages" + route, method, body, csrf);
   const expect = async (promise, status) => {
@@ -245,6 +305,33 @@ module.exports = async function codePagesTest({
     }),
     409,
   );
+  const invalidImage = await request(admin, `/${id}`, "PUT", {
+    revision: current.revision,
+    document: {
+      ...current.document,
+      seo: { ...current.document.seo, image: "hello" },
+    },
+  });
+  assert.equal(invalidImage.status, 400);
+  assert.match(invalidImage.body.error, /Social-sharing image/);
+  assert.doesNotMatch(invalidImage.body.error, /seo\.image:/);
+  current = await put(current, {
+    ...current.document,
+    seo: { ...current.document.seo, image: "  ", canonical: "  " },
+  });
+  assert.equal(current.document.seo.image, "");
+  assert.equal(current.document.seo.canonical, "");
+  current = await put(current, {
+    ...current.document,
+    seo: { ...current.document.seo, image: " /uploads/banner.webp " },
+  });
+  assert.equal(current.document.seo.image, "/uploads/banner.webp");
+  current = await put(current, {
+    ...current.document,
+    seo: { ...current.document.seo, image: " ./assets/banner.png " },
+  });
+  assert.equal(current.document.seo.image, "assets/banner.png");
+  assert.equal(current.document.validation.errors.length, 0);
   const validRevision = current.revision;
   const badArchives = [
     [Buffer.from("not a zip"), 400],
@@ -351,6 +438,18 @@ module.exports = async function codePagesTest({
     200,
   );
   assert.equal(resolved.versionId, originalRelease);
+  const imagePath = `/api/code-pages/content/${id}/${originalRelease}/assets/banner.png`;
+  assert.equal(
+    resolved.seo.image,
+    `https://chalapathiuniversity.edu.in${imagePath}`,
+  );
+  const sharingImage = await fetch(base + imagePath);
+  assert.equal(sharingImage.status, 200);
+  assert.equal(sharingImage.headers.get("content-type"), "image/png");
+  assert.deepEqual(Buffer.from(await sharingImage.arrayBuffer()), png);
+  pass(
+    "draft saves normalize optional sharing images and published metadata maps ZIP images to public asset URLs",
+  );
   assert.equal(
     (await admin.get("/links")).body.find((p) => p.id === id).slug,
     "/code-integration",
