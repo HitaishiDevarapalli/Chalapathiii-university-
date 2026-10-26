@@ -86,7 +86,7 @@ import { AnnouncementsCMS } from "../components/admin/AnnouncementsCMS";
 import FooterCMS from "../components/admin/FooterCMS";
 import LinksCMS from "../components/admin/LinksCMS";
 import { SettingsCMS } from "../components/admin/SettingsCMS";
-const PageBuilder = React.lazy(() => import("../pageBuilder/PageBuilder"));
+const PageBuilder = React.lazy(() => import("../pageBuilder/Workspace"));
 import { PagesCMS } from "../components/admin/PagesCMS";
 import { CertificationsCMS } from "../components/admin/CertificationsCMS";
 import { PopupCMS } from "../components/admin/PopupCMS";

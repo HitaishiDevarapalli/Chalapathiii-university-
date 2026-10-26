@@ -112,7 +112,7 @@ export const PagesCMS: React.FC = () => {
   // Filtered pages list
   const filteredPages = useMemo(() => {
     return cmsPages.filter(p => {
-      if ((p.type as string) === "visual") return false;
+      if (["visual", "code"].includes(p.type as string)) return false;
       const matchSearch = !searchQuery.trim() || 
         p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
         p.title.toLowerCase().includes(searchQuery.toLowerCase()) || 

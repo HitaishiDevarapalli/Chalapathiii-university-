@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route, useLocation, Link, useNavigate } from "re
 import { X, RefreshCw, CheckCircle2, Megaphone, Bell, Calendar, GraduationCap, FileText, Award, BookOpen, User, Phone, Mail, MapPin, Landmark, MessageSquare, ArrowRight, Send, ShieldCheck, ChevronDown, ChevronUp } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import DraftPreview from "./pageBuilder/DraftPreview";
+import PublicCodePage, { usePublishedCodePage } from "./codePages/PublicCodePage";
 import { PublicBuilderPage } from "./pageBuilder/Renderer";
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
@@ -45,6 +46,8 @@ function AppContent() {
   const initialLocationKey = React.useRef(location.key);
   const navigate = useNavigate();
   const isAdminPage = location.pathname.startsWith("/admin");
+  const codeRoute = usePublishedCodePage(location.pathname, !isAdminPage);
+  const standaloneCodePage = codeRoute.page?.integration.layout === "standalone";
   const isApplyPage = location.pathname.includes("apply");
   const { 
     announcements, 
@@ -61,7 +64,7 @@ function AppContent() {
   const activePopup = useMemo(() => selectActivePopup(popupCmsData), [popupCmsData]);
   const enquiryPopupConfig = resolveEnquiryConfig(admissionsContent?.enquiryPopup || DEFAULT_ADMISSIONS_CONTENT.enquiryPopup, activePopup?.enquiryConfig);
 
-  const suppressEntryOverlays = location.state?.suppressEntryOverlays === true;
+  const suppressEntryOverlays = location.state?.suppressEntryOverlays === true || !!codeRoute.page;
   const [showSplash, setShowSplash] = useState(location.pathname === "/" && siteSettings?.enableSplash === true);
 
   const videoRef = React.useRef<HTMLVideoElement>(null);
@@ -190,7 +193,7 @@ function AppContent() {
   return (
     <>
       <AnimatePresence mode="wait">
-        {!isAdminPage && showSplash && (
+        {!isAdminPage && !codeRoute.page && showSplash && (
           <motion.div
             key="splash"
             className="fixed inset-0 z-[999999] bg-black flex items-center justify-center select-none"
@@ -278,9 +281,9 @@ function AppContent() {
 
       <ScrollToTop />
       <div className="flex flex-col min-h-screen bg-[#F7F8FC]">
-        {!isAdminPage && <Header />}
+        {!isAdminPage && !standaloneCodePage && <Header />}
         <main className="flex-grow">
-          <Routes>
+          {codeRoute.loading ? <p role="status" className="p-8">Loading page…</p> : codeRoute.page ? <PublicCodePage page={codeRoute.page}/> : <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/programs" element={<DynamicPage />} />
             
@@ -385,10 +388,10 @@ function AppContent() {
 
             {/* Dynamic CMS Page Wildcard Catch-All Route */}
             <Route path="/*" element={<DynamicPage />} />
-          </Routes>
+          </Routes>}
 
         </main>
-        {!isAdminPage && <Footer />}
+        {!isAdminPage && !standaloneCodePage && <Footer />}
       </div>
 
       {/* ======================================================== */}

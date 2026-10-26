@@ -156,11 +156,10 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
   ];
 
   const { navigation: builderNavigation } = useBuilderPlacements();
-  const dynamicMenuPages = [...(cmsPages || []).filter(p => (p.type as string) !== "visual"), ...builderNavigation].filter(page => page.status === "published" && page.showInNav && page.slug);
+  const dynamicMenuPages = [...(cmsPages || []).filter(p => !["visual", "code"].includes(p.type as string)), ...builderNavigation].filter(page => page.status === "published" && page.showInNav && page.slug && !page.parentNav?.startsWith("footer:"));
   const dynamicTopLinks = dynamicMenuPages.filter(page => !page.parentNav || page.parentNav === "Main Menu").sort((a,b) => a.displayOrder - b.displayOrder);
-  const navLinks = [
-    ...builderMenus.filter(m => m.id !== "Main Menu").map(m => m.id), ...dynamicTopLinks.map(p => p.navLabel || p.name),
-  ];
+  const navLinks = builderMenus.filter(m => m.id !== "Main Menu").map(m => m.id);
+  dynamicTopLinks.forEach(page => navLinks.splice(Math.min(page.displayOrder, navLinks.length), 0, page.navLabel || page.name));
 
   const navHrefs: Record<string, string> = {
     "About Us": "/about",
@@ -218,15 +217,20 @@ export default function Header({ onToggleAi }: { onToggleAi?: () => void } = {})
 
   const visibleNavLinks = navLinks.filter(name => !isPageHidden(name, navHrefs[name]));
   const childPagesFor = (parent: string) => dynamicMenuPages.filter(page => page.parentNav === parent).sort((a,b) => a.displayOrder - b.displayOrder).map(page => ({ label: page.navLabel || page.name, to: page.slug }));
+  const mergeChildPages = (base: {label:string;to:string}[], parent:string) => {
+    const result=[...base];
+    dynamicMenuPages.filter(page=>page.parentNav===parent).sort((a,b)=>a.displayOrder-b.displayOrder).forEach(page=>result.splice(Math.min(page.displayOrder,result.length),0,{label:page.navLabel||page.name,to:page.slug}));
+    return result;
+  };
   const cmsChildrenFor = (parent: string) => {
     if (parent === "Research") return [];
     return childPagesFor(parent).filter(item => !isPageHidden(item.label, item.to));
   };
-  const visibleAboutItems = [...aboutItems, ...childPagesFor("About Us")].filter(item => !isPageHidden(item.label, item.to));
-  const visibleAcademicsItems = [...academicsItems, ...childPagesFor("Academics")].filter(item => !isPageHidden(item.label, item.to));
-  const visibleFacultyItems = [...facultyItems, ...childPagesFor("Faculty")].filter(item => !isPageHidden(item.label, item.to));
-  const visibleCampusLifeItems = [...campusLifeItems, ...childPagesFor("Campus Life")].filter(item => !isPageHidden(item.label, item.to));
-  const visibleNewsEventsItems = [...newsEventsItems, ...childPagesFor("News & Events")].filter(item => !isPageHidden(item.label, item.to));
+  const visibleAboutItems = mergeChildPages(aboutItems,"About Us").filter(item => !isPageHidden(item.label, item.to));
+  const visibleAcademicsItems = mergeChildPages(academicsItems,"Academics").filter(item => !isPageHidden(item.label, item.to));
+  const visibleFacultyItems = mergeChildPages(facultyItems,"Faculty").filter(item => !isPageHidden(item.label, item.to));
+  const visibleCampusLifeItems = mergeChildPages(campusLifeItems,"Campus Life").filter(item => !isPageHidden(item.label, item.to));
+  const visibleNewsEventsItems = mergeChildPages(newsEventsItems,"News & Events").filter(item => !isPageHidden(item.label, item.to));
 
   useEffect(() => {
     if (!searchQuery.trim()) {

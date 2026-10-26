@@ -32,6 +32,7 @@ const { PGLiteSocketServer } = require("@electric-sql/pglite-socket");
     "postgresql://postgres:postgres@127.0.0.1:55445/postgres?connection_limit=1";
   process.env.SESSION_SECRET = crypto.randomBytes(40).toString("hex");
   process.env.UPLOADS_DIR = directory;
+  process.env.CODE_PAGE_ASSETS_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "university-code-assets-test-"));
   process.env.NODE_ENV = "test";
   const prisma = require("../dist/prisma").default;
   const app = require("../dist/index").default;
@@ -617,6 +618,8 @@ const { PGLiteSocketServer } = require("@electric-sql/pglite-socket");
     );
     await prisma.adminLoginThrottle.delete({ where: { key: budgetKey } });
     pass("database-backed edit budgets reject excessive operations");
+    if (process.env.CODE_PAGE_TEST === "1")
+      await require("./code-pages.cjs")({base,admin,editor,viewer,visitor,prisma,directory,db});
     if (process.env.BROWSER_TEST === "1")
       await require("./page-builder-browser.cjs")(base);
     if (process.env.MEDIA_TEST === "1") await require("./media-storage.cjs")({ base, admin, viewer, visitor, prisma, directory, db });
@@ -683,7 +686,17 @@ const { PGLiteSocketServer } = require("@electric-sql/pglite-socket");
     await prisma.$disconnect();
     await socket.stop();
     await db.close();
-    fs.rmSync(directory, { recursive: true, force: true });
+    for (const target of [directory, process.env.CODE_PAGE_ASSETS_DIR]) {
+      assert.equal(path.dirname(path.resolve(target)), path.resolve(os.tmpdir()));
+      assert.match(path.basename(target), /^university-(builder|code-assets)-test-/);
+      try {
+        fs.rmSync(target, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+      } catch (error) {
+        // Chrome/Windows can retain file handles briefly after all functional assertions pass.
+        if (process.platform !== "win32" || !["EPERM", "EBUSY"].includes(error.code)) throw error;
+        console.warn("Windows retained isolated test fixtures after browser shutdown:", target);
+      }
+    }
   }
 })().catch((e) => {
   console.error(e);

@@ -34,6 +34,7 @@ import configRoutes from "./routes/config";
 import uploadRoutes from "./routes/upload";
 import cmsRoutes from "./routes/cms";
 import pageBuilderRoutes from "./routes/pageBuilder";
+import codePagesRoutes from "./routes/codePages";
 import mediaRoutes from "./routes/media";
 import academicDocumentsRoutes from "./routes/academicDocuments";
 
@@ -114,6 +115,7 @@ app.use("/api/config", configRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/cms", cmsRoutes);
 app.use("/api/page-builder", pageBuilderRoutes);
+app.use("/api/code-pages", codePagesRoutes);
 app.use("/api/media", mediaRoutes);
 app.use("/api/academic-documents", academicDocumentsRoutes);
 

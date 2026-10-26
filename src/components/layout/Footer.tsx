@@ -3,6 +3,7 @@ import {
   MapPin, Phone, Mail
 } from "lucide-react";
 import { useData } from "../../context/DataContext";
+import { useBuilderPlacements } from "../../pageBuilder/Renderer";
 
 const OFFICIAL_SOCIAL_LINKS = {
   instagram: "https://www.instagram.com/chalapathi.university.official/",
@@ -26,6 +27,13 @@ const normalizeSocialUrl = (value: string | undefined, fallback: string) => {
 };
 
 export default function Footer() {
+  const { navigation } = useBuilderPlacements();
+  const codeLinks = (section:string) => navigation.filter(n=>n.parentNav===`footer:${section}`).map(n=>({label:n.navLabel,to:n.slug,position:n.displayOrder}));
+  const mergeLinks = (links:{label:string;to:string}[],section:string) => {
+    const result=[...links];
+    for(const link of codeLinks(section)) result.splice(Math.min(link.position,result.length),0,link);
+    return result;
+  };
   const { siteSettings, footerContent, placementsContent, themeColors } = useData();
 
   const isPageHidden = (label: string, href?: string) => {
@@ -48,7 +56,7 @@ export default function Footer() {
     { label: "Chalapathi Advantage", to: "/about/advantage" },
   ];
 
-  const quickLinks = rawQuickLinks.filter(l => l.label.trim().toLowerCase() !== "accreditations" && !isPageHidden(l.label, l.to));
+  const quickLinks = mergeLinks(rawQuickLinks,"quickLinks").filter(l => l.label.trim().toLowerCase() !== "accreditations" && !isPageHidden(l.label, l.to));
 
   const rawAcademicsLinks = footerContent?.academicsLinks || [
     { label: "Programs", to: "/academics" },
@@ -58,7 +66,7 @@ export default function Footer() {
     { label: "Schools", to: "/academics/schools" },
   ];
 
-  const academicsLinks = rawAcademicsLinks.filter(l => !isPageHidden(l.label, l.to));
+  const academicsLinks = mergeLinks(rawAcademicsLinks,"academicsLinks").filter(l => !isPageHidden(l.label, l.to));
 
   const rawAdmissionsLinks = footerContent?.admissionsLinks || [
     { label: "Undergraduate", to: "/admissions/undergraduate" },
@@ -68,7 +76,7 @@ export default function Footer() {
     { label: "Apply Online", to: "/admissions/apply" },
   ];
 
-  const admissionsLinks = rawAdmissionsLinks.filter(l => !isPageHidden(l.label, l.to));
+  const admissionsLinks = mergeLinks(rawAdmissionsLinks,"admissionsLinks").filter(l => !isPageHidden(l.label, l.to));
 
   const rawCampusLifeLinks = footerContent?.campusLifeLinks || [
     { label: "Hostels", to: "/campus-life/hostels" },
@@ -78,7 +86,7 @@ export default function Footer() {
     { label: "Amenities", to: "/campus-life" },
   ];
 
-  const campusLifeLinks = rawCampusLifeLinks.filter(l => !isPageHidden(l.label, l.to));
+  const campusLifeLinks = mergeLinks(rawCampusLifeLinks,"campusLifeLinks").filter(l => !isPageHidden(l.label, l.to));
 
   const configuredSocialLinks = {
     ...siteSettings?.socialLinks,

@@ -1,7 +1,7 @@
 // Integration test against isolated embedded PostgreSQL. Never touches the live database.
 const { PGlite } = require('@electric-sql/pglite');
 const { PGLiteSocketServer } = require('@electric-sql/pglite-socket');
-const { readFileSync, mkdtempSync, rmSync } = require('node:fs');
+const { readFileSync, readdirSync, mkdtempSync, rmSync } = require('node:fs');
 const { tmpdir } = require('node:os');
 const path = require('node:path');
 const assert = require('node:assert/strict');
@@ -14,6 +14,8 @@ const bcrypt = require('bcryptjs');
   await db.exec(readFileSync('prisma/migrations/202610130002_event_visibility/migration.sql', 'utf8'));
   await db.exec(readFileSync('prisma/migrations/202610130003_content_order/migration.sql', 'utf8'));
   await db.exec(readFileSync('prisma/migrations/202610160001_admin_security/migration.sql', 'utf8'));
+  for (const migration of readdirSync('prisma/migrations').filter(name=>/^2026/.test(name)&&name>'202610160001_admin_security').sort())
+    await db.exec(readFileSync(`prisma/migrations/${migration}/migration.sql`, 'utf8'));
   const socket = new PGLiteSocketServer({ db, host: '127.0.0.1', port: 55440 });
   await socket.start();
   process.env.DATABASE_URL = 'postgresql://postgres:postgres@127.0.0.1:55440/postgres?connection_limit=1';

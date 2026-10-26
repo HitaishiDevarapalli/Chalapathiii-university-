@@ -11,7 +11,8 @@ router.use(async (req, res, next) => {
     if (["GET", "HEAD", "OPTIONS"].includes(req.method)) return next();
     const key = decodeURIComponent(req.path.split("/").filter(Boolean)[0] || "");
     const existing = key ? await prisma.cmsPage.findFirst({ where: { OR: [{ id: key }, { slug: key }] } }) : null;
-    if (existing?.type === "visual" || req.body?.type === "visual" || String(req.body?.slug || "").startsWith("/pages/")) return res.status(409).json({ error: "Use Page Builder to manage visual pages" });
+    const codeOwner = req.body?.slug ? await prisma.codeDocument.findUnique({ where: { liveRoute: String(req.body.slug) } }) : null;
+    if (["visual", "code"].includes(existing?.type || "") || ["visual", "code"].includes(req.body?.type) || codeOwner || /^\/(pages|code-drafts)\//.test(String(req.body?.slug || ""))) return res.status(409).json({ error: "Use Page Builder to manage builder pages" });
     next();
   } catch { res.status(503).json({ error: "Page validation unavailable" }); }
 });
@@ -64,6 +65,7 @@ router.get("/", async (req: Request, res: Response) => {
 
     const parsed = pages.map((page) => ({
       ...page,
+      ...(page.type === "code" && page.status === "published" ? { slug: safeJsonParse<{route?:string}>(page.dataJson, {}).route || page.slug } : {}),
       dataJson: safeJsonParse(page.dataJson, {}),
     }));
 

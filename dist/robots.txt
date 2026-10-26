@@ -3,5 +3,7 @@ Allow: /
 Disallow: /admin
 Disallow: /admin/*
 Disallow: /api/*
+Allow: /api/code-pages/sitemap.xml
 
 Sitemap: https://chalapathiuniversity.edu.in/sitemap.xml
+Sitemap: https://chalapathiuniversity.edu.in/api/code-pages/sitemap.xml

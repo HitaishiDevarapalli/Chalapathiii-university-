@@ -6,6 +6,8 @@
     "node": ">=22 <25"
   },
   "scripts": {
+    "test:code-pages": "npm run build && node tests/code-pages-runner.cjs",
+    "test:code-pages:browser": "npm run build && node tests/code-pages-browser-runner.cjs",
     "test:research-navigation": "node tests/research-navigation-browser.cjs",
     "test:research-content": "npm run build && node tests/research-content.cjs",
     "test:research-tables:browser": "npm run build && node tests/research-table-browser.cjs",
@@ -36,12 +38,14 @@
     "express": "^4.21.0",
     "express-session": "^1.18.0",
     "google-auth-library": "^11.3.1",
-    "multer": "^2.4.0",
+    "multer": "^2.5.0",
     "otpauth": "^9.5.2",
+    "parse5": "^7.3.0",
     "qrcode": "^1.5.4",
+    "sharp": "^0.35.5",
     "uuid": "^11.1.1",
-    "zod": "^4.6.7",
-    "sharp": "^0.35.5"
+    "yauzl": "^3.4.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.9",
@@ -54,6 +58,7 @@
     "@types/node": "^20",
     "@types/qrcode": "^1.5.6",
     "@types/uuid": "^10.0.0",
+    "@types/yauzl": "^3.4.0",
     "prisma": "^5.10.0",
     "puppeteer-core": "^25.14.0",
     "ts-node": "^10.9.2",

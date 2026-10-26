@@ -58,6 +58,8 @@ async function uniqueSlug(tx: Tx, slug: string, id: string) {
     tx.builderDocument.findUnique({ where: { slug } }),
     tx.builderRedirect.findUnique({ where: { slug } }),
   ]);
+  const codeOwner = await tx.codeDocument.findUnique({ where: { liveRoute: slug } });
+  if (codeOwner && codeOwner.pageId !== id) fail(409, "This URL belongs to a published code page");
   if (
     [page?.id, draft?.pageId, redirect?.pageId].some(
       (owner) => owner && owner !== id,
@@ -111,13 +113,14 @@ async function validateReferences(
       urls.filter((url) => url.startsWith("/pages/") && url !== doc.slug),
     ),
   ];
-  const targets = await tx.cmsPage.findMany({
+  const targetRows = await tx.cmsPage.findMany({
     where: {
       status: "published",
-      OR: [{ id: { in: [...ids] } }, { slug: { in: slugs } }],
+      OR: [{ id: { in: [...ids] } }, { slug: { in: slugs } }, { codeDocument: { liveRoute: { in: slugs } } }],
     },
-    select: { id: true, slug: true },
+    select: { id: true, slug: true, codeDocument: { select: { liveRoute: true } } },
   });
+  const targets = targetRows.map(row => ({ id: row.id, slug: row.codeDocument?.liveRoute || row.slug }));
   if ([...ids].some((id) => !targets.some((p) => p.id === id)))
     fail(400, "An internal page destination is no longer published");
   if (slugs.some((slug) => !targets.some((p) => p.slug === slug)))
@@ -279,7 +282,7 @@ router.get(
       prisma.builderNavigation.findMany({
         where: { visible: true, page: { status: "published" } },
         orderBy: [{ position: "asc" }, { id: "asc" }],
-        include: { page: { select: { slug: true } } },
+        include: { page: { select: { slug: true, codeDocument: { select: { liveRoute: true } } } } },
       }),
       prisma.cmsPage.findMany({
         where: { type: "visual", status: "published" },
@@ -304,7 +307,7 @@ router.get(
         id: n.pageId,
         name: n.label,
         navLabel: n.label,
-        slug: n.page.slug,
+        slug: n.page.codeDocument?.liveRoute || n.page.slug,
         parentNav: n.parentKey,
         displayOrder: n.position,
         showInNav: true,
@@ -349,10 +352,10 @@ router.get(
     res.json(
       await prisma.cmsPage.findMany({
         where: { status: "published" },
-        select: { id: true, title: true, slug: true },
+        select: { id: true, title: true, slug: true, codeDocument: { select: { liveRoute: true } } },
         orderBy: { title: "asc" },
         take: 500,
-      }),
+      }).then(rows => rows.map(row => ({ id: row.id, title: row.title, slug: row.codeDocument?.liveRoute || row.slug }))),
     ),
   ),
 );

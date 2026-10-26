@@ -469,6 +469,7 @@ model CmsPage {
   builder BuilderDocument?
   builderNavigation BuilderNavigation?
   builderRedirects BuilderRedirect[]
+  codeDocument CodeDocument?
 
   @@map("cms_pages")
 }
@@ -544,6 +545,54 @@ model BuilderMedia {
   @@index([folderId, createdAt])
   @@index([createdAt])
   @@map("builder_media")
+}
+
+// Code pages share the CMS identity and navigation. Only immutable releases are public.
+model CodeDocument {
+  pageId String @id
+  revision Int @default(1)
+  draftJson String
+  stage String @default("UPLOADED")
+  liveRoute String? @unique
+  publishedVersionId String? @unique
+  createdBy Int
+  updatedBy Int
+  uploadedBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  publishedAt DateTime?
+  page CmsPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  versions CodeVersion[]
+  previews CodePreview[]
+  @@index([updatedAt])
+  @@map("code_documents")
+}
+
+model CodeVersion {
+  id String @id @default(uuid())
+  pageId String
+  revision Int
+  kind String
+  previousVersionId String?
+  snapshotJson String
+  author String
+  createdAt DateTime @default(now())
+  document CodeDocument @relation(fields: [pageId], references: [pageId], onDelete: Cascade)
+  @@index([pageId, createdAt])
+  @@map("code_versions")
+}
+
+model CodePreview {
+  tokenHash String @id
+  pageId String
+  revision Int
+  adminId Int
+  snapshotJson String
+  expiresAt DateTime
+  renderedAt DateTime?
+  document CodeDocument @relation(fields: [pageId], references: [pageId], onDelete: Cascade)
+  @@index([expiresAt])
+  @@map("code_previews")
 }
 
 model MediaFolder {

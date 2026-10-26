@@ -9,3 +9,10 @@ dev.db
 *.tar.gz
 work/research-build
 work/research-qa
+work/code-page-qa
+server/code-page-assets
+**/.env*
+server/uploads
+uploads
+work/page-builder-qa
+work/media-storage-qa
