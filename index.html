@@ -11,6 +11,22 @@
       gtag('config', 'G-M4EE1BM60J');
     </script>
 
+    <!-- Google Ads conversion helper: call when the chosen link or button is clicked. -->
+    <script>
+      function gtag_report_conversion(url) {
+        var callback = function () {
+          if (typeof(url) != 'undefined') {
+            window.location = url;
+          }
+        };
+        gtag('event', 'conversion', {
+          'send_to': 'AW-18534810587/GWXiCMvdhasdENuHi4ZF',
+          'event_callback': callback
+        });
+        return false;
+      }
+    </script>
+
     <meta charset="UTF-8" />
     <link rel="icon" type="image/x-icon" sizes="16x16 32x32 48x48 64x64" href="/favicon.ico?v=cu-symbol-1" />
     <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png?v=cu-symbol-1" />
